@@ -193,7 +193,7 @@ export default function App() {
   const [flashMessage, setFlashMessage] = useState<Record<string, string>>({});
   const [newWeight, setNewWeight] = useState<string>("");
   const [newWeightDate, setNewWeightDate] = useState<string>("");
-  const [showWeightHistoryList, setShowWeightHistoryList] = useState<boolean>(false);
+  const [showWeightHistoryList, setShowWeightHistoryList] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [addingToDay, setAddingToDay] = useState<number | null>(null);
@@ -1404,19 +1404,18 @@ export default function App() {
                           )}
                         </div>
 
-                        <div className="flex flex-col gap-4">
-                          <div className="flex items-center justify-between border-t border-white/5 pt-6">
-                            <button
-                              onClick={() => setShowWeightHistoryList(!showWeightHistoryList)}
-                              className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-sm px-5 py-3 text-xs text-white transition-all font-bold uppercase tracking-widest cursor-pointer group"
-                            >
-                              <div className="flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4 text-gym-accent" />
-                                <span>Weight History Log ({weightHistory.length})</span>
-                              </div>
-                              <ChevronDown className={`w-4 h-4 text-white/40 group-hover:text-gym-accent transition-transform duration-300 ${showWeightHistoryList ? 'rotate-180' : ''}`} />
-                            </button>
-                          </div>
+                        <div className="mt-6">
+                          <button
+                            onClick={() => setShowWeightHistoryList(!showWeightHistoryList)}
+                            type="button"
+                            className="w-full flex items-center justify-between px-6 py-4 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 rounded-sm text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
+                          >
+                            <span className="flex items-center gap-2">
+                              <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
+                              {showWeightHistoryList ? "Hide Weight Logs" : `View Weight Logs (${weightHistory.length})`}
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showWeightHistoryList ? "rotate-180" : ""}`} />
+                          </button>
 
                           <AnimatePresence>
                             {showWeightHistoryList && (
@@ -1424,64 +1423,52 @@ export default function App() {
                                 initial={{ height: 0, opacity: 0 }}
                                 animate={{ height: 'auto', opacity: 1 }}
                                 exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.2 }}
+                                transition={{ duration: 0.25 }}
                                 className="overflow-hidden"
                               >
                                 {weightHistory.length === 0 ? (
-                                  <div className="bg-white/[0.01] border border-white/5 rounded-sm p-6 text-center text-white/40 text-xs uppercase tracking-wider">
-                                    No logged weight records found
+                                  <div className="py-8 text-center text-xs text-white/20 italic bg-white/[0.01] border border-white/5 border-t-0 rounded-b-sm">
+                                    No logged weight entries yet
                                   </div>
                                 ) : (
-                                  <div className="bg-white/[0.01] border border-white/5 rounded-sm overflow-hidden">
-                                    <div className="max-h-60 overflow-y-auto divide-y divide-white/5">
-                                      {weightHistory
-                                        .slice()
-                                        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                                        .map((entry, index) => (
-                                          <div key={entry.id || index} className="flex items-center justify-between px-6 py-4 hover:bg-white/[0.02] transition-colors group">
-                                            <div className="flex items-center gap-4">
-                                              <span className="text-xs font-mono text-white/30">
-                                                {weightHistory.length - index}
-                                              </span>
-                                              <span className="text-sm font-light text-white">
-                                                {entry.weight}
-                                                <small className="text-xs text-white/40 ml-1">kg</small>
-                                              </span>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                              <span className="text-[10px] uppercase font-bold text-white/40 tracking-widest font-mono">
-                                                {(() => {
-                                                  if (!entry.date) return 'Unknown';
-                                                  const parts = entry.date.split('-').map(Number);
-                                                  if (parts.length !== 3) return entry.date;
-                                                  try {
-                                                    const date = new Date(parts[0], parts[1] - 1, parts[2]);
-                                                    return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                                                  } catch (e) {
-                                                    return entry.date;
-                                                  }
-                                                })()}
-                                              </span>
-                                              {entry.id && (
-                                                <button 
-                                                  onClick={async () => {
-                                                    if (!currentUser) return;
-                                                    try {
-                                                      await deleteDoc(doc(db, `users/${currentUser.uid}/weightEntries/${entry.id}`));
-                                                    } catch (err) {
-                                                      handleFirestoreError(err, OperationType.DELETE, `weightEntries/${entry.id}`);
-                                                    }
-                                                  }}
-                                                  className="p-1.5 text-white/20 hover:text-red-500 hover:bg-white/5 rounded-sm transition-all cursor-pointer opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-                                                  title="Delete entry"
-                                                >
-                                                  <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                              )}
-                                            </div>
+                                  <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/5 rounded-sm bg-[#0a0a0a]/80 backdrop-blur-md">
+                                    {[...weightHistory].reverse().map((entry, i) => (
+                                      <div key={entry.id || i} className="flex items-center justify-between px-6 py-3.5 hover:bg-white/[0.02] transition-colors group">
+                                        <div className="flex flex-col gap-0.5">
+                                          <div className="flex items-baseline gap-1.5">
+                                            <span className="text-base font-medium text-white">
+                                              {entry.weight}
+                                            </span>
+                                            <span className="text-[10px] text-white/40">kg</span>
                                           </div>
-                                        ))}
-                                    </div>
+                                          <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">
+                                            {(() => {
+                                              if (!entry.date) return 'Unknown Date';
+                                              const parts = entry.date.split('-').map(Number);
+                                              if (parts.length !== 3) return entry.date;
+                                              const date = new Date(parts[0], parts[1] - 1, parts[2]);
+                                              return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                                            })()}
+                                          </span>
+                                        </div>
+                                        {entry.id && (
+                                          <button 
+                                            onClick={async () => {
+                                              if (!currentUser) return;
+                                              try {
+                                                await deleteDoc(doc(db, `users/${currentUser.uid}/weightEntries/${entry.id}`));
+                                              } catch (err) {
+                                                handleFirestoreError(err, OperationType.DELETE, `weightEntries/${entry.id}`);
+                                              }
+                                            }}
+                                            className="p-2 text-white/25 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all cursor-pointer"
+                                            title="Delete entry"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    ))}
                                   </div>
                                 )}
                               </motion.div>
