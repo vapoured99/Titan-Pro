@@ -75,7 +75,130 @@ import {
 } from './lib/firebase';
 import { Exercise, POOLS } from './data/exercises';
 
+// --- Background Images ---
+import ironTempleBg from './assets/images/iron_temple_bg_1779282140548.png';
+import neonPumpBg from './assets/images/neon_pump_bg_1779282162002.png';
+import beastModeBg from './assets/images/beast_mode_bg_1779282188045.png';
+import zenLifterBg from './assets/images/zen_lifter_bg_1779282209692.png';
+import midnightCityBg from './assets/images/midnight_city_bg_1779282230526.png';
+
 // --- Types ---
+interface GymTheme {
+  id: string;
+  name: string;
+  description: string;
+  accent: string;
+  accentRgb: string;
+  accentLight: string;
+  accentDark: string;
+  bg: string;
+  bgImage: string;
+  opacity: string;
+  textVibe: string;
+  testPrimary: string;
+  testMuted: string;
+  testSubtle: string;
+}
+
+const GYM_THEMES: Record<string, GymTheme> = {
+  default: {
+    id: 'default',
+    name: 'Default Theme',
+    description: 'Golden highlights on dark canvas.',
+    accent: '#D4AF37',
+    accentRgb: '212, 175, 55',
+    accentLight: '#F1E5AC',
+    accentDark: '#C5A028',
+    bg: '#050505',
+    bgImage: 'https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop',
+    opacity: 'opacity-25',
+    textVibe: 'Titan Gold. Original athletic layout.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(255, 255, 255, 0.2)'
+  },
+  iron: {
+    id: 'iron',
+    name: 'Iron Temple',
+    description: 'Ancient stone & classical discipline.',
+    accent: '#cdaa5c',
+    accentRgb: '205, 170, 92',
+    accentLight: '#f3e8cb',
+    accentDark: '#8a6e30',
+    bg: '#0b0a08',
+    bgImage: ironTempleBg,
+    opacity: 'opacity-30',
+    textVibe: 'Ancient stone. Raw discipline. Unbreakable focus.',
+    testPrimary: '#f3e8cb',
+    testMuted: 'rgba(243, 232, 203, 0.45)',
+    testSubtle: 'rgba(243, 232, 203, 0.2)'
+  },
+  neon: {
+    id: 'neon',
+    name: 'Neon Pump',
+    description: 'Vaporwave synth-lights & heavy pulses.',
+    accent: '#ff007f',
+    accentRgb: '255, 0, 127',
+    accentLight: '#ff80bf',
+    accentDark: '#b30059',
+    bg: '#0b0112',
+    bgImage: neonPumpBg,
+    opacity: 'opacity-35',
+    textVibe: 'Retro lights. High energy. Push harder than yesterday.',
+    testPrimary: '#ffe6f2',
+    testMuted: 'rgba(255, 128, 191, 0.45)',
+    testSubtle: 'rgba(255, 128, 191, 0.2)'
+  },
+  beast: {
+    id: 'beast',
+    name: 'Beast Mode',
+    description: 'Aggressive crimson shadows & steel.',
+    accent: '#ff3333',
+    accentRgb: '255, 51, 51',
+    accentLight: '#ff8888',
+    accentDark: '#b30000',
+    bg: '#060000',
+    bgImage: beastModeBg,
+    opacity: 'opacity-30',
+    textVibe: 'Dark. Aggressive. Built for beasts who never skip leg day.',
+    testPrimary: '#ffcccc',
+    testMuted: 'rgba(255, 136, 136, 0.45)',
+    testSubtle: 'rgba(255, 136, 136, 0.2)'
+  },
+  zen: {
+    id: 'zen',
+    name: 'Zen Lifter',
+    description: 'Calming forest mists & quiet focus.',
+    accent: '#00d294',
+    accentRgb: '0, 210, 148',
+    accentLight: '#8cfcd7',
+    accentDark: '#008f62',
+    bg: '#080d09',
+    bgImage: zenLifterBg,
+    opacity: 'opacity-40',
+    textVibe: 'Clean mind. Strong body. Balance is the ultimate progress.',
+    testPrimary: '#e2fdf5',
+    testMuted: 'rgba(0, 210, 148, 0.45)',
+    testSubtle: 'rgba(0, 210, 148, 0.2)'
+  },
+  midnight: {
+    id: 'midnight',
+    name: 'Midnight City',
+    description: 'Late-night cyber skylines & cyber teal.',
+    accent: '#00e5ff',
+    accentRgb: '0, 229, 255',
+    accentLight: '#80f2ff',
+    accentDark: '#009aab',
+    bg: '#010813',
+    bgImage: midnightCityBg,
+    opacity: 'opacity-35',
+    textVibe: 'Late nights. Big goals. The city never stops, neither do you.',
+    testPrimary: '#e0f7fa',
+    testMuted: 'rgba(128, 242, 255, 0.45)',
+    testSubtle: 'rgba(128, 242, 255, 0.2)'
+  }
+};
+
 interface PB {
   lastWeight: number;
   lastReps: number;
@@ -261,6 +384,7 @@ interface UserProfile {
   streakCount?: number;
   lastWorkoutDate?: string;
   activeView?: string;
+  themeId?: string;
 }
 
 export default function App() {
@@ -288,6 +412,9 @@ export default function App() {
   const [toast, setToast] = useState<{message: string, type: 'success' | 'pb' | 'info'} | null>(null);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [currentThemeId, setCurrentThemeId] = useState<string>(() => {
+    return localStorage.getItem('gym-theme-id') || 'default';
+  });
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({});
   const [flashMessage, setFlashMessage] = useState<Record<string, string>>({});
   const [newWeight, setNewWeight] = useState<string>("");
@@ -297,6 +424,11 @@ export default function App() {
   const [googleDriveBackups, setGoogleDriveBackups] = useState<any[]>([]);
   const [loadingDriveBackups, setLoadingDriveBackups] = useState(false);
   const [exportingToDrive, setExportingToDrive] = useState(false);
+  const [driveConfirmAction, setDriveConfirmAction] = useState<{
+    type: 'delete' | 'restore';
+    fileId: string;
+    fileName: string;
+  } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [addingToDay, setAddingToDay] = useState<number | null>(null);
@@ -358,6 +490,10 @@ export default function App() {
       if (sDoc.exists()) {
         const data = sDoc.data() as UserProfile;
         if (data.activeView) setActiveView(data.activeView as any);
+        if (data.themeId) {
+          setCurrentThemeId(data.themeId);
+          localStorage.setItem('gym-theme-id', data.themeId);
+        }
         setProfile(data);
       }
     }, (err) => console.error("Settings listener error:", err));
@@ -692,11 +828,16 @@ export default function App() {
     }
   };
 
-  const handleRestoreBackup = async (fileId: string) => {
-    if (!currentUser || !googleDriveToken) return;
-    const confirmed = window.confirm("Are you sure you want to restore this backup? This will overwrite your current workout, personal bests, and logs with the backup data.");
-    if (!confirmed) return;
+  const handleRestoreBackup = (fileId: string, fileName: string) => {
+    setDriveConfirmAction({ type: 'restore', fileId, fileName });
+  };
 
+  const handleDeleteBackup = (fileId: string, fileName: string) => {
+    setDriveConfirmAction({ type: 'delete', fileId, fileName });
+  };
+
+  const executeRestoreBackup = async (fileId: string) => {
+    if (!currentUser || !googleDriveToken) return;
     setLoadingDriveBackups(true);
     try {
       const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
@@ -774,6 +915,7 @@ export default function App() {
       console.error(err);
       setToast({ message: `Restore failed: ${err.message}`, type: "info" });
     } finally {
+      setDriveConfirmAction(null);
       if (googleDriveToken) {
         loadGoogleDriveBackups(googleDriveToken);
       } else {
@@ -782,11 +924,8 @@ export default function App() {
     }
   };
 
-  const handleDeleteBackup = async (fileId: string) => {
+  const executeDeleteBackup = async (fileId: string) => {
     if (!googleDriveToken) return;
-    const confirmed = window.confirm("Are you sure you want to permanently delete this backup from Google Drive?");
-    if (!confirmed) return;
-
     setLoadingDriveBackups(true);
     try {
       const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
@@ -797,12 +936,19 @@ export default function App() {
         setToast({ message: "Backup deleted successfully", type: "success" });
         loadGoogleDriveBackups(googleDriveToken);
       } else {
-        throw new Error("Delete failed");
+        const errorText = await res.text();
+        throw new Error(errorText || "Delete failed");
       }
     } catch (err: any) {
       console.error(err);
       setToast({ message: `Delete failed: ${err.message}`, type: "info" });
-      setLoadingDriveBackups(false);
+    } finally {
+      setDriveConfirmAction(null);
+      if (googleDriveToken) {
+        loadGoogleDriveBackups(googleDriveToken);
+      } else {
+        setLoadingDriveBackups(false);
+      }
     }
   };
 
@@ -1203,17 +1349,41 @@ export default function App() {
     }
   };
 
+  const authTheme = GYM_THEMES[currentThemeId] || GYM_THEMES.default;
+  const authStyles = {
+    '--gym-accent': authTheme.accent,
+    '--gym-accent-light': authTheme.accentLight,
+    '--gym-accent-dark': authTheme.accentDark,
+    '--gym-accent-rgb': authTheme.accentRgb,
+    '--theme-text': authTheme.testPrimary,
+    '--theme-text-muted': authTheme.testMuted,
+    '--theme-text-subtle': authTheme.testSubtle,
+    backgroundColor: authTheme.bg,
+  } as React.CSSProperties;
+
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden transition-all duration-500" style={authStyles}>
+        <style>{`
+          :root {
+            --gym-accent: ${authTheme.accent} !important;
+            --gym-accent-light: ${authTheme.accentLight} !important;
+            --gym-accent-dark: ${authTheme.accentDark} !important;
+            --gym-accent-rgb: ${authTheme.accentRgb} !important;
+            --theme-text: ${authTheme.testPrimary} !important;
+            --theme-text-muted: ${authTheme.testMuted} !important;
+            --theme-text-subtle: ${authTheme.testSubtle} !important;
+          }
+        `}</style>
         {/* Background Image */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <img 
-            src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop" 
+            src={authTheme.bgImage} 
             alt="Gym Background" 
-            className="w-full h-full object-cover opacity-25"
+            className={`w-full h-full object-cover transition-all duration-700 ${authTheme.opacity}`}
+            referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505]" />
+          <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}40, ${authTheme.bg}ff)` }} />
         </div>
         <Loader2 className="w-12 h-12 text-gym-accent animate-spin relative z-10" />
       </div>
@@ -1222,15 +1392,27 @@ export default function App() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen text-white flex items-center justify-center relative overflow-hidden transition-all duration-500" style={authStyles}>
+        <style>{`
+          :root {
+            --gym-accent: ${authTheme.accent} !important;
+            --gym-accent-light: ${authTheme.accentLight} !important;
+            --gym-accent-dark: ${authTheme.accentDark} !important;
+            --gym-accent-rgb: ${authTheme.accentRgb} !important;
+            --theme-text: ${authTheme.testPrimary} !important;
+            --theme-text-muted: ${authTheme.testMuted} !important;
+            --theme-text-subtle: ${authTheme.testSubtle} !important;
+          }
+        `}</style>
         {/* Background Image */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <img 
-            src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop" 
+            src={authTheme.bgImage} 
             alt="Gym Background" 
-            className="w-full h-full object-cover opacity-25 scale-105"
+            className={`w-full h-full object-cover transition-all duration-700 ${authTheme.opacity} scale-105`}
+            referrerPolicy="no-referrer"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#050505]/60 to-[#050505]" />
+          <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}60, ${authTheme.bg}ff)` }} />
         </div>
 
         <motion.div 
@@ -1239,7 +1421,7 @@ export default function App() {
           className="relative z-10 max-w-md w-full p-10 border border-white/10 rounded-sm bg-black/40 backdrop-blur-md"
         >
           <span className="text-[10px] uppercase tracking-[0.3em] text-gym-accent mb-2 block font-bold">Est. 2026</span>
-          <h1 className="text-4xl font-light italic font-serif tracking-widest mb-4 text-white">Titan <span className="text-gym-accent drop-shadow-[0_0_20px_rgba(212,175,55,0.5)]">Pro</span></h1>
+          <h1 className="text-4xl font-light italic font-serif tracking-widest mb-4 text-white">Titan <span className="text-gym-accent accent-glow">Pro</span></h1>
           <p className="text-white/40 mb-10 text-sm font-light leading-relaxed">The sophisticated approach to physical excellence.</p>
           
           <form 
@@ -1325,16 +1507,41 @@ export default function App() {
     );
   }
 
+  const activeTheme = GYM_THEMES[currentThemeId] || GYM_THEMES.default;
+
+  const dynamicStyles = {
+    '--gym-accent': activeTheme.accent,
+    '--gym-accent-light': activeTheme.accentLight,
+    '--gym-accent-dark': activeTheme.accentDark,
+    '--gym-accent-rgb': activeTheme.accentRgb,
+    '--theme-text': activeTheme.testPrimary,
+    '--theme-text-muted': activeTheme.testMuted,
+    '--theme-text-subtle': activeTheme.testSubtle,
+    backgroundColor: activeTheme.bg,
+  } as React.CSSProperties;
+
   return (
-    <div className="min-h-screen bg-[#050505] text-white relative overflow-hidden">
+    <div className="min-h-screen text-white relative overflow-hidden transition-all duration-500" style={dynamicStyles}>
+      <style>{`
+        :root {
+          --gym-accent: ${activeTheme.accent} !important;
+          --gym-accent-light: ${activeTheme.accentLight} !important;
+          --gym-accent-dark: ${activeTheme.accentDark} !important;
+          --gym-accent-rgb: ${activeTheme.accentRgb} !important;
+          --theme-text: ${activeTheme.testPrimary} !important;
+          --theme-text-muted: ${activeTheme.testMuted} !important;
+          --theme-text-subtle: ${activeTheme.testSubtle} !important;
+        }
+      `}</style>
       {/* Background Image */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <img 
-          src="https://images.unsplash.com/photo-1540497077202-7c8a3999166f?q=80&w=2070&auto=format&fit=crop" 
+          src={activeTheme.bgImage} 
           alt="Gym Background" 
-          className="w-full h-full object-cover opacity-25"
+          className={`w-full h-full object-cover transition-all duration-700 ${activeTheme.opacity}`}
+          referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#050505]/80 to-[#050505]" />
+        <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${activeTheme.bg}a0, ${activeTheme.bg}40, ${activeTheme.bg}ff)` }} />
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-12 pb-32">
@@ -1342,16 +1549,16 @@ export default function App() {
       <header className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6 border-b border-gym-accent/20 pb-10">
         <div className="flex flex-col items-start gap-1">
           <span className="text-[10px] uppercase tracking-[0.3em] text-gym-accent font-bold">Premium Session</span>
-          <h1 className="text-5xl font-light italic font-serif tracking-widest text-white leading-none">Titan <span className="text-gym-accent drop-shadow-[0_0_25px_rgba(212,175,55,0.6)]">Pro</span></h1>
+          <h1 className="text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none">Titan <span className="text-gym-accent accent-glow-strong">Pro</span></h1>
         </div>
         
         <div className="flex items-center gap-6">
           <div className="flex flex-col items-end text-right">
-            <p className="text-[10px] opacity-40 uppercase tracking-widest mb-0.5 flex items-center gap-2 justify-end">
+            <p className="text-[10px] text-theme-text-muted uppercase tracking-widest mb-0.5 flex items-center gap-2 justify-end">
               {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' })}
               <span className={`w-1.5 h-1.5 rounded-full ${firebaseConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 animate-pulse'}`} title={firebaseConnected ? "Cloud Sync Active" : "Connecting to Cloud..."} />
             </p>
-            <p className="text-lg font-medium text-white/90">{profile?.displayName || currentUser.displayName || "Athlete"}</p>
+            <p className="text-lg font-medium text-theme-text">{profile?.displayName || currentUser.displayName || "Athlete"}</p>
           </div>
           <div className="h-10 w-px bg-white/10" />
           <div className="flex gap-2">
@@ -1366,12 +1573,12 @@ export default function App() {
               {profile?.photoURL || currentUser.photoURL ? (
                 <img src={profile?.photoURL || currentUser.photoURL || ""} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                <UserIcon className="w-4 h-4 text-white/40" />
+                <UserIcon className="w-4 h-4 text-theme-text-muted" />
               )}
             </button>
             <button 
               onClick={handleLogout}
-              className="p-2.5 bg-white/5 border border-white/10 rounded-sm text-white/40 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+              className="p-2.5 bg-white/5 border border-white/10 rounded-sm text-theme-text-muted hover:text-theme-text hover:bg-white/10 transition-all cursor-pointer"
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
@@ -1396,14 +1603,14 @@ export default function App() {
               saveSettings({ activeView: nav.id });
             }}
             className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 ${
-              activeView === nav.id ? "text-white" : "text-white/40 hover:text-white"
+              activeView === nav.id ? "text-theme-text" : "text-theme-text-muted hover:text-theme-text"
             }`}
           >
             {nav.label}
             {activeView === nav.id && (
               <motion.div 
                 layoutId="nav-underline" 
-                className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent shadow-[0_0_10px_rgba(212,175,55,0.8)]" 
+                className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav" 
               />
             )}
           </button>
@@ -1640,7 +1847,7 @@ export default function App() {
                             <button 
                               onClick={handleSaveWeight}
                               disabled={isSavingWeight || !newWeight || !newWeightDate}
-                              className="bg-gym-accent text-black px-6 py-3 rounded-sm font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+                              className="bg-gym-accent text-black px-6 py-3 rounded-sm font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed accent-shadow-btn"
                             >
                               {isSavingWeight ? (
                                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -1672,8 +1879,8 @@ export default function App() {
                               >
                                 <defs>
                                   <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#D4AF37" stopOpacity={0}/>
+                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
                                   </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
@@ -1706,7 +1913,7 @@ export default function App() {
                                   tickFormatter={(val) => `${val}kg`}
                                 />
                                 <Tooltip 
-                                  cursor={{ stroke: '#D4AF37', strokeWidth: 1, strokeDasharray: '4 4' }}
+                                  cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
                                   contentStyle={{ 
                                     backgroundColor: '#0d0d0d', 
                                     borderColor: '#ffffff10', 
@@ -1714,7 +1921,7 @@ export default function App() {
                                     boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
                                     padding: '12px'
                                   }}
-                                  itemStyle={{ color: '#C5A059', fontWeight: 'bold' }}
+                                  itemStyle={{ color: activeTheme.accent, fontWeight: 'bold' }}
                                   labelStyle={{ color: '#ffffff50', fontSize: '10px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '4px', letterSpacing: '0.1em' }}
                                   labelFormatter={(str) => {
                                     if (!str) return 'Date';
@@ -1731,7 +1938,7 @@ export default function App() {
                                 <Area 
                                   type="basis" 
                                   dataKey="weight" 
-                                  stroke="#D4AF37" 
+                                  stroke={activeTheme.accent} 
                                   strokeWidth={3}
                                   fillOpacity={1} 
                                   fill="url(#colorWeight)" 
@@ -1741,7 +1948,7 @@ export default function App() {
                                   type="basis" 
                                   dataKey="weight" 
                                   stroke="none" 
-                                  fill="#D4AF37" 
+                                  fill={activeTheme.accent} 
                                   fillOpacity={0.05} 
                                 />
                               </AreaChart>
@@ -1884,8 +2091,8 @@ export default function App() {
                               >
                                 <defs>
                                   <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#D4AF37" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#D4AF37" stopOpacity={0}/>
+                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
                                   </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
@@ -1919,7 +2126,7 @@ export default function App() {
                                   tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(1)}t` : `${val}kg`}
                                 />
                                 <Tooltip 
-                                  cursor={{ stroke: '#D4AF37', strokeWidth: 1, strokeDasharray: '4 4' }}
+                                  cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
                                   contentStyle={{ 
                                     backgroundColor: '#0d0d0d', 
                                     borderColor: '#ffffff10', 
@@ -1927,14 +2134,14 @@ export default function App() {
                                     boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
                                     padding: '12px'
                                   }}
-                                  itemStyle={{ color: '#C5A059', fontWeight: 'bold' }}
+                                  itemStyle={{ color: activeTheme.accent, fontWeight: 'bold' }}
                                   labelStyle={{ color: '#ffffff50', fontSize: '10px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '4px', letterSpacing: '0.1em' }}
                                   formatter={(value: any) => [`${Number(value).toLocaleString()} kg`, 'Volume']}
                                 />
                                 <Area 
                                   type="basis" 
                                   dataKey="volume" 
-                                  stroke="#D4AF37" 
+                                  stroke={activeTheme.accent} 
                                   strokeWidth={3}
                                   fillOpacity={1} 
                                   fill="url(#colorVol)" 
@@ -1944,7 +2151,7 @@ export default function App() {
                                   type="basis" 
                                   dataKey="volume" 
                                   stroke="none" 
-                                  fill="#D4AF37" 
+                                  fill={activeTheme.accent} 
                                   fillOpacity={0.05} 
                                 />
                               </AreaChart>
@@ -2346,7 +2553,7 @@ export default function App() {
                       initial={{ width: 0 }}
                       animate={{ width: `${progressPercent}%` }}
                       transition={{ duration: 1.5, ease: "easeOut" }}
-                      className="h-full bg-gradient-to-r from-gym-accent/60 via-gym-accent to-gym-accent-light shadow-[0_0_15px_rgba(212,175,55,0.4)]"
+                      className="h-full bg-gradient-to-r from-gym-accent/60 via-gym-accent to-gym-accent-light accent-shadow-bar"
                     />
                   </div>
                 </div>
@@ -2359,7 +2566,7 @@ export default function App() {
                        <div key={idx} className="flex flex-col items-center gap-3">
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-700 ${
                             isEarned 
-                              ? 'bg-gym-accent/10 border border-gym-accent/30 text-gym-accent shadow-[0_0_20px_rgba(212,175,55,0.15)]' 
+                              ? 'bg-gym-accent/10 border border-gym-accent/30 text-gym-accent accent-shadow-badge' 
                               : 'bg-white/[0.02] border border-white/5 text-white/5'
                           }`}>
                             <Icon className={`w-5 h-5 ${isEarned ? 'animate-pulse' : ''}`} />
@@ -2422,6 +2629,66 @@ export default function App() {
                   </div>
                 </div>
 
+                <div className="border-t border-white/5 pt-8">
+                  <h4 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.3em] mb-4 flex items-center justify-between">
+                    <span>App Atmosphere</span>
+                    <span className="text-[8px] opacity-40 uppercase tracking-widest font-bold">Theme Customizer</span>
+                  </h4>
+                  <p className="text-xs text-white/40 mb-6 font-light leading-relaxed">
+                    Select a visual theme to align with your training mentality. Each atmosphere re-defines the color scheme, accents, and deep focus background.
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {Object.values(GYM_THEMES).map((theme) => {
+                      const isActive = theme.id === currentThemeId;
+                      return (
+                        <button
+                          key={theme.id}
+                          onClick={async () => {
+                            setCurrentThemeId(theme.id);
+                            localStorage.setItem('gym-theme-id', theme.id);
+                            saveSettings({ themeId: theme.id });
+                          }}
+                          type="button"
+                          className={`relative text-left p-4 rounded-sm border cursor-pointer overflow-hidden transition-all duration-300 group flex flex-col justify-between h-24 ${
+                            isActive 
+                              ? 'border-gym-accent bg-gym-accent/5 accent-shadow-card' 
+                              : 'border-white/5 bg-white/[0.01] hover:border-white/20 hover:bg-white/[0.03]'
+                          }`}
+                        >
+                          {/* Mini Background Preview */}
+                          <div className="absolute inset-0 z-0 opacity-10 group-hover:opacity-15 transition-opacity">
+                            <img src={theme.bgImage} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                          </div>
+                          
+                          <div className="relative z-10 w-full flex flex-col justify-between h-full">
+                            <div className="flex justify-between items-start">
+                              <span className={`text-[9px] font-black uppercase tracking-widest transition-colors ${isActive ? 'text-gym-accent font-black' : 'text-white/60'}`}>
+                                {theme.name}
+                              </span>
+                              {isActive && (
+                                <span className="w-2 h-2 rounded-full bg-gym-accent accent-shadow-dot" />
+                              )}
+                            </div>
+                            
+                            <div>
+                              <p className="text-[8px] text-white/40 group-hover:text-white/60 transition-colors leading-tight font-light line-clamp-2">
+                                {theme.textVibe}
+                              </p>
+                              {/* Accent Color Pill */}
+                              <div className="flex gap-1 mt-1.5">
+                                <span className="w-2.5 h-1 rounded-full" style={{ backgroundColor: theme.accent }} />
+                                <span className="w-1.5 h-1 rounded-full" style={{ backgroundColor: theme.accentLight }} />
+                                <span className="w-1.5 h-1 rounded-full" style={{ backgroundColor: theme.accentDark }} />
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div>
                    <h4 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.3em] mb-4 border-b border-white/5 pb-4">Lifecycle</h4>
                    <div className="flex items-center justify-between py-2">
@@ -2433,104 +2700,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-white/[0.02] border border-white/10 rounded-sm p-8 space-y-6">
-                <div>
-                  <h4 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.3em] mb-4 border-b border-white/5 pb-4 flex items-center justify-between">
-                    <span>Google Drive Integration</span>
-                    {googleDriveToken ? (
-                      <span className="text-[8px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-sm font-black uppercase tracking-widest">Connected</span>
-                    ) : (
-                      <span className="text-[8px] bg-white/5 text-white/40 border border-white/10 px-2 py-0.5 rounded-sm font-black uppercase tracking-widest">Unlinked</span>
-                    )}
-                  </h4>
-                  
-                  {!googleDriveToken ? (
-                    <div className="space-y-4">
-                      <p className="text-xs text-white/40 font-light leading-relaxed">
-                        Connect your archive with Google Drive to enable cloud-hosted backups, data migration, and spreadsheet synchronization. Keep your physical progress secure forever.
-                      </p>
-                      <button
-                        onClick={handleConnectGoogleDrive}
-                        type="button"
-                        className="w-full sm:w-auto bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-bold text-[10px] uppercase tracking-widest py-3 px-6 rounded-sm flex items-center justify-center gap-2 cursor-pointer transition-all"
-                      >
-                        <Cloud className="w-4 h-4 text-gym-accent animate-pulse" />
-                        Connect Google Drive
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between bg-white/[0.01] border border-white/5 p-4 rounded-sm">
-                        <div className="space-y-1">
-                          <p className="text-xs font-semibold text-white">Cloud Archive Active</p>
-                          <p className="text-[10px] text-white/30">Create a secure JSON snapshot of your workout routines, personal records, and weight timelines.</p>
-                        </div>
-                        <button
-                          onClick={handleExportBackup}
-                          disabled={exportingToDrive}
-                          type="button"
-                          className="bg-gym-accent hover:brightness-110 disabled:opacity-50 text-black font-black text-[9px] uppercase tracking-widest py-2.5 px-4 rounded-sm flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md shadow-gym-accent/10 whitespace-nowrap animate-none"
-                        >
-                          {exportingToDrive ? (
-                            <>
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                              Exporting...
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="w-3 h-3" />
-                              Export Backup
-                            </>
-                          )}
-                        </button>
-                      </div>
 
-                      <div className="space-y-3">
-                        <h5 className="text-[9px] text-white/30 uppercase tracking-widest font-black">History Snapshots ({googleDriveBackups.length})</h5>
-                        {loadingDriveBackups ? (
-                          <div className="flex items-center justify-center py-6">
-                            <Loader2 className="w-5 h-5 text-gym-accent animate-spin" />
-                          </div>
-                        ) : googleDriveBackups.length === 0 ? (
-                          <p className="text-xs text-white/20 italic">No cloud backups found on Google Drive. Click "Export Backup" to upload your first snapshot.</p>
-                        ) : (
-                          <div className="divide-y divide-white/5 border border-white/5 bg-[#0a0a0a]/50 rounded-sm max-h-56 overflow-y-auto">
-                            {googleDriveBackups.map((bk) => (
-                              <div key={bk.id} className="flex items-center justify-between p-3 px-4 hover:bg-white/[0.01] transition-colors">
-                                <div className="space-y-0.5">
-                                  <p className="text-xs font-medium text-white/80 max-w-[200px] sm:max-w-xs truncate" title={bk.name}>{bk.name}</p>
-                                  <p className="text-[8px] text-white/20 font-mono">
-                                    {new Date(bk.createdTime).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                  </p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <button
-                                    onClick={() => handleRestoreBackup(bk.id)}
-                                    type="button"
-                                    title="Restore workout data"
-                                    className="p-1 px-2.5 bg-gym-accent/10 hover:bg-gym-accent/20 text-gym-accent border border-gym-accent/20 rounded-sm text-[8px] font-bold uppercase tracking-widest cursor-pointer transition-all flex items-center gap-1"
-                                  >
-                                    <Download className="w-3.5 h-3.5" />
-                                    Restore
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteBackup(bk.id)}
-                                    type="button"
-                                    title="Delete backup file"
-                                    className="p-1.5 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-sm cursor-pointer transition-all"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
 
               <div className="flex justify-center">
                  <button 
@@ -2934,6 +3104,91 @@ export default function App() {
             </div>
           );
         })()}
+      </AnimatePresence>
+      
+      {/* Google Drive Action Confirmation Dialog */}
+      <AnimatePresence>
+        {driveConfirmAction && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDriveConfirmAction(null)}
+              className="absolute inset-0 bg-black/95 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl"
+            >
+              <div className="p-8 border-b border-white/5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-2xl -mr-12 -mt-12" />
+                <div className="relative z-10 flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-sm flex items-center justify-center border ${
+                    driveConfirmAction.type === 'delete' 
+                      ? 'bg-red-500/10 border-red-500/25 text-red-500' 
+                      : 'bg-gym-accent/10 border-gym-accent/20 text-gym-accent'
+                  }`}>
+                    {driveConfirmAction.type === 'delete' ? (
+                      <Trash2 className="w-5 h-5" />
+                    ) : (
+                      <Download className="w-5 h-5" />
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-white/40 font-bold uppercase tracking-[0.4em] block mb-1">
+                      {driveConfirmAction.type === 'delete' ? 'Destructive Action' : 'System Restoration'}
+                    </span>
+                    <h3 className="text-lg font-bold text-white uppercase tracking-wider">
+                      {driveConfirmAction.type === 'delete' ? 'Confirm Deletion' : 'Confirm Restore'}
+                    </h3>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 space-y-4">
+                <p className="text-xs text-white/60 leading-relaxed font-light">
+                  {driveConfirmAction.type === 'delete' ? (
+                    <>
+                      Are you sure you want to permanently delete <span className="font-semibold text-white font-mono break-all">{driveConfirmAction.fileName}</span> from your Google Drive? This action is irreversible.
+                    </>
+                  ) : (
+                    <>
+                      Are you sure you want to restore the backup file <span className="font-semibold text-white font-mono break-all">{driveConfirmAction.fileName}</span>? This will overwrite your active training days, progress logs, and personal best history.
+                    </>
+                  )}
+                </p>
+              </div>
+
+              <div className="p-6 border-t border-white/5 bg-white/[0.01] flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDriveConfirmAction(null)}
+                  className="px-5 py-3 hover:text-white text-white/40 text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (driveConfirmAction.type === 'delete') {
+                      executeDeleteBackup(driveConfirmAction.fileId);
+                    } else {
+                      executeRestoreBackup(driveConfirmAction.fileId);
+                    }
+                  }}
+                  className={`px-6 py-3 text-black text-[10px] font-black uppercase tracking-widest cursor-pointer rounded-sm transition-all hover:brightness-110 ${
+                    driveConfirmAction.type === 'delete' ? 'bg-red-500 text-white shadow-lg shadow-red-500/10' : 'bg-gym-accent text-black shadow-lg shadow-gym-accent/10'
+                  }`}
+                >
+                  {driveConfirmAction.type === 'delete' ? 'Permanently Delete' : 'Confirm Restore'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </AnimatePresence>
 
       {/* Toast Notification */}

@@ -63,7 +63,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
       {/* Front View */}
       <div className="flex flex-col items-center">
         <h4 className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-8">Front Evolution</h4>
-        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto drop-shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.15))' }}>
           {/* Stylized Body Outline - Front */}
           <g fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1">
             <path d={bodyOutlinePath} />
@@ -112,7 +112,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
       {/* Back View */}
       <div className="flex flex-col items-center">
         <h4 className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-8">Rear Evolution</h4>
-        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto drop-shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.15))' }}>
           {/* Stylized Body Outline - Back */}
           <g fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1">
             <path d={bodyOutlinePath} />
