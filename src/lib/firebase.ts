@@ -11,7 +11,25 @@ import {
   signInWithPopup,
   GoogleAuthProvider
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, setDoc, getDocs, collection, query, serverTimestamp, getDocFromServer, deleteDoc, writeBatch, onSnapshot, addDoc, orderBy } from 'firebase/firestore';
+import { 
+  getFirestore, 
+  initializeFirestore, 
+  persistentLocalCache, 
+  persistentMultipleTabManager,
+  doc, 
+  getDoc, 
+  setDoc, 
+  getDocs, 
+  collection, 
+  query, 
+  serverTimestamp, 
+  getDocFromServer, 
+  deleteDoc, 
+  writeBatch, 
+  onSnapshot, 
+  addDoc, 
+  orderBy 
+} from 'firebase/firestore';
 import firebaseConfigJson from '../../firebase-applet-config.json';
 
 const config = {
@@ -26,7 +44,25 @@ const config = {
 };
 
 const app = initializeApp(config);
-export const db = config.databaseId ? getFirestore(app, config.databaseId) : getFirestore(app);
+
+let dbInstance;
+try {
+  const cacheSettings = {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  };
+  if (config.databaseId) {
+    dbInstance = initializeFirestore(app, cacheSettings, config.databaseId);
+  } else {
+    dbInstance = initializeFirestore(app, cacheSettings);
+  }
+} catch (err) {
+  console.warn("Could not initialize full offline cache settings:", err);
+  dbInstance = config.databaseId ? getFirestore(app, config.databaseId) : getFirestore(app);
+}
+
+export const db = dbInstance;
 console.log(`Firestore initialized with project: ${config.projectId}, database: ${config.databaseId || '(default)'}`);
 export const auth = getAuth(app);
 

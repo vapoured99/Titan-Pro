@@ -268,19 +268,23 @@ export default function App() {
 
     // Remove loadStatic and integrate it into its own useEffect if needed, but onSnapshot handles initial load too.
     const initializeProfile = async () => {
-      const sDoc = await getDoc(doc(db, settingsPath));
-      if (!sDoc.exists()) {
-        const initialProfile: UserProfile = {
-          startDate: new Date().toISOString(),
-          streakCount: 0,
-          activeView: 'workout',
-          displayName: currentUser.displayName || "",
-          photoURL: currentUser.photoURL || ""
-        };
-        await setDoc(doc(db, settingsPath), {
-          ...initialProfile,
-          updatedAt: serverTimestamp()
-        });
+      try {
+        const sDoc = await getDoc(doc(db, settingsPath));
+        if (!sDoc.exists()) {
+          const initialProfile: UserProfile = {
+            startDate: new Date().toISOString(),
+            streakCount: 0,
+            activeView: 'workout',
+            displayName: currentUser.displayName || "",
+            photoURL: currentUser.photoURL || ""
+          };
+          await setDoc(doc(db, settingsPath), {
+            ...initialProfile,
+            updatedAt: serverTimestamp()
+          });
+        }
+      } catch (err: any) {
+        console.warn("Could not check/initialize profile from server (offline?):", err.message || err);
       }
     };
     initializeProfile();
