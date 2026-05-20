@@ -1,0 +1,17 @@
+{
+  "name": "Titan Pro",
+  "short_name": "Titan",
+  "description": "Sophisticated gym workout tracker",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "https://static.wikia.nocookie.net/thesolarsystem6361/images/d/dd/Titan_%28False_Color%29.png/revision/latest/scale-to-width/360?cb=20250216031511",
+      "sizes": "360x360",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
