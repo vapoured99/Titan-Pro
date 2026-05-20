@@ -27,7 +27,10 @@ import {
   Award,
   Crown,
   Shield,
-  BookOpen
+  BookOpen,
+  Cloud,
+  Download,
+  Upload
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -194,6 +197,10 @@ export default function App() {
   const [newWeight, setNewWeight] = useState<string>("");
   const [newWeightDate, setNewWeightDate] = useState<string>("");
   const [showWeightHistoryList, setShowWeightHistoryList] = useState(false);
+  const [googleDriveToken, setGoogleDriveToken] = useState<string | null>(null);
+  const [googleDriveBackups, setGoogleDriveBackups] = useState<any[]>([]);
+  const [loadingDriveBackups, setLoadingDriveBackups] = useState(false);
+  const [exportingToDrive, setExportingToDrive] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [addingToDay, setAddingToDay] = useState<number | null>(null);
@@ -463,17 +470,249 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => auth.signOut();
+  const handleLogout = () => {
+    auth.signOut();
+    setGoogleDriveToken(null);
+  };
   
   const handleGoogleLogin = async () => {
     setAuthError("");
     const provider = new GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/drive.file');
+    provider.addScope('https://www.googleapis.com/auth/drive.readonly');
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      if (credential?.accessToken) {
+        setGoogleDriveToken(credential.accessToken);
+      }
     } catch (err: any) {
       setAuthError(err.message);
     }
   };
+
+  const handleConnectGoogleDrive = async () => {
+    const provider = new GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/drive.file');
+    provider.addScope('https://www.googleapis.com/auth/drive.readonly');
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      if (credential?.accessToken) {
+        setGoogleDriveToken(credential.accessToken);
+        setToast({ message: "Google Drive connected successfully!", type: "success" });
+      } else {
+        throw new Error("No Google access token received");
+      }
+    } catch (err: any) {
+      setToast({ message: `Failed to connect Google Drive: ${err.message}`, type: "info" });
+    }
+  };
+
+  const loadGoogleDriveBackups = async (token: string) => {
+    setLoadingDriveBackups(true);
+    try {
+      const q = encodeURIComponent("name contains 'GymArchive_Backup_' and trashed = false");
+      const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,createdTime)&orderBy=createdTime+desc`;
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGoogleDriveBackups(data.files || []);
+      } else {
+        console.error("Failed to list backups from Drive", await res.text());
+      }
+    } catch (err) {
+      console.error("Error listing Drive backups", err);
+    } finally {
+      setLoadingDriveBackups(false);
+    }
+  };
+
+  const handleExportBackup = async () => {
+    if (!currentUser || !googleDriveToken) return;
+    setExportingToDrive(true);
+    try {
+      const backupData = {
+        version: 1,
+        backupDate: new Date().toISOString(),
+        currentDays: currentDays,
+        personalBests: personalBests,
+        weightHistory: weightHistory,
+        sessionSets: sessionSets,
+        archivedWorkouts: archivedWorkouts,
+        profile: profile
+      };
+
+      const filename = `GymArchive_Backup_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      
+      const boundary = 'gym_archive_boundary_unique';
+      const delimiter = `\r\n--${boundary}\r\n`;
+      const close_delim = `\r\n--${boundary}--`;
+
+      const metadata = {
+        name: filename,
+        mimeType: 'application/json',
+      };
+
+      const multipartRequestBody =
+        delimiter +
+        'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+        JSON.stringify(metadata) +
+        delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(backupData) +
+        close_delim;
+
+      const response = await fetch(
+        'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${googleDriveToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`,
+          },
+          body: multipartRequestBody,
+        }
+      );
+
+      if (response.ok) {
+        setToast({ message: "Backup exported to Google Drive!", type: "success" });
+        loadGoogleDriveBackups(googleDriveToken);
+      } else {
+        const errorText = await response.text();
+        throw new Error(errorText || "Upload failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setToast({ message: `Export failed: ${err.message}`, type: "info" });
+    } finally {
+      setExportingToDrive(false);
+    }
+  };
+
+  const handleRestoreBackup = async (fileId: string) => {
+    if (!currentUser || !googleDriveToken) return;
+    const confirmed = window.confirm("Are you sure you want to restore this backup? This will overwrite your current workout, personal bests, and logs with the backup data.");
+    if (!confirmed) return;
+
+    setLoadingDriveBackups(true);
+    try {
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+        headers: { Authorization: `Bearer ${googleDriveToken}` }
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to download backup: ${res.statusText}`);
+      }
+
+      const backupData = await res.json();
+      
+      if (!backupData || typeof backupData !== 'object') {
+        throw new Error("Invalid backup file structure");
+      }
+
+      const batch = writeBatch(db);
+
+      // 1. Current Days
+      if (backupData.currentDays) {
+        const workoutRef = doc(db, `users/${currentUser.uid}/workout/current`);
+        batch.set(workoutRef, { days: backupData.currentDays });
+      }
+
+      // 2. Profile
+      if (backupData.profile) {
+        const settingsRef = doc(db, `users/${currentUser.uid}/profile/settings`);
+        batch.set(settingsRef, backupData.profile);
+      }
+
+      // 3. Weight History
+      if (Array.isArray(backupData.weightHistory)) {
+        for (const entry of backupData.weightHistory) {
+          if (entry.id) {
+            const ref = doc(db, `users/${currentUser.uid}/weightEntries/${entry.id}`);
+            batch.set(ref, {
+              weight: entry.weight ?? "",
+              date: entry.date ?? "",
+              timestamp: entry.timestamp ?? serverTimestamp()
+            });
+          }
+        }
+      }
+
+      // 4. Session Sets
+      if (Array.isArray(backupData.sessionSets)) {
+        for (const set of backupData.sessionSets) {
+          if (set.id) {
+            const ref = doc(db, `users/${currentUser.uid}/sets/${set.id}`);
+            batch.set(ref, set);
+          }
+        }
+      }
+
+      // 5. Personal Bests
+      if (backupData.personalBests && typeof backupData.personalBests === 'object') {
+        for (const [exName, pb] of Object.entries(backupData.personalBests)) {
+          const ref = doc(db, `users/${currentUser.uid}/pbs/${exName}`);
+          batch.set(ref, pb as any);
+        }
+      }
+
+      // 6. Archived Workouts
+      if (Array.isArray(backupData.archivedWorkouts)) {
+        for (const w of backupData.archivedWorkouts) {
+          if (w.id) {
+            const ref = doc(db, `users/${currentUser.uid}/workouts/${w.id}`);
+            batch.set(ref, w);
+          }
+        }
+      }
+
+      await batch.commit();
+      setToast({ message: "Backup successfully restored!", type: "success" });
+    } catch (err: any) {
+      console.error(err);
+      setToast({ message: `Restore failed: ${err.message}`, type: "info" });
+    } finally {
+      if (googleDriveToken) {
+        loadGoogleDriveBackups(googleDriveToken);
+      } else {
+        setLoadingDriveBackups(false);
+      }
+    }
+  };
+
+  const handleDeleteBackup = async (fileId: string) => {
+    if (!googleDriveToken) return;
+    const confirmed = window.confirm("Are you sure you want to permanently delete this backup from Google Drive?");
+    if (!confirmed) return;
+
+    setLoadingDriveBackups(true);
+    try {
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${googleDriveToken}` }
+      });
+      if (res.ok) {
+        setToast({ message: "Backup deleted successfully", type: "success" });
+        loadGoogleDriveBackups(googleDriveToken);
+      } else {
+        throw new Error("Delete failed");
+      }
+    } catch (err: any) {
+      console.error(err);
+      setToast({ message: `Delete failed: ${err.message}`, type: "info" });
+      setLoadingDriveBackups(false);
+    }
+  };
+
+  useEffect(() => {
+    if (googleDriveToken) {
+      loadGoogleDriveBackups(googleDriveToken);
+    } else {
+      setGoogleDriveBackups([]);
+    }
+  }, [googleDriveToken]);
 
   const handleSwap = (dayIndex: number, exIndex: number) => {
     if (!currentDays[dayIndex]) return;
@@ -2085,6 +2324,105 @@ export default function App() {
                         {profile?.startDate ? new Date(profile.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '---'}
                       </span>
                    </div>
+                </div>
+              </div>
+
+              <div className="bg-white/[0.02] border border-white/10 rounded-sm p-8 space-y-6">
+                <div>
+                  <h4 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.3em] mb-4 border-b border-white/5 pb-4 flex items-center justify-between">
+                    <span>Google Drive Integration</span>
+                    {googleDriveToken ? (
+                      <span className="text-[8px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-sm font-black uppercase tracking-widest">Connected</span>
+                    ) : (
+                      <span className="text-[8px] bg-white/5 text-white/40 border border-white/10 px-2 py-0.5 rounded-sm font-black uppercase tracking-widest">Unlinked</span>
+                    )}
+                  </h4>
+                  
+                  {!googleDriveToken ? (
+                    <div className="space-y-4">
+                      <p className="text-xs text-white/40 font-light leading-relaxed">
+                        Connect your archive with Google Drive to enable cloud-hosted backups, data migration, and spreadsheet synchronization. Keep your physical progress secure forever.
+                      </p>
+                      <button
+                        onClick={handleConnectGoogleDrive}
+                        type="button"
+                        className="w-full sm:w-auto bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 text-white font-bold text-[10px] uppercase tracking-widest py-3 px-6 rounded-sm flex items-center justify-center gap-2 cursor-pointer transition-all"
+                      >
+                        <Cloud className="w-4 h-4 text-gym-accent animate-pulse" />
+                        Connect Google Drive
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between bg-white/[0.01] border border-white/5 p-4 rounded-sm">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-white">Cloud Archive Active</p>
+                          <p className="text-[10px] text-white/30">Create a secure JSON snapshot of your workout routines, personal records, and weight timelines.</p>
+                        </div>
+                        <button
+                          onClick={handleExportBackup}
+                          disabled={exportingToDrive}
+                          type="button"
+                          className="bg-gym-accent hover:brightness-110 disabled:opacity-50 text-black font-black text-[9px] uppercase tracking-widest py-2.5 px-4 rounded-sm flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md shadow-gym-accent/10 whitespace-nowrap animate-none"
+                        >
+                          {exportingToDrive ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              Exporting...
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-3 h-3" />
+                              Export Backup
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <div className="space-y-3">
+                        <h5 className="text-[9px] text-white/30 uppercase tracking-widest font-black">History Snapshots ({googleDriveBackups.length})</h5>
+                        {loadingDriveBackups ? (
+                          <div className="flex items-center justify-center py-6">
+                            <Loader2 className="w-5 h-5 text-gym-accent animate-spin" />
+                          </div>
+                        ) : googleDriveBackups.length === 0 ? (
+                          <p className="text-xs text-white/20 italic">No cloud backups found on Google Drive. Click "Export Backup" to upload your first snapshot.</p>
+                        ) : (
+                          <div className="divide-y divide-white/5 border border-white/5 bg-[#0a0a0a]/50 rounded-sm max-h-56 overflow-y-auto">
+                            {googleDriveBackups.map((bk) => (
+                              <div key={bk.id} className="flex items-center justify-between p-3 px-4 hover:bg-white/[0.01] transition-colors">
+                                <div className="space-y-0.5">
+                                  <p className="text-xs font-medium text-white/80 max-w-[200px] sm:max-w-xs truncate" title={bk.name}>{bk.name}</p>
+                                  <p className="text-[8px] text-white/20 font-mono">
+                                    {new Date(bk.createdTime).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => handleRestoreBackup(bk.id)}
+                                    type="button"
+                                    title="Restore workout data"
+                                    className="p-1 px-2.5 bg-gym-accent/10 hover:bg-gym-accent/20 text-gym-accent border border-gym-accent/20 rounded-sm text-[8px] font-bold uppercase tracking-widest cursor-pointer transition-all flex items-center gap-1"
+                                  >
+                                    <Download className="w-3.5 h-3.5" />
+                                    Restore
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteBackup(bk.id)}
+                                    type="button"
+                                    title="Delete backup file"
+                                    className="p-1.5 text-white/20 hover:text-red-500 hover:bg-red-500/10 rounded-sm cursor-pointer transition-all"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
