@@ -116,9 +116,67 @@ const iconMap: Record<string, any> = {
 // --- Helpers ---
 
 // --- Components ---
-const PBBlock = ({ exName, pbs, showLatest = true }: { exName: string, pbs: Record<string, PB>, showLatest?: boolean }) => {
+const PBBlock = ({ 
+  exName, 
+  pbs, 
+  showLatest = true,
+  sessionSets = [],
+  archivedWorkouts = []
+}: { 
+  exName: string; 
+  pbs: Record<string, PB>; 
+  showLatest?: boolean;
+  sessionSets?: SessionSet[];
+  archivedWorkouts?: any[];
+}) => {
   const pb = pbs[exName];
-  if (!pb) {
+
+  // Gather previous logged data
+  const exerciseSets: { weight: number; reps: number; date?: string }[] = [];
+
+  // 1. From active session
+  sessionSets.forEach(s => {
+    if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === exName.trim().toLowerCase()) {
+      exerciseSets.push({ weight: s.weight, reps: s.reps, date: s.date });
+    }
+  });
+
+  // 2. From archived sessions
+  archivedWorkouts.forEach(w => {
+    if (w && Array.isArray(w.sets)) {
+      w.sets.forEach((s: any) => {
+        if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === exName.trim().toLowerCase()) {
+          exerciseSets.push({ weight: s.weight, reps: s.reps, date: s.date || w.date });
+        }
+      });
+    }
+  });
+
+  // 3. From PB if exists
+  if (pb) {
+    if (pb.bestWeight > 0 && pb.bestReps > 0) {
+      exerciseSets.push({ weight: pb.bestWeight, reps: pb.bestReps, date: pb.bestDate });
+    }
+    if (pb.lastWeight > 0 && pb.lastReps > 0) {
+      exerciseSets.push({ weight: pb.lastWeight, reps: pb.lastReps, date: pb.lastDate });
+    }
+  }
+
+  // Calculate maximum 1 Rep Max (1RM) using Epley Formula
+  let max1RM = 0;
+  let maxBaseSet: { weight: number; reps: number; date?: string } | null = null;
+
+  exerciseSets.forEach(set => {
+    if (set.weight > 0 && set.reps > 0) {
+      const base1RM = set.reps === 1 ? set.weight : set.weight * (1 + set.reps / 30);
+      if (base1RM > max1RM) {
+        max1RM = base1RM;
+        maxBaseSet = set;
+      }
+    }
+  });
+
+  if (!pb && max1RM === 0) {
     return (
       <div className="mt-3 p-3 rounded-xl bg-gym-accent/5 border border-gym-accent/20">
         <div className="text-[10px] text-gym-accent font-bold uppercase mb-1 tracking-wider">No History</div>
@@ -129,11 +187,13 @@ const PBBlock = ({ exName, pbs, showLatest = true }: { exName: string, pbs: Reco
 
   return (
     <div className="mt-3 p-4 rounded-sm bg-white/5 border border-gym-accent/10">
-      <div className={`text-[10px] text-gym-accent font-bold uppercase tracking-wider flex items-center gap-2 ${showLatest ? 'mb-4' : ''}`}>
-        <Trophy className="w-3 h-3 text-gym-accent" /> Peak: <span className="text-gym-accent-light">{pb.bestWeight}kg × {pb.bestReps}</span> <span className="opacity-40 text-[9px] ml-1 tracking-normal font-light">({pb.bestDate})</span>
-      </div>
+      {pb && (
+        <div className={`text-[10px] text-gym-accent font-bold uppercase tracking-wider flex items-center gap-2 ${showLatest ? 'mb-4' : ''}`}>
+          <Trophy className="w-3 h-3 text-gym-accent" /> Peak: <span className="text-gym-accent-light">{pb.bestWeight}kg × {pb.bestReps}</span> <span className="opacity-40 text-[9px] ml-1 tracking-normal font-light">({pb.bestDate})</span>
+        </div>
+      )}
       
-      {showLatest && (
+      {showLatest && pb && (
         <div className="flex items-end justify-between">
           <div className="flex gap-6">
             <div className="flex flex-col">
@@ -152,6 +212,42 @@ const PBBlock = ({ exName, pbs, showLatest = true }: { exName: string, pbs: Reco
             </div>
           </div>
           <div className="text-[10px] text-white/20 uppercase tracking-tighter">Latest: {pb.lastDate}</div>
+        </div>
+      )}
+
+      {max1RM > 0 && (
+        <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-[10px] opacity-40 uppercase tracking-widest flex items-center gap-1">
+              <Flame className="w-3 h-3 text-gym-accent animate-pulse" /> Est. 1 Rep Max
+            </span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <span className="text-xl font-semibold text-gym-accent">{max1RM.toFixed(1)}</span>
+              <span className="text-[10px] text-gym-accent-light uppercase font-medium">kg</span>
+            </div>
+          </div>
+          {maxBaseSet && (
+            <div className="text-right flex flex-col justify-end">
+              <span className="text-[9px] text-white/20 uppercase tracking-tighter">Based on</span>
+              <span className="text-[10px] text-white/50 font-mono">
+                {maxBaseSet.weight}kg × {maxBaseSet.reps}
+              </span>
+              {maxBaseSet.date && (
+                <span className="text-[8px] text-white/30">
+                  ({(() => {
+                    if (maxBaseSet.date.includes('-')) {
+                      const parts = maxBaseSet.date.split('-').map(Number);
+                      if (parts.length === 3) {
+                        const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                      }
+                    }
+                    return maxBaseSet.date;
+                  })()})
+                </span>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -1457,7 +1553,13 @@ export default function App() {
                                     </button>
                                   </div>
 
-                                  <PBBlock exName={ex.name} pbs={personalBests} showLatest={true} />
+                                  <PBBlock 
+                                    exName={ex.name} 
+                                    pbs={personalBests} 
+                                    showLatest={true} 
+                                    sessionSets={sessionSets}
+                                    archivedWorkouts={archivedWorkouts}
+                                  />
                                 </div>
                               );
                             })}
@@ -2566,7 +2668,12 @@ export default function App() {
                                   </button>
                                 </div>
 
-                                <PBBlock exName={ex.name} pbs={personalBests} />
+                                <PBBlock 
+                                  exName={ex.name} 
+                                  pbs={personalBests} 
+                                  sessionSets={sessionSets}
+                                  archivedWorkouts={archivedWorkouts}
+                                />
                               </motion.div>
                             );
                           })}
