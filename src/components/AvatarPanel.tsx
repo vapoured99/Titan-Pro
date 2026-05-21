@@ -100,7 +100,8 @@ const OUTFITS = [
       default: imgVanguardDefault,
       flex_mode: imgVanguardFlex,
       power_charge: imgVanguardCharge,
-      savage_roar: imgVanguardRoar
+      savage_roar: imgVanguardRoar,
+      final_form: imgVanguardRoar
     }
   },
   {
@@ -115,7 +116,8 @@ const OUTFITS = [
       default: imgNeonStrikerDefault,
       flex_mode: imgNeonStrikerFlex,
       power_charge: imgNeonStrikerCharge,
-      savage_roar: imgNeonStrikerRoar
+      savage_roar: imgNeonStrikerRoar,
+      final_form: imgNeonStrikerRoar
     }
   },
   {
@@ -130,7 +132,8 @@ const OUTFITS = [
       default: imgShadowHunterDefault,
       flex_mode: imgShadowHunterFlex,
       power_charge: imgShadowHunterCharge,
-      savage_roar: imgShadowHunterRoar
+      savage_roar: imgShadowHunterRoar,
+      final_form: imgShadowHunterRoar
     }
   },
   {
@@ -145,7 +148,8 @@ const OUTFITS = [
       default: imgCyberBeastDefault,
       flex_mode: imgCyberBeastFlex,
       power_charge: imgCyberBeastCharge,
-      savage_roar: imgCyberBeastRoar
+      savage_roar: imgCyberBeastRoar,
+      final_form: imgCyberBeastRoar
     }
   },
   {
@@ -160,7 +164,8 @@ const OUTFITS = [
       default: imgGoldenDiscipleDefault,
       flex_mode: imgGoldenDiscipleFlex,
       power_charge: imgGoldenDiscipleCharge,
-      savage_roar: imgGoldenDiscipleRoar
+      savage_roar: imgGoldenDiscipleRoar,
+      final_form: imgGoldenDiscipleRoar
     }
   },
   {
@@ -175,7 +180,8 @@ const OUTFITS = [
       default: imgOmegaPrimeDefault,
       flex_mode: imgOmegaPrimeFlex,
       power_charge: imgOmegaPrimeCharge,
-      savage_roar: imgOmegaPrimeRoar
+      savage_roar: imgOmegaPrimeRoar,
+      final_form: imgOmegaPrimeRoar
     }
   }
 ];
@@ -318,7 +324,8 @@ const EMOTES = [
   { id: 'none', name: 'No Emote Pose', price: 0, desc: 'Quiet martial stance.' },
   { id: 'flex_mode', name: 'Flex Mode', price: 2000, desc: 'Bodybuilding front battle flex posture.' },
   { id: 'power_charge', name: 'Power Charge', price: 2500, desc: 'Rising physical sparks, squat power stance.' },
-  { id: 'savage_roar', name: 'Savage Roar', price: 4000, desc: 'Unshakable roar holding weights high.' }
+  { id: 'savage_roar', name: 'Savage Roar', price: 4000, desc: 'Unshakable roar holding weights high.' },
+  { id: 'final_form', name: 'Final Form', price: 7500, desc: 'Ultimate localized power overload. High-frequency electrical neon field.' }
 ];
 
 // Display Titles
@@ -343,6 +350,16 @@ const TITLES = [
   { id: 'god_of_iron', name: 'God of Iron', desc: 'Ascended beyond physical gravity.', price: 8000 },
   { id: 'plates_eater', name: 'Plate Eater', desc: 'Stacks forty-fives like hotcakes and devours gravity.', price: 12000 }
 ];
+
+// Final Form styling configurations matching the character ID
+const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; particles: string; bannerText: string; overlayGradient: string }> = {
+  vanguard_cadet: { color: '#9ca3af', glow: 'shadow-[0_0_90px_rgba(156,163,175,0.9),_0_0_45px_rgba(156,163,175,0.6)]', particles: '#9ca3af', bannerText: 'CADET // LIMIT BREAK', overlayGradient: 'from-zinc-400/20 to-transparent' },
+  neon_striker: { color: '#d946ef', glow: 'shadow-[0_0_100px_rgba(217,70,239,1),_0_0_50px_rgba(217,70,239,0.7)]', particles: '#d946ef', bannerText: 'STRIKER // NEON FORCE', overlayGradient: 'from-fuchsia-500/30 to-transparent' },
+  shadow_hunter: { color: '#f43f5e', glow: 'shadow-[0_0_100px_rgba(244,63,94,1),_0_0_50px_rgba(244,63,94,0.7)]', particles: '#f43f5e', bannerText: 'HUNTER // DOOMSDAY OVERDRIVE', overlayGradient: 'from-rose-500/30 to-transparent' },
+  cyber_beast: { color: '#06b6d4', glow: 'shadow-[0_0_100px_rgba(6,182,212,1),_0_0_50px_rgba(6,182,212,0.7)]', particles: '#06b6d4', bannerText: 'BEAST // RYU_OVERDRIVE', overlayGradient: 'from-cyan-400/30 to-transparent' },
+  golden_disciple: { color: '#fbbf24', glow: 'shadow-[0_0_120px_rgba(251,191,36,1),_0_0_60px_rgba(251,191,36,0.75)]', particles: '#fbbf24', bannerText: 'DISCIPLE // SOLAR ASCENT', overlayGradient: 'from-amber-400/35 to-transparent' },
+  omega_prime: { color: '#ef4444', glow: 'shadow-[0_0_130px_rgba(239,68,68,1),_0_0_65px_rgba(239,68,68,0.85)]', particles: '#ef4444', bannerText: 'PRIME // GALAXY MONARCH', overlayGradient: 'from-red-500/35 to-transparent' }
+};
 
 // Profile banner templates matching current Gym Themes
 const BANNERS = [
@@ -831,6 +848,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
   // Determine current Active Outfit
   const activeOutfit = OUTFITS.find(o => o.id === equippedOutfit) || OUTFITS[0];
+  const finalFormTheme = FINAL_FORM_THEMES[equippedOutfit] || FINAL_FORM_THEMES.vanguard_cadet;
 
   // Dynamically map pose image from activeOutfit based on currently equipped emote pose!
   const currentEmotePoseKey = equippedEmote === 'none' ? 'default' : equippedEmote;
@@ -1154,6 +1172,16 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           50% { opacity: 0.9; filter: drop-shadow(0 0 8px #10b981) brightness(1.25); }
           100% { transform: translateY(-30%) translateX(calc(var(--x-start, 0px) + 25px)) rotate(180deg) scale(1.2); opacity: 0; }
         }
+        @keyframes superShudder {
+          0%, 100% { transform: translate(0px, 0px) scale(1.01); filter: brightness(1) saturate(1); }
+          20% { transform: translate(-0.6px, 0.6px) scale(1.02); filter: brightness(1.1) saturate(1.1); }
+          40% { transform: translate(0.6px, -0.6px) scale(1.01); filter: brightness(1) saturate(1); }
+          60% { transform: translate(-0.9px, -0.9px) scale(1.03); filter: brightness(1.25) saturate(1.2); }
+          80% { transform: translate(0.9px, 0.9px) scale(1.02); filter: brightness(1.1) saturate(1.1); }
+        }
+        .animate-super-shudder {
+          animation: superShudder 0.15s linear infinite;
+        }
         .animate-orbit {
           animation: orbit 12s linear infinite;
         }
@@ -1286,11 +1314,19 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
 
             {/* Highly Scaled Central Avatar Body Image Container */}
-            <div className="relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border border-white/5 bg-black/40 group-hover:border-gym-accent/40 transition-all duration-500">
+            <div className={`relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
+              equippedEmote === 'final_form'
+                ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
+                : 'border-white/5 bg-black/40 group-hover:border-gym-accent/40'
+            }`}>
               <img 
                 src={activeCharacterImage} 
                 alt={activeOutfit.name} 
-                className="w-full h-full object-cover transform scale-100 group-hover:scale-[1.04] transition-transform duration-700 pointer-events-none select-none"
+                className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
+                  equippedEmote === 'final_form'
+                    ? 'animate-super-shudder scale-[1.05]'
+                    : 'scale-100 group-hover:scale-[1.04]'
+                }`}
                 referrerPolicy="no-referrer"
               />
 
@@ -1317,6 +1353,37 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center overflow-hidden">
                   <div className="absolute w-44 h-44 rounded-full border-2 border-red-500/50" style={{ animation: 'rippleWave 3s infinite', animationDelay: '0s' }} />
                   <div className="absolute w-44 h-44 rounded-full border-2 border-orange-500/40" style={{ animation: 'rippleWave 3s infinite', animationDelay: '1.5s' }} />
+                </div>
+              )}
+
+              {equippedEmote === 'final_form' && (
+                <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between overflow-hidden">
+                  {/* Highly optimized background glow matching theme */}
+                  <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t via-transparent to-transparent opacity-50" style={{ backgroundImage: `linear-gradient(to top, ${finalFormTheme.color}45, transparent)` }} />
+                  
+                  {/* Stylized technological overlay rings */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] rounded-full border-4 border-dashed animate-orbit opacity-25 filter blur-xs" style={{ borderColor: finalFormTheme.color, animationDuration: '6s' }} />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] rounded-full border-2 border-double animate-orbit opacity-40" style={{ borderColor: finalFormTheme.color, animationDuration: '10s', animationDirection: 'reverse' }} />
+                  
+                  {/* Tech status display overlay at the top */}
+                  <div className="bg-black/85 border-b border-white/10 px-3 py-1.5 flex items-center justify-between w-full relative z-30">
+                    <span className="text-[8px] font-black font-mono tracking-widest text-red-500 animate-pulse">● OVERLOAD</span>
+                    <span className="text-[7.5px] font-extrabold font-mono text-white/50 tracking-widest">{finalFormTheme.bannerText}</span>
+                  </div>
+
+                  {/* Rising stardust energy lines */}
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute w-0.5 h-12 rounded-full filter blur-[1px]" style={{ backgroundColor: finalFormTheme.color, animation: 'riseSparks 1.6s infinite', left: '15%', animationDelay: '0.1s' }} />
+                    <div className="absolute w-0.5 h-16 rounded-full filter blur-[1.5px]" style={{ backgroundColor: finalFormTheme.color, animation: 'riseSparks 2s infinite', left: '45%', animationDelay: '0.5s' }} />
+                    <div className="absolute w-0.5 h-10 rounded-full filter blur-[1px]" style={{ backgroundColor: finalFormTheme.color, animation: 'riseSparks 1.2s infinite', left: '75%', animationDelay: '0s' }} />
+                    <div className="absolute w-0.5 h-14 rounded-full filter blur-[2px]" style={{ backgroundColor: finalFormTheme.color, animation: 'riseSparks 2.4s infinite', left: '90%', animationDelay: '0.8s' }} />
+                  </div>
+
+                  {/* Corner indicator ticks */}
+                  <div className="absolute bottom-1 right-2 inline-flex items-center gap-1 bg-black/65 px-1.5 py-0.5 rounded-xs border border-white/5 z-30">
+                    <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ backgroundColor: finalFormTheme.color }} />
+                    <span className="text-[7px] font-mono tracking-widest text-white font-bold">STAGE_05</span>
+                  </div>
                 </div>
               )}
             </div>
