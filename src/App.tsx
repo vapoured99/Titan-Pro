@@ -46,6 +46,7 @@ import {
   Area
 } from 'recharts';
 import AnatomyChart from './components/AnatomyChart';
+import AvatarPanel from './components/AvatarPanel';
 import { 
   auth, 
   db, 
@@ -406,7 +407,7 @@ export default function App() {
   // State for session view selection
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null);
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
-  const [activeView, setActiveView] = useState<'workout' | 'library' | 'progress' | 'session' | 'profile' | 'anatomy'>('workout');
+  const [activeView, setActiveView] = useState<'workout' | 'library' | 'progress' | 'session' | 'profile' | 'anatomy' | 'avatar'>('workout');
   const [guidanceEx, setGuidanceEx] = useState<Exercise | null>(null);
 
   const [toast, setToast] = useState<{message: string, type: 'success' | 'pb' | 'info'} | null>(null);
@@ -1117,7 +1118,39 @@ export default function App() {
         
         const newStreak = (diffDays === 1) ? (profile.streakCount || 0) + 1 : 1;
         streakUpdate = { streakCount: newStreak, lastWorkoutDate: today };
-        setProfile(prev => prev ? { ...prev, ...streakUpdate } : null);
+      }
+
+      // Gamification Reward logic for completing a set
+      const xpEarned = isNewPB ? 120 : 15;
+      const creditsEarned = isNewPB ? 80 : 10;
+
+      let nextLevel = profile?.avatarLevel ?? 1;
+      let nextXp = (profile?.avatarXp ?? 0) + xpEarned;
+      const nextCredits = (profile?.avatarCredits ?? 5000) + creditsEarned;
+
+      const getXpNeeded = (lvl: number) => lvl * 500 + 2000;
+      let leveledUp = false;
+
+      while (nextXp >= getXpNeeded(nextLevel)) {
+        nextXp -= getXpNeeded(nextLevel);
+        nextLevel += 1;
+        leveledUp = true;
+      }
+
+      const avatarUpdate = {
+        avatarLevel: nextLevel,
+        avatarXp: nextXp,
+        avatarCredits: nextCredits
+      };
+
+      setProfile(prev => prev ? { ...prev, ...streakUpdate, ...avatarUpdate } : null);
+
+      if (leveledUp) {
+        setToast({
+          message: `🔥 LEVEL UP! You are now Level ${nextLevel}!`,
+          type: 'success'
+        });
+        setTimeout(() => setToast(null), 3500);
       }
 
       const p1 = setDoc(doc(db, pbsPath), {
@@ -1133,9 +1166,11 @@ export default function App() {
         timestamp: serverTimestamp()
       });
 
-      const p3 = Object.keys(streakUpdate).length > 0 
-        ? setDoc(doc(db, settingsPath), { ...streakUpdate, updatedAt: serverTimestamp() }, { merge: true })
-        : Promise.resolve();
+      const p3 = setDoc(doc(db, settingsPath), { 
+        ...streakUpdate, 
+        ...avatarUpdate, 
+        updatedAt: serverTimestamp() 
+      }, { merge: true });
 
       await Promise.all([p1, p2, p3]);
     } catch (err) {
@@ -1189,6 +1224,45 @@ export default function App() {
           batch.delete(doc(db, `users/${currentUser.uid}/sets/${s.id}`));
         }
       });
+
+      // Reward user upon successfully archiving a full workout: +250 Credits and +400 XP!
+      const finalXpEarned = 400;
+      const finalCreditsEarned = 250;
+
+      let nextLevel = profile?.avatarLevel ?? 1;
+      let nextXp = (profile?.avatarXp ?? 0) + finalXpEarned;
+      const nextCredits = (profile?.avatarCredits ?? 5000) + finalCreditsEarned;
+
+      const getXpNeeded = (lvl: number) => lvl * 500 + 2000;
+      let leveledUp = false;
+
+      while (nextXp >= getXpNeeded(nextLevel)) {
+        nextXp -= getXpNeeded(nextLevel);
+        nextLevel += 1;
+        leveledUp = true;
+      }
+
+      const avatarUpdate = {
+        avatarLevel: nextLevel,
+        avatarXp: nextXp,
+        avatarCredits: nextCredits
+      };
+
+      setProfile(prev => prev ? { ...prev, ...avatarUpdate } : null);
+
+      if (leveledUp) {
+        setToast({
+          message: `🔥 LEVEL UP! You are now Level ${nextLevel}!`,
+          type: 'success'
+        });
+        setTimeout(() => setToast(null), 3500);
+      }
+
+      const settingsRef = doc(db, `users/${currentUser.uid}/profile/settings`);
+      batch.set(settingsRef, { 
+        ...avatarUpdate,
+        updatedAt: serverTimestamp() 
+      }, { merge: true });
 
       await batch.commit();
       
@@ -1594,7 +1668,8 @@ export default function App() {
           { id: 'library', label: 'Library', icon: Search },
           { id: 'progress', label: 'Progress', icon: Scale },
           { id: 'anatomy', label: 'Anatomy', icon: Layout },
-          { id: 'session', label: 'Session', icon: History }
+          { id: 'session', label: 'Session', icon: History },
+          { id: 'avatar', label: 'Avatar', icon: Crown }
         ].map(nav => (
           <button
             key={nav.id}
@@ -2466,6 +2541,21 @@ export default function App() {
                   )}
                 </div>
               )}
+            </motion.div>
+          ) : activeView === 'avatar' ? (
+            <motion.div
+              key="avatar"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <AvatarPanel
+                profile={profile}
+                setProfile={setProfile}
+                saveSettings={saveSettings}
+                setToast={setToast}
+                archivedWorkouts={archivedWorkouts}
+              />
             </motion.div>
           ) : activeView === 'profile' ? (() => {
             const totalLifetimeVolume = archivedWorkouts.reduce((sum, w) => sum + (w.totalVolume || 0), 0);
