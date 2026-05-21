@@ -361,55 +361,355 @@ const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; particles
   omega_prime: { color: '#ef4444', glow: 'shadow-[0_0_130px_rgba(239,68,68,1),_0_0_65px_rgba(239,68,68,0.85)]', particles: '#ef4444', bannerText: 'PRIME // GALAXY MONARCH', overlayGradient: 'from-red-500/35 to-transparent' }
 };
 
-// Profile banner templates matching current Gym Themes
+// Unique interactive pets mapped to character outfits
+export const PETS_DATA: Record<string, {
+  name: string;
+  type: string;
+  desc: string;
+  color: string;
+  glow: string;
+  buff: string;
+  sprite: React.ReactNode;
+}> = {
+  vanguard_cadet: {
+    name: "Spot-X9",
+    type: "Tactical Gear Hound",
+    desc: "A hyper-dense cyber-canine engineered with adaptive mechanical gears and carbon fiber armor. Fetches chalk, projects precision real-time bar-path laser targets, and scans biometric strain.",
+    color: "#38bdf8",
+    glow: "rgba(56,189,248,0.45)",
+    buff: "+12% Bar-Path Telemetry Precision",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '3.2s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Outer futuristic tech circle */}
+          <circle cx="50" cy="50" r="45" stroke="#38bdf8" strokeWidth="1" strokeDasharray="3 6" className="opacity-40 animate-spin" style={{ animationDuration: '16s' }} />
+          
+          {/* Dog body - Sleek futuristic tactical plate style */}
+          <path d="M22,58 H64 L54,78 H28 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" strokeLinejoin="miter" />
+          <path d="M34,58 L40,48 H58 L52,58" fill="#0f172a" stroke="#0ea5e9" strokeWidth="1.5" />
+          
+          {/* Tactical cyber collar */}
+          <rect x="56" y="44" width="6" height="12" rx="1.5" fill="#38bdf8" className="animate-pulse" />
+          
+          {/* Mechanical Legs with detailed joints & feet */}
+          {/* Front leg */}
+          <line x1="28" y1="78" x2="22" y2="92" stroke="#38bdf8" strokeWidth="2.5" />
+          <circle cx="28" cy="78" r="2" fill="#fff" />
+          <rect x="18" y="90" width="7" height="3" rx="1" fill="#0ea5e9" />
+          
+          {/* Second front leg */}
+          <line x1="38" y1="78" x2="42" y2="92" stroke="#0ea5e9" strokeWidth="2.5" />
+          <circle cx="38" cy="78" r="2" fill="#38bdf8" />
+          <rect x="39" y="90" width="7" height="3" rx="1" fill="#38bdf8" />
+          
+          {/* Rear Leg 1 */}
+          <line x1="46" y1="78" x2="42" y2="92" stroke="#0ea5e9" strokeWidth="2.5" />
+          <circle cx="46" cy="78" r="2" fill="#38bdf8" />
+          
+          {/* Rear Leg 2 */}
+          <line x1="52" y1="78" x2="58" y2="92" stroke="#38bdf8" strokeWidth="2.5" />
+          <circle cx="52" cy="78" r="2" fill="#fff" />
+          <rect x="55" y="90" width="7" height="3" rx="1" fill="#0ea5e9" />
+
+          {/* Robo Head profile with glowing laser scanning visor */}
+          <path d="M60,32 H80 L74,54 H62 Z" fill="#0f172a" stroke="#38bdf8" strokeWidth="2" />
+          {/* Glowing Red laser scanner visor */}
+          <path d="M72,36 L81,42 L77,48 L70,44 Z" fill="#ef4444" className="animate-pulse" />
+          <line x1="74" y1="41" x2="94" y2="49" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3 3" className="animate-pulse" />
+
+          {/* Exhaust booster pipe on back */}
+          <rect x="16" y="52" width="10" height="6" rx="1" fill="#334155" stroke="#38bdf8" strokeWidth="1.5" transform="rotate(-20 16 52)" />
+          {/* Floating animated propulsion spark */}
+          <circle cx="10" cy="62" r="3" fill="#f97316" className="animate-ping" />
+
+          {/* Rhythmic telemetry radar sweep indicator on top */}
+          <circle cx="50" cy="50" r="30" fill="none" stroke="#0284c7" strokeWidth="0.75" strokeDasharray="10 90" className="animate-spin" style={{ animationDuration: '2.5s' }} />
+        </svg>
+      </div>
+    )
+  },
+  neon_striker: {
+    name: "Vapor-Moth",
+    type: "Synth Flutterer",
+    desc: "A bioluminescent cyber-lepidopteran designed to generate rhythm-synchronized electric airwaves. Emits soothing vaporwave frequencies that optimize muscle pump cadence.",
+    color: "#d946ef",
+    glow: "rgba(217,70,239,0.45)",
+    buff: "+15% Rhythm Cadence Sync",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '2.5s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M50,50 L20,20 C10,30 10,70 50,50 Z" fill="rgba(217,70,239,0.3)" stroke="#d946ef" strokeWidth="2" className="animate-wings-flutter origin-right" />
+          <path d="M50,50 L30,40 C25,45 25,65 50,50 Z" fill="rgba(244,63,94,0.4)" stroke="#f43f5e" strokeWidth="1.5" className="animate-wings-flutter origin-right" />
+          <path d="M50,50 L80,20 C90,30 90,70 50,50 Z" fill="rgba(217,70,239,0.3)" stroke="#d946ef" strokeWidth="2" className="animate-wings-flutter origin-left" />
+          <path d="M50,50 L70,40 C75,45 75,65 50,50 Z" fill="rgba(244,63,94,0.4)" stroke="#f43f5e" strokeWidth="1.5" className="animate-wings-flutter origin-left" />
+          <rect x="47" y="30" width="6" height="40" rx="3" fill="#1e1b4b" stroke="#d946ef" strokeWidth="1.5" />
+          <circle cx="50" cy="25" r="4" fill="#f43f5e" />
+          <line x1="50" y1="25" x2="42" y2="12" stroke="#d946ef" strokeWidth="1.5" />
+          <line x1="50" y1="25" x2="58" y2="12" stroke="#d946ef" strokeWidth="1.5" />
+          <circle cx="42" cy="12" r="2" fill="#d946ef" />
+          <circle cx="58" cy="12" r="2" fill="#d946ef" />
+        </svg>
+      </div>
+    )
+  },
+  shadow_hunter: {
+    name: "Pyrogore-X9",
+    type: "Thermo Plasma Demon",
+    desc: "A high-intensity thermodynamic plasma familiar that hovers with micro-thrusters. Absorbs excess cardiac heat, channels metabolic kinetics, and emits glowing superheated pulses to amplify lifting explosive velocity.",
+    color: "#f43f5e",
+    glow: "rgba(244,63,94,0.45)",
+    buff: "+14% Hot-Zone Blast Off Force",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '2.9s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Flame Orbit field */}
+          <circle cx="50" cy="50" r="44" stroke="rgba(244,63,94,0.2)" strokeWidth="1" strokeDasharray="4 8" className="animate-spin" style={{ animationDuration: '10s' }} />
+          <circle cx="50" cy="50" r="32" stroke="rgba(244,63,94,0.15)" strokeWidth="1" />
+          
+          {/* Main Core Body */}
+          <g>
+            {/* Plasma Back Shell */}
+            <path d="M50,15 C68,30 74,54 66,75 C58,88 42,88 34,75 C26,54 32,30 50,15 Z" fill="url(#plasmaGrad)" stroke="#f43f5e" strokeWidth="2.5" />
+            
+            {/* Internal hot reactor core */}
+            <circle cx="50" cy="56" r="14" fill="#0f172a" stroke="#fb923c" strokeWidth="1.5" />
+            <circle cx="50" cy="56" r="8" fill="#fef08a" className="animate-pulse" />
+
+            {/* Sharp Cybernetic Demonic Horns */}
+            <path d="M42,26 L30,12 L38,32 Z" fill="#e11d48" stroke="#f43f5e" strokeWidth="1" />
+            <path d="M58,26 L70,12 L62,32 Z" fill="#e11d48" stroke="#f43f5e" strokeWidth="1" />
+
+            {/* Glowing Cyber visor/eyes */}
+            <polygon points="40,46 48,46 46,50 38,50" fill="#fdba74" className="animate-pulse" />
+            <polygon points="60,46 52,46 54,50 62,50" fill="#fdba74" className="animate-pulse" />
+
+            {/* Floating Kinetic Energy Wings */}
+            <path d="M28,48 L10,38 L22,62 Z" fill="rgba(244,63,94,0.3)" stroke="#f43f5e" strokeWidth="1" className="animate-wings-flutter origin-right" />
+            <path d="M72,48 L90,38 L78,62 Z" fill="rgba(244,63,94,0.3)" stroke="#f43f5e" strokeWidth="1" className="animate-wings-flutter origin-left" />
+
+            {/* Tail */}
+            <path d="M50,80 Q50,95 38,94" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" className="animate-wiggle origin-top" />
+            <polygon points="38,94 44,91 40,88" fill="#f43f5e" />
+          </g>
+
+          <defs>
+            <radialGradient id="plasmaGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#f43f5e" stopOpacity="1" />
+              <stop offset="60%" stopColor="#be123c" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#1e1114" stopOpacity="0.5" />
+            </radialGradient>
+          </defs>
+        </svg>
+      </div>
+    )
+  },
+  cyber_beast: {
+    name: "Scylla-V",
+    type: "Subgrid Leviathan",
+    desc: "A bio-integrated synthetic deep-sea predator that breathes oxygenated subgrid data. Keeps high-density system components cool, filters core noise, and accelerates thermic output safety.",
+    color: "#06b6d4",
+    glow: "rgba(6,182,212,0.45)",
+    buff: "+18% Thermic Regulation Efficiency",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '3.8s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Glowing bio-luminescent subgrid water rings */}
+          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(6,182,212,0.15)" strokeWidth="3" />
+          <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(6,182,212,0.3)" strokeWidth="1" strokeDasharray="6 12" className="animate-spin" style={{ animationDuration: '8s' }} />
+          
+          {/* Futuristic mechanical shark/serpent body */}
+          <g>
+            {/* Upper body / Jaw flow */}
+            <path d="M15,44 Q35,28 65,34 L85,46 L65,58 Q35,64 15,48 Z" fill="#0c4a6e" stroke="#06b6d4" strokeWidth="2.2" strokeLinejoin="round" />
+            <path d="M45,39 L60,42 L52,48 Z" fill="#082f49" />
+
+            {/* Glowing cyber gills */}
+            <line x1="42" y1="44" x2="42" y2="52" stroke="#22d3ee" strokeWidth="2.5" className="animate-pulse" />
+            <line x1="48" y1="43" x2="48" y2="53" stroke="#22d3ee" strokeWidth="2.5" className="animate-pulse" />
+            <line x1="54" y1="44" x2="54" y2="52" stroke="#22d3ee" strokeWidth="2.5" className="animate-pulse" />
+
+            {/* Hydrodynamic dorsal fin */}
+            <polygon points="52,34 72,12 66,34" fill="#082f49" stroke="#06b6d4" strokeWidth="1.5" />
+            
+            {/* Glowing neon stabilizers (Pectoral fins) */}
+            <polygon points="34,54 20,72 26,56" fill="#0284c7" stroke="#06b6d4" strokeWidth="1.5" />
+            <polygon points="46,54 36,76 38,55" fill="#22d3ee" stroke="#22d3ee" strokeWidth="1" />
+
+            {/* Glowing digital slit optical eye */}
+            <circle cx="74" cy="42" r="3" fill="#22d3ee" className="animate-pulse" />
+            <line x1="74" y1="42" x2="88" y2="44" stroke="#e0f2fe" strokeWidth="1" />
+
+            {/* Interactive electric particle spark orbiting body */}
+            <g className="animate-circle-orbit" style={{ animationDuration: '2.5s' }}>
+              <circle cx="50" cy="50" r="4" fill="#22d3ee" style={{ filter: 'drop-shadow(0 0 6px #22d3ee)' }} />
+            </g>
+          </g>
+
+          {/* Bio-metric pressure bubble generators */}
+          <circle cx="28" cy="22" r="2" fill="#22d3ee" className="animate-ping" style={{ animationDelay: '0.4s' }} />
+          <circle cx="78" cy="74" r="1.5" fill="#06b6d4" className="animate-ping" style={{ animationDelay: '1.2s' }} />
+        </svg>
+      </div>
+    )
+  },
+  golden_disciple: {
+    name: "Sol-Aethelon",
+    type: "Nebula Solar Phoenix",
+    desc: "A magnificent trans-dimensional avian forged from solid aurum lattice and subgrid solar flares. Channels mental fortitudes, elevates willpower barriers, and emits ultra-high spectrum victory flares.",
+    color: "#fbbf24",
+    glow: "rgba(251,191,36,0.45)",
+    buff: "+16% Dynamic Willpower Threshold",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '2.7s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Backing golden halo ring */}
+          <circle cx="50" cy="46" r="38" stroke="rgba(251,191,36,0.25)" strokeWidth="1" strokeDasharray="12 4" className="animate-spin" style={{ animationDuration: '24s' }} />
+          <circle cx="50" cy="46" r="28" stroke="rgba(251,191,36,0.15)" strokeWidth="1.5" />
+
+          {/* Majestic Crystalline Golden Wings (Animated) */}
+          <path d="M50,42 L12,14 C6,24 10,64 50,52 Z" fill="url(#goldWingGrad)" stroke="#fbbf24" strokeWidth="1.5" className="animate-wings-flutter origin-right" />
+          <path d="M50,42 L88,14 C94,24 90,64 50,52 Z" fill="url(#goldWingGrad)" stroke="#fbbf24" strokeWidth="1.5" className="animate-wings-flutter origin-left" />
+          
+          {/* Inner secondary wing feathers */}
+          <path d="M50,42 L24,24 Q20,38 50,48 Z" fill="rgba(245,158,11,0.5)" stroke="#f59e0b" strokeWidth="1" className="animate-wings-flutter origin-right" />
+          <path d="M50,42 L76,24 Q80,38 50,48 Z" fill="rgba(245,158,11,0.5)" stroke="#f59e0b" strokeWidth="1" className="animate-wings-flutter origin-left" />
+
+          {/* Phoenix Crystalline Body & Tail */}
+          <g>
+            {/* Long elegant neck and central sleek gold torso */}
+            <path d="M50,22 L55,42 L52,78 L48,78 L45,42 Z" fill="#fbbf24" stroke="#d97706" strokeWidth="2" strokeLinejoin="round" />
+            
+            {/* Crowned phoenix head profile with glowing solar aura */}
+            <circle cx="50" cy="20" r="6" fill="#fef08a" stroke="#fbbf24" strokeWidth="1.5" />
+            {/* Crown Crest Feathers */}
+            <path d="M48,14 L50,4 L52,14 L49,14" fill="#fbbf24" stroke="#f59e0b" strokeWidth="1" />
+            <path d="M43,16 L41,9 L47,16" fill="#f59e0b" />
+            <path d="M57,16 L59,9 L53,16" fill="#f59e0b" />
+
+            {/* Glowing red divine eye */}
+            <circle cx="50" cy="20" r="1.5" fill="#f43f5e" />
+
+            {/* Glowing Core Sunburst Gem on chest */}
+            <polygon points="50,34 53,40 58,42 53,44 50,50 47,44 42,42 47,40" fill="#fff" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 4px #fff)' }} />
+
+            {/* Cascading Golden Foil Tail Ribbons */}
+            <path d="M48,78 Q30,96 24,96" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" className="animate-wiggle" />
+            <path d="M50,78 Q50,98 50,98" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+            <path d="M52,78 Q70,96 76,96" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" className="animate-wiggle" />
+            
+            {/* Diamond tip nodes at the end is of tail ribbons */}
+            <polygon points="24,96 21,93 24,90 27,93" fill="#fbbf24" />
+            <polygon points="76,96 73,93 76,90 79,93" fill="#fbbf24" />
+          </g>
+
+          <defs>
+            <linearGradient id="goldWingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#fef08a" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.6" stopColor-index="1" />
+              <stop offset="100%" stopColor="#78350f" stopOpacity="0.25" stopColor-index="2" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    )
+  },
+  omega_prime: {
+    name: "Astra-Core X1",
+    type: "Dimensional Singularity",
+    desc: "A self-contained quantum gravitational singularity reactor hovering in a magnetic containment frame. Bends local regional forces, significantly easing athletic exertion levels.",
+    color: "#ef4444",
+    glow: "rgba(239,68,68,0.55)",
+    buff: "-12% Perceived Exertion (RPE)",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '3.4s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Gravitational warp fields */}
+          <circle cx="50" cy="50" r="45" stroke="rgba(239,68,68,0.15)" strokeWidth="1" strokeDasharray="3 4" className="animate-spin" style={{ animationDuration: '14s' }} />
+          <circle cx="50" cy="50" r="38" stroke="rgba(239,68,68,0.25)" strokeWidth="1.5" strokeDasharray="12 18" className="animate-spin" style={{ animationDuration: '8s', animationDirection: 'reverse' }} />
+          
+          {/* Hexagonal mechanical containment brackets */}
+          <polygon points="50,26 71,38 71,62 50,74 29,62 29,38" fill="rgba(15,23,42,0.85)" stroke="#ef4444" strokeWidth="2.2" />
+          
+          {/* Magnetic bracket shield arm paths */}
+          <path d="M16,50 C16,31 31,16 50,16" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 4" />
+          <path d="M84,50 C84,69 69,84 50,84" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 4" />
+          
+          {/* Outer focus status indicator lights */}
+          <circle cx="16" cy="50" r="2.5" fill="#f43f5e" className="animate-pulse" />
+          <circle cx="84" cy="50" r="2.5" fill="#f43f5e" className="animate-pulse" />
+          <circle cx="50" cy="16" r="2" fill="#fff" />
+          <circle cx="50" cy="84" r="2" fill="#fff" />
+
+          {/* Sub-particle energy orbit sweeps */}
+          <g className="animate-circle-orbit" style={{ animationDuration: '2.5s' }}>
+            <circle cx="50" cy="50" r="3.5" fill="#fff" style={{ filter: 'drop-shadow(0 0 6px #ef4444)' }} />
+          </g>
+          <g className="animate-circle-orbit" style={{ animationDuration: '4s', animationDirection: 'reverse' }}>
+            <circle cx="50" cy="50" r="2" fill="#fb7185" style={{ filter: 'drop-shadow(0 0 4px #e11d48)' }} />
+          </g>
+
+          {/* Central ultra-bright core (The Singularity) */}
+          <circle cx="50" cy="50" r="13" fill="none" stroke="#f43f5e" strokeWidth="1" strokeDasharray="6 3" className="animate-pulse" />
+          <circle cx="50" cy="50" r="8.5" fill="#fff" style={{ filter: 'drop-shadow(0 0 10px #ef4444)' }} className="animate-pulse" />
+          
+          {/* Micro light-emission spikes */}
+          <line x1="50" y1="36" x2="50" y2="64" stroke="#ef4444" strokeWidth="1" className="opacity-75" />
+          <line x1="36" y1="50" x2="64" y2="50" stroke="#ef4444" strokeWidth="1" className="opacity-75" />
+        </svg>
+      </div>
+    )
+  }
+};
+
+// Profile banner templates matching current Gym Themes (opacities reduced by 10% to prevent excess brightness)
 const BANNERS = [
   { 
     id: 'titan_gold', 
     name: 'Titan Gold Theme', 
     desc: 'Gleaming gold high-rank warrior landscape.', 
     price: 0, 
-    bgStyle: 'bg-gradient-to-br from-amber-500/35 via-[#1a1204] to-[#050301]',
-    glowColor: 'bg-amber-500/25'
+    bgStyle: 'bg-gradient-to-br from-amber-500/25 via-[#1a1204] to-[#050301]',
+    glowColor: 'bg-amber-500/15'
   },
   { 
     id: 'iron_temple', 
     name: 'Iron Temple Theme', 
     desc: 'Ancient copper & stone discipline with golden ores.', 
     price: 2000, 
-    bgStyle: 'bg-gradient-to-br from-amber-600/35 via-stone-900/90 to-[#0b0805]',
-    glowColor: 'bg-orange-550/30'
+    bgStyle: 'bg-gradient-to-br from-amber-600/25 via-stone-900/90 to-[#0b0805]',
+    glowColor: 'bg-orange-500/20'
   },
   { 
     id: 'neon_pump', 
     name: 'Neon Pump Theme', 
     desc: 'Vaporwave synth-lights, fuchsia stars & virtual grids.', 
     price: 2500, 
-    bgStyle: 'bg-gradient-to-br from-fuchsia-500/50 via-purple-950/90 to-[#06010d]',
-    glowColor: 'bg-fuchsia-500/35'
+    bgStyle: 'bg-gradient-to-br from-fuchsia-500/40 via-purple-950/90 to-[#06010d]',
+    glowColor: 'bg-fuchsia-500/25'
   },
   { 
     id: 'beast_mode', 
     name: 'Beast Mode Theme', 
     desc: 'Aggressive crimson shadows & thermonuclear fields.', 
     price: 3000, 
-    bgStyle: 'bg-gradient-to-br from-red-650/50 via-red-950/95 to-black',
-    glowColor: 'bg-red-500/40'
+    bgStyle: 'bg-gradient-to-br from-red-600/40 via-red-950/95 to-black',
+    glowColor: 'bg-red-500/30'
   },
   { 
     id: 'zen_lifter', 
     name: 'Zen Lifter Theme', 
     desc: 'Calming biological forest green mists and auroras.', 
     price: 2500, 
-    bgStyle: 'bg-gradient-to-br from-emerald-500/45 via-emerald-950/95 to-[#010603]',
-    glowColor: 'bg-emerald-500/35'
+    bgStyle: 'bg-gradient-to-br from-emerald-500/35 via-emerald-950/95 to-[#010603]',
+    glowColor: 'bg-emerald-500/25'
   },
   { 
     id: 'midnight_city', 
     name: 'Midnight City Theme', 
     desc: 'Late-night neon skies & electric cyan digital matrix.', 
     price: 3000, 
-    bgStyle: 'bg-gradient-to-br from-cyan-500/45 via-blue-950/95 to-[#010410]',
-    glowColor: 'bg-cyan-500/35'
+    bgStyle: 'bg-gradient-to-br from-cyan-500/35 via-blue-950/95 to-[#010410]',
+    glowColor: 'bg-cyan-500/25'
   }
 ];
 
@@ -892,6 +1192,121 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   const activeOutfit = OUTFITS.find(o => o.id === equippedOutfit) || OUTFITS[0];
   const finalFormTheme = FINAL_FORM_THEMES[equippedOutfit] || FINAL_FORM_THEMES.vanguard_cadet;
 
+  // Unique interactive Companion Pet Storage with LocalStorage Persistence
+  const [petNames, setPetNames] = useState<Record<string, string>>(() => {
+    try {
+      const saved = localStorage.getItem('gym_pet_names');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [petLevels, setPetLevels] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem('gym_pet_levels');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [petXps, setPetXps] = useState<Record<string, number>>(() => {
+    try {
+      const saved = localStorage.getItem('gym_pet_xps');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  const [isRenamingPet, setIsRenamingPet] = useState(false);
+  const [renameInput, setRenameInput] = useState("");
+  const [petFeedEffect, setPetFeedEffect] = useState<'none' | 'feed' | 'train' | 'peteffect'>('none');
+
+  const activePetInfo = PETS_DATA[equippedOutfit] || PETS_DATA.vanguard_cadet;
+  const currentPetName = petNames[equippedOutfit] || activePetInfo.name;
+  const currentPetLevel = petLevels[equippedOutfit] || 1;
+  const currentPetXp = petXps[equippedOutfit] || 0;
+
+  const handleRenamePet = (newName: string) => {
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    const updated = { ...petNames, [equippedOutfit]: trimmed };
+    setPetNames(updated);
+    localStorage.setItem('gym_pet_names', JSON.stringify(updated));
+    setIsRenamingPet(false);
+    setToast({ message: `Companion renamed to "${trimmed}"!`, type: "success" });
+  };
+
+  const handleInteractPet = (action: 'feed' | 'train' | 'pet') => {
+    if (action === 'feed') {
+      const cost = 25;
+      if (credits < cost) {
+        setToast({ message: "Insufficient Coins to purchase high-energy protein shakes!", type: "info" });
+        return;
+      }
+      const newCredits = credits - cost;
+      saveSettings({ avatarCredits: newCredits });
+      setProfile(prev => prev ? { ...prev, avatarCredits: newCredits } : null);
+
+      let newXp = currentPetXp + 15;
+      let newLvl = currentPetLevel;
+      if (newXp >= 100) {
+        newXp = newXp - 100;
+        newLvl += 1;
+        setToast({ message: `Level Up! ${currentPetName} reached Level ${newLvl}!`, type: "success" });
+      } else {
+        setToast({ message: `Fed ${currentPetName}! +15 XP`, type: "success" });
+      }
+
+      const updatedXps = { ...petXps, [equippedOutfit]: newXp };
+      const updatedLvls = { ...petLevels, [equippedOutfit]: newLvl };
+      setPetXps(updatedXps);
+      setPetLevels(updatedLvls);
+      localStorage.setItem('gym_pet_xps', JSON.stringify(updatedXps));
+      localStorage.setItem('gym_pet_levels', JSON.stringify(updatedLvls));
+
+      setPetFeedEffect('feed');
+      setTimeout(() => setPetFeedEffect('none'), 1200);
+
+    } else if (action === 'train') {
+      const cost = 50;
+      if (credits < cost) {
+        setToast({ message: "Insufficient Coins to purchase mini lifting logs!", type: "info" });
+        return;
+      }
+      const newCredits = credits - cost;
+      saveSettings({ avatarCredits: newCredits });
+      setProfile(prev => prev ? { ...prev, avatarCredits: newCredits } : null);
+
+      let newXp = currentPetXp + 35;
+      let newLvl = currentPetLevel;
+      if (newXp >= 100) {
+        newXp = newXp - 100;
+        newLvl += 1;
+        setToast({ message: `Level Up! ${currentPetName} reached Level ${newLvl}!`, type: "success" });
+      } else {
+        setToast({ message: `${currentPetName} worked out the iron! +35 XP`, type: "success" });
+      }
+
+      const updatedXps = { ...petXps, [equippedOutfit]: newXp };
+      const updatedLvls = { ...petLevels, [equippedOutfit]: newLvl };
+      setPetXps(updatedXps);
+      setPetLevels(updatedLvls);
+      localStorage.setItem('gym_pet_xps', JSON.stringify(updatedXps));
+      localStorage.setItem('gym_pet_levels', JSON.stringify(updatedLvls));
+
+      setPetFeedEffect('train');
+      setTimeout(() => setPetFeedEffect('none'), 1200);
+
+    } else if (action === 'pet') {
+      setToast({ message: `You petted ${currentPetName}! They emit a happy sequence of cyber sparks!`, type: "success" });
+      setPetFeedEffect('peteffect');
+      setTimeout(() => setPetFeedEffect('none'), 1200);
+    }
+  };
+
   // Dynamically map pose image from activeOutfit based on currently equipped emote pose!
   const currentEmotePoseKey = equippedEmote === 'none' ? 'default' : equippedEmote;
   const activeCharacterImage = (activeOutfit.poseImages as any)?.[currentEmotePoseKey] || activeOutfit.image;
@@ -1236,6 +1651,27 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         .animate-shield-float {
           animation: shieldFloat 4s ease-in-out infinite;
         }
+        @keyframes wiggle {
+          0%, 100% { transform: rotate(0deg); }
+          50% { transform: rotate(15deg); }
+        }
+        .animate-wiggle {
+          animation: wiggle 0.4s ease-in-out infinite;
+        }
+        @keyframes wingsFlutter {
+          0%, 100% { transform: scaleX(1); }
+          50% { transform: scaleX(0.4); }
+        }
+        .animate-wings-flutter {
+          animation: wingsFlutter 0.15s ease-in-out infinite;
+        }
+        @keyframes circleOrbit {
+          0% { transform: rotate(0deg) translateX(12px) rotate(0deg); }
+          100% { transform: rotate(360deg) translateX(12px) rotate(-360deg); }
+        }
+        .animate-circle-orbit {
+          animation: circleOrbit 3s linear infinite;
+        }
       `}</style>
 
       {/* Header Area with Cyberpunk titles and Top-Right Currency */}
@@ -1283,21 +1719,24 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       {/* COMBINED HERO SPLIT-GRID: Avatar Showcase Card on the Left, Biometric progression cards stacked on the Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
-        {/* Left Side: Majestic Avatar Showcase Card (col-span-12 on mobile, col-span-5 on desktop) */}
-        <div className="lg:col-span-5 flex justify-center">
-          <div className={`relative w-full max-w-[440px] lg:max-w-none aspect-[3/4.2] bg-black/40 ${getActiveBorder().id === 'none' ? 'border border-white/10' : getActiveBorder().cardBorderClass} rounded-lg overflow-hidden flex flex-col justify-between p-7 group transition-all duration-700 shadow-3xl ${activeAuraStyling.outerGlow}`}>
+        {/* Left Side: Majestic Avatar Showcase Card and Interactive Companion Pet (col-span-5) */}
+        <div className="lg:col-span-5 flex flex-col gap-6 items-center">
+          <div className={`relative w-full max-w-[440px] lg:max-w-none aspect-[3/4.2] bg-black/50 ${getActiveBorder().id === 'none' ? 'border border-white/10' : getActiveBorder().cardBorderClass} rounded-lg overflow-hidden flex flex-col justify-between p-7 group transition-all duration-700 shadow-3xl ${activeAuraStyling.outerGlow}`}>
             
             {/* Theme Border Corner Elements */}
             {getActiveBorder().cornerElement}
 
             {/* Banner Theme Background */}
             <div className={`absolute inset-0 z-0 transition-all duration-700 ${getActiveBanner().bgStyle}`} />
+            
+            {/* Darker 10% shroud overlay to soften overly bright colors of active banners */}
+            <div className="absolute inset-0 bg-black/10 z-0 pointer-events-none" />
 
             {/* High-Contrast Interactive Neon Glow Highlights */}
             {getActiveBanner().glowColor && (
               <>
-                <div className={`absolute -top-12 -right-12 w-64 h-64 rounded-full filter blur-[70px] opacity-75 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
-                <div className={`absolute -bottom-12 -left-12 w-64 h-64 rounded-full filter blur-[70px] opacity-60 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
+                <div className={`absolute -top-12 -right-12 w-64 h-64 rounded-full filter blur-[70px] opacity-65 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
+                <div className={`absolute -bottom-12 -left-12 w-64 h-64 rounded-full filter blur-[70px] opacity-50 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
               </>
             )}
 
@@ -1436,6 +1875,26 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   </div>
                 </div>
               )}
+
+              {/* Floating Pet Companion inside main frame */}
+              <div 
+                className="absolute bottom-3 right-3 z-30 flex flex-col items-center group/minipet cursor-pointer"
+                onClick={() => {
+                  handleInteractPet('pet');
+                }}
+              >
+                <div className={`p-1 bg-black/85 rounded-md border border-white/20 shadow-lg ${
+                  petFeedEffect === 'feed' ? 'border-emerald-500 scale-110' : 
+                  petFeedEffect === 'train' ? 'border-amber-500 scale-110' : 
+                  petFeedEffect === 'peteffect' ? 'border-fuchsia-500 scale-110' : 
+                  'group-hover/minipet:border-gym-accent/50'
+                } transition-all duration-300`}>
+                  {activePetInfo.sprite}
+                </div>
+                <div className="mt-1.5 bg-black/95 text-[7px] font-mono tracking-widest text-white px-1.5 py-0.5 rounded border border-white/5 uppercase select-none font-bold">
+                  LV.{currentPetLevel} {currentPetName}
+                </div>
+              </div>
             </div>
 
             {/* Character Footer displaying title */}
@@ -1452,6 +1911,152 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               </div>
             </div>
 
+          </div>
+
+          {/* COMPANION PET INTERACTION CARD */}
+          <div className="w-full max-w-[440px] bg-black/45 border border-white/10 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
+            {/* Background cyan/pink/amber gradient particle glow */}
+            <div 
+              className="absolute -right-12 -top-12 w-32 h-32 rounded-full filter blur-3xl opacity-20 pointer-events-none transition-all duration-700" 
+              style={{ backgroundColor: activePetInfo.color }} 
+            />
+            
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: activePetInfo.color }} />
+                <div>
+                  <div className="text-[8px] uppercase tracking-[0.25em] text-white/45 font-mono">Active Companion</div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {isRenamingPet ? (
+                      <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5">
+                        <input
+                          type="text"
+                          value={renameInput}
+                          onChange={(e) => setRenameInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleRenamePet(renameInput);
+                            if (e.key === 'Escape') setIsRenamingPet(false);
+                          }}
+                          className="bg-transparent text-[11px] font-sans text-white max-w-[120px] focus:outline-none"
+                          placeholder="Name of pet..."
+                          autoFocus
+                        />
+                        <button 
+                          onClick={() => handleRenamePet(renameInput)} 
+                          className="text-gym-accent font-black text-[9px] px-1 hover:text-white transition-colors uppercase font-mono"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 select-none font-sans">
+                        <span className="text-xs font-black text-white tracking-wide">{currentPetName}</span>
+                        <button 
+                          onClick={() => {
+                            setRenameInput(currentPetName);
+                            setIsRenamingPet(true);
+                          }}
+                          className="text-white/30 hover:text-gym-accent hover:scale-105 transition-all p-0.5"
+                          title="Rename Companion"
+                        >
+                          <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                    <span className="text-[7.5px] px-1.5 py-0.5 rounded bg-white/[0.03] text-white/50 border border-white/5 font-mono uppercase tracking-wider">{activePetInfo.type}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white/[0.02] border border-white/10 px-2.5 py-1 rounded flex flex-col items-center">
+                <span className="text-[7px] text-white/30 tracking-widest uppercase leading-none font-black font-mono">Synergy</span>
+                <span className="text-xs font-black text-white font-mono leading-tight">Lv.{currentPetLevel}</span>
+              </div>
+            </div>
+
+            {/* Pet Core Display: Center stage */}
+            <div className="flex gap-4 bg-black/20 border border-white/5 p-3.5 rounded-lg relative overflow-hidden">
+              <div className={`w-16 h-16 rounded flex items-center justify-center border bg-black/60 flex-shrink-0 relative overflow-hidden transition-all duration-300 ${
+                petFeedEffect === 'feed' ? 'scale-105 bg-emerald-950/25 border-emerald-500/50' : 
+                petFeedEffect === 'train' ? 'scale-105 bg-amber-950/25 border-amber-500/50' : 
+                petFeedEffect === 'peteffect' ? 'scale-105 bg-fuchsia-950/25 border-fuchsia-500/50' : 
+                'border-white/5'
+              }`}>
+                {/* Embedded action ripple overlays */}
+                {petFeedEffect === 'feed' && (
+                  <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center z-10 animate-pulse" />
+                )}
+                {petFeedEffect === 'train' && (
+                  <div className="absolute inset-0 bg-amber-500/10 flex items-center justify-center z-10 animate-pulse" />
+                )}
+                {petFeedEffect === 'peteffect' && (
+                  <div className="absolute inset-0 bg-fuchsia-500/10 flex items-center justify-center z-10 animate-pulse" />
+                )}
+                <div style={{ filter: `drop-shadow(0 0 8px ${activePetInfo.color})` }}>
+                  {activePetInfo.sprite}
+                </div>
+              </div>
+
+              <div className="flex-1 flex flex-col justify-between min-w-0">
+                <div>
+                  <span className="text-[7.5px] tracking-[0.2em] font-mono uppercase text-white/30 block leading-none mb-1">Companion Bio</span>
+                  <p className="text-[10px] text-white/60 leading-normal font-sans tracking-wide">
+                    {activePetInfo.desc}
+                  </p>
+                </div>
+                <div className="mt-2 flex items-center gap-1.5 text-[8px] font-mono text-gym-accent font-black tracking-wider uppercase truncate">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                  Buff: {activePetInfo.buff}
+                </div>
+              </div>
+            </div>
+
+            {/* Bonding synergy progress gauge */}
+            <div className="flex flex-col gap-1.5 bg-black/10 border border-white/5 p-2.5 rounded">
+              <div className="flex items-center justify-between text-[7.5px] font-mono select-none">
+                <span className="text-white/40 uppercase tracking-widest font-black">Bond Progression</span>
+                <span className="text-white/80 font-bold">{currentPetXp} / 100 XP</span>
+              </div>
+              <div className="w-full h-1.5 bg-white/5 border border-white/5 rounded-full overflow-hidden relative">
+                <div 
+                  className="h-full rounded-full transition-all duration-700" 
+                  style={{ 
+                    width: `${currentPetXp}%`,
+                    backgroundColor: activePetInfo.color,
+                    boxShadow: `0 0 10px ${activePetInfo.color}`
+                  }} 
+                />
+              </div>
+            </div>
+
+            {/* Feeding and training interactive action panel */}
+            <div className="grid grid-cols-3 gap-2">
+              <button 
+                onClick={() => handleInteractPet('feed')}
+                className="bg-emerald-500/[0.03] hover:bg-emerald-500/10 active:scale-95 text-emerald-400 border border-emerald-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
+              >
+                <div className="text-[9px] font-black uppercase tracking-wider">Feed Shake</div>
+                <div className="text-[6.5px] font-mono text-emerald-400/80 font-bold">25 COINS // +15XP</div>
+              </button>
+
+              <button 
+                onClick={() => handleInteractPet('train')}
+                className="bg-amber-500/[0.03] hover:bg-amber-500/10 active:scale-95 text-amber-400 border border-amber-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
+              >
+                <div className="text-[9px] font-black uppercase tracking-wider">Lifting Logs</div>
+                <div className="text-[6.5px] font-mono text-amber-400/80 font-bold">50 COINS // +35XP</div>
+              </button>
+
+              <button 
+                onClick={() => handleInteractPet('pet')}
+                className="bg-fuchsia-500/[0.03] hover:bg-fuchsia-500/10 active:scale-95 text-fuchsia-400 border border-fuchsia-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
+              >
+                <div className="text-[9px] font-black uppercase tracking-wider">Interact</div>
+                <div className="text-[6.5px] font-mono text-fuchsia-400/80 font-bold">FREE // SPARKS!</div>
+              </button>
+            </div>
           </div>
         </div>
 
