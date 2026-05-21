@@ -183,61 +183,94 @@ const OUTFITS = [
 // Auras with premium, outer glow and custom blended overlay effects
 const AURAS = [
   { id: 'none', name: 'No Aura', price: 0, desc: 'Clean focus.' },
-  { id: 'void_core', name: 'Void Core', price: 3000, desc: 'Rotating neon purple bio-energy rays.', color: '#a855f7', glow: 'shadow-[0_0_80px_rgba(168,85,247,0.7),_0_0_40px_rgba(168,85,247,0.4)]' },
-  { id: 'crimson_flare', name: 'Crimson Flare', price: 4500, desc: 'Continuous explosive fire red flares.', color: '#ef4444', glow: 'shadow-[0_0_80px_rgba(239,68,68,0.73),_0_0_40px_rgba(239,68,68,0.4)]' },
-  { id: 'cyber_shard', name: 'Cyber Shard', price: 6000, desc: 'Rotating neon teal digital shields.', color: '#06b6d4', glow: 'shadow-[0_0_80px_rgba(6,182,212,0.7),_0_0_40px_rgba(6,182,212,0.4)]' },
-  { id: 'golden_halo', name: 'Golden Crown', price: 8000, desc: 'Brilliant golden high-rank celestial crown.', color: '#eab308', glow: 'shadow-[0_0_90px_rgba(234,179,8,0.85),_0_0_45px_rgba(234,179,8,0.55)]' }
+  { id: 'void_core', name: 'Void Core', price: 3000, desc: 'Rotating neon purple bio-energy rays.', color: '#a855f7', glow: 'shadow-[0_0_110px_rgba(168,85,247,0.95),_0_0_55px_rgba(168,85,247,0.6),inset_0_0_25px_rgba(168,85,247,0.4)]' },
+  { id: 'emerald_overdrive', name: 'Emerald Overdrive', price: 5000, desc: 'High-density pulsing green techno-organic bio-fields.', color: '#10b981', glow: 'shadow-[0_0_110px_rgba(16,185,129,0.95),_0_0_55px_rgba(16,185,129,0.6),inset_0_0_25px_rgba(16,185,129,0.4)]' },
+  { id: 'crimson_flare', name: 'Crimson Flare', price: 4500, desc: 'Continuous explosive fire red flares.', color: '#ef4444', glow: 'shadow-[0_0_110px_rgba(239,68,68,0.95),_0_0_55px_rgba(239,68,68,0.6),inset_0_0_25px_rgba(239,68,68,0.4)]' },
+  { id: 'hyper_blue_plasma', name: 'Hyper Blue Plasma', price: 5500, desc: 'High-frequency blue thermonuclear electrical fields.', color: '#3b82f6', glow: 'shadow-[0_0_110px_rgba(59,130,246,0.95),_0_0_55px_rgba(59,130,246,0.6),inset_0_0_25px_rgba(59,130,246,0.4)]' },
+  { id: 'cyber_shard', name: 'Cyber Shard', price: 6000, desc: 'Rotating neon teal digital shields.', color: '#06b6d4', glow: 'shadow-[0_0_110px_rgba(6,182,212,0.95),_0_0_55px_rgba(6,182,212,0.6),inset_0_0_25px_rgba(6,182,212,0.4)]' },
+  { id: 'golden_halo', name: 'Golden Crown', price: 8000, desc: 'Brilliant golden high-rank celestial crown.', color: '#eab308', glow: 'shadow-[0_0_120px_rgba(234,179,8,1),_0_0_60px_rgba(234,179,8,0.7),inset_0_0_30px_rgba(234,179,8,0.45)]' }
 ];
 
 // Premium styled overlay elements for the character canvas matching the chosen aura
 const AURA_STYLING: Record<string, { outerGlow: string; innerEffects: React.ReactNode }> = {
   none: { outerGlow: '', innerEffects: null },
   void_core: {
-    outerGlow: 'shadow-[0_0_90px_rgba(168,85,247,0.65),_0_0_45px_rgba(168,85,247,0.35)] border-purple-500/50',
+    outerGlow: 'shadow-[0_0_120px_rgba(168,85,247,0.95),_0_0_60px_rgba(168,85,247,0.6)] border-purple-500/70',
     innerEffects: (
       <div className="absolute inset-0 pointer-events-none mix-blend-screen scale-110 overflow-hidden">
         {/* Pulsating bio energy core field */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] opacity-45"
-             style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.6) 0%, transparent 70%)' }} />
-        <div className="absolute top-1/4 left-1/4 w-44 h-44 rounded-full border-2 border-dashed border-purple-500/50 animate-orbit filter blur-xs" style={{ animationDuration: '6s' }} />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 rounded-full border border-fuchsia-500/35 animate-orbit" style={{ animationDuration: '4s', animationDirection: 'reverse' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-65"
+             style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.7) 0%, transparent 65%)' }} />
+        <div className="absolute top-1/4 left-1/4 w-44 h-44 rounded-full border-2 border-dashed border-purple-400 animate-orbit filter blur-xs" style={{ animationDuration: '6s' }} />
+        <div className="absolute top-1/2 left-1/3 w-64 h-64 rounded-full border-2 border-fuchsia-400 animate-orbit" style={{ animationDuration: '4s', animationDirection: 'reverse' }} />
         {/* Soft floating void particles */}
-        <div className="absolute bottom-4 left-10 w-3 h-3 rounded-full bg-purple-400 animate-ping" style={{ animationDuration: '2s' }} />
-        <div className="absolute top-12 right-12 w-4 h-4 rounded-full bg-purple-500 animate-pulse" />
+        <div className="absolute bottom-4 left-10 w-4 h-4 rounded-full bg-purple-300 animate-ping opacity-80" style={{ animationDuration: '2s' }} />
+        <div className="absolute top-12 right-12 w-5 h-5 rounded-full bg-purple-400 animate-pulse" />
+      </div>
+    )
+  },
+  emerald_overdrive: {
+    outerGlow: 'shadow-[0_0_120px_rgba(16,185,129,0.95),_0_0_60px_rgba(16,185,129,0.6)] border-emerald-500/70',
+    innerEffects: (
+      <div className="absolute inset-0 pointer-events-none mix-blend-screen scale-110 overflow-hidden">
+        {/* Pulsating bio energy core field */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] opacity-65"
+             style={{ background: 'radial-gradient(circle, rgba(16,185,129,0.7) 0%, transparent 65%)' }} />
+        {/* Moving organic Green bio-pulses and grids */}
+        <div className="absolute top-1/4 left-1/4 w-48 h-48 rounded-full border-2 border-dashed border-emerald-400 animate-orbit filter blur-xs" style={{ animationDuration: '8s' }} />
+        <div className="absolute top-1/2 left-1/4 w-[252px] h-[252px] rounded-full border-2 border-emerald-500/70 animate-orbit" style={{ animationDuration: '5s', animationDirection: 'reverse' }} />
+        {/* Rising diamond particles */}
+        <div className="absolute bottom-4 left-16 w-3.5 h-3.5 rounded-full bg-emerald-400 animate-pulse opacity-85" />
+        <div className="absolute top-16 right-16 w-5 h-5 rounded-full bg-green-400 animate-ping opacity-85" style={{ animationDuration: '1.8s' }} />
       </div>
     )
   },
   crimson_flare: {
-    outerGlow: 'shadow-[0_0_90px_rgba(239,68,68,0.65),_0_0_45px_rgba(239,68,68,0.35)] border-red-500/50',
+    outerGlow: 'shadow-[0_0_120px_rgba(239,68,68,0.95),_0_0_60px_rgba(239,68,68,0.6)] border-red-500/70',
     innerEffects: (
       <div className="absolute inset-0 pointer-events-none mix-blend-color-dodge scale-105 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-red-600/25 via-orange-500/20 to-transparent" />
-        <div className="absolute bottom-0 inset-x-0 h-56 opacity-45"
-             style={{ background: 'radial-gradient(ellipse at bottom, rgba(239,68,68,0.9) 0%, transparent 85%)' }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-red-600/35 via-orange-500/30 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-56 opacity-65"
+             style={{ background: 'radial-gradient(ellipse at bottom, rgba(239,68,68,0.95) 0%, transparent 80%)' }} />
         {/* Rotating dash lines for energy build-up */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border-2 border-dashed border-rose-500/60 animate-orbit" style={{ animationDuration: '4s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-red-500/30 animate-pulse-slow" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border-2 border-dashed border-rose-500 animate-orbit" style={{ animationDuration: '4s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border-2 border-red-500/40 animate-pulse-slow" />
+      </div>
+    )
+  },
+  hyper_blue_plasma: {
+    outerGlow: 'shadow-[0_0_120px_rgba(59,130,246,0.95),_0_0_60px_rgba(59,130,246,0.6)] border-blue-500/70',
+    innerEffects: (
+      <div className="absolute inset-0 pointer-events-none mix-blend-color-dodge scale-110 overflow-hidden">
+        {/* Intense blue thermal core */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] opacity-70"
+             style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.75) 0%, transparent 65%)' }} />
+        {/* Blue plasma circles and sweeps */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 border-2 border-blue-400 rounded-full animate-orbit" style={{ animationDuration: '7s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-68 h-68 border-2 border-dashed border-sky-400/60 animate-orbit" style={{ animationDuration: '4s', animationDirection: 'reverse' }} />
+        <div className="absolute top-10 left-12 w-4.5 h-4.5 rounded-full bg-blue-300 animate-ping opacity-85" style={{ animationDuration: '2.4s' }} />
+        <div className="absolute bottom-16 right-16 w-3.5 h-3.5 rounded-full bg-cyan-400 animate-pulse opacity-90" />
       </div>
     )
   },
   cyber_shard: {
-    outerGlow: 'shadow-[0_0_90px_rgba(6,182,212,0.65),_0_0_45px_rgba(6,182,212,0.35)] border-cyan-500/50',
+    outerGlow: 'shadow-[0_0_120px_rgba(6,182,212,0.95),_0_0_60px_rgba(6,182,212,0.6)] border-cyan-500/70',
     innerEffects: (
       <div className="absolute inset-0 pointer-events-none mix-blend-screen scale-105 overflow-hidden">
-        <div className="absolute inset-0 opacity-25" style={{ backgroundImage: 'radial-gradient(#06b6d4 2px, transparent 2px)', backgroundSize: '20px 20px' }} />
+        <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(#06b6d4 2.5px, transparent 2.5px)', backgroundSize: '16px 16px' }} />
         {/* Holographic matrix shields */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 border border-cyan-400/40 rounded-full animate-orbit" style={{ animationDuration: '10s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 border border-dashed border-cyan-500/35 animate-orbit" style={{ animationDuration: '6s', animationDirection: 'reverse' }} />
-        <div className="absolute inset-x-0 h-[3px] bg-cyan-400/50 filter blur-xs" style={{ animation: 'scanline 3s linear infinite' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 border-2 border-cyan-400/60 rounded-full animate-orbit" style={{ animationDuration: '10s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 border-2 border-dashed border-cyan-500/50 animate-orbit" style={{ animationDuration: '6s', animationDirection: 'reverse' }} />
+        <div className="absolute inset-x-0 h-[4px] bg-cyan-400/70 filter blur-xs" style={{ animation: 'scanline 2.5s linear infinite' }} />
       </div>
     )
   },
   golden_halo: {
-    outerGlow: 'shadow-[0_0_95px_rgba(234,179,8,0.75),_0_0_50px_rgba(234,179,8,0.45)] border-yellow-500/55',
+    outerGlow: 'shadow-[0_0_130px_rgba(234,179,8,1),_0_0_65px_rgba(234,179,8,0.7)] border-yellow-500/75',
     innerEffects: (
       <div className="absolute inset-0 pointer-events-none mix-blend-color-dodge scale-105 overflow-hidden">
         {/* Heavenly shining crown above head */}
-        <div className="absolute top-1 left-1/2 -translate-x-1/2 w-20 h-12 transform animate-float z-30" style={{ filter: 'drop-shadow(0 0 16px rgba(254,142,10,0.95))' }}>
+        <div className="absolute top-1 left-1/2 -translate-x-1/2 w-20 h-12 transform animate-float z-30" style={{ filter: 'drop-shadow(0 0 22px rgba(254,142,10,1))' }}>
           <svg className="w-full h-full" viewBox="0 0 100 60" fill="none" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="crownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -262,11 +295,11 @@ const AURA_STYLING: Record<string, { outerGlow: string; innerEffects: React.Reac
             <circle cx="85" cy="20" r="3.5" fill="#fff" style={{ filter: 'drop-shadow(0 0 6px #fff)' }} />
           </svg>
         </div>
-        <div className="absolute bottom-0 inset-x-0 h-36 bg-gradient-to-t from-yellow-500/20 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-36 bg-gradient-to-t from-yellow-500/35 to-transparent" />
         {/* Floating golden sparkle particles */}
-        <div className="absolute w-1.5 h-3 bg-yellow-300 rounded-full animate-ping" style={{ top: '25%', left: '20%', animationDuration: '3s' }} />
-        <div className="absolute w-1.5 h-1.5 bg-yellow-400 rounded-full animate-ping" style={{ top: '45%', left: '75%', animationDuration: '2s' }} />
-        <div className="absolute w-2 h-2.5 bg-yellow-200 rounded-full animate-ping" style={{ top: '65%', left: '15%', animationDuration: '4s' }} />
+        <div className="absolute w-2 h-4 bg-yellow-300 rounded-full animate-ping opacity-90" style={{ top: '25%', left: '20%', animationDuration: '3s' }} />
+        <div className="absolute w-2 h-2 bg-yellow-400 rounded-full animate-ping opacity-90" style={{ top: '45%', left: '75%', animationDuration: '2s' }} />
+        <div className="absolute w-2.5 h-3.5 bg-yellow-200 rounded-full animate-ping opacity-90" style={{ top: '65%', left: '15%', animationDuration: '4s' }} />
       </div>
     )
   }
@@ -290,10 +323,25 @@ const EMOTES = [
 
 // Display Titles
 const TITLES = [
+  // Free / Starters / Cadet
   { id: 'lifter', name: 'Lifter', desc: 'Standard cadet.', price: 0 },
+
+  // Funny "Bad at Gym" Titles (Budget Tier)
+  { id: 'gym_tourist', name: 'Gym Tourist', desc: 'Scrolls phone for 15 minutes between sets on the only bench press.', price: 250 },
+  { id: 'cardio_clown', name: 'Cardio Clown', desc: 'Violently avoids all weight plates. Treadmill is their home.', price: 500 },
+  { id: 'ego_lifter', name: 'Ego Lifter', desc: 'No parallel squat depth. High-volume warning vocal grunts.', price: 750 },
+  { id: 'shaker_chemist', name: 'Shaker Chemist', desc: 'Has 4 shaker cups, 8 powders, and 0 actual PR lifts.', price: 1000 },
+  { id: 'bench_napper', name: 'Bench Napper', desc: 'Has set a sleeping bag up on the adjustable flat bench.', price: 1250 },
+
+  // Cool Gym Core Titles (Serious Tier)
+  { id: 'pump_lord', name: 'Pump Lord', desc: 'Vessels filled with fully optimized aesthetic lactic acid.', price: 1500 },
   { id: 'iron_disciple', name: 'Iron Disciple', desc: 'Unbreakable mindset.', price: 2000 },
+  { id: 'pr_prophet', name: 'PR Prophet', desc: 'Foresees future records and bends bars to manifest them.', price: 3500 },
+  { id: 'quadzilla', name: 'Quadzilla', desc: 'Unbelievable leg-day dimensions causing local seismic events.', price: 4500 },
   { id: 'alpha_titan', name: 'Alpha Titan', desc: 'Unparalleled pure strength.', price: 5000 },
-  { id: 'god_of_iron', name: 'God of Iron', desc: 'Ascended beyond physical gravity.', price: 8000 }
+  { id: 'barbell_beast', name: 'Barbell Beast', desc: 'Gnaws on steel plates for dynamic pre-workout nutrition.', price: 6500 },
+  { id: 'god_of_iron', name: 'God of Iron', desc: 'Ascended beyond physical gravity.', price: 8000 },
+  { id: 'plates_eater', name: 'Plate Eater', desc: 'Stacks forty-fives like hotcakes and devours gravity.', price: 12000 }
 ];
 
 // Profile banner templates matching current Gym Themes
