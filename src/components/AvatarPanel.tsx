@@ -363,12 +363,54 @@ const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; particles
 
 // Profile banner templates matching current Gym Themes
 const BANNERS = [
-  { id: 'titan_gold', name: 'Titan Gold Theme', desc: 'Gleaming gold high-rank warrior landscape.', price: 0, bgStyle: 'bg-gradient-to-r from-yellow-950/60 via-[#141005] to-black' },
-  { id: 'iron_temple', name: 'Iron Temple Theme', desc: 'Ancient stone & classical brown discipline.', price: 2000, bgStyle: 'bg-gradient-to-br from-amber-950/60 via-[#100c08] to-stone-950' },
-  { id: 'neon_pump', name: 'Neon Pump Theme', desc: 'Vaporwave synth-lights & heavy pulses.', price: 2500, bgStyle: 'bg-gradient-to-r from-fuchsia-950/60 via-[#0b0114] to-black' },
-  { id: 'beast_mode', name: 'Beast Mode Theme', desc: 'Aggressive crimson shadows & warning fields.', price: 3000, bgStyle: 'bg-gradient-to-bl from-red-950/60 via-[#0c0101] to-black' },
-  { id: 'zen_lifter', name: 'Zen Lifter Theme', desc: 'Calming forest green mists & quiet focus.', price: 2500, bgStyle: 'bg-gradient-to-r from-emerald-950/60 via-[#030e06] to-black' },
-  { id: 'midnight_city', name: 'Midnight City Theme', desc: 'Late-night sky & cyber teal digital grid.', price: 3000, bgStyle: 'bg-gradient-to-tr from-cyan-950/60 via-[#01091a] to-black' }
+  { 
+    id: 'titan_gold', 
+    name: 'Titan Gold Theme', 
+    desc: 'Gleaming gold high-rank warrior landscape.', 
+    price: 0, 
+    bgStyle: 'bg-gradient-to-br from-amber-500/35 via-[#1a1204] to-[#050301]',
+    glowColor: 'bg-amber-500/25'
+  },
+  { 
+    id: 'iron_temple', 
+    name: 'Iron Temple Theme', 
+    desc: 'Ancient copper & stone discipline with golden ores.', 
+    price: 2000, 
+    bgStyle: 'bg-gradient-to-br from-amber-600/35 via-stone-900/90 to-[#0b0805]',
+    glowColor: 'bg-orange-550/30'
+  },
+  { 
+    id: 'neon_pump', 
+    name: 'Neon Pump Theme', 
+    desc: 'Vaporwave synth-lights, fuchsia stars & virtual grids.', 
+    price: 2500, 
+    bgStyle: 'bg-gradient-to-br from-fuchsia-500/50 via-purple-950/90 to-[#06010d]',
+    glowColor: 'bg-fuchsia-500/35'
+  },
+  { 
+    id: 'beast_mode', 
+    name: 'Beast Mode Theme', 
+    desc: 'Aggressive crimson shadows & thermonuclear fields.', 
+    price: 3000, 
+    bgStyle: 'bg-gradient-to-br from-red-650/50 via-red-950/95 to-black',
+    glowColor: 'bg-red-500/40'
+  },
+  { 
+    id: 'zen_lifter', 
+    name: 'Zen Lifter Theme', 
+    desc: 'Calming biological forest green mists and auroras.', 
+    price: 2500, 
+    bgStyle: 'bg-gradient-to-br from-emerald-500/45 via-emerald-950/95 to-[#010603]',
+    glowColor: 'bg-emerald-500/35'
+  },
+  { 
+    id: 'midnight_city', 
+    name: 'Midnight City Theme', 
+    desc: 'Late-night neon skies & electric cyan digital matrix.', 
+    price: 3000, 
+    bgStyle: 'bg-gradient-to-br from-cyan-500/45 via-blue-950/95 to-[#010410]',
+    glowColor: 'bg-cyan-500/35'
+  }
 ];
 
 // Banner Borders aligned with core themes
@@ -1251,6 +1293,14 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             {/* Banner Theme Background */}
             <div className={`absolute inset-0 z-0 transition-all duration-700 ${getActiveBanner().bgStyle}`} />
 
+            {/* High-Contrast Interactive Neon Glow Highlights */}
+            {getActiveBanner().glowColor && (
+              <>
+                <div className={`absolute -top-12 -right-12 w-64 h-64 rounded-full filter blur-[70px] opacity-75 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
+                <div className={`absolute -bottom-12 -left-12 w-64 h-64 rounded-full filter blur-[70px] opacity-60 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
+              </>
+            )}
+
             {/* Hexagonal Tech matrix line overlay patterns */}
             <div className="absolute inset-0 opacity-15 pointer-events-none mix-blend-color-dodge z-0 animate-pulse-slow" 
                  style={{ 
@@ -1840,15 +1890,26 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <div 
                     key={banner.id}
                     onClick={() => buyOrEquipItem('banners', banner.id, banner.price)}
-                    className={`relative rounded-lg border p-5 bg-black/35 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
+                    className={`relative rounded-lg border p-5 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden group/bitem ${
                       isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.01]' 
+                        ? 'border-gym-accent shadow-[0_0_15px_rgba(212,175,55,0.2)]' 
                         : isUnlocked 
-                          ? 'border-white/10 hover:border-white/30 hover:bg-white/[0.02]' 
-                          : 'border-white/5 bg-black/50 opacity-80 hover:opacity-100'
+                          ? 'border-white/10 hover:border-white/30' 
+                          : 'border-white/5 opacity-80 hover:opacity-100'
                     }`}
                   >
-                    <div>
+                    {/* The dynamic banner preview gradient directly within the list item card */}
+                    <div className={`absolute inset-0 z-0 transition-opacity duration-300 ${banner.bgStyle} opacity-70 group-hover/bitem:opacity-90`} />
+                    
+                    {/* Dark gradient mask to keep texts ultra-readable */}
+                    <div className="absolute inset-0 z-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+                    
+                    {/* Ambient Glow matching banner */}
+                    {banner.glowColor && (
+                      <div className={`absolute -top-6 -right-6 w-32 h-32 rounded-full filter blur-[25px] opacity-60 mix-blend-screen transition-all duration-300 group-hover/bitem:scale-110 pointer-events-none z-0 ${banner.glowColor}`} />
+                    )}
+
+                    <div className="relative z-10 w-full">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <Tv className="w-4 h-4 text-gym-accent" />
@@ -1856,11 +1917,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                         </div>
                         {!isUnlocked && <Lock className="w-3.5 h-3.5 text-white/20" />}
                       </div>
-                      <p className="text-[10px] text-white/40 leading-tight font-light mt-1">{banner.desc}</p>
+                      <p className="text-[10px] text-white/60 leading-tight font-light mt-1">{banner.desc}</p>
                     </div>
 
-                    <div className="border-t border-white/5 pt-3 flex items-center justify-between mt-auto">
-                      <span className="text-[8px] font-mono text-white/25 uppercase tracking-widest">Card Grid Banner</span>
+                    <div className="relative z-10 border-t border-white/10 pt-3 flex items-center justify-between mt-auto w-full">
+                      <span className="text-[8px] font-mono text-white/45 uppercase tracking-widest">Card Grid Banner</span>
                       
                       <div className="flex items-center gap-2">
                         {isEquipped ? (
@@ -1868,9 +1929,9 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                             <Check className="w-3 h-3 stroke-[3]" /> Active
                           </div>
                         ) : isUnlocked ? (
-                          <span className="text-[9px] uppercase font-bold text-white/50 tracking-widest hover:text-white transition-colors">Equip</span>
+                          <span className="text-[9px] uppercase font-bold text-white/80 tracking-widest hover:text-white transition-colors">Equip</span>
                         ) : (
-                          <div className="bg-white/5 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 transition-all">
+                          <div className="bg-black/60 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 hover:border-white/25 transition-all">
                             <Coins className="w-3.5 h-3.5" /> {banner.price.toLocaleString()}
                           </div>
                         )}

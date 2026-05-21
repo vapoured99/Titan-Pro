@@ -22,6 +22,7 @@ import {
   Trash2,
   ExternalLink,
   Save,
+  Check,
   Layout,
   Medal,
   Award,
@@ -387,6 +388,99 @@ interface UserProfile {
   activeView?: string;
   themeId?: string;
   equippedBorder?: string;
+}
+
+interface ProfileDisplayNameEditorProps {
+  profile: UserProfile | null;
+  currentUser: any;
+  saveSettings: (settings: any) => Promise<void>;
+  setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+  setToast: (toast: { message: string; type: 'success' | 'pb' | 'info' } | null) => void;
+}
+
+function ProfileDisplayNameEditor({ profile, currentUser, saveSettings, setProfile, setToast }: ProfileDisplayNameEditorProps) {
+  const initialName = profile?.displayName || currentUser?.displayName || "Athlete";
+  const [name, setName] = useState(initialName);
+  const [isSaved, setIsSaved] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setName(profile?.displayName || currentUser?.displayName || "Athlete");
+    setIsSaved(true);
+  }, [profile?.displayName, currentUser?.displayName]);
+
+  const handleSave = async () => {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setToast({ message: "Display name cannot be empty", type: "info" });
+      return;
+    }
+    if (trimmed === profile?.displayName) {
+      setIsSaved(true);
+      return;
+    }
+    setIsSaving(true);
+    try {
+      await saveSettings({ displayName: trimmed });
+      setProfile(prev => prev ? { ...prev, displayName: trimmed } : null);
+      setIsSaved(true);
+    } catch (err) {
+      console.error(err);
+      setToast({ message: "Failed to update identity", type: "info" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2.5">
+       <span className="text-[9px] text-white/25 uppercase tracking-[0.25em] font-black">Display Name</span>
+       <div className="flex items-center gap-3 bg-white/[0.02] border border-white/10 rounded-sm p-2 text-sm focus-within:border-gym-accent focus-within:bg-white/[0.04] transition-all">
+         <input 
+           type="text"
+           value={name}
+           onChange={(e) => {
+             setName(e.target.value);
+             setIsSaved(false);
+           }}
+           onKeyDown={(e) => {
+             if (e.key === 'Enter') {
+               handleSave();
+             }
+           }}
+           className="bg-transparent flex-1 text-sm font-medium tracking-wide focus:outline-none text-white font-sans py-1"
+           placeholder="Choose display identity..."
+         />
+         
+         <button
+           onClick={handleSave}
+           disabled={isSaving || (isSaved && name === (profile?.displayName || currentUser?.displayName))}
+           className={`px-4 py-1.5 rounded-xs text-[10px] font-mono tracking-widest uppercase transition-all flex items-center gap-1.5 ${
+             isSaving
+               ? 'bg-white/5 text-white/40 cursor-not-allowed'
+               : (isSaved && name === (profile?.displayName || currentUser?.displayName))
+                 ? 'bg-white/[0.02] text-white/20 cursor-default'
+                 : 'bg-gym-accent text-black font-black hover:bg-gym-accent/80 hover:scale-[1.01] active:scale-[0.99]'
+           }`}
+         >
+           {isSaving ? (
+             <>
+               <span className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+               Saving...
+             </>
+           ) : isSaved && name === (profile?.displayName || currentUser?.displayName) ? (
+             <>
+               <Check className="w-3 h-3 stroke-[2.5]" /> Synced
+             </>
+           ) : (
+             <>
+               <Save className="w-3.5 h-3.5" /> Save
+             </>
+           )}
+         </button>
+       </div>
+    </div>
+  );
 }
 
 export default function App() {
@@ -2686,21 +2780,13 @@ export default function App() {
                   <h4 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.3em] mb-6 border-b border-white/5 pb-4">Personal Details</h4>
                   
                   <div className="space-y-6">
-                    <div className="flex flex-col gap-2">
-                       <span className="text-[9px] text-white/20 uppercase tracking-widest font-bold">Display Name</span>
-                       <input 
-                         type="text"
-                         defaultValue={profile?.displayName || currentUser.displayName || ""}
-                         className="bg-transparent border-b border-white/10 py-2 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
-                         onBlur={(e) => {
-                           const name = e.target.value;
-                           if (name && name !== profile?.displayName) {
-                             saveSettings({ displayName: name });
-                             setProfile(prev => prev ? { ...prev, displayName: name } : null);
-                           }
-                         }}
-                       />
-                    </div>
+                    <ProfileDisplayNameEditor 
+                      profile={profile} 
+                      currentUser={currentUser} 
+                      saveSettings={saveSettings} 
+                      setProfile={setProfile} 
+                      setToast={setToast} 
+                    />
                     <div className="flex flex-col gap-2">
                        <span className="text-[9px] text-white/20 uppercase tracking-widest font-bold">Avatar URL</span>
                        <input 
