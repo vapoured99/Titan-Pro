@@ -386,6 +386,7 @@ interface UserProfile {
   lastWorkoutDate?: string;
   activeView?: string;
   themeId?: string;
+  equippedBorder?: string;
 }
 
 export default function App() {

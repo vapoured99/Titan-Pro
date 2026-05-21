@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Shield, 
@@ -17,7 +17,8 @@ import {
   Tv, 
   RefreshCw,
   TrendingUp,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft
 } from 'lucide-react';
 
 interface UserProfile {
@@ -38,6 +39,7 @@ interface UserProfile {
   equippedEmote?: string;
   equippedTitle?: string;
   equippedBanner?: string;
+  equippedBorder?: string;
 }
 
 interface AvatarPanelProps {
@@ -265,13 +267,463 @@ const BANNERS = [
   { id: 'neon_pump', name: 'Neon Pump Theme', desc: 'Vaporwave synth-lights & heavy pulses.', price: 2500, bgStyle: 'bg-gradient-to-r from-fuchsia-950/60 via-[#0b0114] to-black' },
   { id: 'beast_mode', name: 'Beast Mode Theme', desc: 'Aggressive crimson shadows & warning fields.', price: 3000, bgStyle: 'bg-gradient-to-bl from-red-950/60 via-[#0c0101] to-black' },
   { id: 'zen_lifter', name: 'Zen Lifter Theme', desc: 'Calming forest green mists & quiet focus.', price: 2500, bgStyle: 'bg-gradient-to-r from-emerald-950/60 via-[#030e06] to-black' },
-  { id: 'midnight_city', name: 'Midnight City Theme', desc: 'Late-night sky & cyber teal digital grid.', price: 3000, bgStyle: 'bg-gradient-to-tr from-cyan-950/60 via-[#01091a] to-black' },
-  { id: 'cyberpunk_grid', name: 'Cyberpunk Grid', desc: 'Classic indigo space grid network.', price: 1500, bgStyle: 'bg-gradient-to-r from-purple-950/60 via-[#04010a] to-neutral-950' }
+  { id: 'midnight_city', name: 'Midnight City Theme', desc: 'Late-night sky & cyber teal digital grid.', price: 3000, bgStyle: 'bg-gradient-to-tr from-cyan-950/60 via-[#01091a] to-black' }
+];
+
+// Banner Borders aligned with core themes
+const BORDERS = [
+  { 
+    id: 'none', 
+    name: 'No border', 
+    desc: 'Clean basic interface.', 
+    price: 0, 
+    cardBorderClass: 'border border-white/10' 
+  },
+  { 
+    id: 'titan_gold', 
+    name: 'Titan Gilt Frame', 
+    desc: 'Double gold lining, golden stars spinning in solar orbit, and dynamic cascading gold celestial light streaks.', 
+    price: 3000, 
+    cardBorderClass: 'border-2 border-amber-500/80 shadow-[0_0_25px_rgba(245,158,11,0.25)]',
+    cornerElement: (
+      <>
+        {/* Luminous Diagonal Gold Metallic Sweep */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-lg z-10">
+          <div className="absolute top-0 left-0 w-[300%] h-[300%] bg-gradient-to-br from-transparent via-yellow-400/10 to-transparent transform -translate-x-1/2 -translate-y-1/2 animate-[goldShimmer_4.5s_ease-in-out_infinite]" />
+        </div>
+
+        {/* Double Inner Gold borders enclosing entire card */}
+        <div className="absolute inset-1.5 border border-yellow-500/15 pointer-events-none z-10" />
+        <div className="absolute inset-3 border border-yellow-600/5 pointer-events-none z-10" />
+        
+        {/* Sparkling Gilded Dust Particles */}
+        <div className="absolute inset-x-0 bottom-0 h-1/2 overflow-hidden pointer-events-none rounded-b-lg z-10">
+          <div className="absolute bottom-2 left-[15%] w-1 h-1 rounded-full bg-yellow-300 animate-[riseSparks_3.2s_infinite]" style={{ animationDelay: '0s' }} />
+          <div className="absolute bottom-4 left-[35%] w-1.5 h-1.5 rounded-full bg-amber-400 animate-[riseSparks_4s_infinite]" style={{ animationDelay: '1.2s' }} />
+          <div className="absolute bottom-1 left-[55%] w-1 h-1 rounded-full bg-yellow-200 animate-[riseSparks_3.6s_infinite]" style={{ animationDelay: '0.6s' }} />
+          <div className="absolute bottom-5 left-[75%] w-1.5 h-1.5 rounded-full bg-yellow-400 animate-[riseSparks_4.2s_infinite]" style={{ animationDelay: '1.8s' }} />
+          <div className="absolute bottom-2 left-[88%] w-1 h-1 rounded-full bg-yellow-300 animate-[riseSparks_2.8s_infinite]" style={{ animationDelay: '2.4s' }} />
+        </div>
+        
+        {/* Stellar Ornaments Spinning & Pulsating */}
+        <div className="absolute top-2 left-2.5 w-5 h-5 text-yellow-400 animate-[starRotate_7s_linear_infinite] z-30 pointer-events-none" style={{ filter: 'drop-shadow(0 0 6px rgba(245,158,11,0.7))' }}>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" />
+          </svg>
+        </div>
+        <div className="absolute top-2 right-2.5 w-5 h-5 text-yellow-400 animate-[starRotate_7s_linear_infinite] z-30 pointer-events-none" style={{ filter: 'drop-shadow(0 0 6px rgba(245,158,11,0.7))', animationDelay: '1s' }}>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" />
+          </svg>
+        </div>
+        <div className="absolute bottom-2 left-2.5 w-5 h-5 text-yellow-400 animate-[starRotate_7s_linear_infinite] z-30 pointer-events-none" style={{ filter: 'drop-shadow(0 0 6px rgba(245,158,11,0.7))', animationDelay: '2s' }}>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" />
+          </svg>
+        </div>
+        <div className="absolute bottom-2 right-2.5 w-5 h-5 text-yellow-400 animate-[starRotate_7s_linear_infinite] z-30 pointer-events-none" style={{ filter: 'drop-shadow(0 0 6px rgba(245,158,11,0.7))', animationDelay: '3s' }}>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" />
+          </svg>
+        </div>
+
+        {/* Polished Gold Corner Bracket Overlays */}
+        <div className="absolute top-0 left-0 w-6 h-6 border-t-[3px] border-l-[3px] border-yellow-300 shadow-[0_0_8px_rgba(251,191,36,0.6)] z-30" />
+        <div className="absolute top-0 right-0 w-6 h-6 border-t-[3px] border-r-[3px] border-yellow-300 shadow-[0_0_8px_rgba(251,191,36,0.6)] z-30" />
+        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-[3px] border-l-[3px] border-yellow-300 shadow-[0_0_8px_rgba(251,191,36,0.6)] z-30" />
+        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-[3px] border-r-[3px] border-yellow-300 shadow-[0_0_8px_rgba(251,191,36,0.6)] z-30" />
+
+        {/* Dynamic Gilded Crown Badge */}
+        <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-yellow-500/10 border border-yellow-400/40 text-[7px] font-mono text-yellow-300 font-extrabold px-3 py-0.5 rounded-full select-none tracking-widest uppercase z-35 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
+          GOLD GILT FRAME
+        </div>
+      </>
+    )
+  },
+  { 
+    id: 'iron_temple', 
+    name: 'Iron Monolith', 
+    desc: 'Heavy-metal bronze fortifications with active magma channels, cascading molten fire flows, and massive rotating hydraulic gear wheels.', 
+    price: 3500, 
+    cardBorderClass: 'border-2 border-orange-700 shadow-[0_0_35px_rgba(249,115,22,0.55),inset_0_0_20px_rgba(239,68,68,0.35)]',
+    cornerElement: (
+      <>
+        {/* Active Overcharged Molten Border Core Channel flow lines */}
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-56 h-full bg-gradient-to-r from-transparent via-red-500 to-transparent transform animate-[laserSlideH_2.8s_linear_infinite]" style={{ filter: 'drop-shadow(0 0 8px #f97316)' }} />
+        </div>
+        <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-orange-500 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-56 h-full bg-gradient-to-r from-transparent via-red-500 to-transparent transform animate-[laserSlideH_2.8s_linear_infinite_reverse]" style={{ filter: 'drop-shadow(0 0 8px #f97316)' }} />
+        </div>
+        <div className="absolute left-0 inset-y-0 w-1 bg-gradient-to-b from-transparent via-orange-500 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-full h-56 bg-gradient-to-b from-transparent via-red-500 to-transparent transform animate-[laserSlideV_2.5s_linear_infinite]" style={{ filter: 'drop-shadow(0 0 8px #f59e0b)' }} />
+        </div>
+        <div className="absolute right-0 inset-y-0 w-1 bg-gradient-to-b from-transparent via-orange-500 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-full h-56 bg-gradient-to-b from-transparent via-red-500 to-transparent transform animate-[laserSlideV_2.5s_linear_infinite_reverse]" style={{ filter: 'drop-shadow(0 0 8px #f59e0b)' }} />
+        </div>
+
+        {/* Heated Molten Border Flow Overlay */}
+        <div className="absolute inset-0 border border-red-500/20 shadow-[inset_0_0_15px_rgba(239,68,68,0.3)] z-10 pointer-events-none" />
+
+        {/* Double Inner Iron Border */}
+        <div className="absolute inset-1 border border-stone-800 pointer-events-none z-10" />
+        <div className="absolute inset-1.5 border border-[#452715]/45 opacity-70 z-10 pointer-events-none" />
+        
+        {/* Volcanic Heat Embers Rising (Bigger and more randomized) */}
+        <div className="absolute inset-x-0 bottom-0 h-full overflow-hidden pointer-events-none rounded-b-lg z-10">
+          <div className="absolute bottom-1 left-[15%] w-2 h-2 rounded-full bg-orange-600 animate-[magmaRise_4.8s_infinite] shadow-[0_0_8px_#f97316]" style={{ animationDelay: '0.2s' }} />
+          <div className="absolute bottom-3 left-[35%] w-2.5 h-2.5 rounded-full bg-red-500 animate-[magmaRise_3.5s_infinite] shadow-[0_0_10px_#ef4444]" style={{ animationDelay: '1.2s' }} />
+          <div className="absolute bottom-2 left-[55%] w-2 h-2 rounded-full bg-amber-500 animate-[magmaRise_4.2s_infinite] shadow-[0_0_8px_#ea580c]" style={{ animationDelay: '2.4s' }} />
+          <div className="absolute bottom-4 left-[75%] w-3 h-3 rounded-full bg-yellow-500 animate-[magmaRise_3.9s_infinite] shadow-[0_0_12px_#fbbf24]" style={{ animationDelay: '0.7s' }} />
+          <div className="absolute bottom-1 left-[90%] w-2 h-2 rounded-full bg-orange-500 animate-[magmaRise_4.5s_infinite] shadow-[0_0_8px_#f97316]" style={{ animationDelay: '1.9s' }} />
+        </div>
+
+        {/* Steel Gear Rivets in All Four Corners Spinning Hydraulically (Huge & Prominent!) */}
+        <div className="absolute top-0.5 left-0.5 w-7 h-7 text-stone-600/95 animate-[gearSpinHuge_9s_linear_infinite] z-35 pointer-events-none" style={{ filter: 'drop-shadow(0 0 8px rgba(249,115,22,0.7))' }}>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.47,5.34 14.86,5.08L14.47,2.42C14.43,2.18 14.22,2 14,2H10C9.78,2 9.57,2.18 9.53,2.42L9.14,5.08C8.53,5.34 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.95C7.96,18.34 8.53,18.66 9.14,18.92L9.53,21.58C9.57,21.82 9.78,22 10,22H14C14.22,22 14.43,21.82 14.47,21.58L14.86,18.92C15.47,18.66 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+          </svg>
+        </div>
+        <div className="absolute top-0.5 right-0.5 w-7 h-7 text-stone-600/95 animate-[gearSpinHuge_9s_linear_infinite_reverse] z-35 pointer-events-none" style={{ filter: 'drop-shadow(0 0 8px rgba(249,115,22,0.7))', animationDelay: '1.2s' }}>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.47,5.34 14.86,5.08L14.47,2.42C14.43,2.18 14.22,2 14,2H10C9.78,2 9.57,2.18 9.53,2.42L9.14,5.08C8.53,5.34 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.95C7.96,18.34 8.53,18.66 9.14,18.92L9.53,21.58C9.57,21.82 9.78,22 10,22H14C14.22,22 14.43,21.82 14.47,21.58L14.86,18.92C15.47,18.66 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+          </svg>
+        </div>
+        <div className="absolute bottom-0.5 right-0.5 w-7 h-7 text-stone-600/95 animate-[gearSpinHuge_7s_linear_infinite_reverse] z-35 pointer-events-none" style={{ filter: 'drop-shadow(0 0 8px rgba(249,115,22,0.7))', animationDelay: '0.6s' }}>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.47,5.34 14.86,5.08L14.47,2.42C14.43,2.18 14.22,2 14,2H10C9.78,2 9.57,2.18 9.53,2.42L9.14,5.08C8.53,5.34 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.95C7.96,18.34 8.53,18.66 9.14,18.92L9.53,21.58C9.57,21.82 9.78,22 10,22H14C14.22,22 14.43,21.82 14.47,21.58L14.86,18.92C15.47,18.66 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+          </svg>
+        </div>
+        <div className="absolute bottom-0.5 left-0.5 w-7 h-7 text-stone-600/95 animate-[gearSpinHuge_7s_linear_infinite] z-35 pointer-events-none" style={{ filter: 'drop-shadow(0 0 8px rgba(249,115,22,0.7))', animationDelay: '1.8s' }}>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.47,5.34 14.86,5.08L14.47,2.42C14.43,2.18 14.22,2 14,2H10C9.78,2 9.57,2.18 9.53,2.42L9.14,5.08C8.53,5.34 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.95C7.96,18.34 8.53,18.66 9.14,18.92L9.53,21.58C9.57,21.82 9.78,22 10,22H14C14.22,22 14.43,21.82 14.47,21.58L14.86,18.92C15.47,18.66 16.04,18.34 16.56,17.95L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z" />
+          </svg>
+        </div>
+
+        {/* Engraved Ancient Molten Glow Runes - Overcharged & Bright! */}
+        <div className="absolute left-1.5 top-1/2 -translate-y-1/2 flex flex-col justify-around h-60 text-amber-700/60 text-[10px] leading-relaxed font-mono select-none tracking-[0.25em] font-black pointer-events-none z-30 animate-[moltenRuneOvert_3s_infinite_ease-in-out]">
+          <span>᚛</span><span>᚜</span><span>᚛</span><span>᚜</span><span>᚛</span><span>᚜</span>
+        </div>
+        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex flex-col justify-around h-60 text-amber-700/60 text-[10px] leading-relaxed font-mono select-none tracking-[0.25em] font-black pointer-events-none z-30 animate-[moltenRuneOvert_3s_infinite_ease-in-out]" style={{ animationDelay: '1.5s' }}>
+          <span>᚛</span><span>᚜</span><span>᚛</span><span>᚜</span><span>᚛</span><span>᚜</span>
+        </div>
+
+        {/* Chunky Stone Corner Caps - Styled as Reinforced Steel Braces */}
+        <div className="absolute top-0 left-0 w-6 h-[4px] bg-stone-700 z-30" />
+        <div className="absolute top-0 left-0 w-[4px] h-6 bg-stone-700 z-30" />
+        <div className="absolute top-0 right-0 w-6 h-[4px] bg-stone-700 z-30" />
+        <div className="absolute top-0 right-0 w-[4px] h-6 bg-stone-700 z-30" />
+        <div className="absolute bottom-0 left-0 w-6 h-[4px] bg-stone-700 z-30" />
+        <div className="absolute bottom-0 left-0 w-[4px] h-6 bg-stone-700 z-30" />
+        <div className="absolute bottom-0 right-0 w-6 h-[4px] bg-stone-700 z-30" />
+        <div className="absolute bottom-0 right-0 w-[4px] h-6 bg-stone-700 z-30" />
+
+        <div className="absolute top-1.5 left-1/2 -translate-x-1/2 text-[8px] font-mono text-orange-500/80 tracking-[0.8em] select-none z-30 font-bold bg-black/60 px-3 py-0.5 rounded border border-orange-600/30">MONOLITH</div>
+      </>
+    )
+  },
+  { 
+    id: 'neon_pump', 
+    name: 'Laser Pulse Vapor', 
+    desc: 'Fully wrapping neon glass tube borders with flowing hyper-speed horizontal/vertical laser streams.', 
+    price: 4000, 
+    cardBorderClass: 'border-2 border-fuchsia-500/90 shadow-[0_0_30px_rgba(217,70,239,0.35)]',
+    cornerElement: (
+      <>
+        {/* Double Laser Ring Glow Frame */}
+        <div className="absolute inset-1.5 border border-purple-500/10 pointer-events-none z-10" />
+        <div className="absolute -inset-[1px] border border-fuchsia-500/20 rounded-lg animate-pulse-slow z-20 pointer-events-none" />
+
+        {/* Horizontal Moving Laser Beams */}
+        <div className="absolute top-0 inset-x-0 h-[2.5px] bg-gradient-to-r from-transparent via-fuchsia-500 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-48 h-full bg-gradient-to-r from-transparent via-white to-transparent transform animate-[laserSlideH_2.5s_linear_infinite]" />
+        </div>
+        <div className="absolute bottom-0 inset-x-0 h-[2.5px] bg-gradient-to-r from-transparent via-purple-500 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-48 h-full bg-gradient-to-r from-transparent via-white to-transparent transform animate-[laserSlideH_2.5s_linear_infinite_reverse]" />
+        </div>
+
+        {/* Vertical Moving Laser Beams */}
+        <div className="absolute left-0 inset-y-0 w-[2.5px] bg-gradient-to-b from-transparent via-fuchsia-500 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-full h-48 bg-gradient-to-b from-transparent via-white to-transparent transform animate-[laserSlideV_2.2s_linear_infinite]" />
+        </div>
+        <div className="absolute right-0 inset-y-0 w-[2.5px] bg-gradient-to-b from-transparent via-purple-500 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-full h-48 bg-gradient-to-b from-transparent via-white to-transparent transform animate-[laserSlideV_2.2s_linear_infinite_reverse]" />
+        </div>
+
+        {/* High-Contrast Synth Brackets */}
+        <div className="absolute top-1 left-1 w-4.5 h-4.5 border-t-2 border-l-2 border-fuchsia-400 shadow-[0_0_10px_#f500ff] z-30" />
+        <div className="absolute top-1 right-1 w-4.5 h-4.5 border-t-2 border-r-2 border-fuchsia-400 shadow-[0_0_10px_#f500ff] z-30" />
+        <div className="absolute bottom-1 left-1 w-4.5 h-4.5 border-b-2 border-l-2 border-purple-400 shadow-[0_0_10px_#8b5cf6] z-30" />
+        <div className="absolute bottom-1 right-1 w-4.5 h-4.5 border-b-2 border-r-2 border-purple-400 shadow-[0_0_10px_#8b5cf6] z-30" />
+      </>
+    )
+  },
+  { 
+    id: 'beast_mode', 
+    name: 'Berserker Hazard', 
+    desc: 'Blazing active red-and-yellow flames licking the bottom with crawling warning chevron danger strips.', 
+    price: 4500, 
+    cardBorderClass: 'border-2 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.45)]',
+    cornerElement: (
+      <>
+        {/* Magma Inner Heat Overlay */}
+        <div className="absolute inset-0 border border-red-500/25 shadow-[inset_0_0_15px_rgba(239,68,68,0.35)] z-10 pointer-events-none" />
+
+        {/* Active Flames Licking the Borders */}
+        <div className="absolute bottom-0 inset-x-0 h-28 bg-gradient-to-t from-red-600/20 via-orange-500/5 to-transparent pointer-events-none z-15 mix-blend-screen" />
+        
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-[85%] h-8 select-none pointer-events-none z-20 flex justify-between px-4 mix-blend-color-dodge opacity-80">
+          <div className="w-8 h-8 text-red-500 animate-[fireFlicker_1.8s_infinite]">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C11.19,5.74 9.12,7.3 8.35,8.1C6.1,10.45 6.04,13.9 8.24,16.14C10.44,18.38 13.93,18.42 16.16,16.23C18.39,14.04 18.41,10.55 16.23,8.31C15.91,7.97 15.54,7.68 15.15,7.44C14.47,6.33 13.3,4.19 12,2M12,5.2C12.5,6.5 13.5,8.25 14.1,9.4C14.5,10.4 14.25,12 13.25,12.75C12.25,13.5 11,13.25 10.5,12.25C10,11.25 10.5,9.5 11,8C11.5,8.8 11.6,9.1 11.8,9.4L12,5.2Z"/></svg>
+          </div>
+          <div className="w-6 h-6 text-orange-400 animate-[fireFlicker_2.2s_infinite]" style={{ animationDelay: '0.4s' }}>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C11.19,5.74 9.12,7.3 8.35,8.1C6.1,10.45 6.04,13.9 8.24,16.14C10.44,18.38 13.93,18.42 16.16,16.23C18.39,14.04 18.41,10.55 16.23,8.31C15.91,7.97 15.54,7.68 15.15,7.44C14.47,6.33 13.3,4.19 12,2M12,5.2C12.5,6.5 13.5,8.25 14.1,9.4C14.5,10.4 14.25,12 13.25,12.75C12.25,13.5 11,13.25 10.5,12.25C10,11.25 10.5,9.5 11,8C11.5,8.8 11.6,9.1 11.8,9.4L12,5.2Z"/></svg>
+          </div>
+          <div className="w-9 h-9 text-yellow-500 animate-[fireFlicker_1.5s_infinite]" style={{ animationDelay: '0.1s' }}>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C11.19,5.74 9.12,7.3 8.35,8.1C6.1,10.45 6.04,13.9 8.24,16.14C10.44,18.38 13.93,18.42 16.16,16.23C18.39,14.04 18.41,10.55 16.23,8.31C15.91,7.97 15.54,7.68 15.15,7.44C14.47,6.33 13.3,4.19 12,2M12,5.2C12.5,6.5 13.5,8.25 14.1,9.4C14.5,10.4 14.25,12 13.25,12.75C12.25,13.5 11,13.25 10.5,12.25C10,11.25 10.5,9.5 11,8C11.5,8.8 11.6,9.1 11.8,9.4L12,5.2Z"/></svg>
+          </div>
+          <div className="w-7 h-7 text-red-500 animate-[fireFlicker_2.0s_infinite]" style={{ animationDelay: '0.6s' }}>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12,2C11.19,5.74 9.12,7.3 8.35,8.1C6.1,10.45 6.04,13.9 8.24,16.14C10.44,18.38 13.93,18.42 16.16,16.23C18.39,14.04 18.41,10.55 16.23,8.31C15.91,7.97 15.54,7.68 15.15,7.44C14.47,6.33 13.3,4.19 12,2M12,5.2C12.5,6.5 13.5,8.25 14.1,9.4C14.5,10.4 14.25,12 13.25,12.75C12.25,13.5 11,13.25 10.5,12.25C10,11.25 10.5,9.5 11,8C11.5,8.8 11.6,9.1 11.8,9.4L12,5.2Z"/></svg>
+          </div>
+        </div>
+
+        {/* Diagonal Warning Chevrons Scrolling on Entire Perimeter */}
+        <div className="absolute top-0 inset-x-0 h-1.5 bg-[repeating-linear-gradient(45deg,#b91c1c,#b91c1c_10px,#000_10px,#000_20px)] animate-[hazardSlide_1.5s_linear_infinite]" style={{ backgroundSize: '32px 100%' }} />
+        <div className="absolute bottom-0 inset-x-0 h-1.5 bg-[repeating-linear-gradient(45deg,#b91c1c,#b91c1c_10px,#000_10px,#000_20px)] animate-[hazardSlide_1.5s_linear_infinite_reverse]" style={{ backgroundSize: '32px 100%' }} />
+        <div className="absolute left-0 inset-y-0 w-1.5 bg-[repeating-linear-gradient(45deg,#b91c1c,#b91c1c_10px,#000_10px,#000_20px)] animate-[hazardSlide_1.5s_linear_infinite]" style={{ backgroundSize: '100% 32px' }} />
+        <div className="absolute right-0 inset-y-0 w-1.5 bg-[repeating-linear-gradient(45deg,#b91c1c,#b91c1c_10px,#000_10px,#000_20px)] animate-[hazardSlide_1.5s_linear_infinite_reverse]" style={{ backgroundSize: '100% 32px' }} />
+
+        {/* WARNING Banner Header */}
+        <div className="absolute top-3.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-red-650 border border-red-500 rounded text-[5px] text-white font-mono font-black tracking-[0.3em] z-30 animate-pulse select-none uppercase">
+          BEAST // OVERLOCK_ACTIVE
+        </div>
+
+        {/* Industrial Metal Corner Guards */}
+        <div className="absolute top-0 left-0 w-5 h-5 border-t-4 border-l-4 border-red-700 z-30 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-5 h-5 border-t-4 border-r-4 border-red-700 z-30 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-5 h-5 border-b-4 border-l-4 border-red-700 z-30 pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-5 h-5 border-b-4 border-r-4 border-red-700 z-30 pointer-events-none" />
+      </>
+    )
+  },
+  { 
+    id: 'zen_lifter', 
+    name: 'Emerald Core Shield', 
+    desc: 'Crystalline forest energy fields with multi-faceted rotating emerald gemstone corners, glowing eco-synthesized energy grids, and rising mineral crystal shards.', 
+    price: 3500, 
+    cardBorderClass: 'border-2 border-emerald-400 shadow-[0_0_35px_rgba(16,185,129,0.55),inset_0_0_15px_rgba(16,185,129,0.25)] bg-slate-950/90',
+    cornerElement: (
+      <>
+        {/* Chiseled Geometric Crystal Core Framing */}
+        <div className="absolute inset-1 border border-emerald-500/35 rounded-lg pointer-events-none z-10" style={{ clipPath: 'polygon(12px 0px, calc(100% - 12px) 0px, 100% 12px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 12px 100%, 0px calc(100% - 12px), 0px 12px)' }} />
+        <div className="absolute inset-2 border border-dashed border-emerald-400/20 pointer-events-none z-10" />
+
+        {/* Horizontal Moving Green Bio-Pulse Beams */}
+        <div className="absolute top-0 inset-x-0 h-[2.5px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-32 h-full bg-gradient-to-r from-transparent via-green-300 to-transparent transform animate-[bioPulseH_3.5s_linear_infinite]" />
+        </div>
+        <div className="absolute bottom-0 inset-x-0 h-[2.5px] bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-32 h-full bg-gradient-to-r from-transparent via-green-300 to-transparent transform animate-[bioPulseH_3.5s_linear_infinite_reverse]" style={{ animationDelay: '1s' }} />
+        </div>
+
+        {/* Vertical Moving Green Bio-Pulse Beams */}
+        <div className="absolute left-0 inset-y-0 w-[2.5px] bg-gradient-to-b from-transparent via-emerald-500/30 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-full h-32 bg-gradient-to-b from-transparent via-green-300 to-transparent transform animate-[bioPulseV_3.5s_linear_infinite]" style={{ animationDelay: '0.5s' }} />
+        </div>
+        <div className="absolute right-0 inset-y-0 w-[2.5px] bg-gradient-to-b from-transparent via-emerald-500/30 to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-full h-32 bg-gradient-to-b from-transparent via-green-300 to-transparent transform animate-[bioPulseV_3.5s_linear_infinite_reverse]" style={{ animationDelay: '1.5s' }} />
+        </div>
+
+        {/* Rising Faceted Diamond Spark Particles (No more rounded circles) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+          <div className="absolute bottom-[5%] left-[18%] w-3 h-4 animate-[crystalDrift_5s_infinite]" style={{ '--x-start': '-10px' } as React.CSSProperties}>
+            <svg viewBox="0 0 12 16" fill="currentColor" className="text-emerald-400/80 drop-shadow-[0_0_4px_#10b981]">
+              <polygon points="6,0 12,8 6,16 0,8" />
+            </svg>
+          </div>
+          <div className="absolute bottom-[10%] left-[38%] w-2 h-3 animate-[crystalDrift_6.2s_infinite]" style={{ animationDelay: '1.5s', '--x-start': '15px' } as React.CSSProperties}>
+            <svg viewBox="0 0 12 16" fill="currentColor" className="text-green-300/90 drop-shadow-[0_0_5px_#34d399]">
+              <polygon points="6,0 12,8 6,16 0,8" />
+            </svg>
+          </div>
+          <div className="absolute bottom-[15%] left-[62%] w-3.5 h-4.5 animate-[crystalDrift_5.5s_infinite]" style={{ animationDelay: '0.8s', '--x-start': '-20px' } as React.CSSProperties}>
+            <svg viewBox="0 0 12 16" fill="currentColor" className="text-emerald-300 drop-shadow-[0_0_6px_#059669]">
+              <polygon points="6,0 12,8 6,16 0,8" />
+            </svg>
+          </div>
+          <div className="absolute bottom-[8%] left-[82%] w-2 h-3 animate-[crystalDrift_7s_infinite]" style={{ animationDelay: '2.4s', '--x-start': '25px' } as React.CSSProperties}>
+            <svg viewBox="0 0 12 16" fill="currentColor" className="text-teal-300/80 drop-shadow-[0_0_4px_#2dd4bf]">
+              <polygon points="6,0 12,8 6,16 0,8" />
+            </svg>
+          </div>
+        </div>
+        
+        {/* Intricate 3D Faceted Octagonal Emerald Gemstones in All Four Corners (Rotating & Sparking) */}
+        <div className="absolute -top-[1px] -left-[1px] w-7 h-7 pointer-events-none z-35 animate-[emeraldGlow_3.5s_infinite_ease-in-out]">
+          <svg viewBox="0 0 32 32" fill="none" className="w-full h-full drop-shadow-[0_0_6px_rgba(16,185,129,0.8)]">
+            <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#047857" stroke="#34d399" strokeWidth="1.5" />
+            <polygon points="12,6 20,6 26,12 26,20 20,26 12,26 6,20 6,12" fill="#059669" stroke="#a7f3d0" strokeWidth="1" />
+            <polygon points="14,10 18,10 22,14 22,18 18,22 14,22 10,18 10,14" fill="#10b981" />
+            <line x1="10" y1="2" x2="12" y2="6" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="22" y1="2" x2="20" y2="6" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="30" y1="10" x2="26" y2="12" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="30" y1="22" x2="26" y2="20" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="22" y1="30" x2="20" y2="26" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="10" y1="30" x2="12" y2="26" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="2" y1="22" x2="6" y2="20" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="2" y1="10" x2="6" y2="12" stroke="#d1fae5" strokeWidth="0.75" />
+          </svg>
+        </div>
+
+        <div className="absolute -top-[1px] -right-[1px] w-7 h-7 pointer-events-none z-35 animate-[emeraldGlow_3.5s_infinite_ease-in-out]" style={{ animationDelay: '0.8s' }}>
+          <svg viewBox="0 0 32 32" fill="none" className="w-full h-full drop-shadow-[0_0_6px_rgba(16,185,129,0.8)]">
+            <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#047857" stroke="#34d399" strokeWidth="1.5" />
+            <polygon points="12,6 20,6 26,12 26,20 20,26 12,26 6,20 6,12" fill="#059669" stroke="#a7f3d0" strokeWidth="1" />
+            <polygon points="14,10 18,10 22,14 22,18 18,22 14,22 10,18 10,14" fill="#10b981" />
+            <line x1="10" y1="2" x2="12" y2="6" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="22" y1="2" x2="20" y2="6" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="30" y1="10" x2="26" y2="12" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="30" y1="22" x2="26" y2="20" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="22" y1="30" x2="20" y2="26" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="10" y1="30" x2="12" y2="26" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="2" y1="22" x2="6" y2="20" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="2" y1="10" x2="6" y2="12" stroke="#d1fae5" strokeWidth="0.75" />
+          </svg>
+        </div>
+
+        <div className="absolute -bottom-[1px] -left-[1px] w-7 h-7 pointer-events-none z-35 animate-[emeraldGlow_3.5s_infinite_ease-in-out]" style={{ animationDelay: '1.6s' }}>
+          <svg viewBox="0 0 32 32" fill="none" className="w-full h-full drop-shadow-[0_0_6px_rgba(16,185,129,0.8)]">
+            <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#047857" stroke="#34d399" strokeWidth="1.5" />
+            <polygon points="12,6 20,6 26,12 26,20 20,26 12,26 6,20 6,12" fill="#059669" stroke="#a7f3d0" strokeWidth="1" />
+            <polygon points="14,10 18,10 22,14 22,18 18,22 14,22 10,18 10,14" fill="#10b981" />
+            <line x1="10" y1="2" x2="12" y2="6" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="22" y1="2" x2="20" y2="6" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="30" y1="10" x2="26" y2="12" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="30" y1="22" x2="26" y2="20" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="22" y1="30" x2="20" y2="26" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="10" y1="30" x2="12" y2="26" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="2" y1="22" x2="6" y2="20" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="2" y1="10" x2="6" y2="12" stroke="#d1fae5" strokeWidth="0.75" />
+          </svg>
+        </div>
+
+        <div className="absolute -bottom-[1px] -right-[1px] w-7 h-7 pointer-events-none z-35 animate-[emeraldGlow_3.5s_infinite_ease-in-out]" style={{ animationDelay: '2.4s' }}>
+          <svg viewBox="0 0 32 32" fill="none" className="w-full h-full drop-shadow-[0_0_6px_rgba(16,185,129,0.8)]">
+            <polygon points="10,2 22,2 30,10 30,22 22,30 10,30 2,22 2,10" fill="#047857" stroke="#34d399" strokeWidth="1.5" />
+            <polygon points="12,6 20,6 26,12 26,20 20,26 12,26 6,20 6,12" fill="#059669" stroke="#a7f3d0" strokeWidth="1" />
+            <polygon points="14,10 18,10 22,14 22,18 18,22 14,22 10,18 10,14" fill="#10b981" />
+            <line x1="10" y1="2" x2="12" y2="6" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="22" y1="2" x2="20" y2="6" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="30" y1="10" x2="26" y2="12" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="30" y1="22" x2="26" y2="20" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="22" y1="30" x2="20" y2="26" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="10" y1="30" x2="12" y2="26" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="2" y1="22" x2="6" y2="20" stroke="#d1fae5" strokeWidth="0.75" />
+            <line x1="2" y1="10" x2="6" y2="12" stroke="#d1fae5" strokeWidth="0.75" />
+          </svg>
+        </div>
+
+        {/* Crystalline core top shield indicator banner */}
+        <div className="absolute top-1.5 right-4 text-[7px] font-mono text-emerald-400/60 z-30 font-extrabold tracking-[0.2em] select-none bg-black/40 px-2 py-0.5 rounded border border-emerald-500/20">
+          SHIELD // ACTIVE
+        </div>
+      </>
+    )
+  },
+  { 
+    id: 'midnight_city', 
+    name: 'Telematic Horizon', 
+    desc: 'High-voltage cyber teal circuit grids with a dynamic scrolling scanner sweeper bar.', 
+    price: 4500, 
+    cardBorderClass: 'border-2 border-cyan-500/90 shadow-[0_0_28px_rgba(6,182,212,0.35)]',
+    cornerElement: (
+      <>
+        {/* Dynamic Cyber Sweep Scanning Laser Line */}
+        <div className="absolute inset-x-1.5 h-[2px] bg-cyan-400 shadow-[0_0_10px_#06b6d4] z-20 pointer-events-none rounded animate-[cyberSweep_4s_linear_infinite]" />
+
+        {/* Tech Circuit Borders enclosing card */}
+        <div className="absolute top-1 inset-x-3 h-[1px] bg-cyan-500/20" />
+        <div className="absolute bottom-1 inset-x-3 h-[1px] bg-cyan-500/20" />
+        <div className="absolute left-1 inset-y-3 w-[1px] bg-cyan-500/20" />
+        <div className="absolute right-1 inset-y-3 w-[1px] bg-cyan-500/20" />
+
+        {/* Telemetry Corner Indicator Dots Blinking */}
+        <div className="absolute top-1.5 left-1.5 w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4] animate-[circuitPulse_1.2s_infinite] z-30" />
+        <div className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4] animate-[circuitPulse_1.2s_infinite] z-30" style={{ animationDelay: '0.3s' }} />
+        <div className="absolute bottom-1.5 left-1.5 w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4] animate-[circuitPulse_1.2s_infinite] z-30" style={{ animationDelay: '0.6s' }} />
+        <div className="absolute bottom-1.5 right-1.5 w-1 h-1 rounded-full bg-cyan-400 shadow-[0_0_8px_#06b6d4] animate-[circuitPulse_1.2s_infinite] z-30" style={{ animationDelay: '0.9s' }} />
+
+        {/* Futuristic Cyber Bracket Caps */}
+        <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-cyan-400/80 pointer-events-none z-30" />
+        <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-cyan-400/80 pointer-events-none z-30" />
+        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-cyan-400/80 pointer-events-none z-30" />
+        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-cyan-400/80 pointer-events-none z-30" />
+
+        <div className="absolute inset-2 border border-dashed border-cyan-500/15 pointer-events-none z-10" />
+      </>
+    )
+  }
 ];
 
 export default function AvatarPanel({ profile, setProfile, saveSettings, setToast, archivedWorkouts }: AvatarPanelProps) {
-  const [activeTab, setActiveTab] = useState<'customization' | 'auras' | 'emotes' | 'titles' | 'banners'>('customization');
+  const [activeTab, setActiveTab] = useState<'customization' | 'auras' | 'emotes' | 'titles' | 'banners' | 'bannerBorders'>('customization');
   const [isClaimingBonus, setIsClaimingBonus] = useState(false);
+
+  // Tab scroll & swipe controls for mobile availability
+  const tabContainerRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+
+  const checkScrollState = () => {
+    const el = tabContainerRef.current;
+    if (el) {
+      setShowLeftArrow(el.scrollLeft > 8);
+      setShowRightArrow(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+    }
+  };
+
+  useEffect(() => {
+    const el = tabContainerRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScrollState);
+      // Run checklist checks once everything handles rendering
+      checkScrollState();
+      
+      // Also listen to window resize
+      window.addEventListener('resize', checkScrollState);
+      
+      const timeoutId = setTimeout(checkScrollState, 200);
+
+      return () => {
+        el.removeEventListener('scroll', checkScrollState);
+        window.removeEventListener('resize', checkScrollState);
+        clearTimeout(timeoutId);
+      };
+    }
+  }, []);
+
+  // When active tab changes, auto-scroll it into view
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const activeEl = tabContainerRef.current?.querySelector('[data-active="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+      checkScrollState();
+    }, 120);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
+
+  const scrollTabsNext = (direction: 'left' | 'right') => {
+    const el = tabContainerRef.current;
+    if (el) {
+      const scrollStep = 200;
+      el.scrollBy({
+        left: direction === 'left' ? -scrollStep : scrollStep,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // Safely grab user values with defaults
   const level = profile?.avatarLevel ?? 1;
@@ -284,6 +736,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   const equippedEmote = profile?.equippedEmote ?? 'none';
   const equippedTitle = profile?.equippedTitle ?? 'lifter';
   const equippedBanner = profile?.equippedBanner ?? 'titan_gold';
+  const equippedBorder = profile?.equippedBorder ?? 'none';
 
   // Level XP Helper
   const getXpNeededForLevel = (lvl: number) => {
@@ -444,7 +897,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
     }
     else if (category === 'banners') {
       const dbKey = `unlocked_banner_${itemId}`;
-      const isUnlocked = itemId === 'titan_gold' || itemId === 'cyberpunk_grid' || (profile as any)?.[dbKey];
+      const isUnlocked = itemId === 'titan_gold' || (profile as any)?.[dbKey];
       if (isUnlocked) {
         const updated = { equippedBanner: itemId };
         setProfile(prev => prev ? { ...prev, ...updated } : null);
@@ -462,6 +915,26 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         await saveSettings(updated);
       }
     }
+    else if (category === 'bannerBorders') {
+      const dbKey = `unlocked_border_${itemId}`;
+      const isUnlocked = itemId === 'none' || (profile as any)?.[dbKey];
+      if (isUnlocked) {
+        const updated = { equippedBorder: itemId };
+        setProfile(prev => prev ? { ...prev, ...updated } : null);
+        await saveSettings(updated);
+      } else {
+        if (credits < price) {
+          return;
+        }
+        const updated = {
+          avatarCredits: credits - price,
+          [dbKey]: true,
+          equippedBorder: itemId
+        };
+        setProfile(prev => prev ? { ...prev, ...updated } : null);
+        await saveSettings(updated);
+      }
+    }
   };
 
   const getActiveTitle = () => {
@@ -470,6 +943,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
   const getActiveBanner = () => {
     return BANNERS.find(b => b.id === equippedBanner) || BANNERS[0];
+  };
+
+  const getActiveBorder = () => {
+    return BORDERS.find(b => b.id === equippedBorder) || BORDERS[0];
   };
 
   const activeAuraStyling = AURA_STYLING[equippedAura] || AURA_STYLING.none;
@@ -505,6 +982,93 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         @keyframes rippleWave {
           0% { transform: scale(0.5); opacity: 0.8; border-width: 2px; }
           100% { transform: scale(1.6); opacity: 0; border-width: 0.5px; }
+        }
+        @keyframes fireFlicker {
+          0%, 100% { transform: scale(1) translateY(0); filter: brightness(1.1) blur(0.5px); }
+          50% { transform: scale(1.06) translateY(-2px); filter: brightness(1.3) blur(0px); }
+        }
+        @keyframes cyberSweep {
+          0% { top: 0%; opacity: 0; }
+          10% { opacity: 0.9; }
+          90% { opacity: 0.9; }
+          100% { top: 100%; opacity: 0; }
+        }
+        @keyframes laserSlideH {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes laserSlideV {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+        @keyframes leafSway {
+          0%, 100% { transform: rotate(0deg) scale(1); }
+          50% { transform: rotate(6deg) scale(1.05); }
+        }
+        @keyframes goldPulse {
+          0%, 100% { filter: drop-shadow(0 0 10px rgba(245,158,11,0.4)) brightness(1); }
+          50% { filter: drop-shadow(0 0 18px rgba(251,191,36,0.75)) brightness(1.2); }
+        }
+        @keyframes hazardSlide {
+          0% { background-position: 0px 0px; }
+          100% { background-position: 32px 0px; }
+        }
+        @keyframes circuitPulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
+        }
+        @keyframes starRotate {
+          0% { transform: scale(1) rotate(0deg); }
+          50% { transform: scale(1.22) rotate(180deg); filter: brightness(1.3) drop-shadow(0 0 10px rgba(245,158,11,0.85)); }
+          100% { transform: scale(1) rotate(360deg); }
+        }
+        @keyframes goldShimmer {
+          0% { transform: translate(-150%, -150%) rotate(35deg); }
+          100% { transform: translate(150%, 150%) rotate(35deg); }
+        }
+        @keyframes moltenRune {
+          0%, 100% { color: rgba(146, 64, 14, 0.45); text-shadow: 0 0 2px rgba(120, 53, 4, 0.1); filter: brightness(0.9); }
+          50% { color: rgba(251, 146, 60, 0.95); text-shadow: 0 0 12px #f97316, 0 0 24px #ef4444; filter: brightness(1.5); }
+        }
+        @keyframes moltenRuneOvert {
+          0%, 100% { color: rgba(220, 38, 38, 0.5); text-shadow: 0 0 3px rgba(120, 30, 10, 0.2); transform: scale(0.95); }
+          50% { color: #f97316; text-shadow: 0 0 20px #ff4500, 0 0 35px #ff2500, 0 0 55px #ef4444; transform: scale(1.15) brightness(2.2); }
+        }
+        @keyframes gearSpin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes gearSpinHuge {
+          0% { transform: scale(1.6) rotate(0deg); filter: drop-shadow(0 0 6px rgba(249,115,22,0.4)); }
+          50% { filter: drop-shadow(0 0 15px rgba(249,115,22,0.85)) brightness(1.45); }
+          100% { transform: scale(1.6) rotate(360deg); filter: drop-shadow(0 0 6px rgba(249,115,22,0.4)); }
+        }
+        @keyframes bioPulseH {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        @keyframes bioPulseV {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
+        }
+        @keyframes sporeDrift {
+          0%, 100% { transform: translate(0, 0) scale(0.8); opacity: 0.15; }
+          33% { transform: translate(8px, -18px) scale(1.15); opacity: 0.85; }
+          66% { transform: translate(-6px, -32px) scale(0.9); opacity: 0.35; }
+        }
+        @keyframes magmaRise {
+          0% { transform: translateY(110%) scale(0.6) rotate(0deg); opacity: 0; }
+          50% { opacity: 0.95; filter: brightness(1.5) drop-shadow(0 0 8px #f97316); }
+          100% { transform: translateY(-40%) scale(1.3) rotate(180deg); opacity: 0; }
+        }
+        @keyframes emeraldGlow {
+          0%, 100% { filter: drop-shadow(0 0 6px rgba(5,150,105,0.7)) brightness(0.95); transform: scale(1) rotate(0deg); }
+          50% { filter: drop-shadow(0 0 22px rgba(52,211,153,0.95)) brightness(1.4) saturate(1.3); transform: scale(1.18) rotate(15deg); }
+        }
+        @keyframes crystalDrift {
+          0% { transform: translateY(110%) translateX(var(--x-start, 0px)) rotate(0deg) scale(0.5); opacity: 0; }
+          50% { opacity: 0.9; filter: drop-shadow(0 0 8px #10b981) brightness(1.25); }
+          100% { transform: translateY(-30%) translateX(calc(var(--x-start, 0px) + 25px)) rotate(180deg) scale(1.2); opacity: 0; }
         }
         .animate-orbit {
           animation: orbit 12s linear infinite;
@@ -567,8 +1131,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         
         {/* Left Side: Majestic Avatar Showcase Card (col-span-12 on mobile, col-span-5 on desktop) */}
         <div className="lg:col-span-5 flex justify-center">
-          <div className={`relative w-full max-w-[440px] lg:max-w-none aspect-[3/4.2] bg-black/40 border border-white/10 rounded-lg overflow-hidden flex flex-col justify-between p-7 group transition-all duration-700 shadow-3xl ${activeAuraStyling.outerGlow}`}>
+          <div className={`relative w-full max-w-[440px] lg:max-w-none aspect-[3/4.2] bg-black/40 ${getActiveBorder().id === 'none' ? 'border border-white/10' : getActiveBorder().cardBorderClass} rounded-lg overflow-hidden flex flex-col justify-between p-7 group transition-all duration-700 shadow-3xl ${activeAuraStyling.outerGlow}`}>
             
+            {/* Theme Border Corner Elements */}
+            {getActiveBorder().cornerElement}
+
             {/* Banner Theme Background */}
             <div className={`absolute inset-0 z-0 transition-all duration-700 ${getActiveBanner().bgStyle}`} />
 
@@ -823,30 +1390,64 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       <div className="bg-white/[0.01] border border-white/5 rounded-lg overflow-hidden">
         
         {/* Navigation Categories inside Shop */}
-        <div className="flex overflow-x-auto no-scrollbar border-b border-white/5 bg-black/25">
-          {[
-            { id: 'customization', label: 'Customization' },
-            { id: 'auras', label: 'Auras' },
-            { id: 'emotes', label: 'Emotes' },
-            { id: 'titles', label: 'Titles' },
-            { id: 'banners', label: 'Banners' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-8 py-5 text-xs font-black uppercase tracking-[0.2em] relative cursor-pointer font-sans transition-all flex-shrink-0 ${
-                activeTab === tab.id ? 'text-gym-accent bg-white/[0.01]' : 'text-white/40 hover:text-white/80'
-              }`}
+        <div className="relative border-b border-white/5 bg-black/25 flex items-center">
+          {/* Scroll Left indicator/button */}
+          {showLeftArrow && (
+            <button 
+              onClick={() => scrollTabsNext('left')}
+              className="absolute left-0 inset-y-0 px-2 bg-gradient-to-r from-black/90 via-black/80 to-transparent text-white/60 hover:text-white z-40 flex items-center transition-all cursor-pointer"
+              title="Scroll Left"
             >
-              {tab.label}
-              {activeTab === tab.id && (
-                <motion.div 
-                  layoutId="avatar-shop-active-line"
-                  className="absolute bottom-0 inset-x-0 h-0.5 bg-gym-accent" 
-                />
-              )}
+              <div className="bg-zinc-900/90 hover:bg-zinc-800 border border-white/10 rounded-full p-2.5 shadow-xl active:scale-90 transition-all">
+                <ChevronLeft className="w-4 h-4 text-gym-accent" />
+              </div>
             </button>
-          ))}
+          )}
+
+          {/* Tab lists */}
+          <div 
+            ref={tabContainerRef}
+            className="flex flex-1 overflow-x-auto no-scrollbar scroll-smooth relative"
+          >
+            {[
+              { id: 'customization', label: 'Customization' },
+              { id: 'auras', label: 'Auras' },
+              { id: 'emotes', label: 'Emotes' },
+              { id: 'titles', label: 'Titles' },
+              { id: 'banners', label: 'Banners' },
+              { id: 'bannerBorders', label: 'Banner Borders' }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                data-active={activeTab === tab.id ? "true" : "false"}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-8 py-5 text-xs font-black uppercase tracking-[0.2em] relative cursor-pointer font-sans transition-all flex-shrink-0 ${
+                  activeTab === tab.id ? 'text-gym-accent bg-white/[0.01]' : 'text-white/40 hover:text-white/80'
+                }`}
+              >
+                {tab.label}
+                {activeTab === tab.id && (
+                  <motion.div 
+                    layoutId="avatar-shop-active-line"
+                    className="absolute bottom-0 inset-x-0 h-0.5 bg-gym-accent" 
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Scroll Right indicator/button */}
+          {showRightArrow && (
+            <button 
+              onClick={() => scrollTabsNext('right')}
+              className="absolute right-0 inset-y-0 px-2 bg-gradient-to-l from-black/90 via-black/80 to-transparent text-white/60 hover:text-white z-40 flex items-center transition-all cursor-pointer"
+              title="Scroll Right"
+            >
+              <div className="bg-zinc-900/90 hover:bg-zinc-800 border border-white/10 rounded-full p-2.5 shadow-xl active:scale-90 transition-all">
+                <ChevronRight className="w-4 h-4 text-gym-accent" />
+              </div>
+            </button>
+          )}
         </div>
 
         {/* Categories rendering grids */}
@@ -1081,7 +1682,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               {/* Tab 5: Banners */}
               {activeTab === 'banners' && BANNERS.map((banner) => {
                 const dbKey = `unlocked_banner_${banner.id}`;
-                const isUnlocked = banner.id === 'titan_gold' || banner.id === 'cyberpunk_grid' || (profile as any)?.[dbKey];
+                const isUnlocked = banner.id === 'titan_gold' || (profile as any)?.[dbKey];
                 const isEquipped = equippedBanner === banner.id;
 
                 return (
@@ -1120,6 +1721,57 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                         ) : (
                           <div className="bg-white/5 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 transition-all">
                             <Coins className="w-3.5 h-3.5" /> {banner.price.toLocaleString()}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                );
+              })}
+
+              {/* Tab 6: Banner Borders */}
+              {activeTab === 'bannerBorders' && BORDERS.map((borderItem) => {
+                const dbKey = `unlocked_border_${borderItem.id}`;
+                const isUnlocked = borderItem.id === 'none' || (profile as any)?.[dbKey];
+                const isEquipped = equippedBorder === borderItem.id;
+
+                return (
+                  <div 
+                    key={borderItem.id}
+                    onClick={() => buyOrEquipItem('bannerBorders', borderItem.id, borderItem.price)}
+                    className={`relative rounded-lg border p-5 bg-black/35 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
+                      isEquipped 
+                        ? 'border-gym-accent bg-gym-accent/[0.01]' 
+                        : isUnlocked 
+                          ? 'border-white/10 hover:border-white/30 hover:bg-white/[0.02]' 
+                          : 'border-white/5 bg-black/50 opacity-80 hover:opacity-100 font-light'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-gym-accent" />
+                          <h5 className="text-white font-black font-sans uppercase tracking-widest text-sm">{borderItem.name}</h5>
+                        </div>
+                        {!isUnlocked && <Lock className="w-3.5 h-3.5 text-white/20" />}
+                      </div>
+                      <p className="text-[10px] text-white/40 leading-tight font-light mt-1">{borderItem.desc}</p>
+                    </div>
+
+                    <div className="border-t border-white/5 pt-3 flex items-center justify-between mt-auto">
+                      <span className="text-[8px] font-mono text-white/25 uppercase tracking-widest">Frame border</span>
+                      
+                      <div className="flex items-center gap-2">
+                        {isEquipped ? (
+                          <div className="bg-gym-accent text-black font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-sm flex items-center gap-1 select-none">
+                            <Check className="w-3 h-3 stroke-[3]" /> Equipped
+                          </div>
+                        ) : isUnlocked ? (
+                          <span className="text-[9px] uppercase font-bold text-white/50 tracking-widest hover:text-white transition-colors">Equip</span>
+                        ) : (
+                          <div className="bg-white/5 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 transition-all">
+                            <Coins className="w-3.5 h-3.5" /> {borderItem.price.toLocaleString()}
                           </div>
                         )}
                       </div>
