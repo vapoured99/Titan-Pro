@@ -21,6 +21,42 @@ import {
   ChevronLeft
 } from 'lucide-react';
 
+// Vanguard Imports
+import imgVanguardDefault from '../assets/images/vanguard_default_1779362283869.png';
+import imgVanguardFlex from '../assets/images/vanguard_flex_1779362302716.png';
+import imgVanguardCharge from '../assets/images/vanguard_charge_1779362323371.png';
+import imgVanguardRoar from '../assets/images/vanguard_roar_1779362341980.png';
+
+// Neon Striker Imports
+import imgNeonStrikerDefault from '../assets/images/neon_striker_1779356868324.png';
+import imgNeonStrikerFlex from '../assets/images/neon_striker_flex_1779361070169.png';
+import imgNeonStrikerCharge from '../assets/images/neon_striker_charge_1779361086721.png';
+import imgNeonStrikerRoar from '../assets/images/neon_striker_roar_1779361103538.png';
+
+// Shadow Hunter Imports
+import imgShadowHunterDefault from '../assets/images/shadow_hunter_1779356889743.png';
+import imgShadowHunterFlex from '../assets/images/shadow_hunter_flex_1779361122192.png';
+import imgShadowHunterCharge from '../assets/images/shadow_hunter_charge_1779361139639.png';
+import imgShadowHunterRoar from '../assets/images/shadow_hunter_roar_1779361158854.png';
+
+// Cyber Beast Imports
+import imgCyberBeastDefault from '../assets/images/cyber_beast_1779356910976.png';
+import imgCyberBeastFlex from '../assets/images/cyber_beast_flex_1779361174893.png';
+import imgCyberBeastCharge from '../assets/images/cyber_beast_charge_1779361191878.png';
+import imgCyberBeastRoar from '../assets/images/cyber_beast_roar_1779361209673.png';
+
+// Golden Disciple Imports
+import imgGoldenDiscipleDefault from '../assets/images/golden_disciple_1779356934562.png';
+import imgGoldenDiscipleFlex from '../assets/images/golden_disciple_flex_1779361226424.png';
+import imgGoldenDiscipleCharge from '../assets/images/gold_disciple_charge_1779361244052.png';
+import imgGoldenDiscipleRoar from '../assets/images/gold_disciple_roar_1779361263799.png';
+
+// Omega Prime Imports
+import imgOmegaPrimeDefault from '../assets/images/omega_prime_1779356957034.png';
+import imgOmegaPrimeFlex from '../assets/images/omega_prime_flex_1779361283032.png';
+import imgOmegaPrimeCharge from '../assets/images/omega_prime_charge_1779361301468.png';
+import imgOmegaPrimeRoar from '../assets/images/omega_prime_roar_1779361316201.png';
+
 interface UserProfile {
   displayName?: string;
   photoURL?: string;
@@ -57,14 +93,14 @@ const OUTFITS = [
     name: 'Vanguard Cadet',
     description: 'Sleek dark charcoal gym gear cadet. Standard athletic specimen.',
     price: 0,
-    image: '/src/assets/images/vanguard_default_1779362283869.png',
+    image: imgVanguardDefault,
     accentColor: 'from-zinc-400 to-slate-600',
     glowClass: 'shadow-[0_0_20px_rgba(156,163,175,0.25)]',
     poseImages: {
-      default: '/src/assets/images/vanguard_default_1779362283869.png',
-      flex_mode: '/src/assets/images/vanguard_flex_1779362302716.png',
-      power_charge: '/src/assets/images/vanguard_charge_1779362323371.png',
-      savage_roar: '/src/assets/images/vanguard_roar_1779362341980.png'
+      default: imgVanguardDefault,
+      flex_mode: imgVanguardFlex,
+      power_charge: imgVanguardCharge,
+      savage_roar: imgVanguardRoar
     }
   },
   {
@@ -72,14 +108,14 @@ const OUTFITS = [
     name: 'Neon Striker',
     description: 'Neon purple glowing heavy-lifter exosuit.',
     price: 6000,
-    image: '/src/assets/images/neon_striker_1779356868324.png',
+    image: imgNeonStrikerDefault,
     accentColor: 'from-fuchsia-500 to-purple-600',
     glowClass: 'shadow-[0_0_20px_rgba(219,39,119,0.3)]',
     poseImages: {
-      default: '/src/assets/images/neon_striker_1779356868324.png',
-      flex_mode: '/src/assets/images/neon_striker_flex_1779361070169.png',
-      power_charge: '/src/assets/images/neon_striker_charge_1779361086721.png',
-      savage_roar: '/src/assets/images/neon_striker_roar_1779361103538.png'
+      default: imgNeonStrikerDefault,
+      flex_mode: imgNeonStrikerFlex,
+      power_charge: imgNeonStrikerCharge,
+      savage_roar: imgNeonStrikerRoar
     }
   },
   {
@@ -87,14 +123,14 @@ const OUTFITS = [
     name: 'Shadow Hunter',
     description: 'Crimson-red tactical active cyborg.',
     price: 12000,
-    image: '/src/assets/images/shadow_hunter_1779356889743.png',
+    image: imgShadowHunterDefault,
     accentColor: 'from-rose-500 to-red-700',
     glowClass: 'shadow-[0_0_20px_rgba(239,68,68,0.3)]',
     poseImages: {
-      default: '/src/assets/images/shadow_hunter_1779356889743.png',
-      flex_mode: '/src/assets/images/shadow_hunter_flex_1779361122192.png',
-      power_charge: '/src/assets/images/shadow_hunter_charge_1779361139639.png',
-      savage_roar: '/src/assets/images/shadow_hunter_roar_1779361158854.png'
+      default: imgShadowHunterDefault,
+      flex_mode: imgShadowHunterFlex,
+      power_charge: imgShadowHunterCharge,
+      savage_roar: imgShadowHunterRoar
     }
   },
   {
@@ -102,14 +138,14 @@ const OUTFITS = [
     name: 'Cyber Beast',
     description: 'Cyber-teal & ice blue electronic armor.',
     price: 15000,
-    image: '/src/assets/images/cyber_beast_1779356910976.png',
+    image: imgCyberBeastDefault,
     accentColor: 'from-cyan-400 to-teal-600',
     glowClass: 'shadow-[0_0_20px_rgba(6,182,212,0.3)]',
     poseImages: {
-      default: '/src/assets/images/cyber_beast_1779356910976.png',
-      flex_mode: '/src/assets/images/cyber_beast_flex_1779361174893.png',
-      power_charge: '/src/assets/images/cyber_beast_charge_1779361191878.png',
-      savage_roar: '/src/assets/images/cyber_beast_roar_1779361209673.png'
+      default: imgCyberBeastDefault,
+      flex_mode: imgCyberBeastFlex,
+      power_charge: imgCyberBeastCharge,
+      savage_roar: imgCyberBeastRoar
     }
   },
   {
@@ -117,14 +153,14 @@ const OUTFITS = [
     name: 'Golden Disciple',
     description: 'Gleaming physical specimen with solid gold plating.',
     price: 18000,
-    image: '/src/assets/images/golden_disciple_1779356934562.png',
+    image: imgGoldenDiscipleDefault,
     accentColor: 'from-amber-400 to-yellow-600',
     glowClass: 'shadow-[0_0_20px_rgba(245,158,11,0.3)]',
     poseImages: {
-      default: '/src/assets/images/golden_disciple_1779356934562.png',
-      flex_mode: '/src/assets/images/golden_disciple_flex_1779361226424.png',
-      power_charge: '/src/assets/images/gold_disciple_charge_1779361244052.png',
-      savage_roar: '/src/assets/images/gold_disciple_roar_1779361263799.png'
+      default: imgGoldenDiscipleDefault,
+      flex_mode: imgGoldenDiscipleFlex,
+      power_charge: imgGoldenDiscipleCharge,
+      savage_roar: imgGoldenDiscipleRoar
     }
   },
   {
@@ -132,14 +168,14 @@ const OUTFITS = [
     name: 'Omega Prime',
     description: 'Fully heavy armored mecha cyborg athlete.',
     price: 20000,
-    image: '/src/assets/images/omega_prime_1779356957034.png',
+    image: imgOmegaPrimeDefault,
     accentColor: 'from-red-600 to-indigo-900',
     glowClass: 'shadow-[0_0_20px_rgba(220,38,38,0.3)]',
     poseImages: {
-      default: '/src/assets/images/omega_prime_1779356957034.png',
-      flex_mode: '/src/assets/images/omega_prime_flex_1779361283032.png',
-      power_charge: '/src/assets/images/omega_prime_charge_1779361301468.png',
-      savage_roar: '/src/assets/images/omega_prime_roar_1779361316201.png'
+      default: imgOmegaPrimeDefault,
+      flex_mode: imgOmegaPrimeFlex,
+      power_charge: imgOmegaPrimeCharge,
+      savage_roar: imgOmegaPrimeRoar
     }
   }
 ];
