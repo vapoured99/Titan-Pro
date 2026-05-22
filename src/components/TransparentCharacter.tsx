@@ -5,12 +5,13 @@ interface TransparentCharacterProps {
   alt: string;
   className?: string;
   style?: React.CSSProperties;
+  toleranceMultiplier?: number;
 }
 
 // Low-overhead client-side cache to ensure we never process the same image URL twice
 const imageCache: Record<string, string> = {};
 
-export function TransparentCharacter({ src, alt, className, style }: TransparentCharacterProps) {
+export function TransparentCharacter({ src, alt, className, style, toleranceMultiplier = 1.0 }: TransparentCharacterProps) {
   const [processedSrc, setProcessedSrc] = useState<string>(src);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const activeSrcRef = useRef<string>(src);
@@ -18,9 +19,10 @@ export function TransparentCharacter({ src, alt, className, style }: Transparent
   useEffect(() => {
     activeSrcRef.current = src;
     
-    // If already cached, apply immediately
-    if (imageCache[src]) {
-      setProcessedSrc(imageCache[src]);
+    // Cache key containing both the src and the specific tolerance multiplier
+    const cacheKey = `${src}_${toleranceMultiplier}`;
+    if (imageCache[cacheKey]) {
+      setProcessedSrc(imageCache[cacheKey]);
       return;
     }
 
@@ -52,34 +54,50 @@ export function TransparentCharacter({ src, alt, className, style }: Transparent
         const width = canvas.width;
         const height = canvas.height;
 
-        // --- Bilinear Background Reference Sampling ---
-        // We sample multiple corner points representing the background canvas
-        // Point A: top-left area
-        // Point B: top-right area
-        // Point C: mid-left area
-        // Point D: mid-right area
+        // --- Multi-Level Bilinear Background Reference Sampling ---
+        // Samples 6 reference points representing the sky and skyline background canvas
+        // to handle smooth gradients from top to bottom perfectly without harming center.
         const sampleRgba = (x: number, y: number) => {
           const idx = (Math.floor(y) * width + Math.floor(x)) * 4;
           return [data[idx], data[idx + 1], data[idx + 2], data[idx + 3]];
         };
 
-        const cA = sampleRgba(Math.min(15, width - 1), Math.min(15, height - 1));
-        const cB = sampleRgba(Math.max(width - 15, 0), Math.min(15, height - 1));
-        const cC = sampleRgba(Math.min(15, width - 1), Math.min(height / 3, height - 1));
-        const cD = sampleRgba(Math.max(width - 15, 0), Math.min(height / 3, height - 1));
+        const cA = sampleRgba(Math.min(15, width - 1), Math.min(15, height - 1)); // Top-Left
+        const cB = sampleRgba(Math.max(width - 15, 0), Math.min(15, height - 1)); // Top-Right
+
+        const cC = sampleRgba(Math.min(15, width - 1), Math.round(height / 2));  // Mid-Left
+        const cD = sampleRgba(Math.max(width - 15, 0), Math.round(height / 2));  // Mid-Right
+
+        const cE = sampleRgba(Math.min(15, width - 1), Math.max(height - 15, 0)); // Bottom-Left
+        const cF = sampleRgba(Math.max(width - 15, 0), Math.max(height - 15, 0)); // Bottom-Right
 
         // Let's run a full pass over the image data buffer
         for (let y = 0; y < height; y++) {
-          const u = y / height; // vertical progress [0..1]
-          
-          // Interpolate the background left and right edge colors at this height level
-          const bgL_R = (1 - u) * cA[0] + u * cC[0];
-          const bgL_G = (1 - u) * cA[1] + u * cC[1];
-          const bgL_B = (1 - u) * cA[2] + u * cC[2];
+          let bgL_R, bgL_G, bgL_B;
+          let bgR_R, bgR_G, bgR_B;
 
-          const bgR_R = (1 - u) * cB[0] + u * cD[0];
-          const bgR_G = (1 - u) * cB[1] + u * cD[1];
-          const bgR_B = (1 - u) * cB[2] + u * cD[2];
+          // Bilinearly interpolate from top to bottom
+          if (y < height / 2) {
+            const u = y / (height / 2); // vertical progress in upper half [0..1]
+            bgL_R = (1 - u) * cA[0] + u * cC[0];
+            bgL_G = (1 - u) * cA[1] + u * cC[1];
+            bgL_B = (1 - u) * cA[2] + u * cC[2];
+
+            bgR_R = (1 - u) * cB[0] + u * cD[0];
+            bgR_G = (1 - u) * cB[1] + u * cD[1];
+            bgR_B = (1 - u) * cB[2] + u * cD[2];
+          } else {
+            const u = (y - height / 2) / (height / 2); // vertical progress in lower half [0..1]
+            bgL_R = (1 - u) * cC[0] + u * cE[0];
+            bgL_G = (1 - u) * cC[1] + u * cE[1];
+            bgL_B = (1 - u) * cC[2] + u * cE[2];
+
+            bgR_R = (1 - u) * cD[0] + u * cF[0];
+            bgR_G = (1 - u) * cD[1] + u * cF[1];
+            bgR_B = (1 - u) * cD[2] + u * cF[2];
+          }
+
+          const pxFromTop = y / height;
 
           for (let x = 0; x < width; x++) {
             const v = x / width; // horizontal progress [0..1]
@@ -92,7 +110,7 @@ export function TransparentCharacter({ src, alt, className, style }: Transparent
 
             if (originalAlpha === 0) continue;
 
-            // Interpolate the exact background reference color for this pixel coordinates
+            // Interpolate the exact background reference color for this pixel coordinate
             const bgR = (1 - v) * bgL_R + v * bgR_R;
             const bgG = (1 - v) * bgL_G + v * bgR_G;
             const bgB = (1 - v) * bgL_B + v * bgR_B;
@@ -105,20 +123,36 @@ export function TransparentCharacter({ src, alt, className, style }: Transparent
             );
 
             // --- Spatial Weighted Mask Calculations ---
-            // Character sits strictly in the center and bottom, head around y=0.2.
-            // Edge and corner regions are 100% background and require higher chroma tolerance.
-            const distX = Math.abs(x - width / 2) / (width / 2); // 0 at center, 1 at sides
-            const distY = y / height; // 0 at top, 1 at bottom
+            // Detect horizontal displacement from absolute center spine
+            const pxFromCenter = Math.abs(x - width / 2) / (width / 2);
 
-            // Be highly aggressive at the top and left/right limits, but preserve central torso/head areas
-            const edgeForce = Math.pow(distX, 1.8); // exponential falloff away from spine
-            const topForce = Math.max(0, 1 - distY / 0.3); // aggressive near the top ceiling
-            const outerWeight = Math.max(edgeForce, topForce);
+            // Define custom character bounding width constraints based on anatomy height
+            let maxWidth = 0.0;
+            if (pxFromTop >= 0.10 && pxFromTop < 0.28) {
+              maxWidth = 0.35; // Head/Neck area
+            } else if (pxFromTop >= 0.28 && pxFromTop < 0.65) {
+              maxWidth = 0.52; // Flexing back/shoulders/arms
+            } else if (pxFromTop >= 0.65 && pxFromTop < 0.98) {
+              maxWidth = 0.44; // Core torso and legs
+            }
 
-            // Calculate precise lower and upper similarity limit
-            // Centers get super protective tolerances (~16), edges get aggressive wide matching (~52)
-            const minTolerance = 14 + outerWeight * 38;
-            const featherWidth = 24;
+            // Determine if inside character bounding envelope
+            const insideChar = pxFromCenter < maxWidth && pxFromTop >= 0.10 && pxFromTop < 0.98;
+            let protect = 0;
+            if (insideChar) {
+              // High core protection along the spine, fading smoothly to the edges
+              protect = Math.pow(1 - (pxFromCenter / maxWidth), 1.4);
+            }
+
+            // Outside the protection zone, the background should be cleared aggressively.
+            // Edge areas receive extremely high tolerance to wipe out skies, skylines or side lighting.
+            const cornerWeight = Math.max(pxFromCenter, 1 - pxFromTop); 
+            const bgTolerance = (24 + cornerWeight * 36) * toleranceMultiplier;
+            const characterTolerance = 7.5 * toleranceMultiplier; // Extremely protective near the center spine
+
+            // Linearly interpolate the tolerance and feather width
+            const minTolerance = bgTolerance * (1 - protect) + characterTolerance * protect;
+            const featherWidth = (14 * (1 - protect) + 22 * protect) * toleranceMultiplier;
 
             let alpha = originalAlpha;
 
@@ -131,13 +165,23 @@ export function TransparentCharacter({ src, alt, className, style }: Transparent
               alpha = Math.round(ratio * originalAlpha);
             }
 
+            // High protection core mapping (e.g. skin, chest, head, torso) must remain SOLID.
+            if (protect > 0.12) {
+              // Smoothly transition minimum alpha to 100% (originalAlpha) as we move deeper into the body
+              const solidFactor = Math.min(1.0, (protect - 0.12) / 0.18); // 100% solid when protect >= 0.30
+              const minAlpha = Math.round(originalAlpha * solidFactor);
+              if (alpha < minAlpha) {
+                alpha = minAlpha;
+              }
+            }
+
             data[idx + 3] = alpha;
           }
         }
 
         ctx.putImageData(imageData, 0, 0);
         const dataUrl = canvas.toDataURL('image/png');
-        imageCache[src] = dataUrl;
+        imageCache[cacheKey] = dataUrl;
         setProcessedSrc(dataUrl);
       } catch (err) {
         console.error('Canvas processing failed: fallback to raw image source', err);
@@ -151,7 +195,7 @@ export function TransparentCharacter({ src, alt, className, style }: Transparent
       setProcessedSrc(src);
       setIsProcessing(false);
     };
-  }, [src]);
+  }, [src, toleranceMultiplier]);
 
   return (
     <img

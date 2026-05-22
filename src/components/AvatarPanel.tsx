@@ -2237,6 +2237,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                     ? 'animate-super-shudder scale-[1.05]'
                     : 'scale-100 group-hover:scale-[1.04]'
                 }`}
+                toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
               />
 
               {/* Inner Aura overlay graphics rendered DIRECTLY on top of character image for max intensity */}
@@ -2498,6 +2499,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                     src={activeCharacterImage} 
                     alt="Active Micro Outfit" 
                     className="w-full h-full object-cover" 
+                    toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
                   />
                   <div className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-gym-accent transform scale-90 border border-black animate-pulse-slow" />
                 </div>
@@ -2713,6 +2715,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                           src={outfit.image} 
                           alt={outfit.name} 
                           className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" 
+                          toleranceMultiplier={outfit.id === 'golden_disciple' ? 0.85 : 1.0}
                         />
                         {!isUnlocked && (
                           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
