@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { TransparentCharacter } from './TransparentCharacter';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Shield, 
@@ -85,7 +86,7 @@ import imgBannerShadowHunter from '../assets/images/banner_shadow_hunter_1779449
 import imgBannerCyberBeast from '../assets/images/banner_cyber_beast_1779449309358.png';
 import imgBannerGoldenDisciple from '../assets/images/banner_golden_disciple_1779449325883.png';
 import imgBannerOmegaPrime from '../assets/images/banner_omega_prime_mech_1779449344526.png';
-import imgBannerPhantomWraith from '../assets/images/banner_phantom_wraith_v2_1779449864245.png';
+import imgBannerPhantomWraith from '../assets/images/banner_phantom_wraith_v3_1779451441624.png';
 import imgBannerLumenSentinel from '../assets/images/banner_lumen_sentinel_1779449818555.png';
 
 
@@ -2226,9 +2227,9 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             <div className={`relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
               equippedEmote === 'final_form'
                 ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
-                : 'border-white/5 bg-black/40 group-hover:border-gym-accent/40'
+                : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
             }`}>
-              <img 
+              <TransparentCharacter 
                 src={activeCharacterImage} 
                 alt={activeOutfit.name} 
                 className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
@@ -2236,7 +2237,6 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                     ? 'animate-super-shudder scale-[1.05]'
                     : 'scale-100 group-hover:scale-[1.04]'
                 }`}
-                referrerPolicy="no-referrer"
               />
 
               {/* Inner Aura overlay graphics rendered DIRECTLY on top of character image for max intensity */}
@@ -2493,12 +2493,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               
               <div className="flex items-center gap-4">
                 {/* Micro avatar profile */}
-                <div className="relative w-14 h-14 rounded-md border border-gym-accent/45 overflow-hidden flex-shrink-0 bg-black/40">
-                  <img 
+                <div className="relative w-14 h-14 rounded-md border border-gym-accent/45 overflow-hidden flex-shrink-0 bg-transparent">
+                  <TransparentCharacter 
                     src={activeCharacterImage} 
                     alt="Active Micro Outfit" 
                     className="w-full h-full object-cover" 
-                    referrerPolicy="no-referrer"
                   />
                   <div className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-gym-accent transform scale-90 border border-black animate-pulse-slow" />
                 </div>
@@ -2709,12 +2708,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
                     <div className="flex gap-4 items-start relative z-10">
                       {/* Item Avatar preview */}
-                      <div className="w-20 h-24 rounded-md border border-white/5 overflow-hidden flex-shrink-0 bg-black/40 relative">
-                        <img 
+                      <div className="w-20 h-24 rounded-md border border-white/5 overflow-hidden flex-shrink-0 bg-transparent relative">
+                        <TransparentCharacter 
                           src={outfit.image} 
                           alt={outfit.name} 
                           className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" 
-                          referrerPolicy="no-referrer"
                         />
                         {!isUnlocked && (
                           <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
