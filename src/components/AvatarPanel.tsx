@@ -57,6 +57,38 @@ import imgOmegaPrimeFlex from '../assets/images/omega_prime_flex_1779361283032.p
 import imgOmegaPrimeCharge from '../assets/images/omega_prime_charge_1779361301468.png';
 import imgOmegaPrimeRoar from '../assets/images/omega_prime_roar_1779361316201.png';
 
+// Shadow Wraith and Lumen Sentinel Generated Imports
+import imgShadowWraithDefault from '../assets/images/shadow_wraith_cyber_1779445357447.png';
+import imgShadowWraithFlex from '../assets/images/shadow_wraith_flex_1779446074058.png';
+import imgShadowWraithCharge from '../assets/images/shadow_wraith_charge_1779446090352.png';
+import imgShadowWraithRoar from '../assets/images/shadow_wraith_roar_1779446108786.png';
+import imgShadowWraithFinal from '../assets/images/wraith_supreme_final_v2_1779449842798.png';
+
+import imgLumenSentinelDefault from '../assets/images/lumen_sentinel_cyber_1779445373875.png';
+import imgLumenSentinelFlex from '../assets/images/lumen_sentinel_flex_1779446141435.png';
+import imgLumenSentinelCharge from '../assets/images/lumen_sentinel_charge_1779446157202.png';
+import imgLumenSentinelRoar from '../assets/images/lumen_sentinel_roar_1779446173501.png';
+import imgLumenSentinelFinal from '../assets/images/lumen_sentinel_final_1779446190633.png';
+
+// Newly generated Final Forms
+import imgVanguardFinal from '../assets/images/vanguard_final_1779446997564.png';
+import imgNeonStrikerFinal from '../assets/images/neon_striker_final_1779447016669.png';
+import imgShadowHunterFinal from '../assets/images/shadow_hunter_final_1779447034179.png';
+import imgCyberBeastFinal from '../assets/images/cyber_beast_final_1779447049772.png';
+import imgGoldenDiscipleFinal from '../assets/images/golden_disciple_final_1779447066274.png';
+import imgOmegaPrimeFinal from '../assets/images/omega_prime_final_1779447085411.png';
+
+// Text-free character class landscape banners
+import imgBannerVanguardCadet from '../assets/images/banner_vanguard_cadet_1779449260585.png';
+import imgBannerNeonStriker from '../assets/images/banner_neon_striker_1779449278463.png';
+import imgBannerShadowHunter from '../assets/images/banner_shadow_hunter_1779449294320.png';
+import imgBannerCyberBeast from '../assets/images/banner_cyber_beast_1779449309358.png';
+import imgBannerGoldenDisciple from '../assets/images/banner_golden_disciple_1779449325883.png';
+import imgBannerOmegaPrime from '../assets/images/banner_omega_prime_mech_1779449344526.png';
+import imgBannerPhantomWraith from '../assets/images/banner_phantom_wraith_v2_1779449864245.png';
+import imgBannerLumenSentinel from '../assets/images/banner_lumen_sentinel_1779449818555.png';
+
+
 interface UserProfile {
   displayName?: string;
   photoURL?: string;
@@ -101,7 +133,7 @@ const OUTFITS = [
       flex_mode: imgVanguardFlex,
       power_charge: imgVanguardCharge,
       savage_roar: imgVanguardRoar,
-      final_form: imgVanguardRoar
+      final_form: imgVanguardFinal
     }
   },
   {
@@ -117,7 +149,7 @@ const OUTFITS = [
       flex_mode: imgNeonStrikerFlex,
       power_charge: imgNeonStrikerCharge,
       savage_roar: imgNeonStrikerRoar,
-      final_form: imgNeonStrikerRoar
+      final_form: imgNeonStrikerFinal
     }
   },
   {
@@ -133,7 +165,7 @@ const OUTFITS = [
       flex_mode: imgShadowHunterFlex,
       power_charge: imgShadowHunterCharge,
       savage_roar: imgShadowHunterRoar,
-      final_form: imgShadowHunterRoar
+      final_form: imgShadowHunterFinal
     }
   },
   {
@@ -149,7 +181,7 @@ const OUTFITS = [
       flex_mode: imgCyberBeastFlex,
       power_charge: imgCyberBeastCharge,
       savage_roar: imgCyberBeastRoar,
-      final_form: imgCyberBeastRoar
+      final_form: imgCyberBeastFinal
     }
   },
   {
@@ -165,7 +197,7 @@ const OUTFITS = [
       flex_mode: imgGoldenDiscipleFlex,
       power_charge: imgGoldenDiscipleCharge,
       savage_roar: imgGoldenDiscipleRoar,
-      final_form: imgGoldenDiscipleRoar
+      final_form: imgGoldenDiscipleFinal
     }
   },
   {
@@ -181,7 +213,39 @@ const OUTFITS = [
       flex_mode: imgOmegaPrimeFlex,
       power_charge: imgOmegaPrimeCharge,
       savage_roar: imgOmegaPrimeRoar,
-      final_form: imgOmegaPrimeRoar
+      final_form: imgOmegaPrimeFinal
+    }
+  },
+  {
+    id: 'shadow_wraith',
+    name: 'Phantom Wraith',
+    description: 'Mysterious smoked-out phantom cyborg cloaked in deep shadow arrays and crimson visors.',
+    price: 16000,
+    image: imgShadowWraithDefault,
+    accentColor: 'from-zinc-800 to-black',
+    glowClass: 'shadow-[0_0_25px_rgba(24,24,27,0.7)]',
+    poseImages: {
+      default: imgShadowWraithDefault,
+      flex_mode: imgShadowWraithFlex,
+      power_charge: imgShadowWraithCharge,
+      savage_roar: imgShadowWraithRoar,
+      final_form: imgShadowWraithFinal
+    }
+  },
+  {
+    id: 'lumen_sentinel',
+    name: 'Lumen Sentinel',
+    description: 'Pristine, high-tech white cyber paladin with glowing cyan highlights.',
+    price: 18000,
+    image: imgLumenSentinelDefault,
+    accentColor: 'from-zinc-100 via-white to-sky-100',
+    glowClass: 'shadow-[0_0_25px_rgba(255,255,255,0.6)] border border-white/20',
+    poseImages: {
+      default: imgLumenSentinelDefault,
+      flex_mode: imgLumenSentinelFlex,
+      power_charge: imgLumenSentinelCharge,
+      savage_roar: imgLumenSentinelRoar,
+      final_form: imgLumenSentinelFinal
     }
   }
 ];
@@ -194,7 +258,9 @@ const AURAS = [
   { id: 'crimson_flare', name: 'Crimson Flare', price: 4500, desc: 'Continuous explosive fire red flares.', color: '#ef4444', glow: 'shadow-[0_0_110px_rgba(239,68,68,0.95),_0_0_55px_rgba(239,68,68,0.6),inset_0_0_25px_rgba(239,68,68,0.4)]' },
   { id: 'hyper_blue_plasma', name: 'Hyper Blue Plasma', price: 5500, desc: 'High-frequency blue thermonuclear electrical fields.', color: '#3b82f6', glow: 'shadow-[0_0_110px_rgba(59,130,246,0.95),_0_0_55px_rgba(59,130,246,0.6),inset_0_0_25px_rgba(59,130,246,0.4)]' },
   { id: 'cyber_shard', name: 'Cyber Shard', price: 6000, desc: 'Rotating neon teal digital shields.', color: '#06b6d4', glow: 'shadow-[0_0_110px_rgba(6,182,212,0.95),_0_0_55px_rgba(6,182,212,0.6),inset_0_0_25px_rgba(6,182,212,0.4)]' },
-  { id: 'golden_halo', name: 'Golden Crown', price: 8000, desc: 'Brilliant golden high-rank celestial crown.', color: '#eab308', glow: 'shadow-[0_0_120px_rgba(234,179,8,1),_0_0_60px_rgba(234,179,8,0.7),inset_0_0_30px_rgba(234,179,8,0.45)]' }
+  { id: 'golden_halo', name: 'Golden Crown', price: 8000, desc: 'Brilliant golden high-rank celestial crown.', color: '#eab308', glow: 'shadow-[0_0_120px_rgba(234,179,8,1),_0_0_60px_rgba(234,179,8,0.7),inset_0_0_30px_rgba(234,179,8,0.45)]' },
+  { id: 'shadow_smoke', name: 'Shadow Smoke', price: 9000, desc: 'Deep, dense whispering kinetic shadow mists.', color: '#0c0a0f', glow: 'shadow-[0_0_120px_rgba(0,0,0,1),_0_0_60px_rgba(24,24,35,0.9),inset_0_0_25px_rgba(0,0,0,0.5)]' },
+  { id: 'aether_light', name: 'Aetheric Light', price: 8000, desc: 'Pure solar-white electromagnetic light radiating sacred beams.', color: '#ffffff', glow: 'shadow-[0_0_120px_rgba(255,255,255,0.85),_0_0_60px_rgba(244,244,245,0.75),inset_0_0_25px_rgba(255,255,255,0.4)]' }
 ];
 
 // Premium styled overlay elements for the character canvas matching the chosen aura
@@ -308,6 +374,78 @@ const AURA_STYLING: Record<string, { outerGlow: string; innerEffects: React.Reac
         <div className="absolute w-2.5 h-3.5 bg-yellow-200 rounded-full animate-ping opacity-90" style={{ top: '65%', left: '15%', animationDuration: '4s' }} />
       </div>
     )
+  },
+  shadow_smoke: {
+    outerGlow: 'shadow-[0_0_120px_rgba(0,0,0,1),_0_0_60px_rgba(15,23,42,0.95)] border-zinc-900/90 animate-[smokyAuraPulse_4s_infinite]',
+    innerEffects: (
+      <div className="absolute inset-0 pointer-events-none mix-blend-normal overflow-hidden bg-black/15">
+        {/* Soft swirling background glow - transparent in the center, framing the avatar */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[160%] opacity-85"
+             style={{ background: 'radial-gradient(circle, transparent 20%, rgba(12,10,16,0.25) 45%, rgba(15,15,23,0.7) 75%, rgba(2,2,3,0.95) 100%)' }} />
+
+        {/* Swirling deep smoke vortex SVG layers (Toned down and expanded to not block the center character) */}
+        <div className="absolute inset-0 flex items-center justify-center animate-spin" style={{ animationDuration: '32s' }}>
+          <svg className="w-full h-full opacity-15 filter blur-lg transform scale-125" viewBox="0 0 200 200" fill="none">
+            <path d="M40,100 C40,60 80,40 100,50 C120,40 160,60 160,100 C160,140 120,160 100,150 C80,160 40,140 40,100 Z" fill="#0f172a" />
+            <path d="M50,100 C50,70 70,50 100,60 C130,50 150,70 150,100 C150,130 130,150 100,140 C70,150 50,130 50,100 Z" fill="#020617" />
+          </svg>
+        </div>
+        <div className="absolute inset-0 flex items-center justify-center animate-spin" style={{ animationDuration: '22s', animationDirection: 'reverse' }}>
+          <svg className="w-full h-full opacity-12 filter blur-xl transform scale-135" viewBox="0 0 200 200" fill="none">
+            <path d="M60,100 C60,50 90,30 100,40 C110,30 140,50 140,100 C140,150 110,170 100,160 C90,170 60,150 60,100 Z" fill="#18181b" />
+          </svg>
+        </div>
+
+        {/* Rising kinetic particles & smoke bubbles */}
+        <div className="absolute bottom-2 left-1/4 w-24 h-24 bg-zinc-950 rounded-full filter blur-xl animate-[smokeDrift_4.5s_infinite]" style={{ '--x-start': '-15px' } as React.CSSProperties} />
+        <div className="absolute bottom-4 left-1/2 w-32 h-32 bg-black rounded-full filter blur-xl animate-[smokeDrift_6s_infinite]" style={{ '--x-start': '15px' } as React.CSSProperties} />
+        <div className="absolute bottom-1 left-2/3 w-20 h-20 bg-slate-950 rounded-full filter blur-xl animate-[smokeDrift_3.8s_infinite]" style={{ '--x-start': '-25px' } as React.CSSProperties} />
+        <div className="absolute bottom-8 left-1/3 w-28 h-28 bg-stone-950 rounded-full filter blur-xl animate-[smokeDrift_5s_infinite]" style={{ '--x-start': '20px' } as React.CSSProperties} />
+
+        {/* Dark embers floating upwards inside the aura */}
+        <div className="absolute bottom-6 left-[25%] w-2 h-2 bg-slate-600 rounded-full animate-[riseSparks_4.5s_infinite] opacity-35" style={{ animationDelay: '0.2s' }} />
+        <div className="absolute bottom-[15%] left-[70%] w-1.5 h-1.5 bg-zinc-700 rounded-full animate-[riseSparks_3s_infinite] opacity-45" style={{ animationDelay: '1.2s' }} />
+        <div className="absolute bottom-[5%] left-[50%] w-2.5 h-2.5 bg-stone-800 rounded-full animate-[riseSparks_5.2s_infinite] opacity-30" style={{ animationDelay: '2s' }} />
+      </div>
+    )
+  },
+  aether_light: {
+    outerGlow: 'shadow-[0_0_120px_rgba(255,255,255,1),_0_0_60px_rgba(244,244,245,0.85)] border-white/60 animate-pulseSlow',
+    innerEffects: (
+      <div className="absolute inset-0 pointer-events-none mix-blend-screen overflow-hidden bg-white/[0.03]">
+        {/* Luminous border framing overlay */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[160%] h-[160%] opacity-90"
+             style={{ background: 'radial-gradient(circle, transparent 15%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0.18) 75%, rgba(255,255,255,0.35) 100%)' }} />
+
+        {/* Solar geometry / shining laser lines */}
+        <div className="absolute inset-0 flex items-center justify-center animate-spin" style={{ animationDuration: '45s' }}>
+          <svg className="w-full h-full opacity-25 filter blur-[2px] transform scale-110" viewBox="0 0 100 100" fill="none">
+            <circle cx="50" cy="50" r="42" stroke="#ffffff" strokeWidth="0.75" strokeDasharray="8 8" />
+            <circle cx="50" cy="50" r="30" stroke="#ffffff" strokeWidth="0.5" strokeDasharray="2 4" />
+            <line x1="50" y1="5" x2="50" y2="95" stroke="#ffffff" strokeWidth="0.5" strokeDasharray="6 6" />
+            <line x1="5" y1="50" x2="95" y2="50" stroke="#ffffff" strokeWidth="0.5" strokeDasharray="6 6" />
+          </svg>
+        </div>
+
+        {/* Pure geometric stardust rising */}
+        <div className="absolute bottom-4 left-1/4 w-1.5 h-1.5 bg-white filter blur-xs animate-[riseSparks_4s_infinite]" style={{ animationDelay: '0.1s' }} />
+        <div className="absolute bottom-8 left-1/2 w-2 h-2 bg-white filter blur-xs animate-[riseSparks_3s_infinite]" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute bottom-2 left-[78%] w-1 h-1 bg-sky-200 filter blur-xs animate-[riseSparks_5s_infinite]" style={{ animationDelay: '0.7s' }} />
+        <div className="absolute bottom-10 left-[62%] w-2 h-2 bg-zinc-100 filter blur-[0.5px] animate-[riseSparks_3.6s_infinite]" style={{ animationDelay: '2.2s' }} />
+
+        {/* Bright cross highlights sparkling */}
+        <div className="absolute top-[20%] left-[25%] animate-pulse" style={{ animationDuration: '2.5s' }}>
+          <svg className="w-3.5 h-3.5 text-white/50" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2 L14,10 L22,12 L14,14 L12,22 L10,14 L2,12 L10,10 Z" />
+          </svg>
+        </div>
+        <div className="absolute top-[60%] left-[80%] animate-pulse" style={{ animationDuration: '3.8s', animationDelay: '1.2s' }}>
+          <svg className="w-4 h-4 text-white/60" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2 L14,10 L22,12 L14,14 L12,22 L10,14 L2,12 L10,10 Z" />
+          </svg>
+        </div>
+      </div>
+    )
   }
 };
 
@@ -358,7 +496,9 @@ const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; particles
   shadow_hunter: { color: '#f43f5e', glow: 'shadow-[0_0_100px_rgba(244,63,94,1),_0_0_50px_rgba(244,63,94,0.7)]', particles: '#f43f5e', bannerText: 'HUNTER // DOOMSDAY OVERDRIVE', overlayGradient: 'from-rose-500/30 to-transparent' },
   cyber_beast: { color: '#06b6d4', glow: 'shadow-[0_0_100px_rgba(6,182,212,1),_0_0_50px_rgba(6,182,212,0.7)]', particles: '#06b6d4', bannerText: 'BEAST // RYU_OVERDRIVE', overlayGradient: 'from-cyan-400/30 to-transparent' },
   golden_disciple: { color: '#fbbf24', glow: 'shadow-[0_0_120px_rgba(251,191,36,1),_0_0_60px_rgba(251,191,36,0.75)]', particles: '#fbbf24', bannerText: 'DISCIPLE // SOLAR ASCENT', overlayGradient: 'from-amber-400/35 to-transparent' },
-  omega_prime: { color: '#ef4444', glow: 'shadow-[0_0_130px_rgba(239,68,68,1),_0_0_65px_rgba(239,68,68,0.85)]', particles: '#ef4444', bannerText: 'PRIME // GALAXY MONARCH', overlayGradient: 'from-red-500/35 to-transparent' }
+  omega_prime: { color: '#ef4444', glow: 'shadow-[0_0_130px_rgba(239,68,68,1),_0_0_65px_rgba(239,68,68,0.85)]', particles: '#ef4444', bannerText: 'PRIME // GALAXY MONARCH', overlayGradient: 'from-red-500/35 to-transparent' },
+  shadow_wraith: { color: '#09090b', glow: 'shadow-[0_0_130px_rgba(15,23,42,1),_0_0_65px_rgba(24,24,27,0.95),inset_0_0_30px_rgba(0,0,0,0.8)] border-slate-900', particles: '#18181b', bannerText: 'WRAITH // VOID SHADOW OVERDRIVE', overlayGradient: 'from-zinc-950/50 to-transparent' },
+  lumen_sentinel: { color: '#ffffff', glow: 'shadow-[0_0_130px_rgba(255,255,255,1),_0_0_65px_rgba(244,244,245,0.85),inset_0_0_30px_rgba(255,255,255,0.3)] border-white/80', particles: '#cbd5e1', bannerText: 'SENTINEL // AETHER LIMIT BREAK', overlayGradient: 'from-white/25 to-transparent' }
 };
 
 // Unique interactive pets mapped to character outfits
@@ -605,8 +745,8 @@ export const PETS_DATA: Record<string, {
           <defs>
             <linearGradient id="goldWingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#fef08a" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.6" stopColor-index="1" />
-              <stop offset="100%" stopColor="#78350f" stopOpacity="0.25" stopColor-index="2" />
+              <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#78350f" stopOpacity="0.25" />
             </linearGradient>
           </defs>
         </svg>
@@ -658,58 +798,196 @@ export const PETS_DATA: Record<string, {
         </svg>
       </div>
     )
+  },
+  shadow_wraith: {
+    name: "Nox-Spectre X1",
+    type: "Dark Void Familiar",
+    desc: "An advanced levitating shadow construct forged with dark-matter plating. Radiates shifting obsidian streams and cosmic void energy to maximize endurance limits.",
+    color: "#c084fc",
+    glow: "rgba(168,85,247,0.55)",
+    buff: "+18% Dark-Matter Endurance Buff",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '3.6s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Swirling deep violet nebulous rings */}
+          <circle cx="50" cy="50" r="44" stroke="rgba(168,85,247,0.25)" strokeWidth="1" strokeDasharray="3 4" className="animate-spin" style={{ animationDuration: '12s' }} />
+          <circle cx="50" cy="50" r="36" stroke="rgba(192,132,252,0.3)" strokeWidth="1.5" strokeDasharray="8 6" className="animate-spin" style={{ animationDuration: '8s', animationDirection: 'reverse' }} />
+          
+          {/* Shifting background void particle cluster */}
+          <g className="animate-pulse">
+            <circle cx="28" cy="32" r="1.5" fill="#a855f7" />
+            <circle cx="72" cy="68" r="2" fill="#c084fc" />
+            <circle cx="35" cy="74" r="1" fill="#f472b6" />
+          </g>
+
+          {/* Majestic sleek mechanical wings */}
+          <path d="M50,42 L12,24 C18,36 12,62 50,50 Z" fill="url(#noxWingGrad)" stroke="#a855f7" strokeWidth="1.5" className="animate-wings-flutter origin-right" />
+          <path d="M50,42 L88,24 C82,36 88,62 50,50 Z" fill="url(#noxWingGrad)" stroke="#a855f7" strokeWidth="1.5" className="animate-wings-flutter origin-left" />
+
+          {/* Shroud plate shadow armor tail */}
+          <path d="M50,75 L45,95 L50,90 L55,95 Z" fill="#18181b" stroke="#a855f7" strokeWidth="1" className="animate-wiggle origin-top" />
+
+          {/* Primary Core Drone Head (Complex diamond plating) */}
+          <polygon points="50,18 76,40 50,80 24,40" fill="rgba(9,9,11,0.92)" stroke="#a855f7" strokeWidth="2.5" />
+          <polygon points="50,26 68,41 50,70 32,41" fill="#241435" stroke="#c084fc" strokeWidth="1.2" />
+
+          {/* Glowing fuchsia cyber slit optical visors */}
+          <polygon points="40,40 48,42 42,46" fill="#f472b6" className="animate-pulse" />
+          <polygon points="60,40 52,42 58,46" fill="#f472b6" className="animate-pulse" />
+          <circle cx="50" cy="48" r="3.5" fill="#18181b" stroke="#f472b6" strokeWidth="1.5" />
+          <circle cx="50" cy="48" r="1" fill="#fff" className="animate-ping" />
+
+          {/* Swirling interactive micro-spark */}
+          <g className="animate-circle-orbit" style={{ animationDuration: '3s' }}>
+            <circle cx="50" cy="50" r="3" fill="#fb7185" style={{ filter: 'drop-shadow(0 0 5px #f43f5e)' }} />
+          </g>
+
+          <defs>
+            <linearGradient id="noxWingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#3b0764" stopOpacity="0.8" />
+              <stop offset="60%" stopColor="#8108c4" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#090514" stopOpacity="0.2" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    )
+  },
+  lumen_sentinel: {
+    name: "Lux-Seraph S1",
+    type: "Celestial Prism Construct",
+    desc: "A sacred high-dimensional drone crafted from pristine crystal solar matrices. Emits highly refined cleansing beams that instantly refresh athletic muscles.",
+    color: "#38bdf8",
+    glow: "rgba(255,255,255,0.8)",
+    buff: "+20% Pristine Recovery Booster",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '2.8s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Sacred Celestial Geometry Orbits */}
+          <circle cx="50" cy="55" r="42" stroke="rgba(56,189,248,0.25)" strokeWidth="0.75" strokeDasharray="4 8" className="animate-spin" style={{ animationDuration: '18s' }} />
+          <circle cx="50" cy="55" r="34" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="16 12" className="animate-spin" style={{ animationDuration: '10s', animationDirection: 'reverse' }} />
+          
+          {/* High-frequency light rays rising background */}
+          <line x1="50" y1="10" x2="50" y2="90" stroke="rgba(56,189,248,0.15)" strokeWidth="1" strokeDasharray="3 3" />
+          <line x1="10" y1="50" x2="90" y2="50" stroke="rgba(56,189,248,0.15)" strokeWidth="1" strokeDasharray="3 3" />
+
+          {/* Seraphim multi-layer crystalline wings */}
+          <path d="M50,45 L14,18 Q32,24 50,50 Z" fill="url(#luxWingGrad)" stroke="#38bdf8" strokeWidth="1.5" className="animate-wings-flutter origin-right" />
+          <path d="M50,45 L86,18 Q68,24 50,50 Z" fill="url(#luxWingGrad)" stroke="#38bdf8" strokeWidth="1.5" className="animate-wings-flutter origin-left" />
+          
+          {/* Lower auxiliary energy wings */}
+          <path d="M50,55 L24,78 Q36,68 50,55 Z" fill="rgba(56,189,248,0.4)" stroke="#0ea5e9" strokeWidth="1" className="animate-wings-flutter origin-right" />
+          <path d="M50,55 L76,78 Q64,68 50,55 Z" fill="rgba(56,189,248,0.4)" stroke="#0ea5e9" strokeWidth="1" className="animate-wings-flutter origin-left" />
+
+          {/* Elegant double-helix vertical rotation alignment */}
+          <g className="animate-pulse">
+            <ellipse cx="50" cy="52" rx="4" ry="15" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1" />
+          </g>
+
+          {/* Master Celestial Hex-Prism Core Body */}
+          <polygon points="50,22 72,48 50,78 28,48" fill="rgba(255,255,255,0.96)" stroke="#cbd5e1" strokeWidth="2.5" />
+          <polygon points="50,30 64,48 50,68 36,48" fill="#e0f2fe" stroke="#38bdf8" strokeWidth="1.5" />
+
+          {/* Ultimate central pure white singular solar spark */}
+          <polygon points="50,42 54,48 60,50 54,52 50,58 46,52 40,50 46,48" fill="#fff" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 8px #38bdf8)' }} />
+          <circle cx="50" cy="50" r="2.5" fill="#fff" />
+
+          <defs>
+            <linearGradient id="luxWingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
+              <stop offset="50%" stopColor="#bae6fd" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#0284c7" stopOpacity="0.25" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    )
   }
 };
 
+interface ProfileBanner {
+  id: string;
+  name: string;
+  desc: string;
+  price: number;
+  bgStyle: string;
+  glowColor: string;
+  bgImage?: string;
+}
+
 // Profile banner templates matching current Gym Themes (opacities reduced by 10% to prevent excess brightness)
-const BANNERS = [
+const BANNERS: ProfileBanner[] = [
   { 
     id: 'titan_gold', 
-    name: 'Titan Gold Theme', 
-    desc: 'Gleaming gold high-rank warrior landscape.', 
+    name: 'Golden Disciple', 
+    desc: 'Crystalline golden skyline featuring reflective yellow-gold skyscrapers and a hovering pure light octahedron.', 
     price: 0, 
     bgStyle: 'bg-gradient-to-br from-amber-500/25 via-[#1a1204] to-[#050301]',
+    bgImage: imgBannerGoldenDisciple,
     glowColor: 'bg-amber-500/15'
   },
   { 
-    id: 'iron_temple', 
-    name: 'Iron Temple Theme', 
-    desc: 'Ancient copper & stone discipline with golden ores.', 
-    price: 2000, 
-    bgStyle: 'bg-gradient-to-br from-amber-600/25 via-stone-900/90 to-[#0b0805]',
-    glowColor: 'bg-orange-500/20'
-  },
-  { 
     id: 'neon_pump', 
-    name: 'Neon Pump Theme', 
-    desc: 'Vaporwave synth-lights, fuchsia stars & virtual grids.', 
+    name: 'Neon Striker', 
+    desc: 'Luminous vaporwave skyscraper avenue glowing in deep synth purple and neon pink flares.', 
     price: 2500, 
     bgStyle: 'bg-gradient-to-br from-fuchsia-500/40 via-purple-950/90 to-[#06010d]',
+    bgImage: imgBannerNeonStriker,
     glowColor: 'bg-fuchsia-500/25'
   },
   { 
     id: 'beast_mode', 
-    name: 'Beast Mode Theme', 
-    desc: 'Aggressive crimson shadows & thermonuclear fields.', 
+    name: 'Shadow Hunter', 
+    desc: 'Eerie volcanic canyon with tall obsidian structures rising toward an eclipse in a blood-red sky.', 
     price: 3000, 
     bgStyle: 'bg-gradient-to-br from-red-600/40 via-red-950/95 to-black',
+    bgImage: imgBannerShadowHunter,
     glowColor: 'bg-red-500/30'
   },
   { 
     id: 'zen_lifter', 
-    name: 'Zen Lifter Theme', 
-    desc: 'Calming biological forest green mists and auroras.', 
+    name: 'Cyber Beast', 
+    desc: 'Fierce cyan and teal electric lightning storm framing monolithic high-dimensional weather spires.', 
     price: 2500, 
     bgStyle: 'bg-gradient-to-br from-emerald-500/35 via-emerald-950/95 to-[#010603]',
+    bgImage: imgBannerCyberBeast,
     glowColor: 'bg-emerald-500/25'
   },
   { 
     id: 'midnight_city', 
-    name: 'Midnight City Theme', 
-    desc: 'Late-night neon skies & electric cyan digital matrix.', 
+    name: 'Vanguard', 
+    desc: 'Futuristic sky-high metropolitan architecture surrounded by mist under a massive blue storm moon.', 
     price: 3000, 
     bgStyle: 'bg-gradient-to-br from-cyan-500/35 via-blue-950/95 to-[#010410]',
+    bgImage: imgBannerVanguardCadet,
     glowColor: 'bg-cyan-500/25'
+  },
+  { 
+    id: 'shadow_smoke', 
+    name: 'Omega Prime', 
+    desc: 'Apocalyptic battle zone with falling meteors, smoke plumes, and a colossal combat robot mech silhouette.', 
+    price: 4500, 
+    bgStyle: 'bg-gradient-to-br from-zinc-950/60 via-slate-900/40 to-black',
+    bgImage: imgBannerOmegaPrime,
+    glowColor: 'bg-zinc-800/15'
+  },
+  { 
+    id: 'aether_light', 
+    name: 'Phantom Wraith', 
+    desc: 'A deep space stardust vortex portal where a massive dark void phantom entity with purple eyes begins to manifest.', 
+    price: 4500, 
+    bgStyle: 'bg-gradient-to-br from-white/90 via-zinc-100/90 to-slate-200/80',
+    bgImage: imgBannerPhantomWraith,
+    glowColor: 'bg-white/75'
+  },
+  { 
+    id: 'lumen_sentinel', 
+    name: 'Lumen Sentinel', 
+    desc: 'Majestic crystalline spires and orbiting silver stardust halo under cloud skies.', 
+    price: 5000, 
+    bgStyle: 'bg-gradient-to-br from-sky-400/20 via-slate-900/40 to-black',
+    bgImage: imgBannerLumenSentinel,
+    glowColor: 'bg-sky-400/35'
   }
 ];
 
@@ -1103,6 +1381,129 @@ const BORDERS = [
         <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-cyan-400/80 pointer-events-none z-30" />
 
         <div className="absolute inset-2 border border-dashed border-cyan-500/15 pointer-events-none z-10" />
+      </>
+    )
+  },
+  { 
+    id: 'shadow_smoke', 
+    name: 'Shadow Whisperer', 
+    desc: 'Dense, amorphous drifting shadow fog and kinetic smoke plumes rolling around the perimeter with flying black embers.', 
+    price: 5000, 
+    cardBorderClass: 'border-2 border-zinc-950/90 shadow-[0_0_55px_rgba(5,5,8,1),inset_0_0_25px_rgba(15,23,42,0.95)]',
+    cornerElement: (
+      <>
+        {/* Intense Alpheus smokey framing (blur filters creating irregular fog on borders) */}
+        <div className="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-black via-zinc-950/80 to-transparent opacity-75 filter blur-xs pointer-events-none z-10 animate-pulse" />
+        <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black via-zinc-950/80 to-transparent opacity-85 filter blur-sm pointer-events-none z-10" />
+        <div className="absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-black via-zinc-950/60 to-transparent opacity-65 filter blur-xs pointer-events-none z-10 animate-pulse" />
+        <div className="absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-black via-zinc-950/60 to-transparent opacity-65 filter blur-xs pointer-events-none z-10 animate-pulse" />
+
+        {/* Elusive Swirling Smoke Whisp Plumes (Drifting along edges) */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-20">
+          {/* Top-left slow-rolling dark smoke puff */}
+          <div className="absolute -top-6 -left-6 w-24 h-24 rounded-full bg-zinc-900 opacity-80 filter blur-xl animate-[smokeDrift_8s_infinite]" style={{ '--x-start': '10px' } as React.CSSProperties} />
+          {/* Bottom-right slow-rolling dark smoke puff */}
+          <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-black opacity-90 filter blur-xl animate-[smokeDrift_9s_infinite]" style={{ '--x-start': '-15px' } as React.CSSProperties} />
+          {/* Random floating heavy smoke puff */}
+          <div className="absolute top-1/2 left-2 w-16 h-16 rounded-full bg-slate-950 opacity-70 filter blur-lg animate-[smokeDrift_5.2s_infinite]" style={{ '--x-start': '20px' } as React.CSSProperties} />
+          <div className="absolute top-[30%] right-2 w-20 h-20 rounded-full bg-zinc-950 opacity-60 filter blur-lg animate-[smokeDrift_6.5s_infinite_reverse]" style={{ '--x-start': '-20px' } as React.CSSProperties} />
+        </div>
+
+        {/* Floating Kinetic Ash/Dark Embers along the border */}
+        <div className="absolute inset-x-0 bottom-1 h-32 overflow-hidden pointer-events-none z-30">
+          <div className="absolute bottom-1 left-[15%] w-[3px] h-[3px] bg-slate-500 rounded-full animate-[riseSparks_3.8s_infinite] opacity-60" style={{ animationDelay: '0.2s' }} />
+          <div className="absolute bottom-4 left-[45%] w-[4px] h-[4px] bg-zinc-600 rounded-full animate-[riseSparks_4.5s_infinite] opacity-50" style={{ animationDelay: '1s' }} />
+          <div className="absolute bottom-2 left-[80%] w-1.5 h-1.5 bg-neutral-700 rounded-full animate-[riseSparks_5.2s_infinite] opacity-40" style={{ animationDelay: '2.2s' }} />
+        </div>
+
+        {/* Double Layer Inner Shroud Borders */}
+        <div className="absolute inset-1.5 border border-zinc-900/60 pointer-events-none z-10" />
+        <div className="absolute inset-3 border border-black/40 pointer-events-none z-10 animate-pulse" />
+
+        {/* Heavy Rough-Spiky Shroud Corner Bracket elements */}
+        <div className="absolute top-0 left-0 w-6 h-6 border-t-[4px] border-l-[4px] border-black/80 z-30 pointer-events-none filter drop-shadow-[0_0_6px_rgba(0,0,0,0.85)]" />
+        <div className="absolute top-0 right-0 w-6 h-6 border-t-[4px] border-r-[4px] border-black/80 z-30 pointer-events-none filter drop-shadow-[0_0_6px_rgba(0,0,0,0.85)]" />
+        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-[4px] border-l-[4px] border-black/80 z-30 pointer-events-none filter drop-shadow-[0_0_6px_rgba(0,0,0,0.85)]" />
+        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-[4px] border-r-[4px] border-black/80 z-30 pointer-events-none filter drop-shadow-[0_0_6px_rgba(0,0,0,0.85)]" />
+
+        {/* SYSTEM STATUS // SHADOW MODE */}
+        <div className="absolute top-1.5 left-1/2 -translate-x-1/2 text-[7px] font-mono text-zinc-300 tracking-[0.4em] select-none z-30 font-black bg-black border border-zinc-900 shadow-[0_0_15px_rgba(0,0,0,0.95)] px-2.5 py-0.5 rounded uppercase">
+          SHADOW WHISPER
+        </div>
+      </>
+    )
+  },
+  { 
+    id: 'aether_light', 
+    name: 'Aetheric Sentinel', 
+    desc: 'Gleaming, crystalline silver-white cybernetic rails equipped with flowing solar-light streaks and floating cosmic star shards.', 
+    price: 5500, 
+    cardBorderClass: 'border-2 border-white/95 shadow-[0_0_45px_rgba(255,255,255,0.7),_inset_0_0_20px_rgba(255,255,255,0.45)] bg-slate-950/20',
+    cornerElement: (
+      <>
+        {/* Dynamic high-frequency laser sweep lines along edges */}
+        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-48 h-full bg-gradient-to-r from-transparent via-sky-300 to-transparent transform animate-[laserSlideH_3.2s_linear_infinite]" />
+        </div>
+        <div className="absolute bottom-0 inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-48 h-full bg-gradient-to-r from-transparent via-sky-300 to-transparent transform animate-[laserSlideH_3.2s_linear_infinite_reverse]" style={{ animationDelay: '0.8s' }} />
+        </div>
+        <div className="absolute left-0 inset-y-0 w-[2px] bg-gradient-to-b from-transparent via-white to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-full h-48 bg-gradient-to-b from-transparent via-sky-300 to-transparent transform animate-[laserSlideV_2.8s_linear_infinite]" />
+        </div>
+        <div className="absolute right-0 inset-y-0 w-[2px] bg-gradient-to-b from-transparent via-white to-transparent overflow-hidden z-30 pointer-events-none">
+          <div className="w-full h-48 bg-gradient-to-b from-transparent via-sky-300 to-transparent transform animate-[laserSlideV_2.8s_linear_infinite_reverse]" style={{ animationDelay: '0.6s' }} />
+        </div>
+
+        {/* Dynamic rotating high-tech celestial circles in corner areas */}
+        <div className="absolute top-1.5 left-1.5 w-8 h-8 border border-white/20 rounded-full animate-spin pointer-events-none z-20" style={{ animationDuration: '6s' }} />
+        <div className="absolute top-1.5 right-1.5 w-8 h-8 border border-white/20 rounded-full animate-spin pointer-events-none z-20" style={{ animationDuration: '8s', animationDirection: 'reverse' }} />
+        <div className="absolute bottom-1.5 left-1.5 w-8 h-8 border border-white/20 rounded-full animate-spin pointer-events-none z-20" style={{ animationDuration: '7s', animationDirection: 'reverse' }} />
+        <div className="absolute bottom-1.5 right-1.5 w-8 h-8 border border-white/20 rounded-full animate-spin pointer-events-none z-20" style={{ animationDuration: '9s' }} />
+
+        {/* Double Layer Clean white inner borders */}
+        <div className="absolute inset-1.5 border border-white/20 pointer-events-none z-10" />
+        <div className="absolute inset-3 border border-dashed border-white/10 pointer-events-none z-10 animate-pulse" />
+
+        {/* Rising pure white star sparkles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
+          <div className="absolute bottom-[5%] left-[20%] w-1.5 h-1.5 bg-white rounded-full animate-[riseSparks_4.2s_infinite] opacity-80" />
+          <div className="absolute bottom-[10%] left-[55%] w-2 h-2 bg-sky-100 rounded-full animate-[riseSparks_3s_infinite] opacity-90" style={{ animationDelay: '1s' }} />
+          <div className="absolute bottom-[4%] left-[82%] w-1 h-1 bg-white rounded-full animate-[riseSparks_5s_infinite] opacity-70" style={{ animationDelay: '1.8s' }} />
+        </div>
+
+        {/* Polished White metallic/chrome cyber corners */}
+        <div className="absolute top-0 left-0 w-6 h-6 border-t-[3px] border-l-[3px] border-white/95 shadow-[0_0_12px_rgba(255,255,255,0.85)] z-20 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-6 h-6 border-t-[3px] border-r-[3px] border-white/95 shadow-[0_0_12px_rgba(255,255,255,0.85)] z-20 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-[3px] border-l-[3px] border-white/95 shadow-[0_0_12px_rgba(255,255,255,0.85)] z-20 pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-[3px] border-r-[3px] border-white/95 shadow-[0_0_12px_rgba(255,255,255,0.85)] z-20 pointer-events-none" />
+
+        {/* Rotating Celestial Sunburst Crosses in corners */}
+        <div className="absolute top-[2px] left-[2px] z-30 pointer-events-none animate-spin" style={{ animationDuration: '10s' }}>
+          <svg className="w-5 h-5 text-white/90 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.9)]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2 L14,10 L22,12 L14,14 L12,22 L10,14 L2,12 L10,10 Z" />
+          </svg>
+        </div>
+        <div className="absolute top-[2px] right-[2px] z-30 pointer-events-none animate-spin" style={{ animationDuration: '12s', animationDirection: 'reverse' }}>
+          <svg className="w-5 h-5 text-sky-200/90 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.9)]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2 L14,10 L22,12 L14,14 L12,22 L10,14 L2,12 L10,10 Z" />
+          </svg>
+        </div>
+        <div className="absolute bottom-[2px] left-[2px] z-30 pointer-events-none animate-spin" style={{ animationDuration: '14s', animationDirection: 'reverse' }}>
+          <svg className="w-5 h-5 text-sky-100/90 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.9)]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2 L14,10 L22,12 L14,14 L12,22 L10,14 L2,12 L10,10 Z" />
+          </svg>
+        </div>
+        <div className="absolute bottom-[2px] right-[2px] z-30 pointer-events-none animate-spin" style={{ animationDuration: '9s' }}>
+          <svg className="w-5 h-5 text-white/95 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.9)]" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12,2 L14,10 L22,12 L14,14 L12,22 L10,14 L2,12 L10,10 Z" />
+          </svg>
+        </div>
+
+        {/* AETHER STATUS LABEL */}
+        <div className="absolute top-1.5 left-1/2 -translate-x-1/2 text-[7px] font-mono text-zinc-100 tracking-[0.52em] select-none z-30 font-black bg-zinc-950/90 border border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.4)] px-3 py-0.5 rounded-full uppercase">
+          LUMEN ACTIVATED
+        </div>
       </>
     )
   }
@@ -1672,6 +2073,16 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         .animate-circle-orbit {
           animation: circleOrbit 3s linear infinite;
         }
+        @keyframes smokeDrift {
+          0% { transform: translateY(0px) translateX(var(--x-start, 0px)) scale(0.85); opacity: 0; }
+          20% { opacity: 0.55; }
+          60% { opacity: 0.3; }
+          100% { transform: translateY(-160px) translateX(calc(var(--x-start, 0px) + 25px)) scale(1.4); opacity: 0; }
+        }
+        @keyframes smokyAuraPulse {
+          0%, 100% { filter: drop-shadow(0 0 15px rgba(0,0,0,0.95)) drop-shadow(0 0 35px rgba(15,23,42,0.85)); transform: scale(1); }
+          50% { filter: drop-shadow(0 0 35px rgba(0,0,0,1)) drop-shadow(0 0 70px rgba(24,24,35,0.95)); transform: scale(1.02); }
+        }
       `}</style>
 
       {/* Header Area with Cyberpunk titles and Top-Right Currency */}
@@ -1727,10 +2138,19 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             {getActiveBorder().cornerElement}
 
             {/* Banner Theme Background */}
-            <div className={`absolute inset-0 z-0 transition-all duration-700 ${getActiveBanner().bgStyle}`} />
+            {getActiveBanner().bgImage ? (
+              <div 
+                className="absolute inset-0 z-0 transition-all duration-700 bg-cover bg-center" 
+                style={{ backgroundImage: `url(${getActiveBanner().bgImage})`, opacity: 0.85 }}
+              />
+            ) : (
+              <div className={`absolute inset-0 z-0 transition-all duration-700 ${getActiveBanner().bgStyle}`} />
+            )}
             
             {/* Darker 10% shroud overlay to soften overly bright colors of active banners */}
-            <div className="absolute inset-0 bg-black/10 z-0 pointer-events-none" />
+            <div className={`absolute inset-0 z-0 pointer-events-none transition-all duration-300 ${
+              getActiveBanner().id === 'aether_light' ? 'bg-black/20' : 'bg-black/10'
+            }`} />
 
             {/* High-Contrast Interactive Neon Glow Highlights */}
             {getActiveBanner().glowColor && (
@@ -1749,7 +2169,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             />
 
             {/* Japanese Anime Style Side Text */}
-            <div className="absolute left-5 top-28 z-10 flex flex-col items-center select-none pointer-events-none opacity-40">
+            <div className="absolute left-5 top-28 z-10 flex flex-col items-center select-none pointer-events-none transition-all duration-300 opacity-40">
               <span className="text-[9px] text-white/25 tracking-widest font-mono">SERIES 01 // OVERDRIVE</span>
               <div className="w-[1px] h-12 bg-white/15 my-3" />
               <div className="text-[16px] leading-relaxed font-bold font-serif text-gym-accent tracking-[0.25em] writing-mode-v select-none">
@@ -1791,7 +2211,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             )}
 
             {/* Top Info overlay details */}
-            <div className="relative z-10 flex justify-between items-start">
+            <div className="relative z-10 flex justify-between items-start transition-all duration-300">
               <div>
                 <span className="text-[9px] uppercase tracking-[0.2em] text-white/30 block leading-tight">ACTIVE SPECIMEN</span>
                 <span className="text-base font-black text-white font-mono tracking-wider">{activeOutfit.name.toUpperCase()}</span>
@@ -1898,7 +2318,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
 
             {/* Character Footer displaying title */}
-            <div className="relative z-10 border-t border-white/10 pt-4 flex items-center justify-between">
+            <div className="relative z-10 flex items-center justify-between transition-all duration-300 w-full border-t border-white/10 pt-4">
               <div>
                 <span className="text-[8px] uppercase tracking-[0.34em] text-white/30 block leading-tight">Athletic Title</span>
                 <span className="text-2xl font-light italic font-serif text-gym-accent tracking-wide leading-none select-none drop-shadow">
@@ -1906,7 +2326,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 </span>
                 <span className="text-[10px] text-white/40 block mt-1 tracking-normal font-light italic">{getActiveTitle().desc}</span>
               </div>
-              <div className="w-10 h-10 rounded-full border border-gym-accent/30 bg-gym-accent/10 flex items-center justify-center shadow-inner">
+              <div className="w-10 h-10 rounded-full border border-gym-accent/30 bg-gym-accent/10 flex items-center justify-center shadow-inner shrink-0">
                 <Crown className="w-5 h-5 text-gym-accent" />
               </div>
             </div>
@@ -2504,7 +2924,14 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                     }`}
                   >
                     {/* The dynamic banner preview gradient directly within the list item card */}
-                    <div className={`absolute inset-0 z-0 transition-opacity duration-300 ${banner.bgStyle} opacity-70 group-hover/bitem:opacity-90`} />
+                    {banner.bgImage ? (
+                      <div 
+                        className="absolute inset-0 z-0 transition-opacity duration-300 bg-cover bg-center opacity-70 group-hover/bitem:opacity-90" 
+                        style={{ backgroundImage: `url(${banner.bgImage})` }}
+                      />
+                    ) : (
+                      <div className={`absolute inset-0 z-0 transition-opacity duration-300 ${banner.bgStyle} opacity-70 group-hover/bitem:opacity-90`} />
+                    )}
                     
                     {/* Dark gradient mask to keep texts ultra-readable */}
                     <div className="absolute inset-0 z-0 bg-gradient-to-t from-black via-black/40 to-black/10" />

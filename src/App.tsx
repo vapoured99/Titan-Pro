@@ -83,6 +83,9 @@ import neonPumpBg from './assets/images/neon_pump_bg_1779282162002.png';
 import beastModeBg from './assets/images/beast_mode_bg_1779282188045.png';
 import zenLifterBg from './assets/images/zen_lifter_bg_1779282209692.png';
 import midnightCityBg from './assets/images/midnight_city_bg_1779282230526.png';
+import voidEclipseBg from './assets/images/void_eclipse_bg_1779447103424.png';
+import celestialLightBg from './assets/images/celestial_light_bg_1779447123837.png';
+import lumenSentinelBg from './assets/images/banner_lumen_sentinel_1779449818555.png';
 
 // --- Types ---
 interface GymTheme {
@@ -198,6 +201,54 @@ const GYM_THEMES: Record<string, GymTheme> = {
     testPrimary: '#e0f7fa',
     testMuted: 'rgba(128, 242, 255, 0.45)',
     testSubtle: 'rgba(128, 242, 255, 0.2)'
+  },
+  void_eclipse: {
+    id: 'void_eclipse',
+    name: 'Void Eclipse',
+    description: 'Cosmic shadow eclipse & intense violet aura.',
+    accent: '#a855f7',
+    accentRgb: '168, 85, 247',
+    accentLight: '#d8b4fe',
+    accentDark: '#7e22ce',
+    bg: '#050209',
+    bgImage: voidEclipseBg,
+    opacity: 'opacity-40',
+    textVibe: 'Void Eclipse. Break through dimensions and training barriers.',
+    testPrimary: '#faf5ff',
+    testMuted: 'rgba(216, 180, 254, 0.45)',
+    testSubtle: 'rgba(168, 85, 247, 0.2)'
+  },
+  celestial_light: {
+    id: 'celestial_light',
+    name: 'Celestial Light',
+    description: 'Pristine mountain peaks & orbital stardust halos.',
+    accent: '#0ea5e9',
+    accentRgb: '14, 165, 233',
+    accentLight: '#bae6fd',
+    accentDark: '#0369a1',
+    bg: '#050c18',
+    bgImage: celestialLightBg,
+    opacity: 'opacity-45',
+    textVibe: 'Celestial Spires. Mount the peak of ultimate execution.',
+    testPrimary: '#f0f9ff',
+    testMuted: 'rgba(186, 230, 253, 0.45)',
+    testSubtle: 'rgba(14, 165, 233, 0.2)'
+  },
+  lumen_sentinel: {
+    id: 'lumen_sentinel',
+    name: 'Lumen Sentinel',
+    description: 'Pristine crystalline spires & orbital silver halo.',
+    accent: '#38bdf8',
+    accentRgb: '56, 189, 248',
+    accentLight: '#bae6fd',
+    accentDark: '#0284c7',
+    bg: '#040b17',
+    bgImage: lumenSentinelBg,
+    opacity: 'opacity-40',
+    textVibe: 'Lumen Sentinel. Ascend into the celestial light of flawless execution.',
+    testPrimary: '#f0f9ff',
+    testMuted: 'rgba(186, 230, 253, 0.45)',
+    testSubtle: 'rgba(56, 189, 248, 0.2)'
   }
 };
 
@@ -1549,7 +1600,7 @@ export default function App() {
           <img 
             src={authTheme.bgImage} 
             alt="Gym Background" 
-            className={`w-full h-full object-cover transition-all duration-700 ${authTheme.opacity}`}
+            className={`w-full h-full object-cover transition-all duration-700 brightness-110 ${authTheme.opacity}`}
             referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}40, ${authTheme.bg}ff)` }} />
@@ -1578,7 +1629,7 @@ export default function App() {
           <img 
             src={authTheme.bgImage} 
             alt="Gym Background" 
-            className={`w-full h-full object-cover transition-all duration-700 ${authTheme.opacity} scale-105`}
+            className={`w-full h-full object-cover transition-all duration-700 brightness-110 ${authTheme.opacity} scale-105`}
             referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}60, ${authTheme.bg}ff)` }} />
@@ -1707,7 +1758,7 @@ export default function App() {
         <img 
           src={activeTheme.bgImage} 
           alt="Gym Background" 
-          className={`w-full h-full object-cover transition-all duration-700 ${activeTheme.opacity}`}
+          className={`w-full h-full object-cover transition-all duration-700 brightness-110 ${activeTheme.opacity}`}
           referrerPolicy="no-referrer"
         />
         <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${activeTheme.bg}a0, ${activeTheme.bg}40, ${activeTheme.bg}ff)` }} />
