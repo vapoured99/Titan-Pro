@@ -415,15 +415,15 @@ const PBBlock = ({
 
   if (!pb && max1RM === 0) {
     return (
-      <div className="mt-3 p-3 rounded-xl bg-gym-accent/5 border border-gym-accent/20">
+      <div className="mt-3 p-3 rounded-xl bg-black/60 border border-gym-accent/25">
         <div className="text-[10px] text-gym-accent font-bold uppercase mb-1 tracking-wider">No History</div>
-        <div className="text-xs text-white/20">Save a set to track progress</div>
+        <div className="text-xs text-white/40">Save a set to track progress</div>
       </div>
     );
   }
 
   return (
-    <div className="mt-3 p-4 rounded-sm bg-white/5 border border-gym-accent/10">
+    <div className="mt-3 p-4 rounded-sm bg-black/55 border border-gym-accent/20">
       {pb && (
         <div className={`text-[10px] text-gym-accent font-bold uppercase tracking-wider flex items-center gap-2 ${showLatest ? 'mb-4' : ''}`}>
           <Trophy className="w-3 h-3 text-gym-accent" /> Peak: <span className="text-gym-accent-light">{pb.bestWeight}kg × {pb.bestReps}</span> <span className="opacity-40 text-[9px] ml-1 tracking-normal font-light">({pb.bestDate})</span>
@@ -1941,7 +1941,7 @@ export default function App() {
                     placeholder="Search by name or category..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-sm pl-11 pr-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-full md:w-72 text-white"
+                    className="bg-black/60 border border-white/20 rounded-sm pl-11 pr-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-full md:w-72 text-white"
                   />
                   <div className="absolute top-full right-0 mt-2">
                     <a 
@@ -1968,16 +1968,16 @@ export default function App() {
                   )
                 }))
               ].filter(s => s.list.length > 0).map(section => (
-                <div key={section.title} className="mb-6 border border-white/5 rounded-sm overflow-hidden bg-white/[0.01]">
+                <div key={section.title} className="mb-6 border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
                   <button 
                     onClick={() => setExpandedLibrarySections(prev => ({ ...prev, [section.title]: !prev[section.title] }))}
-                    className="w-full text-left px-6 py-5 flex items-center justify-between hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                    className="w-full text-left px-6 py-5 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
                   >
                     <div className="flex items-center gap-4">
                       <h3 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.4em]">
                         {section.title}
                       </h3>
-                      <span className="text-[10px] text-white/20 font-bold bg-white/5 px-2 py-0.5 rounded-full uppercase tracking-widest">{section.list.length} Exercises</span>
+                      <span className="text-[10px] text-white/60 font-bold bg-white/15 px-2 py-0.5 rounded-full uppercase tracking-widest">{section.list.length} Exercises</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-all ${expandedLibrarySections[section.title] ? 'rotate-180' : ''}`} />
                   </button>
@@ -1995,7 +1995,7 @@ export default function App() {
                             {section.list.map(ex => {
                               const Icon = iconMap[ex.icon] || Dumbbell;
                               return (
-                                <div key={ex.name} className="bg-white/[0.02] border border-white/5 rounded-sm p-5 hover:border-white/20 transition-all group">
+                                <div key={ex.name} className="bg-black/60 border border-white/10 rounded-sm p-5 hover:border-white/35 transition-all group">
                                   <div className="flex items-center justify-between mb-2">
                                      <div className="flex items-center gap-3">
                                         <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors" />
@@ -2082,10 +2082,10 @@ export default function App() {
               className="space-y-6"
             >
               {/* Weight Tracking Section */}
-              <div className="border border-white/5 rounded-sm overflow-hidden bg-white/[0.01]">
+              <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
                 <button 
                   onClick={() => setExpandedProgressSections(prev => ({ ...prev, weight: !prev.weight }))}
-                  className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                  className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
                 >
                   <div>
                     <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
@@ -2115,7 +2115,7 @@ export default function App() {
                                 value={newWeight}
                                 onChange={(e) => setNewWeight(e.target.value)}
                                 disabled={isSavingWeight}
-                                className="bg-white/5 border border-white/10 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-32 disabled:opacity-50 text-white"
+                                className="bg-black/55 border border-white/20 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-32 disabled:opacity-50 text-white"
                               />
                             </div>
                             <div className="relative">
@@ -2124,7 +2124,7 @@ export default function App() {
                                 value={newWeightDate}
                                 onChange={(e) => setNewWeightDate(e.target.value)}
                                 disabled={isSavingWeight}
-                                className="bg-white/5 border border-white/10 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-44 disabled:opacity-50 text-white [color-scheme:dark]"
+                                className="bg-black/55 border border-white/20 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-44 disabled:opacity-50 text-white [color-scheme:dark]"
                               />
                               <AnimatePresence>
                                 {weightFlash && (
@@ -2255,7 +2255,7 @@ export default function App() {
                           <button
                             onClick={() => setShowWeightHistoryList(!showWeightHistoryList)}
                             type="button"
-                            className="w-full flex items-center justify-between px-6 py-4 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 rounded-sm text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
+                            className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-sm text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
                           >
                             <span className="flex items-center gap-2">
                               <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
@@ -2278,7 +2278,7 @@ export default function App() {
                                     No logged weight entries yet
                                   </div>
                                 ) : (
-                                  <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/5 rounded-sm bg-[#0a0a0a]/80 backdrop-blur-md">
+                                  <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/15 rounded-sm bg-black">
                                     {[...weightHistory].reverse().map((entry, i) => (
                                       <div key={entry.id || i} className="flex items-center justify-between px-6 py-3.5 hover:bg-white/[0.02] transition-colors group">
                                         <div className="flex flex-col gap-0.5">
@@ -2329,10 +2329,10 @@ export default function App() {
               </div>
 
               {/* Trending Section */}
-              <div className="border border-white/5 rounded-sm overflow-hidden bg-white/[0.01]">
+              <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
                 <button 
                   onClick={() => setExpandedProgressSections(prev => ({ ...prev, trending: !prev.trending }))}
-                  className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.02] transition-colors cursor-pointer group"
+                  className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-[#0c0c0c]/80 transition-colors cursor-pointer group"
                 >
                   <div>
                     <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
@@ -2534,7 +2534,7 @@ export default function App() {
                               return acc;
                             }, {} as Record<string, SessionSet[]>)
                           ).map(([name, exerciseSets]: [string, SessionSet[]]) => (
-                            <div key={name} className="bg-white/[0.03] border border-gym-accent/30 rounded-sm p-4 relative overflow-hidden group">
+                            <div key={name} className="bg-black/65 border border-gym-accent/40 rounded-sm p-4 relative overflow-hidden group backdrop-blur-md">
                               <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
                                 <div className="flex items-center gap-2">
                                   <span className="text-[10px] font-bold text-white/60 uppercase">{name}</span>
@@ -2603,7 +2603,7 @@ export default function App() {
                           <div className="relative">
                             <button 
                               onClick={() => setShowHistoryMenu(!showHistoryMenu)}
-                              className="bg-white/5 border border-white/10 px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-white/10 transition-all flex items-center gap-3 cursor-pointer"
+                              className="bg-black/60 border border-white/20 px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
                             >
                               <History className="w-3 h-3" />
                               {selectedWorkoutId && archivedWorkouts.find(w => w.id === selectedWorkoutId) ? 
@@ -2619,7 +2619,7 @@ export default function App() {
                                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                   animate={{ opacity: 1, y: 0, scale: 1 }}
                                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                  className="absolute top-full right-0 mt-2 w-64 bg-[#0d0d0d] border border-white/10 rounded-sm shadow-2xl z-50 overflow-hidden"
+                                  className="absolute top-full right-0 mt-2 w-64 bg-black border border-white/20 rounded-sm shadow-2xl z-50 overflow-hidden"
                                 >
                                   <div className="max-h-72 overflow-y-auto py-2">
                                     {archivedWorkouts.map((w) => {
@@ -2684,11 +2684,11 @@ export default function App() {
                              key={workout.id}
                              initial={{ opacity: 0, y: 20 }}
                              animate={{ opacity: 1, y: 0 }}
-                             className="border border-white/10 rounded-sm overflow-hidden bg-white/[0.01]"
+                             className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md"
                            >
-                              <div className="p-8 border-b border-white/5 bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-6">
+                              <div className="p-8 border-b border-white/5 bg-black/45 flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="flex items-center gap-8">
-                                  <div className="w-16 h-16 bg-gym-accent/10 border border-gym-accent/20 rounded-sm flex flex-col items-center justify-center">
+                                  <div className="w-16 h-16 bg-gym-accent/15 border border-gym-accent/30 rounded-sm flex flex-col items-center justify-center">
                                     <span className="text-xl font-light text-gym-accent">{dateObj.getDate()}</span>
                                     <span className="text-[9px] font-black text-gym-accent/60 uppercase tracking-tighter">{dateObj.toLocaleDateString('en-GB', { month: 'short' })}</span>
                                   </div>
@@ -2698,12 +2698,12 @@ export default function App() {
                                     </h4>
                                     <div className="flex items-center gap-6">
                                       <div className="flex items-center gap-2">
-                                        <Activity className="w-3 h-3 text-gym-accent/60" />
-                                        <span className="text-[10px] text-white/30 uppercase tracking-widest font-black">{workout.totalVolume?.toLocaleString()} kg Volume</span>
+                                        <Activity className="w-3 h-3 text-gym-accent" />
+                                        <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">{workout.totalVolume?.toLocaleString()} kg Volume</span>
                                       </div>
                                       <div className="flex items-center gap-2">
-                                        <Dumbbell className="w-3 h-3 text-gym-accent/60" />
-                                        <span className="text-[10px] text-white/30 uppercase tracking-widest font-black">{workout.exercisesCount} Exercises</span>
+                                        <Dumbbell className="w-3 h-3 text-gym-accent" />
+                                        <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">{workout.exercisesCount} Exercises</span>
                                       </div>
                                     </div>
                                   </div>
@@ -2734,19 +2734,19 @@ export default function App() {
                                 ).map(([name, exerciseSets]: [string, any]) => (
                                   <div key={name} className="space-y-4">
                                     <div className="flex items-center justify-between">
-                                      <h5 className="text-[10px] text-white/70 font-bold uppercase tracking-[0.2em]">{name}</h5>
-                                      <span className="text-[9px] text-white/20 font-bold uppercase">{exerciseSets.length} Sets</span>
+                                      <h5 className="text-[10px] text-white/80 font-bold uppercase tracking-[0.2em]">{name}</h5>
+                                      <span className="text-[9px] text-white/45 font-bold uppercase">{exerciseSets.length} Sets</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
                                       {exerciseSets.map((s: any, idx: number) => (
-                                        <div key={idx} className="bg-white/[0.04] border border-white/5 p-3 flex items-center justify-between">
+                                        <div key={idx} className="bg-black/60 border border-white/10 p-3 flex items-center justify-between">
                                           <div className="flex flex-col">
-                                            <span className="text-[7px] text-white/20 uppercase font-black">Weight</span>
-                                            <span className="text-sm font-light text-white tabular-nums">{s.weight}kg</span>
+                                            <span className="text-[7px] text-white/45 uppercase font-black">Weight</span>
+                                            <span className="text-sm font-semibold text-white/95 tabular-nums">{s.weight}kg</span>
                                           </div>
                                           <div className="flex flex-col items-end">
-                                            <span className="text-[7px] text-white/20 uppercase font-black">Reps</span>
-                                            <span className="text-sm font-light text-white tabular-nums">{s.reps}</span>
+                                            <span className="text-[7px] text-white/45 uppercase font-black">Reps</span>
+                                            <span className="text-sm font-semibold text-white/95 tabular-nums">{s.reps}</span>
                                           </div>
                                         </div>
                                       ))}
@@ -3033,7 +3033,7 @@ export default function App() {
                 <div key={di} className="group">
                   <button
                     onClick={() => setExpandedDays(prev => ({ ...prev, [di]: !prev[di] }))}
-                    className="w-full flex items-center justify-between p-6 rounded-sm bg-white/[0.02] border border-white/10 hover:bg-white/[0.04] transition-all cursor-pointer group"
+                    className="w-full flex items-center justify-between p-6 rounded-sm bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
                       <span className="text-[10px] font-bold text-gym-accent uppercase tracking-[0.2em]">{day.label}</span>
@@ -3070,7 +3070,7 @@ export default function App() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: ei * 0.05 }}
-                                className="bg-white/[0.02] border border-white/10 rounded-sm p-6 flex flex-col group/card"
+                                className="bg-black/75 border border-white/15 rounded-sm p-6 flex flex-col group/card backdrop-blur-md"
                               >
                                 <div className="flex items-center justify-between mb-6">
                                   <div className="flex flex-col">
@@ -3154,7 +3154,7 @@ export default function App() {
                           {/* Add Exercise Slot */}
                           <button 
                             onClick={() => setAddingToDay(di)}
-                            className="bg-white/[0.01] border border-white/5 border-dashed rounded-sm p-8 flex flex-col items-center justify-center gap-3 hover:bg-white/[0.03] hover:border-gym-accent/30 transition-all cursor-pointer group/add min-h-[280px]"
+                            className="bg-black/45 border border-white/10 border-dashed rounded-sm p-8 flex flex-col items-center justify-center gap-3 hover:bg-black/60 hover:border-gym-accent/30 transition-all cursor-pointer group/add min-h-[280px]"
                           >
                             <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover/add:bg-gym-accent group-hover/add:text-black transition-all">
                               <Plus className="w-4 h-4" />
@@ -3223,7 +3223,7 @@ export default function App() {
                     autoFocus
                     value={modalSearch}
                     onChange={(e) => setModalSearch(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-sm pl-12 pr-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                    className="w-full bg-black/60 border border-white/20 rounded-sm pl-12 pr-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
                   />
                 </div>
               </div>
@@ -3242,7 +3242,7 @@ export default function App() {
                     <div key={ex.name} className="relative group">
                       <button
                         onClick={() => handleAddExerciseToPlan(addingToDay, ex)}
-                        className="w-full flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-sm hover:bg-white/5 hover:border-gym-accent/30 transition-all text-left cursor-pointer group/inner"
+                        className="w-full flex items-center justify-between p-4 bg-black/65 border border-white/10 rounded-sm hover:bg-black/85 hover:border-gym-accent/30 transition-all text-left cursor-pointer group/inner"
                       >
                         <span className="text-xs font-medium text-white/70 group-hover/inner:text-gym-accent transition-colors">{ex.name}</span>
                         <Plus className="w-3 h-3 text-white/10 group-hover/inner:text-gym-accent" />

@@ -37,7 +37,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
 
   const getFill = (group: string) => {
     const count = muscleExerciseCount[group]?.size || 0;
-    if (count === 0) return "rgba(255, 255, 255, 0.05)";
+    if (count === 0) return "rgba(255, 255, 255, 0.25)";
     if (count === 1) return "#22c55e"; // Green
     if (count === 2) return "#eab308"; // Yellow
     if (count === 3) return "#f97316"; // Orange
@@ -50,7 +50,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
     if (count === 2) return "bg-[#eab308]";
     if (count === 3) return "bg-[#f97316]";
     if (count >= 4) return "bg-[#ef4444]";
-    return "bg-white/10";
+    return "bg-white/30";
   };
 
   // Stylized Body Outline (Blocky style from reference image)
@@ -63,12 +63,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
       {/* Front View */}
       <div className="flex flex-col items-center">
         <h4 className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-8">Front Evolution</h4>
-        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.15))' }}>
+        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.25))' }}>
           {/* Stylized Body Outline - Front */}
-          <g fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1">
+          <g fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
             <path d={bodyOutlinePath} />
           </g>
-
+~
           {/* Muscle Groups - Front */}
           {/* Shoulders */}
           <path 
@@ -112,9 +112,9 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
       {/* Back View */}
       <div className="flex flex-col items-center">
         <h4 className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-8">Rear Evolution</h4>
-        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.15))' }}>
+        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.25))' }}>
           {/* Stylized Body Outline - Back */}
-          <g fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1">
+          <g fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
             <path d={bodyOutlinePath} />
           </g>
 
@@ -129,7 +129,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
           <path 
             d="M90,140 Q100,145 110,140 L115,180 Q100,185 85,180 Z" 
             fill={getFill('back')} 
-            className="transition-colors duration-1000 opacity-80"
+            className="transition-colors duration-1000 opacity-100"
           />
           {/* Shoulders */}
           <path 
@@ -167,12 +167,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
       <div className="md:col-span-2 mt-8">
         <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-5 gap-4">
           {groupsToShow.map(group => (
-            <div key={group} className="bg-white/5 border border-white/10 p-4 rounded-sm flex flex-col items-center text-center">
-              <span className="text-[9px] text-white/30 uppercase font-bold tracking-widest mb-1">
+            <div key={group} className="bg-zinc-950/80 border border-white/15 p-4 rounded-sm flex flex-col items-center text-center backdrop-blur-sm">
+              <span className="text-[9px] text-white/40 uppercase font-bold tracking-widest mb-1">
                 {group === 'core' ? 'abs/core' : group}
               </span>
               <div className="text-sm font-medium text-white">{muscleExerciseCount[group]?.size ? `${Math.round(intensityToLoad(getIntensity(group)))}%` : "0%"}</div>
-              <div className="w-full bg-white/5 h-1 mt-3 rounded-full overflow-hidden">
+              <div className="w-full bg-white/10 h-1 mt-3 rounded-full overflow-hidden">
                 <motion.div 
                    initial={{ width: 0 }}
                    animate={{ width: `${getIntensity(group) * 100}%` }}
