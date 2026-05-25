@@ -87,8 +87,8 @@ import voidEclipseBg from './assets/images/void_eclipse_bg_1779447103424.png';
 import celestialLightBg from './assets/images/celestial_light_bg_1779447123837.png';
 import lumenSentinelBg from './assets/images/banner_lumen_sentinel_1779449818555.png';
 import solarAscentBg from './assets/images/solar_ascent_bg_1779457047851.png';
-import cosmicVortexBg from './assets/images/cosmic_vortex_bg.png';
-import overgrownCyberCityBg from './assets/images/overgrown_cyber_city_bg.png';
+import cosmicVortexBg from './assets/images/cosmic_vortex_bg_1779710500000.png';
+import overgrownCyberCityBg from './assets/images/overgrown_cyber_city_bg_1779710500000.png';
 
 // --- Types ---
 interface GymTheme {
