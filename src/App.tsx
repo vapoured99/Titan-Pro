@@ -86,6 +86,9 @@ import midnightCityBg from './assets/images/midnight_city_bg_1779282230526.png';
 import voidEclipseBg from './assets/images/void_eclipse_bg_1779447103424.png';
 import celestialLightBg from './assets/images/celestial_light_bg_1779447123837.png';
 import lumenSentinelBg from './assets/images/banner_lumen_sentinel_1779449818555.png';
+import solarAscentBg from './assets/images/solar_ascent_bg_1779457047851.png';
+import cosmicVortexBg from './assets/images/cosmic_vortex_bg.png';
+import overgrownCyberCityBg from './assets/images/overgrown_cyber_city_bg.png';
 
 // --- Types ---
 interface GymTheme {
@@ -132,7 +135,7 @@ const GYM_THEMES: Record<string, GymTheme> = {
     accentDark: '#8a6e30',
     bg: '#0b0a08',
     bgImage: ironTempleBg,
-    opacity: 'opacity-30',
+    opacity: 'opacity-85',
     textVibe: 'Ancient stone. Raw discipline. Unbreakable focus.',
     testPrimary: '#f3e8cb',
     testMuted: 'rgba(243, 232, 203, 0.45)',
@@ -148,7 +151,7 @@ const GYM_THEMES: Record<string, GymTheme> = {
     accentDark: '#b30059',
     bg: '#0b0112',
     bgImage: neonPumpBg,
-    opacity: 'opacity-35',
+    opacity: 'opacity-85',
     textVibe: 'Retro lights. High energy. Push harder than yesterday.',
     testPrimary: '#ffe6f2',
     testMuted: 'rgba(255, 128, 191, 0.45)',
@@ -164,7 +167,7 @@ const GYM_THEMES: Record<string, GymTheme> = {
     accentDark: '#b30000',
     bg: '#060000',
     bgImage: beastModeBg,
-    opacity: 'opacity-30',
+    opacity: 'opacity-80',
     textVibe: 'Dark. Aggressive. Built for beasts who never skip leg day.',
     testPrimary: '#ffcccc',
     testMuted: 'rgba(255, 136, 136, 0.45)',
@@ -212,7 +215,7 @@ const GYM_THEMES: Record<string, GymTheme> = {
     accentDark: '#7e22ce',
     bg: '#050209',
     bgImage: voidEclipseBg,
-    opacity: 'opacity-40',
+    opacity: 'opacity-80',
     textVibe: 'Void Eclipse. Break through dimensions and training barriers.',
     testPrimary: '#faf5ff',
     testMuted: 'rgba(216, 180, 254, 0.45)',
@@ -249,7 +252,65 @@ const GYM_THEMES: Record<string, GymTheme> = {
     testPrimary: '#f0f9ff',
     testMuted: 'rgba(186, 230, 253, 0.45)',
     testSubtle: 'rgba(56, 189, 248, 0.2)'
+  },
+  solar_ascent: {
+    id: 'solar_ascent',
+    name: 'Solar Ascent',
+    description: 'Crystalline orbit rings & epic solar flares.',
+    accent: '#f59e0b',
+    accentRgb: '245, 158, 11',
+    accentLight: '#fef08a',
+    accentDark: '#b45309',
+    bg: '#0a0601',
+    bgImage: solarAscentBg,
+    opacity: 'opacity-45',
+    textVibe: 'Solar Ascent. Harness the power of cosmic fusion.',
+    testPrimary: '#fffbeb',
+    testMuted: 'rgba(253, 224, 71, 0.45)',
+    testSubtle: 'rgba(245, 158, 11, 0.2)'
+  },
+  cosmic_vortex: {
+    id: 'cosmic_vortex',
+    name: 'Cosmic Vortex',
+    description: 'Swirling fiery paths & intense red-hot super-nebula landscapes.',
+    accent: '#f97316',
+    accentRgb: '249, 115, 22',
+    accentLight: '#fed7aa',
+    accentDark: '#c2410c',
+    bg: '#050100',
+    bgImage: cosmicVortexBg,
+    opacity: 'opacity-85',
+    textVibe: 'Cosmic Vortex. Unleash your inner furnace and burn through any limits.',
+    testPrimary: '#fff5f5',
+    testMuted: 'rgba(254, 202, 202, 0.45)',
+    testSubtle: 'rgba(249, 115, 22, 0.2)'
+  },
+  overgrown_cyber_city: {
+    id: 'overgrown_cyber_city',
+    name: 'Overgrown Cyber City',
+    description: 'Lush green overgrown architectural spires & ambient neon teal skylines.',
+    accent: '#10b981',
+    accentRgb: '16, 185, 129',
+    accentLight: '#a7f3d0',
+    accentDark: '#047857',
+    bg: '#010503',
+    bgImage: overgrownCyberCityBg,
+    opacity: 'opacity-80',
+    textVibe: 'Overgrown Cyber City. Merging high-tech design with vibrant nature.',
+    testPrimary: '#ecfdf5',
+    testMuted: 'rgba(167, 243, 208, 0.45)',
+    testSubtle: 'rgba(16, 185, 129, 0.2)'
   }
+};
+
+const getThemeBrightnessClass = (themeId: string): string => {
+  if (['neon', 'beast'].includes(themeId)) {
+    return 'brightness-[130%]';
+  }
+  if (['iron', 'void_eclipse'].includes(themeId)) {
+    return 'brightness-[140%]';
+  }
+  return 'brightness-110';
 };
 
 interface PB {
@@ -557,6 +618,16 @@ export default function App() {
   const [guidanceEx, setGuidanceEx] = useState<Exercise | null>(null);
 
   const [toast, setToast] = useState<{message: string, type: 'success' | 'pb' | 'info'} | null>(null);
+
+  // Auto-dismiss any toast after exactly 3.0 seconds (3000ms)
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentThemeId, setCurrentThemeId] = useState<string>(() => {
@@ -1296,7 +1367,7 @@ export default function App() {
           message: `🔥 LEVEL UP! You are now Level ${nextLevel}!`,
           type: 'success'
         });
-        setTimeout(() => setToast(null), 3500);
+        setTimeout(() => setToast(null), 3000);
       }
 
       const p1 = setDoc(doc(db, pbsPath), {
@@ -1401,7 +1472,7 @@ export default function App() {
           message: `🔥 LEVEL UP! You are now Level ${nextLevel}!`,
           type: 'success'
         });
-        setTimeout(() => setToast(null), 3500);
+        setTimeout(() => setToast(null), 3000);
       }
 
       const settingsRef = doc(db, `users/${currentUser.uid}/profile/settings`);
@@ -1598,9 +1669,10 @@ export default function App() {
         {/* Background Image */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <img 
+            key={authTheme.id}
             src={authTheme.bgImage} 
             alt="Gym Background" 
-            className={`w-full h-full object-cover transition-all duration-700 brightness-110 ${authTheme.opacity}`}
+            className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(authTheme.id)} ${authTheme.opacity}`}
             referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}40, ${authTheme.bg}ff)` }} />
@@ -1627,9 +1699,10 @@ export default function App() {
         {/* Background Image */}
         <div className="fixed inset-0 z-0 pointer-events-none">
           <img 
+            key={authTheme.id}
             src={authTheme.bgImage} 
             alt="Gym Background" 
-            className={`w-full h-full object-cover transition-all duration-700 brightness-110 ${authTheme.opacity} scale-105`}
+            className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(authTheme.id)} ${authTheme.opacity} scale-105`}
             referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}60, ${authTheme.bg}ff)` }} />
@@ -1756,9 +1829,10 @@ export default function App() {
       {/* Background Image */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <img 
+          key={activeTheme.id}
           src={activeTheme.bgImage} 
           alt="Gym Background" 
-          className={`w-full h-full object-cover transition-all duration-700 brightness-110 ${activeTheme.opacity}`}
+          className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(activeTheme.id)} ${activeTheme.opacity}`}
           referrerPolicy="no-referrer"
         />
         <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${activeTheme.bg}a0, ${activeTheme.bg}40, ${activeTheme.bg}ff)` }} />
@@ -2876,6 +2950,7 @@ export default function App() {
                             setCurrentThemeId(theme.id);
                             localStorage.setItem('gym-theme-id', theme.id);
                             saveSettings({ themeId: theme.id });
+                            setToast({ message: `🌌 Equipped Atmosphere: ${theme.name}!`, type: 'success' });
                           }}
                           type="button"
                           className={`relative text-left p-4 rounded-sm border cursor-pointer overflow-hidden transition-all duration-300 group flex flex-col justify-between h-24 ${
@@ -2886,7 +2961,7 @@ export default function App() {
                         >
                           {/* Mini Background Preview */}
                           <div className="absolute inset-0 z-0 opacity-10 group-hover:opacity-15 transition-opacity">
-                            <img src={theme.bgImage} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                            <img key={theme.id} src={theme.bgImage} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                           </div>
                           
                           <div className="relative z-10 w-full flex flex-col justify-between h-full">

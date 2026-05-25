@@ -50,7 +50,9 @@ try {
   const cacheSettings = {
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager()
-    })
+    }),
+    experimentalForceLongPolling: true,
+    experimentalAutoDetectLongPolling: true
   };
   if (config.databaseId) {
     dbInstance = initializeFirestore(app, cacheSettings, config.databaseId);
@@ -59,7 +61,20 @@ try {
   }
 } catch (err) {
   console.warn("Could not initialize full offline cache settings:", err);
-  dbInstance = config.databaseId ? getFirestore(app, config.databaseId) : getFirestore(app);
+  const fallbackSettings = {
+    experimentalForceLongPolling: true,
+    experimentalAutoDetectLongPolling: true
+  };
+  try {
+    if (config.databaseId) {
+      dbInstance = initializeFirestore(app, fallbackSettings, config.databaseId);
+    } else {
+      dbInstance = initializeFirestore(app, fallbackSettings);
+    }
+  } catch (secondErr) {
+    console.warn("Could not initialize Firestore with custom settings, falling back to basic:", secondErr);
+    dbInstance = config.databaseId ? getFirestore(app, config.databaseId) : getFirestore(app);
+  }
 }
 
 export const db = dbInstance;

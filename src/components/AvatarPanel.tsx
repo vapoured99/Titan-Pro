@@ -1777,6 +1777,23 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
   // Helper inside click handlers to buy and equip cosmetics
   const buyOrEquipItem = async (category: typeof activeTab, itemId: string, price: number) => {
+    let itemName = itemId;
+    if (category === 'customization') {
+      itemName = OUTFITS.find(o => o.id === itemId)?.name || itemId;
+    } else if (category === 'auras') {
+      itemName = AURAS.find(a => a.id === itemId)?.name || itemId;
+    } else if (category === 'emotes') {
+      itemName = EMOTES.find(e => e.id === itemId)?.name || itemId;
+    } else if (category === 'titles') {
+      itemName = TITLES.find(t => t.id === itemId)?.name || itemId;
+    } else if (category === 'banners') {
+      itemName = BANNERS.find(b => b.id === itemId)?.name || itemId;
+    } else if (category === 'bannerBorders') {
+      itemName = BORDERS.find(b => b.id === itemId)?.name || itemId;
+    }
+
+    let isPurchase = false;
+
     if (category === 'customization') {
       const isAlreadyUnlocked = unlockedOutfits.includes(itemId);
       if (isAlreadyUnlocked) {
@@ -1785,8 +1802,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         await saveSettings(updated);
       } else {
         if (credits < price) {
+          setToast({ message: `Insufficient Coins to purchase ${itemName}!`, type: 'info' });
           return;
         }
+        isPurchase = true;
         const updated = {
           avatarCredits: credits - price,
           unlockedOutfits: [...unlockedOutfits, itemId],
@@ -1805,8 +1824,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         await saveSettings(updated);
       } else {
         if (credits < price) {
+          setToast({ message: `Insufficient Coins to purchase ${itemName}!`, type: 'info' });
           return;
         }
+        isPurchase = true;
         const updated = {
           avatarCredits: credits - price,
           [dbKey]: true,
@@ -1825,8 +1846,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         await saveSettings(updated);
       } else {
         if (credits < price) {
+          setToast({ message: `Insufficient Coins to purchase ${itemName}!`, type: 'info' });
           return;
         }
+        isPurchase = true;
         const updated = {
           avatarCredits: credits - price,
           [dbKey]: true,
@@ -1845,8 +1868,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         await saveSettings(updated);
       } else {
         if (credits < price) {
+          setToast({ message: `Insufficient Coins to purchase ${itemName}!`, type: 'info' });
           return;
         }
+        isPurchase = true;
         const updated = {
           avatarCredits: credits - price,
           [dbKey]: true,
@@ -1865,8 +1890,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         await saveSettings(updated);
       } else {
         if (credits < price) {
+          setToast({ message: `Insufficient Coins to purchase ${itemName}!`, type: 'info' });
           return;
         }
+        isPurchase = true;
         const updated = {
           avatarCredits: credits - price,
           [dbKey]: true,
@@ -1885,8 +1912,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         await saveSettings(updated);
       } else {
         if (credits < price) {
+          setToast({ message: `Insufficient Coins to purchase ${itemName}!`, type: 'info' });
           return;
         }
+        isPurchase = true;
         const updated = {
           avatarCredits: credits - price,
           [dbKey]: true,
@@ -1895,6 +1924,12 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         setProfile(prev => prev ? { ...prev, ...updated } : null);
         await saveSettings(updated);
       }
+    }
+
+    if (isPurchase) {
+      setToast({ message: `💸 Purchased & Equipped: ${itemName}!`, type: 'success' });
+    } else {
+      setToast({ message: `✨ Equipped: ${itemName}!`, type: 'success' });
     }
   };
 
