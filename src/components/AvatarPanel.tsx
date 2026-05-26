@@ -914,10 +914,18 @@ interface ProfileBanner {
 // Profile banner templates matching current Gym Themes (opacities reduced by 10% to prevent excess brightness)
 const BANNERS: ProfileBanner[] = [
   { 
+    id: 'default_slate', 
+    name: 'Default Slate', 
+    desc: 'Sleek high-contrast carbon gray core layout for starting athletes.', 
+    price: 0, 
+    bgStyle: 'bg-gradient-to-br from-zinc-800/25 via-[#121315] to-[#040405]',
+    glowColor: 'bg-zinc-500/10'
+  },
+  { 
     id: 'titan_gold', 
     name: 'Golden Disciple', 
     desc: 'Crystalline golden skyline featuring reflective yellow-gold skyscrapers and a hovering pure light octahedron.', 
-    price: 0, 
+    price: 1000, 
     bgStyle: 'bg-gradient-to-br from-amber-500/25 via-[#1a1204] to-[#050301]',
     bgImage: imgBannerGoldenDisciple,
     glowColor: 'bg-amber-500/15'
