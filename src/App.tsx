@@ -698,6 +698,17 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Reset user-specific states when user accounts shift or log out
+  useEffect(() => {
+    setCurrentDays([[], [], [], []]);
+    setPersonalBests({});
+    setWeightHistory([]);
+    setSessionSets([]);
+    setArchivedWorkouts([]);
+    setRoutines([]);
+    setProfile(null);
+  }, [currentUser]);
+
   // Data Sync
   useEffect(() => {
     if (!currentUser) return;
@@ -3198,6 +3209,7 @@ export default function App() {
                 saveSettings={saveSettings}
                 setToast={setToast}
                 archivedWorkouts={archivedWorkouts}
+                currentUser={currentUser}
               />
             </motion.div>
           ) : activeView === 'profile' ? (() => {

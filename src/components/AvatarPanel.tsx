@@ -117,6 +117,7 @@ interface AvatarPanelProps {
   saveSettings: (settings: any) => Promise<void>;
   setToast: (toast: { message: string, type: 'success' | 'pb' | 'info' } | null) => void;
   archivedWorkouts: any[];
+  currentUser?: any;
 }
 
 // Outfits database with matching pre-generated image assets for default/flex/charge/roar positions
@@ -1504,7 +1505,7 @@ const BORDERS = [
   }
 ];
 
-export default function AvatarPanel({ profile, setProfile, saveSettings, setToast, archivedWorkouts }: AvatarPanelProps) {
+export default function AvatarPanel({ profile, setProfile, saveSettings, setToast, archivedWorkouts, currentUser }: AvatarPanelProps) {
   const [activeTab, setActiveTab] = useState<'customization' | 'auras' | 'emotes' | 'titles' | 'banners' | 'bannerBorders'>('customization');
   const [isClaimingBonus, setIsClaimingBonus] = useState(false);
 
@@ -1588,33 +1589,39 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   const activeOutfit = OUTFITS.find(o => o.id === equippedOutfit) || OUTFITS[0];
   const finalFormTheme = FINAL_FORM_THEMES[equippedOutfit] || FINAL_FORM_THEMES.vanguard_cadet;
 
+  const userId = currentUser?.uid || 'guest';
+  const petNamesKey = `gym_pet_names_${userId}`;
+  const petLevelsKey = `gym_pet_levels_${userId}`;
+  const petXpsKey = `gym_pet_xps_${userId}`;
+
   // Unique interactive Companion Pet Storage with LocalStorage Persistence
-  const [petNames, setPetNames] = useState<Record<string, string>>(() => {
-    try {
-      const saved = localStorage.getItem('gym_pet_names');
-      return saved ? JSON.parse(saved) : {};
-    } catch {
-      return {};
-    }
-  });
+  const [petNames, setPetNames] = useState<Record<string, string>>({});
+  const [petLevels, setPetLevels] = useState<Record<string, number>>({});
+  const [petXps, setPetXps] = useState<Record<string, number>>({});
 
-  const [petLevels, setPetLevels] = useState<Record<string, number>>(() => {
+  // Synchronise pet stats when user ID changes
+  useEffect(() => {
     try {
-      const saved = localStorage.getItem('gym_pet_levels');
-      return saved ? JSON.parse(saved) : {};
+      const savedNames = localStorage.getItem(petNamesKey);
+      setPetNames(savedNames ? JSON.parse(savedNames) : {});
     } catch {
-      return {};
+      setPetNames({});
     }
-  });
 
-  const [petXps, setPetXps] = useState<Record<string, number>>(() => {
     try {
-      const saved = localStorage.getItem('gym_pet_xps');
-      return saved ? JSON.parse(saved) : {};
+      const savedLevels = localStorage.getItem(petLevelsKey);
+      setPetLevels(savedLevels ? JSON.parse(savedLevels) : {});
     } catch {
-      return {};
+      setPetLevels({});
     }
-  });
+
+    try {
+      const savedXps = localStorage.getItem(petXpsKey);
+      setPetXps(savedXps ? JSON.parse(savedXps) : {});
+    } catch {
+      setPetXps({});
+    }
+  }, [userId, petNamesKey, petLevelsKey, petXpsKey]);
 
   const [isRenamingPet, setIsRenamingPet] = useState(false);
   const [renameInput, setRenameInput] = useState("");
@@ -1630,7 +1637,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
     if (!trimmed) return;
     const updated = { ...petNames, [equippedOutfit]: trimmed };
     setPetNames(updated);
-    localStorage.setItem('gym_pet_names', JSON.stringify(updated));
+    localStorage.setItem(petNamesKey, JSON.stringify(updated));
     setIsRenamingPet(false);
     setToast({ message: `Companion renamed to "${trimmed}"!`, type: "success" });
   };
@@ -1660,8 +1667,8 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       const updatedLvls = { ...petLevels, [equippedOutfit]: newLvl };
       setPetXps(updatedXps);
       setPetLevels(updatedLvls);
-      localStorage.setItem('gym_pet_xps', JSON.stringify(updatedXps));
-      localStorage.setItem('gym_pet_levels', JSON.stringify(updatedLvls));
+      localStorage.setItem(petXpsKey, JSON.stringify(updatedXps));
+      localStorage.setItem(petLevelsKey, JSON.stringify(updatedLvls));
 
       setPetFeedEffect('feed');
       setTimeout(() => setPetFeedEffect('none'), 1200);
@@ -1690,8 +1697,8 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       const updatedLvls = { ...petLevels, [equippedOutfit]: newLvl };
       setPetXps(updatedXps);
       setPetLevels(updatedLvls);
-      localStorage.setItem('gym_pet_xps', JSON.stringify(updatedXps));
-      localStorage.setItem('gym_pet_levels', JSON.stringify(updatedLvls));
+      localStorage.setItem(petXpsKey, JSON.stringify(updatedXps));
+      localStorage.setItem(petLevelsKey, JSON.stringify(updatedLvls));
 
       setPetFeedEffect('train');
       setTimeout(() => setPetFeedEffect('none'), 1200);
