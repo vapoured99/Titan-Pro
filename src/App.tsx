@@ -6,6 +6,7 @@ import {
   Trophy, 
   ArrowLeftRight, 
   ArrowDown, 
+  ArrowUpDown,
   Activity, 
   ArrowUp, 
   ArrowUpCircle, 
@@ -1294,6 +1295,28 @@ export default function App() {
     nextDays[dayIndex] = nextDays[dayIndex].filter((_, i) => i !== exIndex);
     setCurrentDays(nextDays);
     saveWorkout(nextDays);
+  };
+
+  const handleOrganizeMovementOrder = () => {
+    const totalExercises = currentDays.reduce((acc, val) => acc + val.length, 0);
+    if (totalExercises === 0) {
+      setToast({ message: "No exercises selected to organize.", type: "info" });
+      return;
+    }
+
+    const nextDays = currentDays.map(day => {
+      return [...day].sort((a, b) => {
+        const catA = a.category || 'isolation';
+        const catB = b.category || 'isolation';
+        if (catA === 'compound' && catB !== 'compound') return -1;
+        if (catA !== 'compound' && catB === 'compound') return 1;
+        return 0;
+      });
+    });
+
+    setCurrentDays(nextDays);
+    saveWorkout(nextDays);
+    setToast({ message: "Exercises reorganized: Compounds first, then Isolations!", type: "success" });
   };
 
   const handleSaveSet = async (exName: string, weight: string, reps: string) => {
@@ -3427,6 +3450,14 @@ export default function App() {
                   <h3 className="text-xl font-light italic font-serif">Training Programming</h3>
                   <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">Curate your physical evolution</p>
                 </div>
+                <button
+                  onClick={handleOrganizeMovementOrder}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-gym-accent/10 border border-gym-accent/25 hover:border-gym-accent/50 hover:bg-gym-accent/20 text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-gym-accent/5"
+                  title="Prioritise compound exercises and move isolation movements to the end"
+                >
+                  <ArrowUpDown className="w-3.5 h-3.5" />
+                  Compounds First
+                </button>
               </div>
 
               {DAY_CONFIG.map((day, di) => (
