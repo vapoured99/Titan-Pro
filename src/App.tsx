@@ -2776,10 +2776,10 @@ export default function App() {
                                     </div>
                                     <button
                                       onClick={() => s.id && handleDeleteSet(s.id)}
-                                      className="opacity-0 group-hover/set:opacity-100 p-1 text-red-500/40 hover:text-red-500 transition-all cursor-pointer"
+                                      className="opacity-80 hover:opacity-100 p-1 text-red-500 hover:text-red-400 transition-all cursor-pointer"
                                       title="Delete set"
                                     >
-                                      <Trash2 className="w-3 h-3 text-red-500" />
+                                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
                                     </button>
                                   </div>
                                 ))}
