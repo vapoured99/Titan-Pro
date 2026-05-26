@@ -733,14 +733,8 @@ export const PETS_DATA: Record<string, {
             {/* Glowing Core Sunburst Gem on chest */}
             <polygon points="50,34 53,40 58,42 53,44 50,50 47,44 42,42 47,40" fill="#fff" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 4px #fff)' }} />
 
-            {/* Cascading Golden Foil Tail Ribbons */}
-            <path d="M48,78 Q30,96 24,96" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" className="animate-wiggle" />
-            <path d="M50,78 Q50,98 50,98" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
-            <path d="M52,78 Q70,96 76,96" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" className="animate-wiggle" />
-            
-            {/* Diamond tip nodes at the end is of tail ribbons */}
-            <polygon points="24,96 21,93 24,90 27,93" fill="#fbbf24" />
-            <polygon points="76,96 73,93 76,90 79,93" fill="#fbbf24" />
+            {/* Central Elegant Tail Ribbon */}
+            <path d="M50,78 Q50,98 50,98" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" />
           </g>
 
           <defs>
