@@ -477,6 +477,30 @@ export const POOLS: Record<string, Exercise[]> = {
         "Slowly return to the starting position.",
         "Maintain an upright posture throughout the exercise."
       ]
+    },
+    {
+      name: "Pull Ups",
+      icon: "ArrowUp",
+      pool: "back",
+      instructions: [
+        "Grasp the pull-up bar with an overhand grip, hands slightly wider than shoulder-width apart.",
+        "Hang with your arms fully extended and your feet off the floor, crossing your ankles if needed.",
+        "Pull your body up by driving your elbows down toward your sides, bringing your chest toward the bar.",
+        "Pause at the top with your chin over the bar, then slowly lower yourself back to the starting position.",
+        "Avoid swinging or using momentum to pull yourself up."
+      ]
+    },
+    {
+      name: "Assisted Pull Ups",
+      icon: "ArrowUpCircle",
+      pool: "back",
+      instructions: [
+        "Select an appropriate counterweight on the machine and step onto the platform or place your knees/feet on the padded bar.",
+        "Grasp the overhead handles with an overhand grip, hands slightly wider than shoulder-width apart.",
+        "Slowly lower your body until your arms are fully extended, allowing the machine to support your weight.",
+        "Pull yourself up by driving your elbows down, keeping your chest tall and core engaged.",
+        "Slowly lower yourself back down to the starting position under control."
+      ]
     }
   ],
   shoulders: [
@@ -880,6 +904,18 @@ export const POOLS: Record<string, Exercise[]> = {
         "Control the weight as you return to the starting position.",
         "Maintain a steady tempo throughout the exercise.",
         "Provides constant tension and stability for bicep isolation."
+      ]
+    },
+    {
+      name: "Incline Dumbbell Curls",
+      icon: "Dumbbell",
+      pool: "biceps",
+      instructions: [
+        "Sit on an incline bench set to a 45-degree angle, holding a dumbbell in each hand with arms hanging straight down, palms facing forward.",
+        "Keep your elbows tucked close to your torso as you slowly curl the weights up toward your shoulders.",
+        "Squeeze your biceps at the peak of the contraction, keeping your shoulders static.",
+        "Slowly lower the dumbbells back to the starting position, maintaining control and a full stretch.",
+        "Avoid swinging your arms or lifting your elbows forward during the movement."
       ]
     }
   ],
