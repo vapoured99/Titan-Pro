@@ -2483,10 +2483,10 @@ export default function App() {
                                                 handleFirestoreError(err, OperationType.DELETE, `weightEntries/${entry.id}`);
                                               }
                                             }}
-                                            className="p-2 text-white/25 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all cursor-pointer"
+                                            className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all cursor-pointer"
                                             title="Delete entry"
                                           >
-                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
                                           </button>
                                         )}
                                       </div>
@@ -2748,10 +2748,10 @@ export default function App() {
                                     </div>
                                     <button
                                       onClick={() => s.id && handleDeleteSet(s.id)}
-                                      className="opacity-0 group-hover/set:opacity-100 p-1 text-white/10 hover:text-red-500 transition-all cursor-pointer"
+                                      className="opacity-0 group-hover/set:opacity-100 p-1 text-red-500/40 hover:text-red-500 transition-all cursor-pointer"
                                       title="Delete set"
                                     >
-                                      <Trash2 className="w-3 h-3" />
+                                      <Trash2 className="w-3 h-3 text-red-500" />
                                     </button>
                                   </div>
                                 ))}
@@ -2906,12 +2906,12 @@ export default function App() {
                                   <button 
                                     onClick={() => handleDeleteWorkout(workout.id)}
                                     disabled={dataLoading}
-                                    className={`flex items-center gap-2 px-6 py-3 border rounded-sm text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg ${dataLoading ? 'bg-white/5 border-white/10 text-white/20' : 'bg-red-500/5 border-red-500/20 text-red-500/60 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-red-500/5'}`}
+                                    className={`flex items-center gap-2 px-6 py-3 border rounded-sm text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg ${dataLoading ? 'bg-white/5 border-white/10 text-white/20' : 'bg-red-500/5 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-red-500/5'}`}
                                   >
                                     {dataLoading ? (
                                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
                                     ) : (
-                                      <Trash2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                                      <Trash2 className="w-3.5 h-3.5 text-red-500 group-hover:text-white group-hover:scale-110 transition-transform" />
                                     )}
                                     {dataLoading ? 'Excluding...' : 'Exclude Record'}
                                   </button>
@@ -3076,10 +3076,10 @@ export default function App() {
                                           </button>
                                           <button
                                             onClick={() => handleDeleteRoutine(routine.id!)}
-                                            className="p-1.5 border border-white/5 hover:border-red-500/35 hover:bg-red-500/10 text-white/30 hover:text-red-500 transition-colors rounded-sm cursor-pointer"
+                                            className="p-1.5 border border-red-500/10 hover:border-red-500/35 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 transition-colors rounded-sm cursor-pointer"
                                             title="Delete routine"
                                           >
-                                            <Trash2 className="w-3.5 h-3.5" />
+                                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
                                           </button>
                                         </div>
                                       </div>
@@ -3452,10 +3452,10 @@ export default function App() {
                                     </button>
                                     <button 
                                       onClick={() => handleRemoveExerciseFromPlan(di, ei)}
-                                      className="p-3 bg-white/5 border border-white/10 text-white/40 hover:text-red-500 hover:bg-red-500/5 transition-all cursor-pointer rounded-sm"
+                                      className="p-3 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-sm"
                                       title="Remove"
                                     >
-                                      <Trash2 className="w-4 h-4" />
+                                      <Trash2 className="w-4 h-4 text-red-500" />
                                     </button>
                                   </div>
                                 </div>
@@ -3542,10 +3542,10 @@ export default function App() {
                                                 onClick={() => {
                                                   if (set.id) handleDeleteSet(set.id);
                                                 }}
-                                                className="p-1 hover:text-red-500 text-white/20 hover:bg-neutral-950 rounded transition-colors"
+                                                className="p-1 text-red-500/50 hover:text-red-500 hover:bg-neutral-950 rounded transition-colors"
                                                 title="Delete set"
                                               >
-                                                <Trash2 className="w-2.5 h-2.5" />
+                                                <Trash2 className="w-2.5 h-2.5 text-red-500" />
                                               </button>
                                             </div>
                                           </div>
@@ -3914,7 +3914,7 @@ export default function App() {
                       : 'bg-gym-accent/10 border-gym-accent/20 text-gym-accent'
                   }`}>
                     {driveConfirmAction.type === 'delete' ? (
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-5 h-5 text-red-500" />
                     ) : (
                       <Download className="w-5 h-5" />
                     )}

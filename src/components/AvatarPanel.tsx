@@ -2364,7 +2364,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           </div>
 
           {/* COMPANION PET INTERACTION CARD */}
-          <div className="w-full max-w-[440px] bg-black/45 border border-white/10 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
+          <div className="w-full max-w-[440px] bg-black/55 border border-white/20 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
             {/* Background cyan/pink/amber gradient particle glow */}
             <div 
               className="absolute -right-12 -top-12 w-32 h-32 rounded-full filter blur-3xl opacity-20 pointer-events-none transition-all duration-700" 
@@ -2427,12 +2427,12 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
 
             {/* Pet Core Display: Center stage */}
-            <div className="flex gap-4 bg-black/20 border border-white/5 p-3.5 rounded-lg relative overflow-hidden">
-              <div className={`w-16 h-16 rounded flex items-center justify-center border bg-black/60 flex-shrink-0 relative overflow-hidden transition-all duration-300 ${
+            <div className="flex gap-4 bg-black/30 border border-white/15 p-3.5 rounded-lg relative overflow-hidden">
+              <div className={`w-16 h-16 rounded flex items-center justify-center border bg-black/70 flex-shrink-0 relative overflow-hidden transition-all duration-300 ${
                 petFeedEffect === 'feed' ? 'scale-105 bg-emerald-950/25 border-emerald-500/50' : 
                 petFeedEffect === 'train' ? 'scale-105 bg-amber-950/25 border-amber-500/50' : 
                 petFeedEffect === 'peteffect' ? 'scale-105 bg-fuchsia-950/25 border-fuchsia-500/50' : 
-                'border-white/5'
+                'border-white/15'
               }`}>
                 {/* Embedded action ripple overlays */}
                 {petFeedEffect === 'feed' && (
@@ -2464,7 +2464,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
 
             {/* Bonding synergy progress gauge */}
-            <div className="flex flex-col gap-1.5 bg-black/10 border border-white/5 p-2.5 rounded">
+            <div className="flex flex-col gap-1.5 bg-black/20 border border-white/15 p-2.5 rounded">
               <div className="flex items-center justify-between text-[7.5px] font-mono select-none">
                 <span className="text-white/40 uppercase tracking-widest font-black">Bond Progression</span>
                 <span className="text-white/80 font-bold">{currentPetXp} / 100 XP</span>
@@ -2514,7 +2514,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         <div className="lg:col-span-12 xl:col-span-7 flex flex-col justify-between gap-6">
           
           {/* Box 1: Profile & Level/XP Status Card */}
-          <div className="bg-white/[0.01] border border-white/5 rounded-lg p-6 relative overflow-hidden flex-1 flex flex-col justify-center">
+          <div className="bg-black/85 border border-white/20 rounded-lg p-6 relative overflow-hidden flex-1 flex flex-col justify-center">
             <div className="absolute top-0 right-0 p-4 opacity-5">
               <Shield className="w-24 h-24 text-white" />
             </div>
@@ -2570,7 +2570,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           </div>
 
           {/* Box 2: Competitive Rank Grid */}
-          <div className="bg-white/[0.01] border border-white/5 rounded-lg p-6 overflow-hidden relative flex-1 flex flex-col justify-center">
+          <div className="bg-black/85 border border-white/20 rounded-lg p-6 overflow-hidden relative flex-1 flex flex-col justify-center">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               
               <div className="flex items-center gap-4">
@@ -2606,7 +2606,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           </div>
 
           {/* Box 3: Physiological Core metrics block */}
-          <div className="bg-white/[0.01] border border-white/5 rounded-lg p-6 flex-1 flex flex-col justify-center">
+          <div className="bg-black/85 border border-white/20 rounded-lg p-6 flex-1 flex flex-col justify-center">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h4 className="text-[10px] text-white/30 uppercase tracking-[0.3em] font-black">Physiological Core</h4>
@@ -2627,7 +2627,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               ].map((stat, idx) => {
                 const IconComp = stat.icon;
                 return (
-                  <div key={idx} className="bg-white/[0.02] border border-white/5 p-3 rounded-md flex flex-col items-center justify-between text-center group hover:bg-white/[0.04] hover:border-white/15 transition-all">
+                  <div key={idx} className="bg-zinc-900/90 border border-white/15 p-3 rounded-md flex flex-col items-center justify-between text-center group hover:bg-zinc-800/95 hover:border-white/25 transition-all">
                     <IconComp className={`w-4 h-4 ${stat.color} mb-2 group-hover:scale-110 transition-transform`} />
                     <span className="text-[10px] text-white/50 uppercase tracking-wider font-extrabold mb-0.5">{stat.label}</span>
                     <span className="text-base font-black font-mono text-white leading-none mb-0.5">{stat.val}</span>
@@ -2643,10 +2643,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       </div>
 
       {/* BOTTOM SECTION: Customization Shop Tabs & Slider */}
-      <div className="bg-white/[0.01] border border-white/5 rounded-lg overflow-hidden">
+      <div className="bg-transparent border-transparent rounded-lg overflow-hidden">
         
         {/* Navigation Categories inside Shop */}
-        <div className="relative border-b border-white/5 bg-black/25 flex items-center">
+        <div className="relative border-b border-white/15 bg-black/55 flex items-center">
           {/* Scroll Left indicator/button */}
           {showLeftArrow && (
             <button 
@@ -2726,12 +2726,12 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <div 
                     key={outfit.id} 
                     onClick={() => buyOrEquipItem('customization', outfit.id, outfit.price)}
-                    className={`group/card relative rounded-lg border p-4 bg-black/35 cursor-pointer flex flex-col justify-between h-48 transition-all overflow-hidden ${
+                    className={`group/card relative rounded-lg border p-4 bg-black/85 cursor-pointer flex flex-col justify-between h-48 transition-all overflow-hidden ${
                       isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.01]' 
+                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
                         : isUnlocked 
-                          ? 'border-white/10 hover:border-white/30 hover:bg-white/[0.02]' 
-                          : 'border-white/5 bg-black/50 opacity-80 hover:opacity-100 hover:border-white/10'
+                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
+                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 hover:border-white/20'
                     }`}
                   >
                     {/* Shadow overlay glow */}
@@ -2792,12 +2792,12 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <div 
                     key={aura.id}
                     onClick={() => buyOrEquipItem('auras', aura.id, aura.price)}
-                    className={`relative rounded-lg border p-5 bg-black/35 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
+                    className={`relative rounded-lg border p-5 bg-black/85 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
                       isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.01]' 
+                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
                         : isUnlocked 
-                          ? 'border-white/10 hover:border-white/30 hover:bg-white/[0.02]' 
-                          : 'border-white/5 bg-black/50 opacity-80 hover:opacity-100 hover:border-white/10'
+                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
+                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 hover:border-white/20'
                     }`}
                   >
                     <div>
@@ -2843,12 +2843,12 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <div 
                     key={emote.id}
                     onClick={() => buyOrEquipItem('emotes', emote.id, emote.price)}
-                    className={`relative rounded-lg border p-5 bg-black/35 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
+                    className={`relative rounded-lg border p-5 bg-black/85 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
                       isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.01]' 
+                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
                         : isUnlocked 
-                          ? 'border-white/10 hover:border-white/30 hover:bg-white/[0.02]' 
-                          : 'border-white/5 bg-black/50 opacity-80 hover:opacity-100'
+                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
+                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 border-white/15'
                     }`}
                   >
                     <div>
@@ -2894,12 +2894,12 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <div 
                     key={title.id}
                     onClick={() => buyOrEquipItem('titles', title.id, title.price)}
-                    className={`relative rounded-lg border p-5 bg-black/35 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
+                    className={`relative rounded-lg border p-5 bg-black/85 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
                       isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.01]' 
+                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
                         : isUnlocked 
-                          ? 'border-white/10 hover:border-white/30 hover:bg-white/[0.02]' 
-                          : 'border-white/5 bg-black/50 opacity-80 hover:opacity-100'
+                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
+                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 border-white/15'
                     }`}
                   >
                     <div>
@@ -2947,24 +2947,24 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                     onClick={() => buyOrEquipItem('banners', banner.id, banner.price)}
                     className={`relative rounded-lg border p-5 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden group/bitem ${
                       isEquipped 
-                        ? 'border-gym-accent shadow-[0_0_15px_rgba(212,175,55,0.2)]' 
+                        ? 'border-gym-accent shadow-[0_0_15px_rgba(212,175,55,0.25)]' 
                         : isUnlocked 
-                          ? 'border-white/10 hover:border-white/30' 
-                          : 'border-white/5 opacity-80 hover:opacity-100'
+                          ? 'border-white/25 hover:border-white/45 bg-black/85' 
+                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100'
                     }`}
                   >
                     {/* The dynamic banner preview gradient directly within the list item card */}
                     {banner.bgImage ? (
                       <div 
-                        className="absolute inset-0 z-0 transition-opacity duration-300 bg-cover bg-center opacity-70 group-hover/bitem:opacity-90" 
+                        className="absolute inset-0 z-0 transition-opacity duration-300 bg-cover bg-center opacity-80 group-hover/bitem:opacity-[0.98]" 
                         style={{ backgroundImage: `url(${banner.bgImage})` }}
                       />
                     ) : (
-                      <div className={`absolute inset-0 z-0 transition-opacity duration-300 ${banner.bgStyle} opacity-70 group-hover/bitem:opacity-90`} />
+                      <div className={`absolute inset-0 z-0 transition-opacity duration-300 ${banner.bgStyle} opacity-80 group-hover/bitem:opacity-[0.98]`} />
                     )}
                     
                     {/* Dark gradient mask to keep texts ultra-readable */}
-                    <div className="absolute inset-0 z-0 bg-gradient-to-t from-black via-black/40 to-black/10" />
+                    <div className="absolute inset-0 z-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
                     
                     {/* Ambient Glow matching banner */}
                     {banner.glowColor && (
@@ -3014,12 +3014,12 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <div 
                     key={borderItem.id}
                     onClick={() => buyOrEquipItem('bannerBorders', borderItem.id, borderItem.price)}
-                    className={`relative rounded-lg border p-5 bg-black/35 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
+                    className={`relative rounded-lg border p-5 bg-black/85 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
                       isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.01]' 
+                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
                         : isUnlocked 
-                          ? 'border-white/10 hover:border-white/30 hover:bg-white/[0.02]' 
-                          : 'border-white/5 bg-black/50 opacity-80 hover:opacity-100 font-light'
+                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
+                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 font-light border-white/15'
                     }`}
                   >
                     <div>
