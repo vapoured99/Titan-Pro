@@ -31,7 +31,9 @@ import {
   BookOpen,
   Cloud,
   Download,
-  Upload
+  Upload,
+  Repeat,
+  Edit2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -614,7 +616,12 @@ export default function App() {
   // State for session view selection
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null);
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
-  const [activeView, setActiveView] = useState<'workout' | 'library' | 'progress' | 'session' | 'profile' | 'anatomy' | 'avatar'>('workout');
+  const [activeView, setActiveView] = useState<'workout' | 'library' | 'progress' | 'session' | 'routines' | 'profile' | 'anatomy' | 'avatar'>('workout');
+  const [routines, setRoutines] = useState<any[]>([]);
+  const [savingRoutineWorkout, setSavingRoutineWorkout] = useState<any | null>(null);
+  const [expandedRoutinesDays, setExpandedRoutinesDays] = useState<Record<number, boolean>>({});
+  const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
+  const [editingRoutineName, setEditingRoutineName] = useState<string>("");
   const [guidanceEx, setGuidanceEx] = useState<Exercise | null>(null);
 
   const [toast, setToast] = useState<{message: string, type: 'success' | 'pb' | 'info'} | null>(null);
@@ -792,6 +799,14 @@ export default function App() {
       handleFirestoreError(err, OperationType.LIST, weightPath);
     });
 
+    const unsubscribeRoutines = onSnapshot(collection(db, `users/${currentUser.uid}/routines`), (snapshot) => {
+      const routineList: any[] = [];
+      snapshot.forEach(d => {
+        routineList.push({ id: d.id, ...d.data() });
+      });
+      setRoutines(routineList.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
+    }, (err) => console.error("Routines listener error:", err));
+
     return () => {
       unsubscribeWorkout();
       unsubscribeSettings();
@@ -799,6 +814,7 @@ export default function App() {
       unsubscribeWorkouts();
       unsubscribePbs();
       unsubscribeWeight();
+      unsubscribeRoutines();
     };
   }, [currentUser]);
 
@@ -1517,6 +1533,120 @@ export default function App() {
     }
   };
 
+  const handleSaveRoutine = async (workout: any, categoryIndex: number) => {
+    if (!currentUser || !workout) return;
+    try {
+      setDataLoading(true);
+      const categoryName = DAY_CONFIG[categoryIndex].name;
+      const formattedDate = new Date(workout.timestamp?.seconds ? workout.timestamp.seconds * 1000 : Date.now()).toLocaleDateString([], { day: 'numeric', month: 'short' });
+      const defaultName = `${categoryName} Routine (${formattedDate})`;
+      
+      const routineRef = doc(collection(db, `users/${currentUser.uid}/routines`));
+      await setDoc(routineRef, {
+        name: defaultName,
+        date: workout.date || new Date().toISOString().split('T')[0],
+        categoryIndex,
+        sets: workout.sets || [],
+        timestamp: serverTimestamp()
+      });
+      
+      setToast({ message: `Routine saved under ${categoryName}!`, type: "success" });
+      setSavingRoutineWorkout(null);
+    } catch (error) {
+      console.error("Error saving routine:", error);
+      setToast({ message: "Failed to save routine.", type: "info" });
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleDeleteRoutine = async (id: string) => {
+    if (!currentUser || !id) return;
+    try {
+      setDataLoading(true);
+      await deleteDoc(doc(db, `users/${currentUser.uid}/routines/${id}`));
+      setToast({ message: "Routine deleted successfully", type: "success" });
+    } catch (err) {
+      console.error("Failed to delete routine:", err);
+      setToast({ message: "Failed to delete routine", type: "info" });
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleRenameRoutine = async (id: string, newName: string) => {
+    if (!currentUser || !id || !newName.trim()) return;
+    try {
+      setDataLoading(true);
+      await setDoc(doc(db, `users/${currentUser.uid}/routines/${id}`), {
+        name: newName.trim()
+      }, { merge: true });
+      setToast({ message: "Routine renamed successfully", type: "success" });
+      setEditingRoutineId(null);
+    } catch (err) {
+      console.error("Failed to rename routine:", err);
+      setToast({ message: "Failed to rename routine", type: "info" });
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleLoadRoutineToActiveSession = async (routine: any) => {
+    if (!currentUser || !routine) return;
+    try {
+      setDataLoading(true);
+
+      const uniqueExNames: string[] = [];
+      const sets = routine.sets || [];
+      sets.forEach((set: any) => {
+        if (set && set.exerciseName) {
+          const trimmedName = set.exerciseName.trim();
+          if (trimmedName && !uniqueExNames.some(name => name.toLowerCase() === trimmedName.toLowerCase())) {
+            uniqueExNames.push(trimmedName);
+          }
+        }
+      });
+
+      const exercisesToSet: Exercise[] = uniqueExNames.map(name => {
+        let foundEx: Exercise | null = null;
+        for (const [_, list] of Object.entries(POOLS)) {
+          const match = list.find(e => e.name.trim().toLowerCase() === name.toLowerCase());
+          if (match) {
+            foundEx = match;
+            break;
+          }
+        }
+        return foundEx || {
+          name: name,
+          icon: "Dumbbell",
+          pool: "chest"
+        };
+      });
+
+      const categoryIndex = typeof routine.categoryIndex === 'number' ? routine.categoryIndex : 0;
+      const nextCurrentDays = [...currentDays];
+      nextCurrentDays[categoryIndex] = exercisesToSet;
+      
+      setCurrentDays(nextCurrentDays);
+      await saveWorkout(nextCurrentDays);
+
+      setExpandedDays(prev => ({ ...prev, [categoryIndex]: true }));
+
+      setActiveView('workout');
+      await saveSettings({ activeView: 'workout' });
+
+      setToast({ 
+        message: `Loaded ${exercisesToSet.length} exercises into ${DAY_CONFIG[categoryIndex].name}!`, 
+        type: "success" 
+      });
+    } catch (err) {
+      console.error("Failed to load routine to Programming:", err);
+      setToast({ message: "Failed to load routine exercises into Programming", type: "info" });
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
   const handleClearActiveSession = async () => {
     if (!currentUser || sessionSets.length === 0) return;
     
@@ -1889,6 +2019,7 @@ export default function App() {
           { id: 'progress', label: 'Progress', icon: Scale },
           { id: 'anatomy', label: 'Anatomy', icon: Layout },
           { id: 'session', label: 'Session', icon: History },
+          { id: 'routines', label: 'Routines', icon: Repeat },
           { id: 'avatar', label: 'Avatar', icon: Crown }
         ].map(nav => (
           <button
@@ -1897,11 +2028,16 @@ export default function App() {
               setActiveView(nav.id as any);
               saveSettings({ activeView: nav.id });
             }}
-            className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 ${
+            className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 ${
               activeView === nav.id ? "text-theme-text" : "text-theme-text-muted hover:text-theme-text"
             }`}
+            title={nav.id === 'routines' ? 'Routines' : nav.label}
           >
-            {nav.label}
+            {nav.id === 'routines' ? (
+              <Repeat className={`w-4 h-4 ${activeView === 'routines' ? 'text-gym-accent' : ''}`} />
+            ) : (
+              nav.label
+            )}
             {activeView === nav.id && (
               <motion.div 
                 layoutId="nav-underline" 
@@ -2710,6 +2846,13 @@ export default function App() {
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <button 
+                                    onClick={() => setSavingRoutineWorkout(workout)}
+                                    className="flex items-center gap-2 px-6 py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg shadow-gym-accent/5 rounded-sm"
+                                  >
+                                    <Save className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                                    Save Routine
+                                  </button>
+                                  <button 
                                     onClick={() => handleDeleteWorkout(workout.id)}
                                     disabled={dataLoading}
                                     className={`flex items-center gap-2 px-6 py-3 border rounded-sm text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg ${dataLoading ? 'bg-white/5 border-white/10 text-white/20' : 'bg-red-500/5 border-red-500/20 text-red-500/60 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-red-500/5'}`}
@@ -2761,6 +2904,170 @@ export default function App() {
                   )}
                 </div>
               )}
+            </motion.div>
+          ) : activeView === 'routines' ? (
+            <motion.div 
+              key="routines-view"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-3 pb-20"
+            >
+              <div className="mb-6 pb-6 border-b border-white/5 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-light italic font-serif">Saved Workout Routines</h3>
+                  <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">Instantly reload and execute your favorite workflows</p>
+                </div>
+              </div>
+
+              {DAY_CONFIG.map((day, di) => {
+                const categoryRoutines = routines.filter(r => r.categoryIndex === di);
+                const isOpen = !!expandedRoutinesDays[di];
+
+                return (
+                  <div key={di} className="group">
+                    <button
+                      onClick={() => setExpandedRoutinesDays(prev => ({ ...prev, [di]: !isOpen }))}
+                      className="w-full flex items-center justify-between p-6 rounded-sm bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-light italic font-serif text-white/90">{day.name}</h3>
+                          <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
+                            {categoryRoutines.length} Saved
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-500 ${isOpen ? 'rotate-180' : ''} text-white/20 group-hover:text-gym-accent`} />
+                    </button>
+
+                    <AnimatePresence>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                          animate={{ height: "auto", opacity: 1, marginTop: 12 }}
+                          exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="p-6 bg-white/[0.01] border border-white/5 rounded-sm space-y-4">
+                            {categoryRoutines.length === 0 ? (
+                              <div className="text-center py-8">
+                                <Repeat className="w-8 h-8 text-white/5 mx-auto mb-3 animate-pulse" />
+                                <p className="text-xs text-white/40 font-bold uppercase tracking-wide">No saved routines here yet.</p>
+                                <p className="text-[9px] text-white/20 uppercase tracking-widest mt-1">To save a routine, click "Save Routine" on any archived session in the Session tab.</p>
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {categoryRoutines.map((routine, ri) => (
+                                  <div 
+                                    key={routine.id || ri} 
+                                    className="bg-black/55 border border-white/10 rounded-sm overflow-hidden flex flex-col justify-between"
+                                  >
+                                    <div className="p-5 border-b border-white/5 bg-white/[0.02]">
+                                      <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1 min-w-0">
+                                          {editingRoutineId === routine.id ? (
+                                            <div className="space-y-2">
+                                              <input
+                                                type="text"
+                                                value={editingRoutineName}
+                                                onChange={(e) => setEditingRoutineName(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                  if (e.key === 'Enter') handleRenameRoutine(routine.id, editingRoutineName);
+                                                  if (e.key === 'Escape') setEditingRoutineId(null);
+                                                }}
+                                                className="w-full bg-black/90 border border-gym-accent/40 text-sm text-white px-2.5 py-1.5 rounded-sm focus:outline-none focus:border-gym-accent/80 font-medium"
+                                                autoFocus
+                                              />
+                                              <div className="flex gap-2">
+                                                <button
+                                                  onClick={() => handleRenameRoutine(routine.id, editingRoutineName)}
+                                                  className="px-2.5 py-1 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-bold uppercase tracking-wider rounded-sm cursor-pointer"
+                                                >
+                                                  Save
+                                                </button>
+                                                <button
+                                                  onClick={() => setEditingRoutineId(null)}
+                                                  className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-white/70 text-[9px] font-bold uppercase tracking-wider rounded-sm cursor-pointer"
+                                                >
+                                                  Cancel
+                                                </button>
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            <div className="group/title flex items-center gap-1.5 flex-wrap">
+                                              <h4 className="text-sm font-semibold text-white/95 leading-snug truncate max-w-[150px] sm:max-w-none">{routine.name}</h4>
+                                              <button
+                                                onClick={() => {
+                                                  setEditingRoutineId(routine.id);
+                                                  setEditingRoutineName(routine.name);
+                                                }}
+                                                className="p-1 hover:text-gym-accent text-white/20 transition-colors cursor-pointer group-hover/title:text-white/40"
+                                                title="Rename Routine"
+                                              >
+                                                <Edit2 className="w-3 h-3" />
+                                              </button>
+                                            </div>
+                                          )}
+                                          <div className="mt-1">
+                                            <span className="text-[8px] text-white/30 uppercase tracking-widest font-mono">
+                                              Recorded {routine.date}
+                                            </span>
+                                          </div>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                          <button
+                                            onClick={() => handleLoadRoutineToActiveSession(routine)}
+                                            className="px-3 py-1.5 bg-gym-accent/10 border border-gym-accent/30 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] font-bold uppercase tracking-wider transition-all rounded-sm cursor-pointer"
+                                            title="Load sets into today's active session"
+                                          >
+                                            Use Routine
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteRoutine(routine.id!)}
+                                            className="p-1.5 border border-white/5 hover:border-red-500/35 hover:bg-red-500/10 text-white/30 hover:text-red-500 transition-colors rounded-sm cursor-pointer"
+                                            title="Delete routine"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="p-5 space-y-3 max-h-48 overflow-y-auto no-scrollbar">
+                                      {Object.entries(
+                                        routine.sets.reduce((acc: any, s: any) => {
+                                          if (!acc[s.exerciseName]) acc[s.exerciseName] = [];
+                                          acc[s.exerciseName].push(s);
+                                          return acc;
+                                        }, {})
+                                      ).map(([exName, exSets]: [string, any]) => (
+                                        <div key={exName} className="flex justify-between items-start gap-4 pb-2 border-b border-white/5 last:border-0 last:pb-0">
+                                          <span className="text-[10px] text-white/70 font-semibold uppercase tracking-wider">{exName}</span>
+                                          <div className="flex flex-wrap gap-1.5 justify-end">
+                                            {exSets.map((set: any, idx: number) => (
+                                              <span 
+                                                key={idx} 
+                                                className="text-[9px] font-semibold text-white/90 bg-white/5 border border-white/10 px-1.5 py-0.5 rounded-sm tabular-nums"
+                                              >
+                                                {set.weight}kg × {set.reps}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </motion.div>
           ) : activeView === 'avatar' ? (
             <motion.div
@@ -3369,6 +3676,71 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+      
+      {/* Save Routine Modal Prompt */}
+      <AnimatePresence>
+        {savingRoutineWorkout && (
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-6">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSavingRoutineWorkout(null)}
+              className="absolute inset-0 bg-black/95 backdrop-blur-md"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl z-50"
+            >
+              <div className="p-8 border-b border-white/5 relative">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-3xl" />
+                <h3 className="text-2xl font-light italic font-serif text-white mb-1">Save Routine</h3>
+                <p className="text-[10px] text-white/40 uppercase tracking-widest font-black">
+                  Choose a category for this workout routine
+                </p>
+              </div>
+
+              <div className="p-8 space-y-4">
+                <p className="text-xs text-white/60 leading-relaxed">
+                  Select 1 of the 4 exercise day categories to categorize this routine. It will be saved under the corresponding section in your Routines tab:
+                </p>
+
+                <div className="grid grid-cols-1 gap-2.5">
+                  {DAY_CONFIG.map((day, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSaveRoutine(savingRoutineWorkout, idx)}
+                      className="w-full text-left p-4 rounded-sm border border-white/10 bg-white/[0.02] hover:bg-gym-accent hover:border-gym-accent hover:text-black transition-all cursor-pointer flex items-center justify-between group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-[9px] font-bold text-white/40 group-hover:text-black/60 uppercase tracking-widest">
+                          {day.label}
+                        </span>
+                        <span className="text-sm font-medium font-serif italic text-white/90 group-hover:text-black">
+                          {day.name}
+                        </span>
+                      </div>
+                      <ChevronDown className="w-4 h-4 -rotate-90 text-white/20 group-hover:text-black transition-colors" />
+                    </button>
+                  ))}
+                </div>
+
+                <div className="pt-4 flex justify-end gap-2">
+                  <button
+                    onClick={() => setSavingRoutineWorkout(null)}
+                    className="px-5 py-2.5 border border-white/10 hover:border-white/20 rounded-sm text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Guidance Modal */}
       <AnimatePresence>
         {guidanceEx && (() => {
