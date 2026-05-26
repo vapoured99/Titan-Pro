@@ -2167,7 +2167,8 @@ export default function App() {
                   title: key.charAt(0).toUpperCase() + key.slice(1), 
                   list: list.filter(ex => 
                     ex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                    ex.pool.toLowerCase().includes(searchQuery.toLowerCase())
+                    ex.pool.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    ex.category?.toLowerCase().includes(searchQuery.toLowerCase())
                   )
                 }))
               ].filter(s => s.list.length > 0).map(section => (
@@ -2200,9 +2201,22 @@ export default function App() {
                               return (
                                 <div key={ex.name} className="bg-black/60 border border-white/10 rounded-sm p-5 hover:border-white/35 transition-all group">
                                   <div className="flex items-center justify-between mb-2">
-                                     <div className="flex items-center gap-3">
-                                        <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors" />
-                                        <span className="font-medium text-sm text-white/90 group-hover:text-white transition-colors">{ex.name}</span>
+                                     <div className="flex flex-col gap-1">
+                                        <div className="flex items-center gap-3">
+                                           <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors" />
+                                           <span className="font-medium text-sm text-white/90 group-hover:text-white transition-colors">{ex.name}</span>
+                                        </div>
+                                        {ex.category && (
+                                           <div className="flex items-center gap-1.5 mt-0.5 ml-7">
+                                              <span className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-widest ${
+                                                ex.category === 'compound' 
+                                                  ? 'bg-amber-500/10 text-amber-500/80 border border-amber-500/20' 
+                                                  : 'bg-purple-500/15 text-purple-400 border border-purple-500/20'
+                                              }`}>
+                                                {ex.category}
+                                              </span>
+                                           </div>
+                                        )}
                                      </div>
                                      <AnimatePresence>
                                         {flashMessage[ex.name] && (
@@ -3460,7 +3474,18 @@ export default function App() {
                               >
                                 <div className="flex items-center justify-between mb-6">
                                   <div className="flex flex-col">
-                                    <span className="text-[10px] text-gym-accent font-bold uppercase tracking-widest">Exercise {ei + 1}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] text-gym-accent font-bold uppercase tracking-widest">Exercise {ei + 1}</span>
+                                      {ex.category && (
+                                        <span className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-[0.1em] ${
+                                          ex.category === 'compound' 
+                                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
+                                            : 'bg-purple-500/15 text-purple-300 border border-purple-500/20'
+                                        }`} title={ex.category === 'compound' ? 'Compound movement engaging multiple muscle groups' : 'Isolation movement focusing on a specific muscle'}>
+                                          {ex.category}
+                                        </span>
+                                      )}
+                                    </div>
                                     <h4 className="text-2xl font-light italic font-serif text-gym-accent mt-1 drop-shadow-sm">{ex.name}</h4>
                                   </div>
                                   <div className="flex gap-2">
@@ -3686,7 +3711,16 @@ export default function App() {
                         onClick={() => handleAddExerciseToPlan(addingToDay, ex)}
                         className="w-full flex items-center justify-between p-4 bg-black/65 border border-white/10 rounded-sm hover:bg-black/85 hover:border-gym-accent/30 transition-all text-left cursor-pointer group/inner"
                       >
-                        <span className="text-xs font-medium text-white/70 group-hover/inner:text-gym-accent transition-colors">{ex.name}</span>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs font-medium text-white/70 group-hover/inner:text-gym-accent transition-colors">{ex.name}</span>
+                          {ex.category && (
+                            <span className={`text-[8px] font-bold tracking-wider uppercase ${
+                              ex.category === 'compound' ? 'text-amber-500/80' : 'text-purple-400/80'
+                            }`}>
+                              {ex.category === 'compound' ? 'C' : 'I'} — {ex.category}
+                            </span>
+                          )}
+                        </div>
                         <Plus className="w-3 h-3 text-white/10 group-hover/inner:text-gym-accent" />
                       </button>
                       <button 

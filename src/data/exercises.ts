@@ -5,9 +5,10 @@ export interface Exercise {
   instructions?: string[];
   muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core';
   legRegion?: 'upper' | 'lower';
+  category?: 'compound' | 'isolation';
 }
 
-export const POOLS: Record<string, Exercise[]> = {
+const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
   chest: [
     { 
       name: "Archer Push Ups", 
@@ -1137,3 +1138,64 @@ export const POOLS: Record<string, Exercise[]> = {
     }
   ]
 };
+
+export function getExerciseCategory(name: string, pool: string): 'compound' | 'isolation' {
+  const n = name.toLowerCase();
+  
+  if (pool === 'chest') {
+    if (n.includes('press') || n.includes('push up') || n.includes('pushup') || n.includes('dip')) {
+      return 'compound';
+    }
+    return 'isolation';
+  }
+  
+  if (pool === 'back') {
+    if (n.includes('straight arm')) {
+      return 'isolation';
+    }
+    return 'compound'; 
+  }
+  
+  if (pool === 'shoulders') {
+    if (n.includes('press') || n.includes('military')) {
+      return 'compound';
+    }
+    return 'isolation';
+  }
+  
+  if (pool === 'legs') {
+    if (n.includes('squat') || n.includes('deadlift') || n.includes('lunge') || n.includes('press')) {
+      return 'compound';
+    }
+    return 'isolation';
+  }
+  
+  if (pool === 'biceps') {
+    return 'isolation';
+  }
+  
+  if (pool === 'triceps') {
+    if (n.includes('bench press') || n.includes('dip') || n.includes('push up') || n.includes('pushup')) {
+      return 'compound';
+    }
+    return 'isolation';
+  }
+  
+  if (pool === 'core') {
+    if (n.includes('plank') || n.includes('wheel') || n.includes('hanging') || n.includes('sit up')) {
+      return 'compound';
+    }
+    return 'isolation';
+  }
+  
+  return 'isolation';
+}
+
+export const POOLS: Record<string, Exercise[]> = Object.keys(RAW_POOLS).reduce((acc, key) => {
+  acc[key] = RAW_POOLS[key].map(ex => ({
+    ...ex,
+    category: getExerciseCategory(ex.name, ex.pool)
+  }));
+  return acc;
+}, {} as Record<string, Exercise[]>);
+
