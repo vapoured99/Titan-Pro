@@ -92,6 +92,17 @@ import solarAscentBg from './assets/images/solar_ascent_bg_1779457047851.png';
 import cosmicVortexBg from './assets/images/cosmic_vortex_bg_new_1779719240506.png';
 import overgrownCyberCityBg from './assets/images/cyber_city_bg_new_1779719262117.png';
 
+// --- Avatar Images & Screenshot Engine ---
+import html2canvas from 'html2canvas';
+import imgVanguardDefault from './assets/images/vanguard_default_1779362283869.png';
+import imgNeonStrikerDefault from './assets/images/neon_striker_1779356868324.png';
+import imgShadowHunterDefault from './assets/images/shadow_hunter_1779356889743.png';
+import imgCyberBeastDefault from './assets/images/cyber_beast_1779356910976.png';
+import imgGoldenDiscipleDefault from './assets/images/golden_disciple_1779356934562.png';
+import imgOmegaPrimeDefault from './assets/images/omega_prime_1779356957034.png';
+import imgShadowWraithDefault from './assets/images/shadow_wraith_cyber_1779445357447.png';
+import imgLumenSentinelDefault from './assets/images/lumen_sentinel_cyber_1779445373875.png';
+
 // --- Types ---
 interface GymTheme {
   id: string;
@@ -664,6 +675,8 @@ export default function App() {
   });
   const [volumeTimeframe, setVolumeTimeframe] = useState<'day' | 'week' | 'month'>('day');
   const [expandedLibrarySections, setExpandedLibrarySections] = useState<Record<string, boolean>>({});
+  const [showProgressReport, setShowProgressReport] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
   const findExerciseByName = (name: string): Exercise | null => {
     if (!name) return null;
@@ -1727,6 +1740,32 @@ export default function App() {
     }
   };
 
+  const handleDownloadReport = async () => {
+    const element = document.getElementById('progress-report-card');
+    if (!element) return;
+    try {
+      setIsGeneratingReport(true);
+      const canvas = await html2canvas(element, {
+        backgroundColor: '#050505',
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+      const imageUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `iron_archive_progress_report_${new Date().toISOString().split('T')[0]}.png`;
+      link.href = imageUrl;
+      link.click();
+      setToast({ message: "Progress Report downloaded successfully!", type: "success" });
+      setShowProgressReport(false);
+    } catch (err) {
+      console.error("Error generating report", err);
+      setToast({ message: "Failed to save progress report.", type: "info" });
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
+
   const handleClearHistory = async () => {
     if (!currentUser) return;
     
@@ -2593,6 +2632,18 @@ export default function App() {
                     </motion.div>
                   )}
                 </AnimatePresence>
+              </div>
+
+              {/* Progress Report Trigger Button */}
+              <div className="flex justify-center pt-8 pb-4">
+                <button
+                  type="button"
+                  onClick={() => setShowProgressReport(true)}
+                  className="px-8 py-4 bg-gradient-to-r from-gym-accent to-gym-accent-light text-black hover:brightness-110 transition-all font-black uppercase tracking-widest text-xs rounded-sm cursor-pointer accent-shadow-btn flex items-center gap-2.5 active:scale-[0.98]"
+                >
+                  <Trophy className="w-4 h-4 text-black animate-pulse" />
+                  Generate Progress Report
+                </button>
               </div>
             </motion.div>
           ) : activeView === 'anatomy' ? (
@@ -3920,6 +3971,359 @@ export default function App() {
             </motion.div>
           </div>
         )}
+      </AnimatePresence>
+
+      {/* Progress Report Modal Overlay */}
+      <AnimatePresence>
+        {showProgressReport && (() => {
+          const totalLifetimeVolume = archivedWorkouts.reduce((sum, w) => sum + (w.totalVolume || 0), 0);
+          const milestones = [
+            { target: 10000, label: 'Novice' },
+            { target: 100000, label: 'Warrior' },
+            { target: 500000, label: 'Titan' },
+            { target: 1000000, label: 'Immortal' }
+          ];
+          const currentMilestoneIndex = milestones.findIndex(m => totalLifetimeVolume < m.target);
+          const isMaxed = currentMilestoneIndex === -1;
+          const currentRankName = isMaxed ? "Immortal Legend" : milestones[currentMilestoneIndex === -1 ? 3 : Math.max(0, currentMilestoneIndex - 1)].label;
+
+          const OUTFITS_MAP: Record<string, string> = {
+            vanguard_cadet: 'Vanguard Cadet',
+            neon_striker: 'Neon Striker',
+            shadow_hunter: 'Shadow Hunter',
+            cyber_beast: 'Cyber Beast',
+            golden_disciple: 'Golden Disciple',
+            omega_prime: 'Omega Prime',
+            shadow_wraith: 'Phantom Wraith',
+            lumen_sentinel: 'Lumen Sentinel'
+          };
+
+          const AVATAR_IMAGES: Record<string, string> = {
+            vanguard_cadet: imgVanguardDefault,
+            neon_striker: imgNeonStrikerDefault,
+            shadow_hunter: imgShadowHunterDefault,
+            cyber_beast: imgCyberBeastDefault,
+            golden_disciple: imgGoldenDiscipleDefault,
+            omega_prime: imgOmegaPrimeDefault,
+            shadow_wraith: imgShadowWraithDefault,
+            lumen_sentinel: imgLumenSentinelDefault
+          };
+
+          const activeOutfitId = profile?.equippedOutfit || 'vanguard_cadet';
+          const avatarImg = AVATAR_IMAGES[activeOutfitId] || imgVanguardDefault;
+
+          return (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-md overflow-hidden">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowProgressReport(false)}
+                className="absolute inset-0 z-0 cursor-pointer"
+              />
+              
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 40 }}
+                className="relative z-10 w-full max-w-4xl max-h-[92vh] flex flex-col bg-[#050505] border border-white/10 rounded-sm shadow-2xl overflow-hidden"
+              >
+                {/* Modal Top Ribbon Controls */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/50 backdrop-blur-md">
+                  <div className="flex items-center gap-3">
+                    <Trophy className="w-4 h-4 text-gym-accent animate-pulse" />
+                    <div>
+                      <h3 className="text-xs font-black uppercase tracking-widest text-white">Progress Report Card</h3>
+                      <p className="text-[9px] text-white/30 uppercase tracking-widest font-mono">Archive Identity Sheet</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowProgressReport(false)}
+                      className="px-4 py-2 hover:bg-white/5 text-white/50 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-colors cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isGeneratingReport}
+                      onClick={handleDownloadReport}
+                      className="px-5 py-2.5 bg-gym-accent text-black font-black uppercase tracking-widest text-[10px] rounded-sm transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-lg shadow-gym-accent/10"
+                    >
+                      {isGeneratingReport ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Capturing...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-3.5 h-3.5 hover:scale-110 transition-transform" />
+                          Save to Photos
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Report Card Viewer */}
+                <div className="p-4 sm:p-6 flex-1 overflow-y-auto no-scrollbar bg-black/40 flex justify-center items-start">
+                  {/* Outer scaling wrapper for clean representation of the fixed widescreen poster */}
+                  <div className="w-full overflow-x-auto no-scrollbar flex justify-start lg:justify-center">
+                    {/* The snapshot report card container */}
+                    <div 
+                      id="progress-report-card"
+                      className="w-[780px] bg-[#050505] p-8 border border-gym-accent/25 rounded-sm flex flex-col gap-6 font-sans shrink-0 text-white relative select-none"
+                    >
+                      {/* Corner Tech Anchors */}
+                      <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-gym-accent/40" />
+                      <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-gym-accent/40" />
+                      <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-gym-accent/40" />
+                      <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-gym-accent/40" />
+
+                      {/* Poster Header */}
+                      <div className="flex items-center justify-between border-b border-white/5 pb-5 relative">
+                        <div className="absolute top-0 left-12 w-32 h-[1px] bg-gradient-to-r from-gym-accent/30 to-transparent" />
+                        <div>
+                          <span className="text-[10px] font-mono font-bold tracking-[0.4em] text-gym-accent uppercase block">TEMPLE INTELLIGENCE RECORD</span>
+                          <h2 className="text-2xl font-light italic font-serif tracking-tight text-white uppercase mt-0.5">THE IRON ARCHIVE</h2>
+                        </div>
+                        <div className="text-right font-mono text-[9px] text-white/40 leading-relaxed">
+                          <div>TIMESTAMP: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</div>
+                          <div className="text-gym-accent/70">ARCHIVE SEC : #{Math.floor(Math.random() * 90000) + 10000}</div>
+                        </div>
+                      </div>
+
+                      {/* Metrics Card Row */}
+                      <div className="grid grid-cols-12 gap-5 items-stretch">
+                        {/* Avatar Column */}
+                        <div className="col-span-4 bg-white/[0.015] border border-white/10 rounded-sm p-4 flex flex-col items-center justify-between text-center relative overflow-hidden">
+                          <span className="text-[7.5px] font-mono tracking-widest text-white/30 uppercase block">AVATAR SPECIMEN</span>
+                          
+                          {/* Image Box */}
+                          <div className="w-32 h-32 rounded-full bg-black/40 border border-gym-accent/20 overflow-hidden flex items-center justify-center my-4 relative">
+                            {avatarImg ? (
+                              <img src={avatarImg} alt="Avatar spec" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                            ) : (
+                              <UserIcon className="w-12 h-12 text-white/15" />
+                            )}
+                            {/* XP Progress Arc Outline */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                            {/* Floating Level */}
+                            <div className="absolute bottom-1 bg-black/90 border border-gym-accent/50 text-[9px] font-mono font-black text-gym-accent px-2.5 py-0.5 rounded-full scale-95 tracking-widest">
+                              LVL {profile?.avatarLevel ?? 1}
+                            </div>
+                          </div>
+
+                          <div className="space-y-0.5">
+                            <h4 className="text-sm font-light italic font-serif text-white">{profile?.displayName || currentUser?.displayName || "Athlete Specimen"}</h4>
+                            <span className="text-[8.5px] font-mono tracking-widest text-gym-accent uppercase block">
+                              {OUTFITS_MAP[activeOutfitId] || "Vanguard Cadet"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Numeric Profile Matrix */}
+                        <div className="col-span-8 bg-white/[0.015] border border-white/10 rounded-sm p-5 flex flex-col justify-between relative overflow-hidden">
+                          <div>
+                            <span className="text-[7.5px] font-mono tracking-widest text-white/30 uppercase block">METRIC CONSOLE</span>
+                            
+                            <div className="grid grid-cols-2 gap-x-6 gap-y-4 mt-4">
+                              <div className="space-y-0.5 pb-2 border-b border-white/5">
+                                <span className="text-[8px] font-mono tracking-widest text-white/40 uppercase block">Captured Sessions</span>
+                                <span className="text-xl font-light text-white font-sans">{archivedWorkouts.length} SECURED</span>
+                              </div>
+                              <div className="space-y-0.5 pb-2 border-b border-white/10">
+                                <span className="text-[8px] font-mono tracking-widest text-white/40 uppercase block">Volume Lifted</span>
+                                <span className="text-xl font-bold text-gym-accent font-sans">{(totalLifetimeVolume || 0).toLocaleString()} <span className="text-[10px] text-white/40 font-light">kg</span></span>
+                              </div>
+                              <div className="space-y-0.5">
+                                <span className="text-[8px] font-mono tracking-widest text-white/40 uppercase block">Active Training Days</span>
+                                <span className="text-lg font-light text-white font-sans">{profile?.streakCount || 0} Streak</span>
+                              </div>
+                              <div className="space-y-0.5">
+                                <span className="text-[8px] font-mono tracking-widest text-white/40 uppercase block">Energy Reserves</span>
+                                <span className="text-lg font-light text-white font-sans">{(profile?.avatarCredits || 0).toLocaleString()} CR</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="border-t border-white/5 pt-4 mt-5 flex items-center justify-between">
+                            <div>
+                              <span className="text-[7.5px] font-mono tracking-widest text-white/30 uppercase block">RANKING CLASSIFICATION</span>
+                              <span className="text-base font-serif italic text-gym-accent block leading-none mt-1">{currentRankName}</span>
+                            </div>
+                            <div className="w-10 h-10 rounded-full border border-gym-accent/20 bg-gym-accent/5 flex items-center justify-center">
+                              <Trophy className="w-5 h-5 text-gym-accent" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Chart Section 1: Physical Progress Area Chart */}
+                      <div className="bg-white/[0.015] border border-white/10 rounded-sm p-5 relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-4 relative z-10">
+                          <div>
+                            <span className="text-[7.5px] font-mono tracking-widest text-gym-accent uppercase block">TIMELINE DATA _01</span>
+                            <span className="text-[10px] font-mono font-bold text-white/80 uppercase tracking-widest">Weight Log Analysis (kg)</span>
+                          </div>
+                          <span className="text-[8px] font-mono text-white/30 bg-white/5 px-2 py-0.5 border border-white/10 rounded-sm">
+                            HISTORICAL ENTRIES: {weightHistory.length}
+                          </span>
+                        </div>
+                        <div className="h-32 w-full">
+                          {weightHistory.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-sm bg-black/40">
+                              <TrendingUp className="w-6 h-6 text-white/10 mb-1" />
+                              <span className="text-[9px] text-white/20 uppercase tracking-widest">No physical logs archived</span>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart 
+                                data={(() => {
+                                   const grouped = weightHistory.reduce((acc, entry) => {
+                                     acc[entry.date] = entry; 
+                                     return acc;
+                                   }, {} as Record<string, WeightEntry>);
+                                   return (Object.values(grouped) as WeightEntry[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                                })()} 
+                                margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                              >
+                                <defs>
+                                  <linearGradient id="reportWeightGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
+                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                  </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                <XAxis 
+                                  dataKey="date" 
+                                  stroke="#ffffff20" 
+                                  fontSize={7} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                  tickFormatter={(str) => {
+                                    if (!str) return '';
+                                    try {
+                                      const [y, m, d] = str.split('-').map(Number);
+                                      return new Date(y, m - 1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                    } catch (e) { return str; }
+                                  }}
+                                />
+                                <YAxis 
+                                  domain={[(dataMin: number) => Math.max(0, Math.floor(dataMin - 3)), (dataMax: number) => Math.ceil(dataMax + 3)]} 
+                                  stroke="#ffffff20" 
+                                  fontSize={7} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                />
+                                <Area 
+                                  type="monotone" 
+                                  dataKey="weight" 
+                                  stroke={activeTheme.accent} 
+                                  strokeWidth={1.5}
+                                  fillOpacity={1} 
+                                  fill="url(#reportWeightGrad)" 
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Chart Section 2: Volume Progression Timeline Area Chart */}
+                      <div className="bg-white/[0.015] border border-white/10 rounded-sm p-5 relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-4 relative z-10">
+                          <div>
+                            <span className="text-[7.5px] font-mono tracking-widest text-gym-accent uppercase block">TIMELINE DATA _02</span>
+                            <span className="text-[10px] font-mono font-bold text-white/80 uppercase tracking-widest font-bold">Training Volume Trend (kg)</span>
+                          </div>
+                          <span className="text-[8px] font-mono text-white/30 bg-white/5 px-2 py-0.5 border border-white/10 rounded-sm">
+                            TIMEFRAME: {volumeTimeframe.toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="h-32 w-full">
+                          {archivedWorkouts.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-sm bg-black/40">
+                              <Activity className="w-6 h-6 text-white/10 mb-1" />
+                              <span className="text-[9px] text-white/20 uppercase tracking-widest">No active training logs archived</span>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart 
+                                data={getVolumeData()} 
+                                margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                              >
+                                <defs>
+                                  <linearGradient id="reportVolGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
+                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                  </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                <XAxis 
+                                  dataKey="date" 
+                                  stroke="#ffffff20" 
+                                  fontSize={7} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                  tickFormatter={(str) => {
+                                    if (!str) return '';
+                                    try {
+                                      if (volumeTimeframe === 'month') {
+                                        const [y, m] = str.split('-');
+                                        return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+                                      }
+                                      if (volumeTimeframe === 'week') return `W/C ${str.split('-').slice(1).reverse().join('/')}`;
+                                      const [y, m, d] = str.split('-').map(Number);
+                                      return new Date(y, m-1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                    } catch (e) { return str }
+                                  }}
+                                />
+                                <YAxis 
+                                  stroke="#ffffff20" 
+                                  fontSize={7} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                  tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(0)}t` : `${val}`}
+                                />
+                                <Area 
+                                  type="monotone" 
+                                  dataKey="volume" 
+                                  stroke={activeTheme.accent} 
+                                  strokeWidth={1.5}
+                                  fillOpacity={1} 
+                                  fill="url(#reportVolGrad)" 
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Tech Badge Footer */}
+                      <div className="flex items-center justify-between border-t border-white/5 pt-5 mt-2 relative">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full border border-gym-accent/40 flex items-center justify-center text-gym-accent text-[10px] font-mono font-bold font-black bg-gym-accent/5">
+                            IA
+                          </div>
+                          <div>
+                            <span className="text-[8px] font-mono text-white/30 uppercase tracking-[0.2em] block">SECURE CLOUD STORAGE</span>
+                            <span className="text-[9px] text-white/50 tracking-wider font-mono">ARCHIVE CORE ACCESS SIGN-OFF</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[7.5px] font-mono text-white/20 uppercase tracking-[0.2em] block">SECURE VERIFIED SIGNATURE</span>
+                          <span className="text-xs font-serif italic text-gym-accent">TEMPLE COMMAND ADMIN</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* Toast Notification */}
