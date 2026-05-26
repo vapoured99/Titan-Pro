@@ -3141,6 +3141,62 @@ export default function App() {
                                   </button>
                                 </div>
 
+                                {(() => {
+                                  const loggedSetsForThisEx = sessionSets.filter(s => s && s.exerciseName && s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase());
+                                  if (loggedSetsForThisEx.length === 0) return null;
+                                  return (
+                                    <motion.div 
+                                      initial={{ opacity: 0, height: 0 }}
+                                      animate={{ opacity: 1, height: 'auto' }}
+                                      className="mb-4 p-3 rounded-sm bg-gym-accent/5 border border-gym-accent/20 overflow-hidden"
+                                    >
+                                      <div className="flex justify-between items-center mb-2">
+                                        <span className="text-[9px] font-black text-gym-accent uppercase tracking-wider flex items-center gap-1.5">
+                                          <Activity className="w-3 h-3 text-gym-accent animate-pulse" /> Today's Sets
+                                        </span>
+                                        <span className="text-[8px] text-white/50 font-bold bg-white/10 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                                          {loggedSetsForThisEx.length} {loggedSetsForThisEx.length === 1 ? 'Set' : 'Sets'}
+                                        </span>
+                                      </div>
+                                      <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-1">
+                                        {loggedSetsForThisEx.map((set, sIdx) => (
+                                          <div 
+                                            key={set.id || sIdx} 
+                                            className="flex items-center justify-between bg-black/55 border border-white/5 px-2.5 py-1.5 rounded-sm hover:border-white/15 transition-colors group/setrow"
+                                          >
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-[9px] font-bold text-white/30 tracking-wider">SET {sIdx + 1}</span>
+                                              <div className="flex items-baseline gap-1">
+                                                <span className="text-xs font-semibold text-white/95">{set.weight}</span>
+                                                <span className="text-[8px] text-white/40">kg</span>
+                                              </div>
+                                              <span className="text-[9px] text-white/20">×</span>
+                                              <div className="flex items-baseline gap-0.5">
+                                                <span className="text-xs font-semibold text-white/95">{set.reps}</span>
+                                                <span className="text-[8px] text-white/40">reps</span>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                              <span className="text-[8px] font-mono text-white/30 hidden sm:inline">
+                                                {set.timestamp?.seconds ? new Date(set.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now'}
+                                              </span>
+                                              <button 
+                                                onClick={() => {
+                                                  if (set.id) handleDeleteSet(set.id);
+                                                }}
+                                                className="p-1 hover:text-red-500 text-white/20 hover:bg-neutral-950 rounded transition-colors"
+                                                title="Delete set"
+                                              >
+                                                <Trash2 className="w-2.5 h-2.5" />
+                                              </button>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </motion.div>
+                                  );
+                                })()}
+
                                 <PBBlock 
                                   exName={ex.name} 
                                   pbs={personalBests} 
