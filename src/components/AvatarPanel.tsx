@@ -2364,7 +2364,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           </div>
 
           {/* COMPANION PET INTERACTION CARD */}
-          <div className="w-full max-w-[440px] bg-black/55 border border-white/20 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
+          <div className="w-full max-w-[440px] bg-black/85 border border-white/20 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
             {/* Background cyan/pink/amber gradient particle glow */}
             <div 
               className="absolute -right-12 -top-12 w-32 h-32 rounded-full filter blur-3xl opacity-20 pointer-events-none transition-all duration-700" 
@@ -2643,10 +2643,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       </div>
 
       {/* BOTTOM SECTION: Customization Shop Tabs & Slider */}
-      <div className="bg-transparent border-transparent rounded-lg overflow-hidden">
+      <div className="space-y-6">
         
         {/* Navigation Categories inside Shop */}
-        <div className="relative border-b border-white/15 bg-black/55 flex items-center">
+        <div className="relative border border-white/20 bg-black/85 rounded-lg flex items-center overflow-hidden">
           {/* Scroll Left indicator/button */}
           {showLeftArrow && (
             <button 

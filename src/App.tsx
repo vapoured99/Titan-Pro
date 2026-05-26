@@ -2051,40 +2051,68 @@ export default function App() {
       </header>
 
       {/* Tabs / Navigation */}
-      <nav className="flex flex-wrap gap-8 mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar">
-        {[
-          { id: 'workout', label: 'Programming', icon: Dumbbell },
-          { id: 'library', label: 'Library', icon: Search },
-          { id: 'progress', label: 'Progress', icon: Scale },
-          { id: 'anatomy', label: 'Anatomy', icon: Layout },
-          { id: 'session', label: 'Session', icon: History },
-          { id: 'routines', label: 'Routines', icon: Repeat },
-          { id: 'avatar', label: 'Avatar', icon: Crown }
-        ].map(nav => (
-          <button
-            key={nav.id}
-            onClick={() => {
-              setActiveView(nav.id as any);
-              saveSettings({ activeView: nav.id });
-            }}
-            className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 ${
-              activeView === nav.id ? "text-theme-text" : "text-theme-text-muted hover:text-theme-text"
-            }`}
-            title={nav.id === 'routines' ? 'Routines' : nav.label}
-          >
-            {nav.id === 'routines' ? (
-              <Repeat className={`w-4 h-4 ${activeView === 'routines' ? 'text-gym-accent' : ''}`} />
-            ) : (
-              nav.label
-            )}
-            {activeView === nav.id && (
-              <motion.div 
-                layoutId="nav-underline" 
-                className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav" 
-              />
-            )}
-          </button>
-        ))}
+      <nav className="flex items-center justify-between gap-4 mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-8">
+          {[
+            { id: 'workout', label: 'Programming', icon: Dumbbell },
+            { id: 'library', label: 'Library', icon: Search },
+            { id: 'progress', label: 'Progress', icon: Scale },
+            { id: 'anatomy', label: 'Anatomy', icon: Layout },
+            { id: 'session', label: 'Session', icon: History },
+            { id: 'routines', label: 'Routines', icon: Repeat },
+          ].map(nav => (
+            <button
+              key={nav.id}
+              onClick={() => {
+                setActiveView(nav.id as any);
+                saveSettings({ activeView: nav.id });
+              }}
+              className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 ${
+                activeView === nav.id ? "text-theme-text" : "text-theme-text-muted hover:text-theme-text"
+              }`}
+              title={nav.id === 'routines' ? 'Routines' : nav.label}
+            >
+              {nav.id === 'routines' ? (
+                <Repeat className={`w-4 h-4 ${activeView === 'routines' ? 'text-gym-accent' : ''}`} />
+              ) : (
+                nav.label
+              )}
+              {activeView === nav.id && (
+                <motion.div 
+                  layoutId="nav-underline" 
+                  className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav" 
+                />
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-4 pl-8 border-l border-white/10">
+          {[
+            { id: 'avatar', label: 'Avatar', icon: Crown }
+          ].map(nav => (
+            <button
+              key={nav.id}
+              onClick={() => {
+                setActiveView(nav.id as any);
+                saveSettings({ activeView: nav.id });
+              }}
+              className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 ${
+                activeView === nav.id ? "text-theme-text" : "text-theme-text-muted hover:text-theme-text"
+              }`}
+              title={nav.label}
+            >
+              <Crown className={`w-4 h-4 ${activeView === 'avatar' ? 'text-gym-accent' : 'text-theme-text-muted/65'}`} />
+              {nav.label}
+              {activeView === nav.id && (
+                <motion.div 
+                  layoutId="nav-underline" 
+                  className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav" 
+                />
+              )}
+            </button>
+          ))}
+        </div>
       </nav>
 
       {/* Main Content */}
@@ -3158,7 +3186,7 @@ export default function App() {
             >
               <div className="flex flex-col items-center text-center">
                 <div className="relative group mb-6">
-                  <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gym-accent/20 bg-white/5 flex items-center justify-center">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gym-accent/40 bg-black/85 flex items-center justify-center">
                     {profile?.photoURL || currentUser.photoURL ? (
                       <img src={profile?.photoURL || currentUser.photoURL || ""} alt="Avatar" className="w-full h-full object-cover" />
                     ) : (
@@ -3171,7 +3199,7 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white/[0.02] border border-white/10 rounded-sm p-8 flex flex-col items-center justify-center relative overflow-hidden group">
+                <div className="bg-black/85 border border-white/20 rounded-lg p-8 flex flex-col items-center justify-center relative overflow-hidden group">
                   <Flame className="w-8 h-8 text-gym-accent mb-4 relative z-10" />
                    <div className="text-4xl font-light text-white mb-1 relative z-10">{profile?.streakCount || 0}</div>
                    <div className="text-[10px] text-white/30 uppercase tracking-widest font-black relative z-10">Current Streak</div>
@@ -3179,7 +3207,7 @@ export default function App() {
                       <Flame className="w-16 h-16 text-gym-accent" />
                    </div>
                 </div>
-                <div className="bg-white/[0.02] border border-white/10 rounded-sm p-8 flex flex-col items-center justify-center relative overflow-hidden group">
+                <div className="bg-black/85 border border-white/20 rounded-lg p-8 flex flex-col items-center justify-center relative overflow-hidden group">
                   <Activity className="w-8 h-8 text-gym-accent mb-4 relative z-10" />
                    <div className="text-4xl font-light text-white mb-1 relative z-10">{archivedWorkouts.length}</div>
                    <div className="text-[10px] text-white/30 uppercase tracking-widest font-black relative z-10">Captured Sessions</div>
@@ -3190,7 +3218,7 @@ export default function App() {
               </div>
 
               {/* Volume Gamification Section */}
-              <div className="bg-white/[0.02] border border-gym-accent/10 rounded-sm p-8 relative overflow-hidden">
+              <div className="bg-black/85 border border-gym-accent/25 rounded-lg p-8 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gym-accent/30 to-transparent" />
                 
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -3234,8 +3262,8 @@ export default function App() {
                        <div key={idx} className="flex flex-col items-center gap-3">
                           <div className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-700 ${
                             isEarned 
-                              ? 'bg-gym-accent/10 border border-gym-accent/30 text-gym-accent accent-shadow-badge' 
-                              : 'bg-white/[0.02] border border-white/5 text-white/5'
+                              ? 'bg-gym-accent/15 border border-gym-accent/40 text-gym-accent accent-shadow-badge' 
+                              : 'bg-black/85 border border-white/15 text-white/10'
                           }`}>
                             <Icon className={`w-5 h-5 ${isEarned ? 'animate-pulse' : ''}`} />
                           </div>
@@ -3258,7 +3286,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-white/[0.02] border border-white/10 rounded-sm p-8 space-y-8">
+              <div className="bg-black/85 border border-white/20 rounded-lg p-8 space-y-8">
                 <div>
                   <h4 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.3em] mb-6 border-b border-white/5 pb-4">Personal Details</h4>
                   
@@ -3311,10 +3339,10 @@ export default function App() {
                             setToast({ message: `🌌 Equipped Atmosphere: ${theme.name}!`, type: 'success' });
                           }}
                           type="button"
-                          className={`relative text-left p-4 rounded-sm border cursor-pointer overflow-hidden transition-all duration-300 group flex flex-col justify-between h-24 ${
+                          className={`relative text-left p-4 rounded-lg border cursor-pointer overflow-hidden transition-all duration-300 group flex flex-col justify-between h-24 ${
                             isActive 
-                              ? 'border-gym-accent bg-gym-accent/5 accent-shadow-card' 
-                              : 'border-white/5 bg-white/[0.01] hover:border-white/20 hover:bg-white/[0.03]'
+                              ? 'border-gym-accent bg-gym-accent/[0.15] accent-shadow-card' 
+                              : 'border-white/20 bg-black/85 hover:border-white/40 hover:bg-white/[0.12]'
                           }`}
                         >
                           {/* Mini Background Preview */}
