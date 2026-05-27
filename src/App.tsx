@@ -1918,35 +1918,56 @@ export default function App() {
     const element = document.getElementById('progress-report-card');
     if (!element) return;
     
-    // Save original style strings
-    const originalTransform = element.style.transform;
-    const originalWidth = element.style.width;
-
     // Save original stylesheet disabled states and any generated temp <style> elements
     const originalSheets = Array.from(document.styleSheets);
     const styleElList: HTMLStyleElement[] = [];
     const disabledSheets: { sheet: CSSStyleSheet; disabled: boolean }[] = [];
+    let clone: HTMLDivElement | null = null;
 
     try {
       setIsGeneratingReport(true);
       
-      // Temporary style sheets preprocessing to fix oklab/oklch parsing bug in html2canvas (Tailwind v4 compatibility)
+      // Recursive stylesheet preprocessor to safely override all oklab/oklch functions
+      // to resolve the html2canvas stylesheet parser crash under Tailwind v4.
       for (const sheet of originalSheets) {
         try {
           if (sheet.cssRules) {
-            let cleanCss = '';
             let hasOklabOrOklch = false;
-            const rules = Array.from(sheet.cssRules);
             
-            for (const rule of rules) {
-              const cssText = rule.cssText;
-              // If it contains modern unsupported oklab/oklch color functions, skip the rule to prevent html2canvas parsing crash
-              if (cssText.includes('oklab(') || cssText.includes('oklch(')) {
-                hasOklabOrOklch = true;
-                continue;
+            const cleanRules = (ruleList: CSSRule[]): string => {
+              let css = '';
+              for (const rule of ruleList) {
+                try {
+                  const subRules = (rule as any).cssRules;
+                  if (subRules && subRules.length > 0) {
+                    const selector = rule.cssText.split('{')[0];
+                    const innerCss = cleanRules(Array.from(subRules));
+                    css += `${selector} {\n${innerCss}\n}\n`;
+                  } else {
+                    let text = rule.cssText;
+                    if (text && (text.includes('oklch(') || text.includes('oklab('))) {
+                      hasOklabOrOklch = true;
+                      text = text
+                        .replace(/oklch\([^)]+\)/g, '#d97706')
+                        .replace(/oklab\([^)]+\)/g, '#ffffff');
+                    }
+                    css += (text || '') + '\n';
+                  }
+                } catch (err) {
+                  let text = rule.cssText;
+                  if (text && (text.includes('oklch(') || text.includes('oklab('))) {
+                    hasOklabOrOklch = true;
+                    text = text
+                      .replace(/oklch\([^)]+\)/g, '#d97706')
+                      .replace(/oklab\([^)]+\)/g, '#ffffff');
+                  }
+                  css += (text || '') + '\n';
+                }
               }
-              cleanCss += cssText + '\n';
-            }
+              return css;
+            };
+
+            const cleanCss = cleanRules(Array.from(sheet.cssRules));
 
             if (hasOklabOrOklch) {
               const styleEl = document.createElement('style');
@@ -1960,28 +1981,46 @@ export default function App() {
             }
           }
         } catch (e) {
-          // Cross-origin styles or security restrictions prevent reading some sheets, which is safe to bypass.
+          // Cross-origin styles or security restrictions are safely bypassed.
         }
       }
 
-      // Temporarily remove scales or bounding limits from the element 
-      // so html2canvas captures a full unscaled, unclipped perfect version.
-      element.style.transform = 'none';
-      element.style.width = '780px';
+      // Clone the card and mount it cleanly at document.body level so it has 
+      // no scroll boundaries, overflow constraints, or scale transforms of native parents.
+      clone = element.cloneNode(true) as HTMLDivElement;
+      clone.id = "progress-report-card-clone";
+      clone.style.position = 'fixed';
+      clone.style.top = '0';
+      clone.style.left = '0';
+      clone.style.width = '780px';
+      clone.style.height = 'auto';
+      clone.style.transform = 'none';
+      clone.style.zIndex = '-9999';
+      clone.style.opacity = '1';
+      clone.style.visibility = 'visible';
+      clone.style.pointerEvents = 'none';
       
-      const captureHeight = element.scrollHeight || 1100;
+      document.body.appendChild(clone);
+      
+      // Let any chart dimensions stabilize if necessary
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const captureHeight = clone.scrollHeight || 1100;
 
-      const canvas = await html2canvas(element, {
+      const canvas = await html2canvas(clone, {
         backgroundColor: '#050505',
         scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         width: 780,
         height: captureHeight,
         windowWidth: 780,
         windowHeight: captureHeight,
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        x: 0,
+        y: 0
       });
       
       const imageUrl = canvas.toDataURL('image/png');
@@ -2002,10 +2041,9 @@ export default function App() {
       console.error("Error generating report", err);
       setToast({ message: "Failed to generate progress report. Check console.", type: "info" });
     } finally {
-      // Restore original inline scales
-      if (element) {
-        element.style.transform = originalTransform;
-        element.style.width = originalWidth;
+      // Clean up the temporary clone element
+      if (clone) {
+        clone.remove();
       }
 
       // Re-enable blocked stylesheets and remove temporary ones safely
@@ -3400,9 +3438,12 @@ export default function App() {
                                               {d.toLocaleDateString('en-GB', { weekday: 'long' })}
                                             </span>
                                           </div>
-                                          <div className="flex items-center gap-3">
-                                            <div className="text-[10px] text-gym-accent/60 font-bold tabular-nums">
-                                              {w.exercisesCount} Ex.
+                                          <div className="flex items-center gap-3 font-mono">
+                                            <div className="text-[10px] text-gym-accent/60 font-bold tabular-nums flex flex-col items-end">
+                                              <span>{w.exercisesCount} Ex</span>
+                                              <span className="text-[8px] text-white/40 font-normal">
+                                                {Math.round(w.estimatedCalories || calculateCaloriesBurned(w.sets || [], profile))} kcal
+                                              </span>
                                             </div>
                                           </div>
                                         </div>
@@ -3453,7 +3494,7 @@ export default function App() {
                                     <h4 className="text-3xl font-light italic font-serif text-white/90 mb-1">
                                       {dateObj.toLocaleDateString('en-GB', { weekday: 'long' })}
                                     </h4>
-                                    <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-6 flex-wrap">
                                       <div className="flex items-center gap-2">
                                         <Activity className="w-3 h-3 text-gym-accent" />
                                         <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">{workout.totalVolume?.toLocaleString()} kg Volume</span>
@@ -3461,6 +3502,12 @@ export default function App() {
                                       <div className="flex items-center gap-2">
                                         <Dumbbell className="w-3 h-3 text-gym-accent" />
                                         <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">{workout.exercisesCount} Exercises</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Flame className="w-3 h-3 text-gym-accent animate-pulse" />
+                                        <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">
+                                          {Math.round(workout.estimatedCalories || calculateCaloriesBurned(workout.sets || [], profile))} kcal
+                                        </span>
                                       </div>
                                     </div>
                                   </div>
