@@ -354,11 +354,97 @@ interface WeightEntry {
 }
 
 const DAY_CONFIG = [
-  { label: "Day 1", name: "Chest & Triceps", pools: ['chest', 'triceps'], icon: <Dumbbell className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "Day 2", name: "Back & Biceps", pools: ['back', 'biceps'], icon: <ArrowUp className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "Day 3", name: "Shoulders", pools: ['shoulders'], icon: <ArrowUpCircle className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "Day 4", name: "Legs & Core", pools: ['legs', 'core'], icon: <Flame className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "1", name: "Chest & Triceps", pools: ['chest', 'triceps'], icon: <Dumbbell className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "2", name: "Back & Biceps", pools: ['back', 'biceps'], icon: <ArrowUp className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "3", name: "Shoulders", pools: ['shoulders'], icon: <ArrowUpCircle className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "4", name: "Legs & Core", pools: ['legs', 'core'], icon: <Flame className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "5", name: "Cardio", pools: ['cardio'], icon: <Activity className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "6", name: "Equipment", pools: ['equipment'], icon: <Dumbbell className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
 ];
+
+const calculateCaloriesBurned = (sets: SessionSet[], userProfile: UserProfile | null) => {
+  if (!sets || sets.length === 0) return 0;
+
+  const bodyweight = userProfile?.bodyweight || 75; // kg
+  const height = userProfile?.height || 175; // cm
+  const age = userProfile?.age || 28; // years
+  const sex = userProfile?.sex || 'male';
+  const bodyFat = userProfile?.bodyFatPercent;
+
+  let bmr = 0;
+  if (bodyFat && bodyFat > 0) {
+    bmr = 370 + 21.6 * (bodyweight * (1 - bodyFat / 100));
+  } else {
+    if (sex === 'male') {
+      bmr = 10 * bodyweight + 6.25 * height - 5 * age + 5;
+    } else if (sex === 'female') {
+      bmr = 10 * bodyweight + 6.25 * height - 5 * age - 161;
+    } else {
+      bmr = 10 * bodyweight + 6.25 * height - 5 * age - 78;
+    }
+  }
+
+  const findExByName = (name: string): Exercise | null => {
+    if (!name) return null;
+    const searchName = name.trim().toLowerCase();
+    for (const pool of Object.values(POOLS)) {
+      const ex = pool.find(e => e.name.trim().toLowerCase() === searchName);
+      if (ex) return ex;
+    }
+    return null;
+  };
+
+  const setsByExercise: Record<string, SessionSet[]> = {};
+  sets.forEach(s => {
+    if (!s) return;
+    if (!setsByExercise[s.exerciseName]) {
+      setsByExercise[s.exerciseName] = [];
+    }
+    setsByExercise[s.exerciseName].push(s);
+  });
+
+  let totalCalories = 0;
+  const numExercises = Object.keys(setsByExercise).length;
+
+  Object.entries(setsByExercise).forEach(([exName, exSets]) => {
+    const ex = findExByName(exName);
+    const isCardio = ex?.pool === 'cardio';
+    const isEquipment = ex?.pool === 'equipment';
+
+    const activeMET = isCardio ? 8.0 : (isEquipment ? 6.5 : 5.5);
+    const restMET = 1.5;
+
+    if (isCardio) {
+      exSets.forEach(s => {
+        const durationMin = s.weight || 0;
+        const activeCalPerMin = activeMET * 3.5 * bodyweight / 200;
+        totalCalories += durationMin * activeCalPerMin;
+      });
+    } else {
+      exSets.forEach((s) => {
+        const reps = s.reps || 0;
+        const activeTimeSec = reps * 4;
+        const restTimeSec = 45;
+
+        const activeTimeMin = activeTimeSec / 60;
+        const restTimeMin = restTimeSec / 60;
+
+        const activeCalPerMin = activeMET * 3.5 * bodyweight / 200;
+        const restCalPerMin = restMET * 3.5 * bodyweight / 200;
+
+        totalCalories += (activeTimeMin * activeCalPerMin) + (restTimeMin * restCalPerMin);
+      });
+    }
+  });
+
+  if (numExercises > 1) {
+    const transitionMin = ((numExercises - 1) * 90) / 60;
+    const transitionCalPerMin = 1.3 * 3.5 * bodyweight / 200;
+    totalCalories += transitionMin * transitionCalPerMin;
+  }
+
+  return Math.round(totalCalories);
+};
 
 const iconMap: Record<string, any> = {
   Dumbbell, ArrowLeftRight, ArrowDown, Activity, ArrowUp, ArrowUpCircle, RotateCw, RefreshCw, Plus, Flame
@@ -514,6 +600,14 @@ interface UserProfile {
   activeView?: string;
   themeId?: string;
   equippedBorder?: string;
+  bodyweight?: number;
+  sex?: 'male' | 'female' | 'other';
+  age?: number;
+  bodyFatPercent?: number;
+  height?: number;
+  avatarLevel?: number;
+  avatarXp?: number;
+  avatarCredits?: number;
 }
 
 interface ProfileDisplayNameEditorProps {
@@ -620,7 +714,7 @@ export default function App() {
   const [authMessage, setAuthMessage] = useState("");
   const [firebaseConnected, setFirebaseConnected] = useState(false);
   
-  const [currentDays, setCurrentDays] = useState<Exercise[][]>([[], [], [], []]);
+  const [currentDays, setCurrentDays] = useState<Exercise[][]>([[], [], [], [], [], []]);
   const [personalBests, setPersonalBests] = useState<Record<string, PB>>({});
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [sessionSets, setSessionSets] = useState<SessionSet[]>([]);
@@ -657,6 +751,7 @@ export default function App() {
   const [newWeight, setNewWeight] = useState<string>("");
   const [newWeightDate, setNewWeightDate] = useState<string>("");
   const [showWeightHistoryList, setShowWeightHistoryList] = useState(false);
+  const [showCalorieHistoryList, setShowCalorieHistoryList] = useState(false);
   const [googleDriveToken, setGoogleDriveToken] = useState<string | null>(null);
   const [googleDriveBackups, setGoogleDriveBackups] = useState<any[]>([]);
   const [loadingDriveBackups, setLoadingDriveBackups] = useState(false);
@@ -700,7 +795,7 @@ export default function App() {
 
   // Reset user-specific states when user accounts shift or log out
   useEffect(() => {
-    setCurrentDays([[], [], [], []]);
+    setCurrentDays([[], [], [], [], [], []]);
     setPersonalBests({});
     setWeightHistory([]);
     setSessionSets([]);
@@ -727,7 +822,7 @@ export default function App() {
         if (data.days) {
           let daysArr: Exercise[][] = [];
           if (!Array.isArray(data.days)) {
-            for (let i = 0; i < 4; i++) daysArr.push(data.days[`d${i}`] || []);
+            for (let i = 0; i < 6; i++) daysArr.push(data.days[`d${i}`] || []);
           } else {
             daysArr = data.days as Exercise[][];
           }
@@ -1484,16 +1579,30 @@ export default function App() {
       const dates = Array.from(new Set(sessionSets.map(s => s.date))).sort((a: string, b: string) => b.localeCompare(a));
       const targetDate = dates[0] || new Date().toISOString().split('T')[0];
       
-      const totalVolume = sessionSets.reduce((sum, s) => sum + (s.weight * s.reps), 0);
+      const totalVolume = sessionSets.reduce((sum, s) => {
+        const searchName = s.exerciseName?.trim().toLowerCase();
+        let isCardio = false;
+        for (const pool of Object.values(POOLS)) {
+          const found = pool.find(e => e.name.trim().toLowerCase() === searchName);
+          if (found && found.pool === 'cardio') {
+            isCardio = true;
+            break;
+          }
+        }
+        return sum + (isCardio ? 0 : (s.weight * s.reps));
+      }, 0);
       const workoutRef = doc(collection(db, `users/${currentUser.uid}/workouts`));
       
+      const estimatedCalories = calculateCaloriesBurned(sessionSets, profile);
+
       const workoutData = {
         date: targetDate,
         timestamp: serverTimestamp(),
         sets: sessionSets,
         totalVolume,
         exercisesCount: new Set(sessionSets.map(s => s.exerciseName)).size,
-        totalSets: sessionSets.length
+        totalSets: sessionSets.length,
+        estimatedCalories
       };
       
       batch.set(workoutRef, workoutData);
@@ -2268,7 +2377,7 @@ export default function App() {
                                   
                                   <div className="flex gap-4 mb-4 mt-6">
                                     <div className="flex flex-col flex-1">
-                                      <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">Weight</span>
+                                      <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">{ex.pool === 'cardio' ? 'Time (min)' : 'Weight'}</span>
                                       <input 
                                         type="number"
                                         inputMode="decimal"
@@ -2278,7 +2387,7 @@ export default function App() {
                                       />
                                     </div>
                                     <div className="flex flex-col flex-1">
-                                      <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">Reps</span>
+                                      <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">{ex.pool === 'cardio' ? 'Speed / Lvl' : 'Reps'}</span>
                                       <input 
                                         type="number"
                                         inputMode="numeric"
@@ -2710,6 +2819,228 @@ export default function App() {
                 </AnimatePresence>
               </div>
 
+              {/* Calorie Tracker Section */}
+              <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <button 
+                  onClick={() => setExpandedProgressSections(prev => ({ ...prev, calorieTracker: !prev.calorieTracker }))}
+                  className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-[#0c0c0c]/80 transition-colors cursor-pointer group"
+                >
+                  <div>
+                    <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                      <Flame className="w-5 h-5 text-gym-accent animate-pulse" />
+                      Calorie Tracker
+                    </h3>
+                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Comprehensive metabolic & training energy output</p>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.calorieTracker ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {expandedProgressSections.calorieTracker && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="px-8 pb-10 pt-4">
+                        {(() => {
+                          const getWorkoutCalories = (w: any) => {
+                            if (w.estimatedCalories !== undefined && w.estimatedCalories > 0) {
+                              return w.estimatedCalories;
+                            }
+                            return calculateCaloriesBurned(w.sets || [], profile);
+                          };
+
+                          // Aggregate total and daily
+                          let totalCombinedCalories = 0;
+                          const dailyMap: Record<string, { date: string; calories: number; count: number }> = {};
+
+                          archivedWorkouts.forEach(w => {
+                            const cal = getWorkoutCalories(w);
+                            totalCombinedCalories += cal;
+
+                            const d = w.date || new Date().toISOString().split('T')[0];
+                            if (!dailyMap[d]) {
+                              dailyMap[d] = { date: d, calories: 0, count: 0 };
+                            }
+                            dailyMap[d].calories += cal;
+                            dailyMap[d].count += 1;
+                          });
+
+                          const sortedDays = Object.values(dailyMap).sort((a, b) => b.date.localeCompare(a.date));
+                          const chronologicalDays = [...sortedDays].sort((a, b) => a.date.localeCompare(b.date));
+
+                          return (
+                            <div className="space-y-8">
+                              {/* Total Combined Display Card */}
+                              <div className="bg-[#0c0c0c] border border-white/5 rounded-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                  <div className="p-3 bg-gym-accent/10 border border-gym-accent/20 rounded-sm">
+                                    <Flame className="w-8 h-8 text-gym-accent animate-pulse" />
+                                  </div>
+                                  <div>
+                                    <h4 className="text-sm font-semibold text-white tracking-widest uppercase mb-1">Total Everyday Combined</h4>
+                                    <p className="text-[10px] text-white/40 tracking-wider">All-time active workout calories expended</p>
+                                  </div>
+                                </div>
+                                <div className="text-center sm:text-right">
+                                  <span className="text-4xl font-light text-gym-accent tracking-tighter tabular-nums">
+                                    {totalCombinedCalories.toLocaleString()} <span className="text-sm font-serif italic text-white/50 lowercase">kcal</span>
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Active Calorie Track over Time (Graph) */}
+                              <div className="space-y-3">
+                                <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.25em]">Output Distribution over Time</h4>
+                                <div className="h-[250px] w-full bg-[#050505]/40 border border-white/5 rounded-sm p-4">
+                                  {chronologicalDays.length === 0 ? (
+                                    <div className="h-full flex flex-col items-center justify-center border border-dashed border-white/5 rounded-sm">
+                                      <Flame className="w-8 h-8 text-white/10 mb-2" />
+                                      <p className="text-white/20 text-xs">No active caloric progression logged yet</p>
+                                    </div>
+                                  ) : (
+                                    <ResponsiveContainer width="100%" height="100%">
+                                      <AreaChart 
+                                        data={chronologicalDays} 
+                                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                                      >
+                                        <defs>
+                                          <linearGradient id="colorCalorieTracker" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
+                                            <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                          </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                        <XAxis 
+                                          dataKey="date" 
+                                          stroke="#ffffff20" 
+                                          fontSize={9} 
+                                          tickLine={false}
+                                          axisLine={false}
+                                          dy={10}
+                                          minTickGap={20}
+                                          tickFormatter={(str) => {
+                                            if (!str) return '';
+                                            try {
+                                              const [y, m, d] = str.split('-').map(Number);
+                                              const date = new Date(y, m - 1, d);
+                                              return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                            } catch (e) {
+                                              return str;
+                                            }
+                                          }}
+                                        />
+                                        <YAxis 
+                                          stroke="#ffffff20" 
+                                          fontSize={9} 
+                                          tickLine={false}
+                                          axisLine={false}
+                                          width={40}
+                                          tickFormatter={(val) => `${val}`}
+                                        />
+                                        <Tooltip 
+                                          cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '3 3' }}
+                                          contentStyle={{ 
+                                            backgroundColor: '#0a0a0a', 
+                                            borderColor: '#ffffff10', 
+                                            borderRadius: '2px',
+                                            boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
+                                            padding: '10px'
+                                          }}
+                                          itemStyle={{ color: activeTheme.accent, fontWeight: 'bold', fontSize: '11px' }}
+                                          labelStyle={{ color: '#ffffff40', fontSize: '9px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '2px' }}
+                                          labelFormatter={(str) => {
+                                            if (!str) return 'Date';
+                                            try {
+                                              const [y, m, d] = str.split('-').map(Number);
+                                              const date = new Date(y, m - 1, d);
+                                              return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+                                            } catch (e) {
+                                              return str;
+                                            }
+                                          }}
+                                          formatter={(value: any) => [`${value} kcal`, 'Calories']}
+                                        />
+                                        <Area 
+                                          type="monotone" 
+                                          dataKey="calories" 
+                                          stroke={activeTheme.accent} 
+                                          strokeWidth={2}
+                                          fillOpacity={1} 
+                                          fill="url(#colorCalorieTracker)" 
+                                          animationDuration={1500}
+                                        />
+                                      </AreaChart>
+                                    </ResponsiveContainer>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Collapsible Daily Breakdown List */}
+                              <div>
+                                <div className="mt-6 flex justify-between items-center pb-2 border-b border-white/5">
+                                  <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.25em]">Daily Energy Output History</h4>
+                                  {sortedDays.length > 0 && (
+                                    <button
+                                      onClick={() => setShowCalorieHistoryList(!showCalorieHistoryList)}
+                                      className="flex items-center gap-2 group cursor-pointer"
+                                    >
+                                      <span className="text-[9px] text-white/40 uppercase tracking-widest font-bold group-hover:text-gym-accent transition-colors">
+                                        {showCalorieHistoryList ? "Hide History Log" : `Show History Log (${sortedDays.length})`}
+                                      </span>
+                                      <ChevronDown className={`w-3.5 h-3.5 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showCalorieHistoryList ? "rotate-180" : ""}`} />
+                                    </button>
+                                  )}
+                                </div>
+                                
+                                {sortedDays.length === 0 ? (
+                                  <div className="text-center py-10 border border-dashed border-white/5 rounded-sm bg-black/30 mt-4">
+                                    <p className="text-xs text-white/30 font-light">No logged workout calorie telemetry found</p>
+                                    <p className="text-[9px] text-white/20 mt-1 uppercase tracking-widest">Complete workout sessions in the Session tab to begin tracking</p>
+                                  </div>
+                                ) : (
+                                  <AnimatePresence>
+                                    {showCalorieHistoryList && (
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.25 }}
+                                        className="overflow-hidden mt-4"
+                                      >
+                                        <div className="divide-y divide-white/5 border border-white/10 rounded-sm overflow-hidden bg-[#070707]/60 max-h-[300px] overflow-y-auto no-scrollbar">
+                                          {sortedDays.map((day) => (
+                                            <div key={day.date} className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors">
+                                              <div className="flex items-center gap-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-gym-accent" />
+                                                <div>
+                                                  <span className="text-xs font-semibold text-white/80 tracking-wider font-mono">{day.date}</span>
+                                                  <span className="text-[9px] text-white/30 ml-3 uppercase tracking-widest">({day.count} {day.count === 1 ? 'evolution' : 'evolutions'})</span>
+                                                </div>
+                                              </div>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-sm font-light text-gym-accent tabular-nums">{day.calories.toLocaleString()}</span>
+                                                <span className="text-[9px] font-serif italic text-white/40 lowercase">kcal</span>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
               {/* Progress Report Trigger Button */}
               <div className="flex justify-center pt-8 pb-4">
                 <button
@@ -2815,27 +3146,82 @@ export default function App() {
                                 <span className="text-[9px] text-gym-accent font-black uppercase tracking-widest">{exerciseSets.length} Sets</span>
                               </div>
                               <div className="space-y-2">
-                                {exerciseSets.map((s, idx) => (
-                                  <div key={idx} className="flex items-center justify-between group/set">
-                                    <div className="flex items-center gap-3">
-                                      <span className="text-[11px] tabular-nums text-white/90">{s.weight}kg</span>
-                                      <span className="text-[11px] tabular-nums text-white/40">×</span>
-                                      <span className="text-[11px] tabular-nums text-white/90">{s.reps}</span>
+                                {exerciseSets.map((s, idx) => {
+                                  const ex = findExerciseByName(name);
+                                  const isCardio = ex?.pool === 'cardio';
+                                  return (
+                                    <div key={idx} className="flex items-center justify-between group/set">
+                                      <div className="flex items-center gap-3">
+                                        {isCardio ? (
+                                          <>
+                                            <span className="text-[11px] tabular-nums text-white/90">{s.weight} min</span>
+                                            <span className="text-[11px] tabular-nums text-white/40">@</span>
+                                            <span className="text-[11px] tabular-nums text-white/90">Lvl {s.reps}</span>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <span className="text-[11px] tabular-nums text-white/90">{s.weight}kg</span>
+                                            <span className="text-[11px] tabular-nums text-white/40">×</span>
+                                            <span className="text-[11px] tabular-nums text-white/90">{s.reps}</span>
+                                          </>
+                                        )}
+                                      </div>
+                                      <button
+                                        onClick={() => s.id && handleDeleteSet(s.id)}
+                                        className="opacity-80 hover:opacity-100 p-1 text-red-500 hover:text-red-400 transition-all cursor-pointer"
+                                        title="Delete set"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                      </button>
                                     </div>
-                                    <button
-                                      onClick={() => s.id && handleDeleteSet(s.id)}
-                                      className="opacity-80 hover:opacity-100 p-1 text-red-500 hover:text-red-400 transition-all cursor-pointer"
-                                      title="Delete set"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                                    </button>
-                                  </div>
-                                ))}
+                                  );
+                                })}
                               </div>
                             </div>
                           ))}
                        </div>
  
+                       {/* Dynamic Calorie Tracker progress bar under logged exercises */}
+                       {(() => {
+                         const estimatedCals = calculateCaloriesBurned(sessionSets, profile);
+                         const targetCals = 600;
+                         const pct = Math.min(100, Math.round((estimatedCals / targetCals) * 100));
+
+                         return (
+                           <div className="mt-8 bg-[#0a0a0a]/80 border border-white/10 rounded-sm p-6 relative overflow-hidden backdrop-blur-md">
+                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                               <div className="flex items-center gap-3">
+                                 <Flame className="w-5 h-5 text-gym-accent animate-pulse" />
+                                 <div>
+                                   <h5 className="text-xs font-semibold text-white tracking-widest uppercase">Calorie Tracker Estimator</h5>
+                                   <p className="text-[10px] text-white/40 tracking-wider">Dynamic energy assessment based on your bio-metrics & logged sets</p>
+                                 </div>
+                               </div>
+                               <div className="text-right">
+                                 <span className="text-3xl font-light text-gym-accent tracking-tighter tabular-nums">
+                                   {estimatedCals} <span className="text-xs uppercase font-serif italic text-white/50">kcal</span>
+                                 </span>
+                               </div>
+                             </div>
+
+                             {/* Progress bar */}
+                             <div className="w-full bg-[#141414] h-2.5 rounded-full overflow-hidden border border-white/5 p-0.5 mb-2">
+                               <motion.div 
+                                 initial={{ width: 0 }}
+                                 animate={{ width: `${pct}%` }}
+                                 className="h-full bg-gradient-to-r from-red-600 to-gym-accent rounded-full"
+                                 transition={{ duration: 0.5, ease: "easeOut" }}
+                               />
+                             </div>
+
+                             <div className="flex justify-between items-center text-[8px] text-white/30 uppercase font-black tracking-widest pl-1">
+                               <span>0 kcal</span>
+                               <span>Target: {targetCals} kcal</span>
+                             </div>
+                           </div>
+                         );
+                       })()}
+
                        <div className="mt-8 flex items-center justify-center gap-4">
                          <button 
                            onClick={handleClearActiveSession}
@@ -3363,6 +3749,96 @@ export default function App() {
                          }}
                        />
                     </div>
+
+                    {/* Biometric details inputs */}
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-4 border-t border-white/5">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[9px] text-white/20 uppercase tracking-widest font-bold">Bodyweight (kg)</span>
+                        <input 
+                          type="number"
+                          step="0.1"
+                          defaultValue={profile?.bodyweight || ""}
+                          placeholder="75"
+                          className="bg-transparent border-b border-white/10 py-1.5 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                          onBlur={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val)) {
+                              saveSettings({ bodyweight: val });
+                              setProfile(prev => prev ? { ...prev, bodyweight: val } : null);
+                            }
+                          }}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[9px] text-white/20 uppercase tracking-widest font-bold">Height (cm)</span>
+                        <input 
+                          type="number"
+                          defaultValue={profile?.height || ""}
+                          placeholder="175"
+                          className="bg-transparent border-b border-white/10 py-1.5 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                          onBlur={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (!isNaN(val)) {
+                              saveSettings({ height: val });
+                              setProfile(prev => prev ? { ...prev, height: val } : null);
+                            }
+                          }}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[9px] text-white/20 uppercase tracking-widest font-bold">Age</span>
+                        <input 
+                          type="number"
+                          defaultValue={profile?.age || ""}
+                          placeholder="28"
+                          className="bg-transparent border-b border-white/10 py-1.5 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                          onBlur={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (!isNaN(val)) {
+                              saveSettings({ age: val });
+                              setProfile(prev => prev ? { ...prev, age: val } : null);
+                            }
+                          }}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[9px] text-white/20 uppercase tracking-widest font-bold">Body Fat (%)</span>
+                        <input 
+                          type="number"
+                          step="0.1"
+                          defaultValue={profile?.bodyFatPercent || ""}
+                          placeholder="15"
+                          className="bg-transparent border-b border-white/10 py-1.5 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                          onBlur={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val)) {
+                              saveSettings({ bodyFatPercent: val });
+                              setProfile(prev => prev ? { ...prev, bodyFatPercent: val } : null);
+                            }
+                          }}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-[9px] text-white/20 uppercase tracking-widest font-bold">Sex</span>
+                        <select 
+                          value={profile?.sex || "male"}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            saveSettings({ sex: val });
+                            setProfile(prev => prev ? { ...prev, sex: val as any } : null);
+                          }}
+                          className="bg-transparent border-b border-white/10 py-2.5 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white cursor-pointer select-none"
+                        >
+                          <option value="male" className="bg-[#0a0a0a] text-white">Male</option>
+                          <option value="female" className="bg-[#0a0a0a] text-white">Female</option>
+                          <option value="other" className="bg-[#0a0a0a] text-white">Other</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -3558,7 +4034,7 @@ export default function App() {
                                 
                                 <div className="flex gap-4 mb-4 mt-auto">
                                   <div className="flex flex-col flex-1">
-                                    <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">Weight</span>
+                                    <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">{ex.pool === 'cardio' ? 'Time (min)' : 'Weight'}</span>
                                     <input 
                                       type="number"
                                       inputMode="decimal"
@@ -3568,7 +4044,7 @@ export default function App() {
                                     />
                                   </div>
                                   <div className="flex flex-col flex-1">
-                                    <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">Reps</span>
+                                    <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">{ex.pool === 'cardio' ? 'Speed / Lvl' : 'Reps'}</span>
                                     <input 
                                       type="number"
                                       inputMode="numeric"
@@ -3812,6 +4288,46 @@ export default function App() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {filtered.map(renderExercise)}
                         </div>
+                      </div>
+                    );
+                  }
+
+                  if (poolKey === 'equipment') {
+                    const eqCategories = [
+                      "Kettlebells",
+                      "TRX",
+                      "Battle Ropes",
+                      "Resistance Bands",
+                      "Weight Plates",
+                      "Slam Balls",
+                      "Plyo Boxes",
+                      "Bosu Balls",
+                      "Sleds",
+                      "Other"
+                    ];
+
+                    return (
+                      <div key={poolKey} className="mb-8">
+                        {eqCategories.map(cat => {
+                          const catExercises = filtered.filter(e => {
+                            if (cat === "Other") {
+                              return !e.equipmentCategory || (!eqCategories.includes(e.equipmentCategory) && e.equipmentCategory !== "Other");
+                            }
+                            return e.equipmentCategory === cat;
+                          });
+                          if (catExercises.length === 0) return null;
+
+                          return (
+                            <div key={cat} className="mb-6">
+                              <h4 className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-4 ml-2 border-l border-gym-accent/40 pl-3">
+                                {cat} Equipment
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {catExercises.map(renderExercise)}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   }
@@ -4399,6 +4915,90 @@ export default function App() {
                                   strokeWidth={1.5}
                                   fillOpacity={1} 
                                   fill="url(#reportVolGrad)" 
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Chart Section 3: Caloric Progression Timeline Area Chart */}
+                      <div className="bg-white/[0.015] border border-white/10 rounded-sm p-5 relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-4 relative z-10">
+                          <div>
+                            <span className="text-[7.5px] font-mono tracking-widest text-gym-accent uppercase block">TIMELINE DATA _03</span>
+                            <span className="text-[10px] font-mono font-bold text-white/80 uppercase tracking-widest">Active Calorie Expenditure (kcal)</span>
+                          </div>
+                          <span className="text-[8px] font-mono text-white/30 bg-white/5 px-2 py-0.5 border border-white/10 rounded-sm">
+                            HISTORICAL ENTRIES: {archivedWorkouts.length}
+                          </span>
+                        </div>
+                        <div className="h-32 w-full">
+                          {archivedWorkouts.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-sm bg-black/40">
+                              <Flame className="w-5 h-5 text-white/10 mb-1 animate-pulse" />
+                              <span className="text-[9px] text-white/20 uppercase tracking-widest">No active training logs archived</span>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart 
+                                data={(() => {
+                                  const getWorkoutCalories = (w: any) => {
+                                    if (w.estimatedCalories !== undefined && w.estimatedCalories > 0) {
+                                      return w.estimatedCalories;
+                                    }
+                                    return calculateCaloriesBurned(w.sets || [], profile);
+                                  };
+
+                                  const dailyMap: Record<string, { date: string; calories: number }> = {};
+                                  archivedWorkouts.forEach(w => {
+                                    const cal = getWorkoutCalories(w);
+                                    const d = w.date || new Date().toISOString().split('T')[0];
+                                    if (!dailyMap[d]) {
+                                      dailyMap[d] = { date: d, calories: 0 };
+                                    }
+                                    dailyMap[d].calories += cal;
+                                  });
+
+                                  return Object.values(dailyMap).sort((a, b) => a.date.localeCompare(b.date));
+                                })()} 
+                                margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                              >
+                                <defs>
+                                  <linearGradient id="reportCalGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
+                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                  </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                <XAxis 
+                                  dataKey="date" 
+                                  stroke="#ffffff20" 
+                                  fontSize={7} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                  tickFormatter={(str) => {
+                                    if (!str) return '';
+                                    try {
+                                      const [y, m, d] = str.split('-').map(Number);
+                                      return new Date(y, m-1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                    } catch (e) { return str }
+                                  }}
+                                />
+                                <YAxis 
+                                  stroke="#ffffff20" 
+                                  fontSize={7} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                  width={25}
+                                />
+                                <Area 
+                                  type="monotone" 
+                                  dataKey="calories" 
+                                  stroke={activeTheme.accent} 
+                                  strokeWidth={1.5}
+                                  fillOpacity={1} 
+                                  fill="url(#reportCalGrad)" 
                                 />
                               </AreaChart>
                             </ResponsiveContainer>

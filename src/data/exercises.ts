@@ -1,11 +1,12 @@
 export interface Exercise {
   name: string;
   icon: string;
-  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core';
+  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment';
   instructions?: string[];
-  muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core';
+  muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment';
   legRegion?: 'upper' | 'lower';
   category?: 'compound' | 'isolation';
+  equipmentCategory?: string;
 }
 
 const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
@@ -1135,6 +1136,600 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Engage your abs throughout the entire range of motion.",
         "Maintain a controlled pace to maximize muscle engagement."
       ]
+    },
+    {
+      name: "Lying Leg Raises",
+      icon: "ArrowUp",
+      pool: "core",
+      muscleGroup: "core",
+      instructions: [
+        "Lie flat on your back with your legs straight and hands either under your hips or at your sides.",
+        "Keeping your legs as straight as possible, lift them until they are vertical.",
+        "Slowly lower them back down until they are just hovering above the floor.",
+        "Engage your lower abs throughout and keep your lower back pressed into the floor."
+      ]
+    },
+    {
+      name: "Reverse Crunches",
+      icon: "Activity",
+      pool: "core",
+      muscleGroup: "core",
+      instructions: [
+        "Lie on your back with your knees bent at 90-degrees and hands flat on the floor.",
+        "Contract your abs to pull your knees toward your chest, lifting your hips off the floor.",
+        "Slowly lower your hips and feet back down without letting your feet touch the floor.",
+        "Avoid using momentum; focus entirely on the lower core contraction."
+      ]
+    },
+    {
+      name: "Deadbug",
+      icon: "Activity",
+      pool: "core",
+      muscleGroup: "core",
+      instructions: [
+        "Lie flat on your back, arms extended straight over your shoulders, knees bent at 90-degrees over your hips.",
+        "Slowly lower one arm behind your head while simultaneously extending the opposite leg forward.",
+        "Exhale, drive your lower back into the floor, and return them both to the start position.",
+        "Repeat with the other arm and leg, focusing on core stabilization."
+      ]
+    },
+    {
+      name: "Bird Dog",
+      icon: "Activity",
+      pool: "core",
+      muscleGroup: "core",
+      instructions: [
+        "Start on all fours with your hands directly under your shoulders and knees under your hips.",
+        "Slowly extend one arm straight forward while kicking the opposite leg straight back.",
+        "Maintain a completely flat back and square hips to ensure core engagement.",
+        "Slowly return to the starting position and repeat on the alternate side."
+      ]
+    },
+    {
+      name: "Side Plank",
+      icon: "Activity",
+      pool: "core",
+      muscleGroup: "core",
+      instructions: [
+        "Lie on your side with your elbow directly under your shoulder, feet stacked or staggered.",
+        "Lift your hips until your body forms a straight diagonal line from head to heels.",
+        "Engage your obliques, keep your core braced, and hold the position without dipping.",
+        "Repeat on the opposite side to balance lateral core strength."
+      ]
+    },
+    {
+      name: "Alternate Heel Taps",
+      icon: "Activity",
+      pool: "core",
+      muscleGroup: "core",
+      instructions: [
+        "Lie flat on your back with your knees bent and feet flat on the floor, about hip-width apart.",
+        "Crunch your head and shoulders slightly off the ground to engage your upper abs.",
+        "Engage your obliques to reach your right hand to tap your right heel, then left hand to left heel.",
+        "Maintain a continuous, controlled lateral twisting rhythm."
+      ]
+    },
+    {
+      name: "Flutter Kicks",
+      icon: "Activity",
+      pool: "core",
+      muscleGroup: "core",
+      instructions: [
+        "Lie on your back with legs straight, hands underneath your lower back or glutes for support.",
+        "Lift your legs about 15cm off the ground.",
+        "Perform rapid, short scissor-like kicking motions up and down.",
+        "Keep your legs straight, toes pointed, and lower back firmly pressed into the pad/floor."
+      ]
+    },
+    {
+      name: "V Sit-Ups",
+      icon: "Activity",
+      pool: "core",
+      muscleGroup: "core",
+      instructions: [
+        "Lie flat on your back with your legs straight and arms extended fully behind your head.",
+        "In one synchronized motion, contract your brace core to lift both your legs and your upper body up off the floor.",
+        "Reach your hands forward to touch your toes or shins, forming a 'V' shape with your body.",
+        "Slowly lower your arms and legs back to the starting resting position, maintaining core stability and control throughout."
+      ]
+    }
+  ],
+  cardio: [
+    {
+      name: "Treadmill Hike",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Set the treadmill incline to 15 degrees.",
+        "Walk at a steady, challenging pace (typically 2.5 - 3.5 mph).",
+        "Maintain an upright posture and avoid holding onto the handrails to maximize core and leg engagement.",
+        "Pump your arms rhythmically to drive your stride."
+      ]
+    },
+    {
+      name: "HIIT Rowing",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Sit tall on the rower seat and secure your feet in the straps.",
+        "Push off dynamically with your legs first, then lean back slightly and pull the handle to your lower chest.",
+        "Extend your arms, lean forward from the hips, and bend your knees to slide back to the start.",
+        "Perform intervals of 30 seconds of maximum effort followed by 30 seconds of slow recovery."
+      ]
+    },
+    {
+      name: "Elliptical Interval Sprint",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Grip the moving handles of the elliptical trainer.",
+        "Begin pedaling rapidly, aiming for a high resistance and SPM (strides per minute).",
+        "Alternate between 1 minute of high-intensity sprint and 1 minute of active recovery.",
+        "Keep your core contracted and push and pull active handles."
+      ]
+    },
+    {
+      name: "Stairmaster Climb",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Step onto the Stairmaster and select a challenging speed level.",
+        "Step firmly through your entire foot, pushing with your glutes and hamstrings rather than just your toes.",
+        "Avoid leaning with your upper body weight on the handrails.",
+        "Keep a steady rhythm and focus on breathing."
+      ]
+    },
+    {
+      name: "Jump Rope Sessions",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Hold the jump rope handles with your hands at hip height, elbows close to your torso.",
+        "Jump only high enough to clear the rope (about 1 inch off the ground).",
+        "Land softly on the balls of your feet to absorb the impact.",
+        "Turn the rope using your wrists, not your entire arms."
+      ]
+    },
+    {
+      name: "Stationary Cycling",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Adjust the bike seat height so there is a slight bend in your knee at the bottom of the pedal stroke.",
+        "Pedal at a steady cadence (80-100 RPM) with moderate resistance.",
+        "Keep your back flat and shoulders relaxed.",
+        "Engage your hamstrings by pulling up at the bottom of the pedal stroke."
+      ]
+    },
+    {
+      name: "Assault Bike Sprint",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Sit on the assault bike, grabbing the handles firmly.",
+        "Pedal as fast as possible while pulling and pushing the handles in sync.",
+        "Maintain high effort intervals (e.g., 20 seconds on, 10 seconds active recovery).",
+        "Keep your back straight and drive from your legs and upper body simultaneously."
+      ]
+    },
+    {
+      name: "Burpee Cardio Intervals",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Start on a standing position, then drop into a squat with hands on the floor.",
+        "Jump your feet back to a pushup position, lower your chest, then push up.",
+        "Jump your feet forward to the hands, and jump explosively into the air with hands overhead.",
+        "Repeat continuously with a fast, controlled tempo."
+      ]
+    },
+    {
+      name: "High-Knee Sprints",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Stand with feet hip-width apart and jog in place rapidly.",
+        "Drive your knees up toward your chest as high as possible, aiming to reach waist height.",
+        "Pump your arms to stay balanced and speed up the cadence.",
+        "Land softly on the balls of your feet."
+      ]
+    },
+    {
+      name: "Mountain Climbers",
+      icon: "Activity",
+      pool: "cardio",
+      instructions: [
+        "Enter a strong high plank position with shoulders directly above your wrists.",
+        "Drive one knee toward your chest quickly, then return it to the start as you drive the opposite knee forward.",
+        "Maintain a flat back and low hips, keeping a rapid running cadence.",
+        "Breathe steadily throughout the duration."
+      ]
+    }
+  ],
+  equipment: [
+    {
+      name: "Kettlebell Swing",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Kettlebells",
+      instructions: [
+        "Stand with feet shoulder-width apart, holding a kettlebell with both hands in front of you.",
+        "Hinge at your hips, bending slightly at your knees, and pull the kettlebell back between your legs.",
+        "Drive your hips forward dynamically, fully contracting your glutes and hamstrings to swing the bell up to shoulder height.",
+        "Allow the kettlebell to swing back down controlled as you hinge your hips back for the next rep."
+      ]
+    },
+    {
+      name: "Kettlebell Goblet Squat",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Kettlebells",
+      instructions: [
+        "Hold a kettlebell close to your chest by the horns with both hands.",
+        "Set feet shoulder-width apart and squat down deeply, keeping your chest upright and knees tracking over toes.",
+        "Drive through the entire foot back to the starting position."
+      ]
+    },
+    {
+      name: "TRX Suspension Row",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "TRX",
+      instructions: [
+        "Grip the TRX handles and lean backward, forming a straight line from head to heels with your arms extended.",
+        "Pull your chest up towards the handles by driving your elbows backward and squeezing your shoulder blades.",
+        "Slowly lower yourself back to the starting position with control."
+      ]
+    },
+    {
+      name: "TRX Pushup",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "TRX",
+      instructions: [
+        "Place your feet in the TRX foot cradles and assume a pushup position.",
+        "Lower your chest to the ground, keeping your body perfectly aligned and core heavily braced.",
+        "Push back up to the top plank position."
+      ]
+    },
+    {
+      name: "Battle Rope Double Waves",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Battle Ropes",
+      instructions: [
+        "Hold a battle rope handle in each hand with feet shoulder-width apart in a quarter-squat stance.",
+        "Vigorously pump both arms up and down simultaneously to create smooth, rolling waves in the ropes.",
+        "Engage your core and legs to keep your posture grounded."
+      ]
+    },
+    {
+      name: "Battle Rope Alternating Waves",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Battle Ropes",
+      instructions: [
+        "From a quarter-squat stance, alternate rapidly pumping your left and right arms up and down.",
+        "Focus on high-speed movements, keeping the waves traveling all the way to the anchor point."
+      ]
+    },
+    {
+      name: "Band Pull-Aparts",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Resistance Bands",
+      instructions: [
+        "Hold a resistance band with hands shoulder-width apart in front of your chest.",
+        "Keep your arms straight and pull your shoulder blades together to stretch the band across your chest.",
+        "Carefully return to the starting position."
+      ]
+    },
+    {
+      name: "Band Bicep Curls",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Resistance Bands",
+      instructions: [
+        "Stand on the middle of the resistance band and hold the handles at your sides.",
+        "Curl your hands toward your shoulders, squeezing your biceps at the top.",
+        "Slowly lower your hands back down."
+      ]
+    },
+    {
+      name: "Plate Ground to Overhead",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Weight Plates",
+      instructions: [
+        "Squat down and grasp a weight plate on opposite sides with both hands.",
+        "In one explosive movement, drive your legs and raise the plate straight overhead.",
+        "Lower the plate back to the ground with a flat back."
+      ]
+    },
+    {
+      name: "Plate Halo",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Weight Plates",
+      instructions: [
+        "Hold a weight plate close to your chest by its edges.",
+        "Circumnavigate the plate around your head in a circular 'halo' motion, engaging your shoulders and core.",
+        "Reverse the circular direction for the next repetition."
+      ]
+    },
+    {
+      name: "Overhead Ball Slam",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Slam Balls",
+      instructions: [
+        "Stand tall with feet hip-width apart, holding the slam ball with both hands.",
+        "Raise the ball straight overhead, extending your hips and knees.",
+        "Use your core and arms to explosively slam the ball into the floor as hard as possible.",
+        "Catch the bounce or scoop the ball up and repeat."
+      ]
+    },
+    {
+      name: "Slam Ball Russian Twist",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Slam Balls",
+      instructions: [
+        "Sit on the floor holding a slam ball with knees bent and feet slightly elevated.",
+        "Move the slam ball across your body to touch the floor on either side, rotating your torso."
+      ]
+    },
+    {
+      name: "Box Jumps",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Plyo Boxes",
+      instructions: [
+        "Stand facing the plyo box in an athletic stance.",
+        "Hinge at the hips, swing your arms, and jump explosively onto the box, landing softly in a partial squat.",
+        "Step down carefully and repeat."
+      ]
+    },
+    {
+      name: "Step-Ups",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Plyo Boxes",
+      instructions: [
+        "Place one foot firmly on the center of the plyo box.",
+        "Push through your heel to lift your entire body up until your leg is fully extended.",
+        "Step down slowly using the same leg."
+      ]
+    },
+    {
+      name: "Bosu Ball Dome Squats",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Bosu Balls",
+      instructions: [
+        "Place the Bosu ball dome-side up on the ground.",
+        "Carefully step onto the center of the dome, establishing balance.",
+        "Squat down slowly, maintaining a strong, stable core to handle the ankle stabilizers."
+      ]
+    },
+    {
+      name: "Bosu Ball Plank",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Bosu Balls",
+      instructions: [
+        "Place the Bosu ball flat-side up (or dome-side up for preference) and grip the edge handles.",
+        "Extend your legs behind you and hold a straight plank position, managing the micro-wobbles."
+      ]
+    },
+    {
+      name: "Weighted Sled Push",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Sleds",
+      instructions: [
+        "Grip the high handles of the training sled, keeping a flat back and low hips.",
+        "Drive forward with explosive leg power, taking long, strong strides to push the sled across the turf."
+      ]
+    },
+    {
+      name: "Weighted Sled Pull",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Sleds",
+      instructions: [
+        "Attach straps or a rope to the sled and walk backward, pulling the sled toward yourself by driving your legs through each step."
+      ]
+    },
+    {
+      name: "Kettlebell Clean & Press",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Kettlebells",
+      instructions: [
+        "Position a kettlebell between your legs on the floor.",
+        "Hinge at the hips, pull the bell up and pivot it nicely to the rack position at your chest (the clean).",
+        "Brace your core and press the kettlebell straight upward overhead (the press).",
+        "Lower back down with control."
+      ]
+    },
+    {
+      name: "Kettlebell Turkish Get-Up",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Kettlebells",
+      instructions: [
+        "Lie flat on the floor holding a kettlebell upright in one hand.",
+        "Systematically move from lying to knee-prop, kneeling, standing, and back down, keeping the arm extended straight up.",
+        "Maintain focus on the kettlebell at all times to stabilize."
+      ]
+    },
+    {
+      name: "TRX Chest Fly",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "TRX",
+      instructions: [
+        "Facing away from the anchor, hold TRX straps out in front of you.",
+        "Slowly extend your arms out wide to the sides, lowering your chest forward.",
+        "Contract your chest to bring your hands back together."
+      ]
+    },
+    {
+      name: "TRX Pistol Squat",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "TRX",
+      instructions: [
+        "Hold onto the TRX handles and lift one leg off the floor.",
+        "Lower your hips down and back into a deep single-leg squat, using the straps for assistance/balance.",
+        "Drive back up using your working leg."
+      ]
+    },
+    {
+      name: "Battle Rope Slams",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Battle Ropes",
+      instructions: [
+        "Raise both battle rope handles straight overhead, lifting onto your toes.",
+        "Explosively slam both hands down toward the floor, bending the knees into a squat."
+      ]
+    },
+    {
+      name: "Battle Rope Outside Circles",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Battle Ropes",
+      instructions: [
+        "Hold handles at hip height and swing arms in outward circular motions.",
+        "This isolates the shoulder stabilizers and challenges core rotational control."
+      ]
+    },
+    {
+      name: "Band Glute Kickbacks",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Resistance Bands",
+      instructions: [
+        "Loop a band around your ankles and stand upright or lean forward on a bench.",
+        "Drive one leg straight back against the resistance, squeezing the glute at the apex."
+      ]
+    },
+    {
+      name: "Band Chest Press",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Resistance Bands",
+      instructions: [
+        "Anchor the band behind you and hold both handles near your chest.",
+        "Press your hands straight forward, squeezing the chest at the point of peak band tension."
+      ]
+    },
+    {
+      name: "Plate Front Raise",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Weight Plates",
+      instructions: [
+        "Hold a weight plate on opposite sides in front of your thighs.",
+        "Keeping your arms nearly straight, lift the plate directly forward to shoulder height.",
+        "Lower under control with no body swing."
+      ]
+    },
+    {
+      name: "Plate Overhead Lunge",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Weight Plates",
+      instructions: [
+        "Hold a weight plate flat overhead, locking your arms out.",
+        "Step forward into a lunge, keeping the plate balanced securely overhead.",
+        "Squeeze your core and shoulders for stability."
+      ]
+    },
+    {
+      name: "Slam Ball Bear Hug Squat",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Slam Balls",
+      instructions: [
+        "Hug a heavy slam ball tightly against your chest.",
+        "Squat down to parallel, keeping your back straight and the load snug.",
+        "Drive back to standing."
+      ]
+    },
+    {
+      name: "Slam Ball Chest Pass",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Slam Balls",
+      instructions: [
+        "Hold a slam ball at chest height facing a sturdy wall or partner.",
+        "Explosively throw the ball forward from your chest.",
+        "Catch the rebound and immediately transition into the next pass."
+      ]
+    },
+    {
+      name: "Lateral Box Jumps",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Plyo Boxes",
+      instructions: [
+        "Stand side-by-side next to a plyo box.",
+        "Jump explosively sideways/upward onto the center of the box, landing softly.",
+        "Step down safely."
+      ]
+    },
+    {
+      name: "Box Decline Pushups",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Plyo Boxes",
+      instructions: [
+        "Place your toes on the edge of the plyo box and hands on the floor.",
+        "Perform a decline pushup, driving your upper chest and anterior deltoids."
+      ]
+    },
+    {
+      name: "Bosu Ball Mountain Climbers",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Bosu Balls",
+      instructions: [
+        "Place the Bosu ball flat-side up and hold onto the edge handles.",
+        "Rapidly drive your knees in and out toward your chest in a running cadence, managing the balance challenge."
+      ]
+    },
+    {
+      name: "Bosu Ball Side Plank",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Bosu Balls",
+      instructions: [
+        "Rest one forearm on the dome of the Bosu ball.",
+        "Stack your feet and lift your hips into a side plank, stabilizing through your lower oblique core."
+      ]
+    },
+    {
+      name: "Sled Drag",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Sleds",
+      instructions: [
+        "Attach a harness to your waist connected to the sled.",
+        "Walk or sprint forward, dragging the sled behind you with explosive leg drive."
+      ]
+    },
+    {
+      name: "Sled Row",
+      icon: "Dumbbell",
+      pool: "equipment",
+      equipmentCategory: "Sleds",
+      instructions: [
+        "Hold onto sled straps facing the sled.",
+        "Perform explosive rowing pulls to pull the sled closer, then step back and repeat."
+      ]
     }
   ]
 };
@@ -1182,7 +1777,49 @@ export function getExerciseCategory(name: string, pool: string): 'compound' | 'i
   }
   
   if (pool === 'core') {
-    if (n.includes('plank') || n.includes('wheel') || n.includes('hanging') || n.includes('sit up')) {
+    if (
+      n.includes('plank') || 
+      n.includes('wheel') || 
+      n.includes('hanging') || 
+      n.includes('sit up') ||
+      n.includes('sit-up') ||
+      n.includes('situp') ||
+      n.includes('v sit') ||
+      n.includes('v-sit') ||
+      n.includes('deadbug') ||
+      n.includes('bird dog')
+    ) {
+      return 'compound';
+    }
+    return 'isolation';
+  }
+
+  if (pool === 'cardio') {
+    return 'compound';
+  }
+
+  if (pool === 'equipment') {
+    if (
+      n.includes('swing') ||
+      n.includes('squat') ||
+      n.includes('row') ||
+      n.includes('pushup') ||
+      n.includes('overhead') ||
+      n.includes('jump') ||
+      n.includes('step-up') ||
+      n.includes('push') ||
+      n.includes('pull') ||
+      n.includes('plank') ||
+      n.includes('wave') ||
+      n.includes('press') ||
+      n.includes('get-up') ||
+      n.includes('clean') ||
+      n.includes('snatch') ||
+      n.includes('lunge') ||
+      n.includes('climber') ||
+      n.includes('drag') ||
+      n.includes('slam')
+    ) {
       return 'compound';
     }
     return 'isolation';
