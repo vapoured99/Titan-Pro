@@ -773,6 +773,7 @@ export default function App() {
   const [expandedLibrarySections, setExpandedLibrarySections] = useState<Record<string, boolean>>({});
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [generatedReportUrl, setGeneratedReportUrl] = useState<string | null>(null);
 
   const findExerciseByName = (name: string): Exercise | null => {
     if (!name) return null;
@@ -1886,25 +1887,79 @@ export default function App() {
   const handleDownloadReport = async () => {
     const element = document.getElementById('progress-report-card');
     if (!element) return;
+    
+    // Save original stylesheet disabled states and any generated temp <style> elements
+    const originalSheets = Array.from(document.styleSheets);
+    const styleElList: HTMLStyleElement[] = [];
+    const disabledSheets: { sheet: CSSStyleSheet; disabled: boolean }[] = [];
+
     try {
       setIsGeneratingReport(true);
+      
+      // Temporary style sheets preprocessing to fix oklab/oklch parsing bug in html2canvas (Tailwind v4 compatibility)
+      for (const sheet of originalSheets) {
+        try {
+          if (sheet.cssRules) {
+            let cleanCss = '';
+            let hasOklabOrOklch = false;
+            const rules = Array.from(sheet.cssRules);
+            
+            for (const rule of rules) {
+              const cssText = rule.cssText;
+              // If it contains modern unsupported oklab/oklch color functions, skip the rule to prevent html2canvas parsing crash
+              if (cssText.includes('oklab(') || cssText.includes('oklch(')) {
+                hasOklabOrOklch = true;
+                continue;
+              }
+              cleanCss += cssText + '\n';
+            }
+
+            if (hasOklabOrOklch) {
+              const styleEl = document.createElement('style');
+              styleEl.setAttribute('data-html2canvas-temp-style', 'true');
+              styleEl.innerHTML = cleanCss;
+              document.head.appendChild(styleEl);
+              styleElList.push(styleEl);
+
+              disabledSheets.push({ sheet, disabled: sheet.disabled });
+              sheet.disabled = true;
+            }
+          }
+        } catch (e) {
+          // Cross-origin styles or security restrictions prevent reading some sheets, which is safe to bypass.
+        }
+      }
+
       const canvas = await html2canvas(element, {
         backgroundColor: '#050505',
         scale: 2,
         useCORS: true,
         logging: false
       });
+      
       const imageUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `iron_archive_progress_report_${new Date().toISOString().split('T')[0]}.png`;
-      link.href = imageUrl;
-      link.click();
-      setToast({ message: "Progress Report downloaded successfully!", type: "success" });
-      setShowProgressReport(false);
+      setGeneratedReportUrl(imageUrl);
+      
+      // Attempt desktop auto-download
+      try {
+        const link = document.createElement('a');
+        link.download = `iron_archive_progress_report_${new Date().toISOString().split('T')[0]}.png`;
+        link.href = imageUrl;
+        link.click();
+      } catch (e) {
+        console.warn("Direct programmatic download blocked by sandbox; mobile instructions will serve.", e);
+      }
+      
+      setToast({ message: "Progress Report compiled! See instructions below.", type: "success" });
     } catch (err) {
       console.error("Error generating report", err);
-      setToast({ message: "Failed to save progress report.", type: "info" });
+      setToast({ message: "Failed to generate progress report. Check console.", type: "info" });
     } finally {
+      // Re-enable blocked stylesheets and remove temporary ones safely
+      styleElList.forEach(el => el.remove());
+      disabledSheets.forEach(({ sheet, disabled }) => {
+        sheet.disabled = disabled;
+      });
       setIsGeneratingReport(false);
     }
   };
@@ -4639,7 +4694,7 @@ export default function App() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setShowProgressReport(false)}
+                onClick={() => { setShowProgressReport(false); setGeneratedReportUrl(null); }}
                 className="absolute inset-0 z-0 cursor-pointer"
               />
               
@@ -4661,36 +4716,70 @@ export default function App() {
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
-                      onClick={() => setShowProgressReport(false)}
+                      onClick={() => { setShowProgressReport(false); setGeneratedReportUrl(null); }}
                       className="px-4 py-2 hover:bg-white/5 text-white/50 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-sm transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
-                    <button
-                      type="button"
-                      disabled={isGeneratingReport}
-                      onClick={handleDownloadReport}
-                      className="px-5 py-2.5 bg-gym-accent text-black font-black uppercase tracking-widest text-[10px] rounded-sm transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-lg shadow-gym-accent/10"
-                    >
-                      {isGeneratingReport ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Capturing...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-3.5 h-3.5 hover:scale-110 transition-transform" />
-                          Save to Photos
-                        </>
-                      )}
-                    </button>
+                    {generatedReportUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => setGeneratedReportUrl(null)}
+                        className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest text-[10px] rounded-sm transition-all hover:brightness-110 active:scale-95 flex items-center gap-2 cursor-pointer shadow-lg shadow-white/5"
+                      >
+                         Edit / Regenerate
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={isGeneratingReport}
+                        onClick={handleDownloadReport}
+                        className="px-5 py-2.5 bg-gym-accent text-black font-black uppercase tracking-widest text-[10px] rounded-sm transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-lg shadow-gym-accent/10"
+                      >
+                        {isGeneratingReport ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Capturing...
+                          </>
+                        ) : (
+                          <>
+                            <Download className="w-3.5 h-3.5 hover:scale-110 transition-transform" />
+                            Save to Photos
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
 
                 {/* Report Card Viewer */}
-                <div className="p-4 sm:p-6 flex-1 overflow-y-auto no-scrollbar bg-black/40 flex justify-center items-start">
-                  {/* Outer scaling wrapper for clean representation of the fixed widescreen poster */}
-                  <div className="w-full overflow-x-auto no-scrollbar flex justify-start lg:justify-center">
+                <div className="p-4 sm:p-6 flex-1 overflow-y-auto no-scrollbar bg-black/40 flex justify-center items-[normal]">
+                  {generatedReportUrl ? (
+                    <div className="w-full max-w-2xl flex flex-col items-center gap-4 py-4 mx-auto">
+                      {/* Guidance Box with custom aesthetic fit */}
+                      <div className="w-full bg-gym-accent/5 border border-gym-accent/20 rounded-sm p-5 text-center space-y-2 animate-pulse">
+                        <span className="text-[11px] font-bold text-gym-accent uppercase tracking-widest block font-mono">✓ Record Compiled Successfully</span>
+                        <p className="text-[11px] text-white/80 font-light leading-relaxed">
+                          <span className="font-bold text-white uppercase font-mono">Mobile Users:</span> Tap and hold (long press) the image below, then select <span className="font-bold text-gym-accent">"Save to Photos"</span> or <span className="font-bold text-gym-accent font-mono">"Add to Photos"</span> to save it directly to your phone's camera roll.
+                        </p>
+                        <p className="text-[10px] text-white/40 font-light font-mono leading-relaxed">
+                          Desktop Users: Right-click the image and select "Save image as..." or click the button above to regenerate.
+                        </p>
+                      </div>
+
+                      {/* Rendered image element - easy for mobile long-press */}
+                      <div className="relative border border-gym-accent/20 rounded-sm shadow-xl overflow-hidden bg-black max-w-full">
+                        <img 
+                          src={generatedReportUrl} 
+                          alt="Compiled Progress Report" 
+                          className="w-full h-auto object-contain select-none"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    /* Outer scaling wrapper for clean representation of the fixed widescreen poster */
+                    <div className="w-full overflow-x-auto no-scrollbar flex justify-start lg:justify-center">
                     {/* The snapshot report card container */}
                     <div 
                       id="progress-report-card"
@@ -5024,6 +5113,7 @@ export default function App() {
                       </div>
                     </div>
                   </div>
+                )}
                 </div>
               </motion.div>
             </div>
