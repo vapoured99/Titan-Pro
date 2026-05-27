@@ -1914,7 +1914,13 @@ export default function App() {
     }
   };
 
-  const handleDownloadReport = async () => {
+  const handleSaveReport = async () => {
+    // If we've already compiled the report card image, directly trigger share/download
+    if (generatedReportUrl) {
+      await saveOrShareImage(generatedReportUrl);
+      return;
+    }
+
     const element = document.getElementById('progress-report-card');
     if (!element) return;
     
@@ -2026,20 +2032,11 @@ export default function App() {
       const imageUrl = canvas.toDataURL('image/png');
       setGeneratedReportUrl(imageUrl);
       
-      // Attempt desktop auto-download
-      try {
-        const link = document.createElement('a');
-        link.download = `iron_archive_progress_report_${new Date().toISOString().split('T')[0]}.png`;
-        link.href = imageUrl;
-        link.click();
-      } catch (e) {
-        console.warn("Direct programmatic download blocked by sandbox; mobile instructions will serve.", e);
-      }
-      
-      setToast({ message: "Progress Report compiled! See instructions below.", type: "success" });
+      // Trigger share/download immediate save experience
+      await saveOrShareImage(imageUrl);
     } catch (err) {
       console.error("Error generating report", err);
-      setToast({ message: "Failed to generate progress report. Check console.", type: "info" });
+      setToast({ message: "Failed to compile progress report. Check console.", type: "info" });
     } finally {
       // Clean up the temporary clone element
       if (clone) {
@@ -2052,6 +2049,64 @@ export default function App() {
         sheet.disabled = disabled;
       });
       setIsGeneratingReport(false);
+    }
+  };
+
+  const saveOrShareImage = async (dataUrl: string) => {
+    const filename = `iron_archive_progress_report_${new Date().toISOString().split('T')[0]}.png`;
+    let sharedSuccessfully = false;
+    
+    // 1. Mobile Sharing first (best user experience for saving to photos on iOS & Android phones)
+    if (navigator.share && navigator.canShare) {
+      try {
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        const file = new File([blob], filename, { type: 'image/png' });
+        
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'Iron Archive Progress Report',
+            text: 'Here is my compiled workouts progress report card!'
+          });
+          sharedSuccessfully = true;
+          setToast({ message: "Share sheet opened! You can tap 'Save Image' or 'Add to Photos'.", type: "success" });
+        }
+      } catch (e) {
+        console.warn("Navigator share was closed or not completed:", e);
+      }
+    }
+
+    // 2. Download Fallback (programmatic click on hidden anchor)
+    if (!sharedSuccessfully) {
+      try {
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = blobUrl;
+        document.body.appendChild(link);
+        link.click();
+        
+        // Clean up object resources
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(blobUrl);
+        }, 300);
+        
+        setToast({ message: "Progress Report downloaded successfully via browser fallback!", type: "success" });
+      } catch (downloadErr) {
+        console.error("Programmatic blob download failed, direct link translation fallback:", downloadErr);
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setToast({ message: "Progress Report downloaded!", type: "success" });
+      }
     }
   };
 
@@ -4821,34 +4876,33 @@ export default function App() {
                     >
                       Cancel
                     </button>
-                    {generatedReportUrl ? (
+                    {generatedReportUrl && (
                       <button
                         type="button"
                         onClick={() => setGeneratedReportUrl(null)}
                         className="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest text-[10px] rounded-sm transition-all hover:brightness-110 active:scale-95 flex items-center gap-2 cursor-pointer shadow-lg shadow-white/5"
                       >
-                         Edit / Regenerate
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled={isGeneratingReport}
-                        onClick={handleDownloadReport}
-                        className="px-5 py-2.5 bg-gym-accent text-black font-black uppercase tracking-widest text-[10px] rounded-sm transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-lg shadow-gym-accent/10"
-                      >
-                        {isGeneratingReport ? (
-                          <>
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            Capturing...
-                          </>
-                        ) : (
-                          <>
-                            <Download className="w-3.5 h-3.5 hover:scale-110 transition-transform" />
-                            Save to Photos
-                          </>
-                        )}
+                        Edit / Regenerate
                       </button>
                     )}
+                    <button
+                      type="button"
+                      disabled={isGeneratingReport}
+                      onClick={handleSaveReport}
+                      className="px-5 py-2.5 bg-gym-accent text-black font-black uppercase tracking-widest text-[10px] rounded-sm transition-all hover:brightness-110 active:scale-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-lg shadow-gym-accent/10"
+                    >
+                      {isGeneratingReport ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Capturing...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-3.5 h-3.5 hover:scale-110 transition-transform" />
+                          Save
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
 
