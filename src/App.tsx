@@ -774,6 +774,36 @@ export default function App() {
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [generatedReportUrl, setGeneratedReportUrl] = useState<string | null>(null);
+  const [reportCardScale, setReportCardScale] = useState(1);
+  const [reportCardHeight, setReportCardHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!showProgressReport || generatedReportUrl) return;
+    const updateScale = () => {
+      const container = document.getElementById('progress-report-container');
+      const card = document.getElementById('progress-report-card');
+      if (container && card) {
+        const containerWidth = container.clientWidth;
+        const cardWidth = 780; // fixed width of progress-report-card
+        const scale = containerWidth < cardWidth ? containerWidth / cardWidth : 1;
+        setReportCardScale(scale);
+        
+        // Measure natural, unscaled height
+        const origTransform = card.style.transform;
+        card.style.transform = 'none';
+        const height = card.offsetHeight;
+        card.style.transform = origTransform;
+        setReportCardHeight(height);
+      }
+    };
+    
+    const timer = setTimeout(updateScale, 150);
+    window.addEventListener('resize', updateScale);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateScale);
+    };
+  }, [showProgressReport, generatedReportUrl]);
 
   const findExerciseByName = (name: string): Exercise | null => {
     if (!name) return null;
@@ -1888,6 +1918,10 @@ export default function App() {
     const element = document.getElementById('progress-report-card');
     if (!element) return;
     
+    // Save original style strings
+    const originalTransform = element.style.transform;
+    const originalWidth = element.style.width;
+
     // Save original stylesheet disabled states and any generated temp <style> elements
     const originalSheets = Array.from(document.styleSheets);
     const styleElList: HTMLStyleElement[] = [];
@@ -1930,11 +1964,24 @@ export default function App() {
         }
       }
 
+      // Temporarily remove scales or bounding limits from the element 
+      // so html2canvas captures a full unscaled, unclipped perfect version.
+      element.style.transform = 'none';
+      element.style.width = '780px';
+      
+      const captureHeight = element.scrollHeight || 1100;
+
       const canvas = await html2canvas(element, {
         backgroundColor: '#050505',
         scale: 2,
         useCORS: true,
-        logging: false
+        logging: false,
+        width: 780,
+        height: captureHeight,
+        windowWidth: 780,
+        windowHeight: captureHeight,
+        scrollX: 0,
+        scrollY: 0
       });
       
       const imageUrl = canvas.toDataURL('image/png');
@@ -1955,6 +2002,12 @@ export default function App() {
       console.error("Error generating report", err);
       setToast({ message: "Failed to generate progress report. Check console.", type: "info" });
     } finally {
+      // Restore original inline scales
+      if (element) {
+        element.style.transform = originalTransform;
+        element.style.width = originalWidth;
+      }
+
       // Re-enable blocked stylesheets and remove temporary ones safely
       styleElList.forEach(el => el.remove());
       disabledSheets.forEach(({ sheet, disabled }) => {
@@ -4779,12 +4832,21 @@ export default function App() {
                     </div>
                   ) : (
                     /* Outer scaling wrapper for clean representation of the fixed widescreen poster */
-                    <div className="w-full overflow-x-auto no-scrollbar flex justify-start lg:justify-center">
-                    {/* The snapshot report card container */}
                     <div 
-                      id="progress-report-card"
-                      className="w-[780px] bg-[#050505] p-8 border border-gym-accent/25 rounded-sm flex flex-col gap-6 font-sans shrink-0 text-white relative select-none"
+                      id="progress-report-container" 
+                      className="w-full overflow-hidden flex justify-center items-start py-4"
+                      style={reportCardHeight ? { height: `${reportCardHeight * reportCardScale}px` } : {}}
                     >
+                      {/* The snapshot report card container */}
+                      <div 
+                        id="progress-report-card"
+                        style={{
+                          transform: `scale(${reportCardScale})`,
+                          transformOrigin: 'top center',
+                          width: '780px'
+                        }}
+                        className="bg-[#050505] p-8 border border-gym-accent/25 rounded-sm flex flex-col gap-6 font-sans shrink-0 text-white relative select-none"
+                      >
                       {/* Corner Tech Anchors */}
                       <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-gym-accent/40" />
                       <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-gym-accent/40" />
