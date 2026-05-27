@@ -53,10 +53,10 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
     return "bg-white/30";
   };
 
-  // Stylized Body Outline (Blocky style from reference image)
-  const bodyOutlinePath = "M100,40 Q110,40 115,50 L115,70 Q130,75 140,90 L145,130 L135,135 L130,110 Q125,180 120,250 L130,350 L110,350 L105,260 L95,260 L90,350 L70,350 L80,250 Q75,180 70,110 L65,135 L55,130 L60,90 Q70,75 85,70 L85,50 Q90,40 100,40 Z";
+  // Stylized Body Outline (Blocky style from reference image) - extended to cover biceps and forearms
+  const bodyOutlinePath = "M100,40 Q110,40 115,50 L115,70 Q130,75 140,90 Q145,110 142,130 Q138,150 134,165 L127,160 Q130,145 130,110 Q125,180 120,250 L130,350 L110,350 L105,260 L95,260 L90,350 L70,350 L80,250 Q75,180 70,110 Q70,145 73,160 L66,165 Q62,150 58,130 Q55,110 60,90 Q70,75 85,70 L85,50 Q90,40 100,40 Z";
 
-  const groupsToShow = ['chest', 'back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core'];
+  const groupsToShow = ['chest', 'back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 py-10">
@@ -68,7 +68,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
           <g fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
             <path d={bodyOutlinePath} />
           </g>
-~
+
           {/* Muscle Groups - Front */}
           {/* Shoulders */}
           <path 
@@ -92,6 +92,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
           <path 
             d="M65,105 Q60,115 62,130 L70,125 Q72,115 70,105 Z M135,105 Q140,115 138,130 L130,125 Q128,115 130,105 Z" 
             fill={getFill('biceps')} 
+            className="transition-colors duration-1000"
+          />
+          {/* Forearms */}
+          <path 
+            d="M62,130 Q62,150 66,165 L73,160 Q70,145 70,125 Z M138,130 Q138,150 134,165 L127,160 Q130,145 130,125 Z" 
+            fill={getFill('forearms')} 
             className="transition-colors duration-1000"
           />
           {/* Quads (Upper Legs) */}
@@ -143,6 +149,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
             fill={getFill('triceps')} 
             className="transition-colors duration-1000"
           />
+          {/* Forearms */}
+          <path 
+            d="M60,130 Q60,150 64,165 L71,160 Q68,145 68,135 Z M140,130 Q140,150 136,165 L129,160 Q132,145 132,135 Z" 
+            fill={getFill('forearms')} 
+            className="transition-colors duration-1000"
+          />
           {/* Glutes */}
           <path 
             d="M82,185 C75,185 75,220 82,225 C90,225 100,215 100,215 C100,215 110,225 118,225 C125,220 125,185 118,185 C110,185 100,195 100,195 C100,195 90,185 82,185 Z" 
@@ -165,7 +177,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
       </div>
 
       <div className="md:col-span-2 mt-8">
-        <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-4">
           {groupsToShow.map(group => (
             <div key={group} className="bg-zinc-950/80 border border-white/15 p-4 rounded-sm flex flex-col items-center text-center backdrop-blur-sm">
               <span className="text-[9px] text-white/40 uppercase font-bold tracking-widest mb-1">

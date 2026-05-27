@@ -1,9 +1,9 @@
 export interface Exercise {
   name: string;
   icon: string;
-  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment';
+  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms';
   instructions?: string[];
-  muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment';
+  muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms';
   legRegion?: 'upper' | 'lower';
   category?: 'compound' | 'isolation';
   equipmentCategory?: string;
@@ -919,6 +919,17 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Slowly lower the dumbbells back to the starting position, maintaining control and a full stretch.",
         "Avoid swinging your arms or lifting your elbows forward during the movement."
       ]
+    },
+    {
+      name: "Crossbody Hammer Curls",
+      icon: "Dumbbell",
+      pool: "biceps",
+      instructions: [
+        "Stand with a dumbbell in each hand, palms facing each other in a neutral grip.",
+        "Keeping your upper arm stationary, curl one dumbbell across your torso towards your opposite shoulder.",
+        "Contract your brachioradialis and forearm muscles at the top.",
+        "Slowly lower the weight back down with control and alternate sides."
+      ]
     }
   ],
   triceps: [
@@ -1016,6 +1027,17 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Press back up using your triceps.",
         "Maintain a straight line from head to heels.",
         "This variant focuses heavily on the triceps compared to a standard push-up."
+      ]
+    },
+    {
+      name: "EZ Bar Skull Crushers",
+      icon: "ArrowDown",
+      pool: "triceps",
+      instructions: [
+        "Lie flat on a bench while holding an EZ bar over your chest with a shoulder-width overhand grip.",
+        "Flex at your elbows to lower the bar in an arc towards your forehead, keeping your upper arms stationary.",
+        "Stop just above your forehead, then contract your triceps to return to the starting position.",
+        "Keep your elbows tucked and avoid flaring them outward during the contraction."
       ]
     }
   ],
@@ -1731,6 +1753,90 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Perform explosive rowing pulls to pull the sled closer, then step back and repeat."
       ]
     }
+  ],
+  forearms: [
+    {
+      name: "Dumbbell Wrist Curls",
+      icon: "Activity",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Sit on a flat bench with your forearms resting flat on your thighs, holding dumbbells with palms facing up.",
+        "Allow your wrists to extend fully down toward the floor, letting the dumbbells roll slightly down into your fingers.",
+        "Curl your wrists upward as high as possible, contracting and squeezing your forearm flexor muscles.",
+        "Lower the weight back down slowly under full tension."
+      ]
+    },
+    {
+      name: "Reverse Barbell Curls",
+      icon: "Activity",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Stand up tall, holding a barbell with a pronated shoulder-width overhand grip (palms facing down).",
+        "Keeping your elbows tucked strictly against your sides, curl the bar upward toward your shoulders.",
+        "Squeeze the brachioradialis forearm muscles at the top of the contraction.",
+        "Slowly lower the barbell back to the start position with controlled speed."
+      ]
+    },
+    {
+      name: "Farmer's Hand Walk Carry",
+      icon: "Dumbbell",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Place two heavy dumbbells or kettlebells on the floor on either side of you.",
+        "Grip them firmly, stand up tall with shoulders set back and down, and engage your core.",
+        "Walk forward in a controlled manner, maintaining a strong, unyielding grip on the handles.",
+        "Keep your spine tall and head up throughout the duration of the walk."
+      ]
+    },
+    {
+      name: "Behind-the-Back Wrist Curls",
+      icon: "Activity",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Stand tall holding a barbell behind your glutes with an overhand grip (palms facing away from your body).",
+        "Allow the bar to roll down slightly into your fingertips.",
+        "Curl your wrists upward, pulling the bar up as high as possible, squeezing your forearm extensors/flexors.",
+        "Slowly return to the start position with controlled speed."
+      ]
+    },
+    {
+      name: "Plate Pinch Carry",
+      icon: "Dumbbell",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Take two smooth olympic weight plates and pinch them together between your thumb and fingers of one hand.",
+        "Lift them off the floor, stand tall, and hold them for a target duration, or walk forward carefully.",
+        "Ensure your shoulders remain packed back and your posture is perfectly upright."
+      ]
+    },
+    {
+      name: "Passive Dead Hang",
+      icon: "Activity",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Hang from a pull-up bar with an overhand grip, slightly wider than shoulder-width apart.",
+        "Keep your arms straight and engage your shoulder blades by pulling them down and together slightly.",
+        "Maintain this hanging position for as long as possible, keeping your core stable and braced."
+      ]
+    },
+    {
+      name: "Towel Grip Pull-ups",
+      icon: "Activity",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Drape one or two thick towels over a secure pull-up bar.",
+        "Grip the towel ends firmly with both hands, using a neutral grip.",
+        "Hang with straight arms, then pull your chest up towards the bar by driving your elbows down.",
+        "Slowly lower yourself back down to a full hang, placing huge demand on your grip and forearm strength."
+      ]
+    }
   ]
 };
 
@@ -1819,6 +1925,19 @@ export function getExerciseCategory(name: string, pool: string): 'compound' | 'i
       n.includes('climber') ||
       n.includes('drag') ||
       n.includes('slam')
+    ) {
+      return 'compound';
+    }
+    return 'isolation';
+  }
+
+  if (pool === 'forearms') {
+    if (
+      n.includes('farmer') || 
+      n.includes('dead hang') || 
+      n.includes('pull-up') || 
+      n.includes('pullup') || 
+      n.includes('carry')
     ) {
       return 'compound';
     }
