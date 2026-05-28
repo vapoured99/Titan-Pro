@@ -2163,8 +2163,8 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       {/* COMBINED HERO SPLIT-GRID: Avatar Showcase Card on the Left, Biometric progression cards stacked on the Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
-        {/* Left Side: Majestic Avatar Showcase Card and Interactive Companion Pet (col-span-5) */}
-        <div className="lg:col-span-5 flex flex-col gap-6 items-center">
+        {/* Left Side: Majestic Avatar Showcase Card (col-span-5) */}
+        <div className="lg:col-span-12 xl:col-span-5 flex flex-col gap-6 items-center">
           <div className={`relative w-full max-w-[440px] lg:max-w-none aspect-[3/4.2] bg-black/50 ${getActiveBorder().id === 'none' ? 'border border-white/10' : getActiveBorder().cardBorderClass} rounded-lg overflow-hidden flex flex-col justify-between p-7 group transition-all duration-700 shadow-3xl ${activeAuraStyling.outerGlow}`}>
             
             {/* Theme Border Corner Elements */}
@@ -2365,9 +2365,228 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
 
           </div>
+        </div>
 
-          {/* COMPANION PET INTERACTION CARD */}
-          <div className="w-full max-w-[440px] bg-black/85 border border-white/20 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
+        {/* Right Side: Dense, High-Fidelity Bento Grid Unified Command Console */}
+        <div className="lg:col-span-12 xl:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4 content-start">
+          
+          {/* Card 1: Integrated Profile & Combat Readiness (Span col-span-2) */}
+          <div className="md:col-span-2 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/40 group shadow-md">
+            {/* Decal background grid patterns */}
+            <div className="absolute inset-0 opacity-[0.03] bg-grid-pattern pointer-events-none" />
+            
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
+              <div className="flex items-center gap-4">
+                {/* Advanced Micro avatar silhouette halo */}
+                <div className="relative w-16 h-16 rounded-md border border-gym-accent/30 overflow-hidden flex-shrink-0 bg-zinc-950 p-0.5 group-hover:border-gym-accent/60 transition-colors">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-gym-accent/10 to-transparent opacity-40" />
+                  <TransparentCharacter 
+                    src={activeCharacterImage} 
+                    alt="Active Micro Outfit" 
+                    className="w-full h-full object-cover rounded-sm transition-transform duration-500 group-hover:scale-[1.08]" 
+                    toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                  />
+                  <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+ 
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-extrabold text-white uppercase font-mono tracking-widest leading-none group-hover:text-gym-accent transition-colors">
+                      {profile?.displayName || "LIFTER_01"}
+                    </h3>
+                    <span className="text-[7.5px] font-mono font-bold tracking-widest text-emerald-400 bg-emerald-950/40 border border-emerald-500/20 px-1.5 py-0.5 rounded uppercase animate-pulse">
+                      AUTHENTICATED
+                    </span>
+                  </div>
+                  <p className="text-[9.5px] text-white/40 uppercase tracking-[0.2em] font-black leading-none mt-1.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gym-accent/60" /> Elite Physical Construct // SYSTEM AGENT
+                  </p>
+                </div>
+              </div>
+ 
+              {/* Level XP summary block */}
+              <div className="w-full sm:w-2/5 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between text-[10px] font-extrabold font-mono text-white/55 tracking-wider">
+                  <div className="flex items-center gap-1.5">
+                    <span className="bg-gym-accent/15 border border-gym-accent/30 text-gym-accent px-1.5 py-0.5 rounded text-[8.5px] font-black tracking-widest uppercase">
+                      RANK LEVEL {level}
+                    </span>
+                  </div>
+                  <span className="text-[9px] text-white/40 font-black">{xp.toLocaleString()} / {xpNeeded.toLocaleString()} XP</span>
+                </div>
+ 
+                {/* Visual Segmented Progress Bar */}
+                <div className="relative w-full h-2.5 bg-zinc-950 border border-white/10 rounded-full p-[2px] overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${xpPercentage}%` }}
+                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                    className="h-full bg-gradient-to-r from-purple-500 via-fuchsia-500 to-gym-accent rounded-full" 
+                    style={{ boxShadow: '0 0 10px rgba(168, 85, 247, 0.45)' }}
+                  />
+                </div>
+                
+                {/* Horizontal Tick guides */}
+                <div className="flex justify-between px-1 text-[7px] text-white/20 font-bold font-mono">
+                  <span>0%</span>
+                  <span>25%</span>
+                  <span>50%</span>
+                  <span>75%</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+ 
+          {/* Card 2: Arena Milestones & Trophy Standing (Col-span-1) */}
+          <div className="col-span-1 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden flex flex-col justify-between min-h-[178px] hover:border-gym-accent/40 group transition-all duration-300 shadow-md">
+            <div className="absolute -top-6 -right-6 w-24 h-24 bg-purple-500/5 rounded-full filter blur-xl pointer-events-none" />
+            
+            <div className="flex items-start gap-3.5 relative z-10">
+              <div className="w-12 h-12 rounded-lg bg-purple-950/15 border border-purple-500/20 flex items-center justify-center shadow-lg transform group-hover:scale-105 transition-transform">
+                <Trophy className="w-6 h-6 text-fuchsia-400" />
+              </div>
+              <div>
+                <span className="text-[8.5px] text-white/30 uppercase tracking-[0.25em] font-black block">ARENA STANDING</span>
+                <h4 className="text-lg font-black text-white font-mono tracking-wider mt-0.5">{rankName}</h4>
+                <p className="text-[8.5px] text-white/40 font-bold uppercase tracking-widest mt-1 flex items-center gap-1">
+                  <Award className="w-3 text-gym-accent" /> {totalVolume.toLocaleString()} Total Volume (KG)
+                </p>
+              </div>
+            </div>
+ 
+            {/* Rank progression indicator bar */}
+            <div className="space-y-1.5 mt-5 relative z-10">
+              <div className="flex justify-between text-[8px] font-black text-white/40 uppercase tracking-widest">
+                <span>PROGRESS TO NEXT TIER</span>
+                <span className="text-gym-accent font-mono">{rankMeta.label}</span>
+              </div>
+              
+              <div className="relative w-full h-1.5 bg-zinc-950 border border-white/5 rounded-full overflow-hidden">
+                <div className="absolute top-0 left-0 h-full bg-gym-accent rounded-full transition-all duration-1000" style={{ width: `${Math.min(100, (rankMeta.current / rankMeta.target) * 100)}%` }} />
+              </div>
+ 
+              <div className="text-right text-[7.5px] text-white/25 font-black uppercase tracking-wider font-mono">
+                {rankMeta.current.toLocaleString()} / {rankMeta.target.toLocaleString()} Power Units
+              </div>
+            </div>
+          </div>
+ 
+          {/* Card 3: Neural Buffs & System Core Calibration (Col-span-1) */}
+          <div className="col-span-1 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden flex flex-col justify-between min-h-[178px] hover:border-gym-accent/40 group transition-all duration-300 shadow-md">
+            <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-gym-accent/5 rounded-full filter blur-xl pointer-events-none" />
+            
+            <div className="relative z-10 flex justify-between items-start">
+              <div>
+                <span className="text-[8.5px] text-white/30 uppercase tracking-[0.25em] font-black block">COGNITIVE SYNERGY</span>
+                <span className="text-lg font-mono font-black text-white tracking-widest block mt-0.5">BUFF METRICS</span>
+              </div>
+              
+              <div className="flex items-center gap-1.5 text-gym-accent text-[8px] font-semibold bg-gym-accent/10 border border-gym-accent/25 px-1.5 py-0.5 rounded font-mono uppercase tracking-widest animate-pulse">
+                <span className="w-1.5 h-1.5 rounded-full bg-gym-accent" /> SYNCS_OK
+              </div>
+            </div>
+ 
+            {/* High fidelity status list */}
+            <div className="space-y-1 mt-3 relative z-10 font-mono text-[9px] uppercase font-bold text-white/45">
+              <div className="flex justify-between border-b border-white/[0.04] pb-1">
+                <span>COMPANION SYNERGY:</span>
+                <span className="text-white text-right shrink-0">LV.{currentPetLevel} {currentPetName}</span>
+              </div>
+              <div className="flex justify-between border-b border-white/[0.04] pb-1">
+                <span>EQUIPPED EMOTE:</span>
+                <span className="text-gym-accent">{equippedEmote === 'none' ? 'NO POSE ACT' : equippedEmote.replace('_', ' ')}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>SYS MULTIPLIER:</span>
+                <span className="text-emerald-400">1.45X EXP RATE</span>
+              </div>
+            </div>
+ 
+            {/* Pulsing visual wave monitor element under buffs */}
+            <div className="mt-2.5 flex items-center justify-between bg-zinc-950/60 border border-white/5 rounded px-2.5 py-1">
+              <span className="text-[7.5px] font-mono font-black tracking-widest text-white/20 uppercase">NEURAL FEEDBACK</span>
+              <div className="w-14 h-4 opacity-50">
+                <svg className="w-full h-full text-gym-accent" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path
+                    d="M 0,15 L 20,15 L 24,5 L 27,25 L 32,1 L 36,18 L 39,15 L 100,15"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{
+                      strokeDasharray: '280',
+                      animation: 'ecgPulse 2.5s linear infinite'
+                    }}
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+ 
+          {/* Card 4: Physiological Core & Biometrics Detailed Hud (Span col-span-2) */}
+          <div className="md:col-span-2 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/40 group shadow-md">
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div>
+                <h4 className="text-[8.5px] text-white/30 uppercase tracking-[0.3em] font-black">PHYSIOLOGICAL CORE</h4>
+                <p className="text-base font-light font-serif italic text-white leading-tight">Biometric Evolution Metrics</p>
+              </div>
+              <span className="text-[8px] text-gym-accent font-mono font-bold uppercase tracking-widest bg-gym-accent/5 border border-gym-accent/10 px-2 py-0.5 rounded-sm">
+                Active Biometrics
+              </span>
+            </div>
+ 
+            {/* Highly customized individual cards with linear layout sliders */}
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 relative z-10">
+              {[
+                { label: 'STR', val: calcStrength, icon: Flame, color: 'text-rose-500', bg: 'hover:border-rose-500/30', barColor: 'from-rose-500 to-red-400', desc: 'Strength', trigger: 'Volume' },
+                { label: 'END', val: calcEndurance, icon: Activity, color: 'text-cyan-400', bg: 'hover:border-cyan-500/30', barColor: 'from-cyan-400 to-blue-500', desc: 'Endurance', trigger: 'Sessions' },
+                { label: 'DIS', val: calcDiscipline, icon: Trophy, color: 'text-amber-400', bg: 'hover:border-amber-500/30', barColor: 'from-amber-400 to-yellow-500', desc: 'Discipline', trigger: 'Streak' },
+                { label: 'REC', val: calcRecovery, icon: Shield, color: 'text-purple-400', bg: 'hover:border-purple-500/30', barColor: 'from-purple-400 to-fuchsia-500', desc: 'Recovery', trigger: 'Sets' },
+                { label: 'CON', val: calcConsistency, icon: Award, color: 'text-emerald-400', bg: 'hover:border-emerald-500/30', barColor: 'from-emerald-400 to-teal-500', desc: 'Consistency', trigger: 'Logs' }
+              ].map((stat, idx) => {
+                const IconComp = stat.icon;
+                return (
+                  <div key={idx} className={`bg-zinc-950 border border-white/10 p-3 rounded flex flex-col justify-between text-left group/stat hover:bg-zinc-900 transition-all ${stat.bg}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="p-1 rounded bg-white/[0.02] border border-white/5">
+                        <IconComp className={`w-3.5 h-3.5 ${stat.color} group-hover/stat:scale-110 transition-transform`} />
+                      </div>
+                      <span className="text-[14px] font-black font-mono text-white leading-none">{stat.val}</span>
+                    </div>
+ 
+                    <div className="mt-2.5">
+                      <span className="text-[9.5px] text-white/70 uppercase tracking-widest font-extrabold block leading-none">{stat.label}</span>
+                      <span className="text-[7.5px] text-white/30 uppercase tracking-tight block leading-tight mt-[2px]">{stat.desc}</span>
+                    </div>
+ 
+                    {/* Compact layout gauge tracker */}
+                    <div className="mt-2.5 space-y-1">
+                      <div className="relative w-full h-1 bg-zinc-900 rounded-full overflow-hidden">
+                        <div className={`absolute top-0 left-0 h-full bg-gradient-to-r ${stat.barColor} rounded-full`} style={{ width: `${stat.val}%` }} />
+                      </div>
+                      <div className="flex justify-between items-center text-[6.5px] text-white/20 font-bold font-mono">
+                        <span>LOW</span>
+                        <span>{stat.trigger}</span>
+                        <span>MAX</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+ 
+        </div>
+
+      </div>
+
+      {/* SECOND ROW COMPANION & STORAGE GRID */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-8">
+        
+        {/* Left Row 2: Interactive Companion Pet */}
+        <div className="lg:col-span-12 xl:col-span-5 flex flex-col items-center w-full">
+          <div className="w-full max-w-[440px] xl:max-w-none bg-black/85 border border-white/20 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
             {/* Background cyan/pink/amber gradient particle glow */}
             <div 
               className="absolute -right-12 -top-12 w-32 h-32 rounded-full filter blur-3xl opacity-20 pointer-events-none transition-all duration-700" 
@@ -2513,212 +2732,80 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           </div>
         </div>
 
-        {/* Right Side: Dynamic Progression and Biometrics block squeezed elegantly next to the card (span-7 on desktop) */}
-        <div className="lg:col-span-12 xl:col-span-7 flex flex-col justify-between gap-6">
+        {/* Right Row 2: Customization Shop Tabs & Slider */}
+        <div className="lg:col-span-12 xl:col-span-7 flex flex-col gap-4">
           
-          {/* Box 1: Profile & Level/XP Status Card */}
-          <div className="bg-black/85 border border-white/20 rounded-lg p-6 relative overflow-hidden flex-1 flex flex-col justify-center">
-            <div className="absolute top-0 right-0 p-4 opacity-5">
-              <Shield className="w-24 h-24 text-white" />
-            </div>
-
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              
-              <div className="flex items-center gap-4">
-                {/* Micro avatar profile */}
-                <div className="relative w-14 h-14 rounded-md border border-gym-accent/45 overflow-hidden flex-shrink-0 bg-transparent">
-                  <TransparentCharacter 
-                    src={activeCharacterImage} 
-                    alt="Active Micro Outfit" 
-                    className="w-full h-full object-cover" 
-                    toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
-                  />
-                  <div className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-gym-accent transform scale-90 border border-black animate-pulse-slow" />
-                </div>
-
-                <div>
-                  <h3 className="text-2xl font-black text-theme-text uppercase font-mono tracking-wider flex items-center gap-2">
-                    {profile?.displayName || "LIFTER_01"}
-                  </h3>
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest font-black leading-snug">
-                    Elite Physical Construct
-                  </p>
-                </div>
-              </div>
-
-              {/* Level circle and Exp Bar */}
-              <div className="w-full md:w-3/5 flex flex-col gap-2">
-                <div className="flex items-center justify-between text-xs font-bold font-mono text-white/70">
-                  <div className="flex items-center gap-2">
-                    <span className="bg-gym-accent/10 border border-gym-accent/30 text-gym-accent px-1.5 py-0.5 rounded-sm text-[10px]">
-                      LEVEL {level}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-white/40 font-black">{xp.toLocaleString()} / {xpNeeded.toLocaleString()} XP</span>
-                </div>
-
-                {/* XP Progress Slider bar */}
-                <div className="relative w-full h-2 bg-white/[0.04] border border-white/10 rounded-full overflow-hidden p-[1px]">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${xpPercentage}%` }}
-                    transition={{ duration: 1, ease: 'easeOut' }}
-                    className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-400 rounded-full" 
-                    style={{ boxShadow: '0 0 10px rgba(168, 85, 247, 0.5)' }}
-                  />
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Box 2: Competitive Rank Grid */}
-          <div className="bg-black/85 border border-white/20 rounded-lg p-6 overflow-hidden relative flex-1 flex flex-col justify-center">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-purple-950/20 border border-purple-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(168,85,247,0.2)]">
-                  <Trophy className="w-8 h-8 text-fuchsia-400" />
-                </div>
-                <div>
-                  <span className="text-[10px] text-white/30 uppercase tracking-[0.3em] font-black">CURRENT RANK</span>
-                  <h4 className="text-2xl font-black text-white font-mono tracking-wider">{rankName}</h4>
-                  <p className="text-[10px] text-white/40 block mt-0.5 font-bold uppercase tracking-widest flex items-center gap-1">
-                    <Award className="w-3.5 h-3.5 text-gym-accent" /> {totalVolume.toLocaleString()} Total KG Volume Lifted
-                  </p>
-                </div>
-              </div>
-
-              {/* Rank Progression */}
-              <div className="w-full md:w-1/2 space-y-2">
-                <div className="flex justify-between text-[10px] font-black text-white/40 uppercase tracking-widest leading-none">
-                  <span>Progress to Next Rank</span>
-                  <span className="text-gym-accent font-mono">{rankMeta.label}</span>
-                </div>
-                
-                <div className="relative w-full h-1.5 bg-white/[0.04] border border-white/5 rounded-full overflow-hidden">
-                  <div className="absolute top-0 left-0 h-full bg-gym-accent rounded-full" style={{ width: `${Math.min(100, (rankMeta.current / rankMeta.target) * 100)}%` }} />
-                </div>
-
-                <div className="text-right text-[8px] text-white/20 font-black uppercase tracking-wider">
-                  {rankMeta.current.toLocaleString()} / {rankMeta.target.toLocaleString()} Power Units
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Box 3: Physiological Core metrics block */}
-          <div className="bg-black/85 border border-white/20 rounded-lg p-6 flex-1 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h4 className="text-[10px] text-white/30 uppercase tracking-[0.3em] font-black">Physiological Core</h4>
-                <p className="text-base font-light font-serif italic text-white leading-tight">Biometric Evolution Metrics</p>
-              </div>
-              <span className="text-[9px] text-gym-accent font-mono font-bold uppercase tracking-widest bg-gym-accent/5 border border-gym-accent/10 px-2 py-1 rounded-sm">
-                Active Rating
-              </span>
-            </div>
-
-            <div className="grid grid-cols-5 gap-3">
-              {[
-                { label: 'STR', val: calcStrength, icon: Flame, color: 'text-rose-500', desc: 'Volume' },
-                { label: 'END', val: calcEndurance, icon: Activity, color: 'text-cyan-400', desc: 'Sessions' },
-                { label: 'DIS', val: calcDiscipline, icon: Trophy, color: 'text-amber-400', desc: 'Streak' },
-                { label: 'REC', val: calcRecovery, icon: Shield, color: 'text-purple-400', desc: 'Sets' },
-                { label: 'CON', val: calcConsistency, icon: Award, color: 'text-emerald-400', desc: 'Logs' }
-              ].map((stat, idx) => {
-                const IconComp = stat.icon;
-                return (
-                  <div key={idx} className="bg-zinc-900/90 border border-white/15 p-3 rounded-md flex flex-col items-center justify-between text-center group hover:bg-zinc-800/95 hover:border-white/25 transition-all">
-                    <IconComp className={`w-4 h-4 ${stat.color} mb-2 group-hover:scale-110 transition-transform`} />
-                    <span className="text-[10px] text-white/50 uppercase tracking-wider font-extrabold mb-0.5">{stat.label}</span>
-                    <span className="text-base font-black font-mono text-white leading-none mb-0.5">{stat.val}</span>
-                    <span className="text-[8px] text-white/20 font-black uppercase tracking-tighter leading-none">{stat.desc}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* BOTTOM SECTION: Customization Shop Tabs & Slider */}
-      <div className="space-y-6">
-        
-        {/* Navigation Categories inside Shop */}
-        <div className="relative border border-white/20 bg-black/85 rounded-lg flex items-center overflow-hidden">
-          {/* Scroll Left indicator/button */}
-          {showLeftArrow && (
-            <button 
-              onClick={() => scrollTabsNext('left')}
-              className="absolute left-0 inset-y-0 px-2 bg-gradient-to-r from-black/90 via-black/80 to-transparent text-white/60 hover:text-white z-40 flex items-center transition-all cursor-pointer"
-              title="Scroll Left"
-            >
-              <div className="bg-zinc-900/90 hover:bg-zinc-800 border border-white/10 rounded-full p-2.5 shadow-xl active:scale-90 transition-all">
-                <ChevronLeft className="w-4 h-4 text-gym-accent" />
-              </div>
-            </button>
-          )}
-
-          {/* Tab lists */}
-          <div 
-            ref={tabContainerRef}
-            className="flex flex-1 overflow-x-auto no-scrollbar scroll-smooth relative"
-          >
-            {[
-              { id: 'operatives', label: 'Operatives' },
-              { id: 'auras', label: 'Auras' },
-              { id: 'emotes', label: 'Emotes' },
-              { id: 'titles', label: 'Titles' },
-              { id: 'operativeBorders', label: 'Operative Borders' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                data-active={activeTab === tab.id ? "true" : "false"}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-8 py-5 text-xs font-black uppercase tracking-[0.2em] relative cursor-pointer font-sans transition-all flex-shrink-0 ${
-                  activeTab === tab.id ? 'text-gym-accent bg-white/[0.01]' : 'text-white/40 hover:text-white/80'
-                }`}
+          {/* Navigation Categories inside Shop */}
+          <div className="relative border border-white/20 bg-black/85 rounded-lg flex items-center overflow-hidden">
+            {/* Scroll Left indicator/button */}
+            {showLeftArrow && (
+              <button 
+                onClick={() => scrollTabsNext('left')}
+                className="absolute left-0 inset-y-0 px-2 bg-gradient-to-r from-black/90 via-black/80 to-transparent text-white/60 hover:text-white z-40 flex items-center transition-all cursor-pointer"
+                title="Scroll Left"
               >
-                {tab.label}
-                {activeTab === tab.id && (
-                  <motion.div 
-                    layoutId="avatar-shop-active-line"
-                    className="absolute bottom-0 inset-x-0 h-0.5 bg-gym-accent" 
-                  />
-                )}
+                <div className="bg-zinc-900/90 hover:bg-zinc-800 border border-white/10 rounded-full p-2.5 shadow-xl active:scale-90 transition-all">
+                  <ChevronLeft className="w-4 h-4 text-gym-accent" />
+                </div>
               </button>
-            ))}
+            )}
+
+            {/* Tab lists */}
+            <div 
+              ref={tabContainerRef}
+              className="flex flex-1 overflow-x-auto no-scrollbar scroll-smooth relative"
+            >
+              {[
+                { id: 'operatives', label: 'Operatives' },
+                { id: 'auras', label: 'Auras' },
+                { id: 'emotes', label: 'Emotes' },
+                { id: 'titles', label: 'Titles' },
+                { id: 'operativeBorders', label: 'Borders' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  data-active={activeTab === tab.id ? "true" : "false"}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-6 py-4.5 text-xs font-black uppercase tracking-[0.2em] relative cursor-pointer font-sans transition-all flex-shrink-0 ${
+                    activeTab === tab.id ? 'text-gym-accent bg-white/[0.01]' : 'text-white/40 hover:text-white/80'
+                  }`}
+                >
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <motion.div 
+                      layoutId="avatar-shop-active-line"
+                      className="absolute bottom-0 inset-x-0 h-0.5 bg-gym-accent" 
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* Scroll Right indicator/button */}
+            {showRightArrow && (
+              <button 
+                onClick={() => scrollTabsNext('right')}
+                className="absolute right-0 inset-y-0 px-2 bg-gradient-to-l from-black/90 via-black/80 to-transparent text-white/60 hover:text-white z-40 flex items-center transition-all cursor-pointer"
+                title="Scroll Right"
+              >
+                <div className="bg-zinc-900/90 hover:bg-zinc-800 border border-white/10 rounded-full p-2.5 shadow-xl active:scale-90 transition-all">
+                  <ChevronRight className="w-4 h-4 text-gym-accent" />
+                </div>
+              </button>
+            )}
           </div>
 
-          {/* Scroll Right indicator/button */}
-          {showRightArrow && (
-            <button 
-              onClick={() => scrollTabsNext('right')}
-              className="absolute right-0 inset-y-0 px-2 bg-gradient-to-l from-black/90 via-black/80 to-transparent text-white/60 hover:text-white z-40 flex items-center transition-all cursor-pointer"
-              title="Scroll Right"
-            >
-              <div className="bg-zinc-900/90 hover:bg-zinc-800 border border-white/10 rounded-full p-2.5 shadow-xl active:scale-90 transition-all">
-                <ChevronRight className="w-4 h-4 text-gym-accent" />
-              </div>
-            </button>
-          )}
-        </div>
-
-        {/* Categories rendering grids */}
-        <div className="p-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
-            >
+          {/* Categories rendering grids */}
+          <div className="py-2">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4"
+              >
               {/* Tab 1: Operatives Outfits */}
               {activeTab === 'operatives' && OUTFITS.map((outfit) => {
                 const isUnlocked = unlockedOutfits.includes(outfit.id);
@@ -2995,5 +3082,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       </div>
 
     </div>
-  );
+
+  </div>
+);
 }
