@@ -53,6 +53,7 @@ import {
   Area
 } from 'recharts';
 import AnatomyChart from './components/AnatomyChart';
+import AICoach from './components/AICoach';
 import AvatarPanel, { OUTFITS, TITLES } from './components/AvatarPanel';
 import { AvatarDisplayCard } from './components/AvatarDisplayCard';
 import { TransparentCharacter } from './components/TransparentCharacter';
@@ -2762,6 +2763,9 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+
+                {/* AI Tactical Operative Coach Bar */}
+                <AICoach sets={sessionSets} archivedWorkouts={archivedWorkouts} userId={profile?.id || 'anonymous'} />
               </motion.div>
             );
           })() : activeView === 'library' ? (
