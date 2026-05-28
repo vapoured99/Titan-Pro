@@ -354,7 +354,7 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
       <div className="relative z-10 flex items-center justify-between transition-all duration-300 w-full border-t border-white/10 pt-4">
         <div>
           <span className="text-[8px] uppercase tracking-[0.34em] text-white/30 block leading-tight">Athletic Title</span>
-          <span className="text-2xl font-light italic font-serif text-gym-accent tracking-wide leading-none select-none drop-shadow">
+          <span className="text-2xl font-light italic font-serif text-white tracking-wide leading-none select-none drop-shadow">
             {getActiveTitle().name.toUpperCase()}
           </span>
           <span className="text-[10px] text-white/40 block mt-1 tracking-normal font-light italic">{getActiveTitle().desc}</span>

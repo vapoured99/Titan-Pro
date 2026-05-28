@@ -2376,8 +2376,8 @@ export default function App() {
       </header>
 
       {/* Tabs / Navigation */}
-      <nav className="flex items-center gap-6 mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth">
-        <div className="flex items-center gap-6 md:gap-8 flex-nowrap">
+      <nav className="flex items-center mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth w-full">
+        <div className="flex items-center gap-6 md:gap-8 flex-nowrap w-full">
           {[
             { id: 'console', label: 'Console', icon: LayoutDashboard },
             { id: 'workout', label: 'Programming', icon: Dumbbell },
@@ -2386,7 +2386,6 @@ export default function App() {
             { id: 'anatomy', label: 'Anatomy', icon: Layout },
             { id: 'session', label: 'Session', icon: History },
             { id: 'routines', label: 'Routines', icon: Repeat },
-            { id: 'avatar', label: 'Avatar', icon: Crown, isAvatar: true },
           ].map(nav => (
             <button
               key={nav.id}
@@ -2401,9 +2400,35 @@ export default function App() {
             >
               {nav.id === 'routines' ? (
                 <Repeat className={`w-4 h-4 shrink-0 ${activeView === 'routines' ? 'text-gym-accent' : ''}`} />
-              ) : nav.isAvatar ? (
-                <Crown className={`w-4 h-4 shrink-0 ${activeView === 'avatar' ? 'text-gym-accent' : 'text-theme-text-muted/65'}`} />
               ) : null}
+              {nav.id !== 'routines' && nav.label}
+              {activeView === nav.id && (
+                <motion.div 
+                  layoutId="nav-underline" 
+                  className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav" 
+                />
+              )}
+            </button>
+          ))}
+
+          {/* Flexible spacer to push Avatar to the right side on desktop while allowing elegant sliding */}
+          <div className="flex-grow min-w-[24px] md:min-w-[48px]" />
+
+          {[
+            { id: 'avatar', label: 'Avatar', icon: Crown, isAvatar: true },
+          ].map(nav => (
+            <button
+              key={nav.id}
+              onClick={() => {
+                setActiveView(nav.id as any);
+                saveSettings({ activeView: nav.id });
+              }}
+              className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 shrink-0 select-none ${
+                activeView === nav.id ? "text-theme-text" : "text-theme-text-muted hover:text-theme-text"
+              }`}
+              title={nav.label}
+            >
+              <Crown className={`w-4 h-4 shrink-0 ${activeView === 'avatar' ? 'text-gym-accent' : 'text-theme-text-muted/65'}`} />
               {nav.label}
               {activeView === nav.id && (
                 <motion.div 
