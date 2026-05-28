@@ -34,7 +34,9 @@ import {
   Download,
   Upload,
   Repeat,
-  Edit2
+  Edit2,
+  LayoutDashboard,
+  Coins
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -50,7 +52,9 @@ import {
   Area
 } from 'recharts';
 import AnatomyChart from './components/AnatomyChart';
-import AvatarPanel from './components/AvatarPanel';
+import AvatarPanel, { OUTFITS, TITLES } from './components/AvatarPanel';
+import { AvatarDisplayCard } from './components/AvatarDisplayCard';
+import { TransparentCharacter } from './components/TransparentCharacter';
 import { 
   auth, 
   db, 
@@ -868,7 +872,7 @@ export default function App() {
   // State for session view selection
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null);
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
-  const [activeView, setActiveView] = useState<'workout' | 'library' | 'progress' | 'session' | 'routines' | 'profile' | 'anatomy' | 'avatar'>('workout');
+  const [activeView, setActiveView] = useState<'console' | 'workout' | 'library' | 'progress' | 'session' | 'routines' | 'profile' | 'anatomy' | 'avatar'>('console');
   const [routines, setRoutines] = useState<any[]>([]);
   const [savingRoutineWorkout, setSavingRoutineWorkout] = useState<any | null>(null);
   const [expandedRoutinesDays, setExpandedRoutinesDays] = useState<Record<number, boolean>>({});
@@ -1026,7 +1030,7 @@ export default function App() {
           const initialProfile: UserProfile = {
             startDate: new Date().toISOString(),
             streakCount: 0,
-            activeView: 'workout',
+            activeView: 'console',
             displayName: currentUser.displayName || "",
             photoURL: currentUser.photoURL || ""
           };
@@ -2303,6 +2307,10 @@ export default function App() {
           --theme-text-muted: ${activeTheme.testMuted} !important;
           --theme-text-subtle: ${activeTheme.testSubtle} !important;
         }
+        @keyframes ecgPulse {
+          0% { stroke-dashoffset: 200; }
+          100% { stroke-dashoffset: 0; }
+        }
       `}</style>
       {/* Background Atmosphere */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -2368,15 +2376,17 @@ export default function App() {
       </header>
 
       {/* Tabs / Navigation */}
-      <nav className="flex items-center justify-between gap-4 mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar">
-        <div className="flex items-center gap-8">
+      <nav className="flex items-center gap-6 mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth">
+        <div className="flex items-center gap-6 md:gap-8 flex-nowrap">
           {[
+            { id: 'console', label: 'Console', icon: LayoutDashboard },
             { id: 'workout', label: 'Programming', icon: Dumbbell },
             { id: 'library', label: 'Library', icon: Search },
             { id: 'progress', label: 'Progress', icon: Scale },
             { id: 'anatomy', label: 'Anatomy', icon: Layout },
             { id: 'session', label: 'Session', icon: History },
             { id: 'routines', label: 'Routines', icon: Repeat },
+            { id: 'avatar', label: 'Avatar', icon: Crown, isAvatar: true },
           ].map(nav => (
             <button
               key={nav.id}
@@ -2384,42 +2394,16 @@ export default function App() {
                 setActiveView(nav.id as any);
                 saveSettings({ activeView: nav.id });
               }}
-              className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 ${
+              className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 shrink-0 select-none ${
                 activeView === nav.id ? "text-theme-text" : "text-theme-text-muted hover:text-theme-text"
               }`}
               title={nav.id === 'routines' ? 'Routines' : nav.label}
             >
               {nav.id === 'routines' ? (
-                <Repeat className={`w-4 h-4 ${activeView === 'routines' ? 'text-gym-accent' : ''}`} />
-              ) : (
-                nav.label
-              )}
-              {activeView === nav.id && (
-                <motion.div 
-                  layoutId="nav-underline" 
-                  className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav" 
-                />
-              )}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-4 pl-8 border-l border-white/10">
-          {[
-            { id: 'avatar', label: 'Avatar', icon: Crown }
-          ].map(nav => (
-            <button
-              key={nav.id}
-              onClick={() => {
-                setActiveView(nav.id as any);
-                saveSettings({ activeView: nav.id });
-              }}
-              className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 ${
-                activeView === nav.id ? "text-theme-text" : "text-theme-text-muted hover:text-theme-text"
-              }`}
-              title={nav.label}
-            >
-              <Crown className={`w-4 h-4 ${activeView === 'avatar' ? 'text-gym-accent' : 'text-theme-text-muted/65'}`} />
+                <Repeat className={`w-4 h-4 shrink-0 ${activeView === 'routines' ? 'text-gym-accent' : ''}`} />
+              ) : nav.isAvatar ? (
+                <Crown className={`w-4 h-4 shrink-0 ${activeView === 'avatar' ? 'text-gym-accent' : 'text-theme-text-muted/65'}`} />
+              ) : null}
               {nav.label}
               {activeView === nav.id && (
                 <motion.div 
@@ -2439,7 +2423,322 @@ export default function App() {
             <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-center py-20">
               <Loader2 className="w-8 h-8 text-gym-accent animate-spin" />
             </motion.div>
-          ) : activeView === 'library' ? (
+          ) : activeView === 'console' ? (() => {
+            const level = profile?.avatarLevel ?? 1;
+            const xp = profile?.avatarXp ?? 0;
+            const credits = profile?.avatarCredits ?? 100000;
+            const equippedOutfit = profile?.equippedOutfit ?? 'vanguard_cadet';
+            const activeOutfit = OUTFITS.find(o => o.id === equippedOutfit) || OUTFITS[0];
+            const equippedTitleId = profile?.equippedTitle ?? 'lifter';
+            const activeTitleName = TITLES.find(t => t.id === equippedTitleId)?.name || 'Lifter';
+
+            const getXpNeededForLevel = (lvl: number) => {
+              return lvl * 500 + 2000;
+            };
+            const xpNeeded = getXpNeededForLevel(level);
+            const xpPercentage = Math.min(100, (xp / xpNeeded) * 100);
+
+            const getWorkoutCalories = (w: any) => {
+              if (w.estimatedCalories !== undefined && w.estimatedCalories > 0) {
+                return w.estimatedCalories;
+              }
+              return calculateCaloriesBurned(w.sets || [], profile);
+            };
+
+            const dailyMapConsole: Record<string, { date: string; calories: number; count: number }> = {};
+            archivedWorkouts.forEach(w => {
+              const cal = getWorkoutCalories(w);
+              const d = w.date || new Date().toISOString().split('T')[0];
+              if (!dailyMapConsole[d]) {
+                dailyMapConsole[d] = { date: d, calories: 0, count: 0 };
+              }
+              dailyMapConsole[d].calories += cal;
+              dailyMapConsole[d].count += 1;
+            });
+            const sortedDaysConsole = Object.values(dailyMapConsole).sort((a, b) => b.date.localeCompare(a.date));
+            const chronologicalDaysConsole = [...sortedDaysConsole].sort((a, b) => a.date.localeCompare(b.date));
+
+            return (
+              <motion.div
+                key="console-view"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="space-y-8 pb-16 animate-fade-in"
+              >
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6">
+                  <div>
+                    <h3 className="text-xl font-light italic font-serif flex items-center gap-3">
+                      Athlete Command Console
+                    </h3>
+                    <p className="text-[10px] text-white/30 uppercase tracking-[0.25em] font-bold">Biometric &amp; Combat Readiness Command Center</p>
+                  </div>
+                  <div className="flex items-center gap-3 bg-white/[0.02] border border-white/5 px-4 py-2 rounded-sm text-xs font-mono text-white/60">
+                    <span className="w-2 h-2 rounded-full bg-gym-accent animate-pulse" />
+                    <span>SYS_STATUS: ONLINE</span>
+                    <div className="w-14 h-5 relative flex items-center justify-center opacity-75 border-l border-white/10 pl-3">
+                      <svg className="w-full h-full text-gym-accent" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                          d="M 0,15 L 20,15 L 24,10 L 27,24 L 32,2 L 36,20 L 39,15 L 100,15"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{
+                            strokeDasharray: '280',
+                            animation: 'ecgPulse 2.5s linear infinite'
+                          }}
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bento Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Card 1: Avatar */}
+                  <div className="flex flex-col gap-4 h-full">
+                    {/* Level & XP Progression Info */}
+                    <div className="bg-black/70 border border-white/10 rounded-sm p-4 backdrop-blur-md">
+                      <div className="flex justify-between items-baseline mb-1">
+                        <span className="text-xs font-bold text-white tracking-widest font-mono uppercase">LVL. {level}</span>
+                        <span className="text-[9px] text-white/40 font-mono font-bold">{xp} / {xpNeeded} XP</span>
+                      </div>
+                      <div className="w-full bg-white/5 border border-white/10 h-2 rounded-sm overflow-hidden p-0.5">
+                        <motion.div 
+                           initial={{ width: 0 }}
+                           animate={{ width: `${xpPercentage}%` }}
+                           className="h-full bg-gradient-to-r from-gym-accent to-gym-accent-light rounded-sm"
+                           transition={{ duration: 1 }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Elite Live-Updating Avatar Showcase Display Card */}
+                    <div className="flex-1">
+                      <AvatarDisplayCard profile={profile} currentUser={currentUser} />
+                    </div>
+                  </div>
+
+                  {/* Card 2: Anatomy */}
+                  <div className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md">
+                    <div>
+                      <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest mb-1 font-mono">Physiological Evolution</h4>
+                      <p className="text-xs text-white/30 font-light leading-snug">Real-time dynamic muscle density simulation. Dark sectors denote untapped muscle pools.</p>
+                    </div>
+                    
+                    <div className="flex-1 flex items-center justify-center my-2">
+                      <AnatomyChart sets={sessionSets} compact={true} />
+                    </div>
+
+                    <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                      <div className="text-[9px] uppercase tracking-widest text-white/30 font-mono font-bold leading-tight">
+                        Recruited: {sessionSets.length} Sets Recorded
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setActiveView('anatomy')}
+                        className="text-[9px] text-gym-accent uppercase tracking-widest font-bold font-mono border-b border-gym-accent/20 hover:border-gym-accent transition-all cursor-pointer"
+                      >
+                        ANATOMY_REPORT &rarr;
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Card 3: Next Exercises */}
+                  <div className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md">
+                    <div>
+                      <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest mb-1 font-mono">Next Active Exercises</h4>
+                      <p className="text-xs text-white/30 font-light leading-snug">Mapped from training programming active modules.</p>
+                    </div>
+
+                    <div className="flex-1 my-4 overflow-y-auto max-h-[190px] no-scrollbar pr-1">
+                      {(() => {
+                        const daysWithData = DAY_CONFIG.map((day, di) => ({ day, di, exercises: currentDays[di] || [] })).filter(d => d.exercises.length > 0);
+                        
+                        if (daysWithData.length === 0) {
+                          return (
+                            <div className="h-full flex flex-col items-center justify-center py-6 text-center">
+                              <Dumbbell className="w-8 h-8 text-white/10 mb-2" />
+                              <p className="text-white/40 font-light font-serif italic text-xs leading-normal">No active routine mapped.</p>
+                              <button 
+                                onClick={() => setActiveView('workout')}
+                                className="mt-3 text-[9px] text-gym-accent font-bold uppercase tracking-widest border-b border-gym-accent/30 hover:border-gym-accent transition-all cursor-pointer"
+                              >
+                                Load Routine In Programming
+                              </button>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-4">
+                            {daysWithData.map(({ day, di, exercises }) => (
+                              <div key={di} className="border-l border-gym-accent/20 pl-3">
+                                <div className="flex items-center justify-between mb-1.5">
+                                  <span className="text-[8px] font-mono text-gym-accent uppercase tracking-widest font-bold">DAY {day.label}</span>
+                                  <span className="text-[9px] font-light text-white/70 italic font-serif">{day.name}</span>
+                                </div>
+                                <div className="space-y-1">
+                                  {exercises.map((ex, idx) => (
+                                    <div key={idx} className="flex justify-between items-center text-xs text-white/80 py-0.5 hover:text-white transition-colors">
+                                      <span className="font-light truncate max-w-[150px]">{ex.name}</span>
+                                      <span className="text-[8px] font-mono text-white/30 tracking-wider uppercase font-bold px-1.5 py-0.5 bg-white/[0.02] border border-white/5 rounded-sm">{ex.pool || ex.muscleGroup || 'Gym'}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                      <div className="text-[9px] uppercase tracking-widest text-white/30 font-mono font-bold leading-tight">
+                        Tactical Agenda Mapped
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setActiveView('workout')}
+                        className="text-[9px] text-gym-accent uppercase tracking-widest font-bold font-mono border-b border-gym-accent/20 hover:border-gym-accent transition-all cursor-pointer"
+                      >
+                        EDIT_PROGRAM &rarr;
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Third Row: Micro Progress Graphs */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Graph 1: Weight Trend */}
+                  <div className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md">
+                    <div className="mb-4">
+                      <div className="flex justify-between items-baseline">
+                        <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest font-mono">Weight Density</h4>
+                        <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">{profile?.bodyweight ? `${profile.bodyweight} KG` : "N/A"}</span>
+                      </div>
+                      <p className="text-[10px] text-white/20 tracking-wider">Dynamic change tracking over time</p>
+                    </div>
+                    
+                    <div className="h-[120px] w-full">
+                      {weightHistory.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-sm border border-dashed border-white/5">
+                          <TrendingUp className="w-5 h-5 text-white/10 mb-1" />
+                          <span className="text-[9px] text-white/20 font-bold">No weight logs recorded</span>
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart 
+                            data={(() => {
+                               const grouped = weightHistory.reduce((acc, entry) => {
+                                 acc[entry.date] = entry; 
+                                 return acc;
+                               }, {} as Record<string, WeightEntry>);
+                               return (Object.values(grouped) as WeightEntry[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                            })()} 
+                            margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                          >
+                            <defs>
+                              <linearGradient id="colorWeightConsole" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
+                                <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                            <XAxis dataKey="date" stroke="#ffffff15" tick={{ fontSize: 8 }} />
+                            <YAxis stroke="#ffffff15" tick={{ fontSize: 8 }} domain={['dataMin - 2', 'dataMax + 2']} />
+                            <Area type="monotonous" dataKey="weight" stroke={activeTheme.accent} strokeWidth={1.5} fillOpacity={1} fill="url(#colorWeightConsole)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Graph 2: Volume Trend */}
+                  <div className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md">
+                    <div className="mb-4">
+                      <div className="flex justify-between items-baseline">
+                        <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest font-mono">Volume Progression</h4>
+                        <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">
+                          {archivedWorkouts.length > 0 ? `${Math.round(archivedWorkouts.reduce((acc, w) => acc + (w.totalVolume || 0), 0) / archivedWorkouts.length)} KG (avg)` : "0 KG"}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-white/20 tracking-wider">Lifting volumes across physical cycles</p>
+                    </div>
+
+                    <div className="h-[120px] w-full">
+                      {archivedWorkouts.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-sm border border-dashed border-white/5">
+                          <Activity className="w-5 h-5 text-white/10 mb-1" />
+                          <span className="text-[9px] text-white/20 font-bold">No sessions completed yet</span>
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart 
+                            data={getVolumeData()} 
+                            margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                          >
+                            <defs>
+                              <linearGradient id="colorVolumeConsole" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
+                                <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                            <XAxis dataKey="date" stroke="#ffffff15" tick={{ fontSize: 8 }} />
+                            <YAxis stroke="#ffffff15" tick={{ fontSize: 8 }} />
+                            <Area type="monotonous" dataKey="volume" stroke={activeTheme.accent} strokeWidth={1.5} fillOpacity={1} fill="url(#colorVolumeConsole)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Graph 3: Calorie Outflow Trend */}
+                  <div className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md">
+                    <div className="mb-4">
+                      <div className="flex justify-between items-baseline">
+                        <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest font-mono">Caloric Expenditure</h4>
+                        <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">
+                          {archivedWorkouts.length > 0 ? `${Math.round(archivedWorkouts.reduce((sum, w) => sum + getWorkoutCalories(w), 0))} KCAL` : "0 KCAL"}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-white/20 tracking-wider">Dynamic active energy burnout</p>
+                    </div>
+
+                    <div className="h-[120px] w-full">
+                      {chronologicalDaysConsole.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-sm border border-dashed border-white/5">
+                          <Flame className="w-5 h-5 text-white/10 mb-1" />
+                          <span className="text-[9px] text-white/20 font-bold">No calories burned logged yet</span>
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart 
+                            data={chronologicalDaysConsole} 
+                            margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                          >
+                            <defs>
+                              <linearGradient id="colorCalorieConsole" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
+                                <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                            <XAxis dataKey="date" stroke="#ffffff15" tick={{ fontSize: 8 }} />
+                            <YAxis stroke="#ffffff15" tick={{ fontSize: 8 }} />
+                            <Area type="monotonous" dataKey="calories" stroke={activeTheme.accent} strokeWidth={1.5} fillOpacity={1} fill="url(#colorCalorieConsole)" />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })() : activeView === 'library' ? (
             <motion.div 
               key="library"
               initial={{ opacity: 0, y: 10 }}

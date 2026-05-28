@@ -73,7 +73,7 @@ import imgLumenSentinelFinal from '../assets/images/lumen_sentinel_final_1779446
 
 // Newly generated Final Forms
 import imgVanguardFinal from '../assets/images/vanguard_final_1779446997564.png';
-import imgNeonStrikerFinal from '../assets/images/neon_striker_final_1779447016669.png';
+import imgNeonStrikerFinal from '../assets/images/neon_striker_final_1779960441556.png';
 import imgShadowHunterFinal from '../assets/images/shadow_hunter_final_1779447034179.png';
 import imgCyberBeastFinal from '../assets/images/cyber_beast_final_1779447049772.png';
 import imgGoldenDiscipleFinal from '../assets/images/golden_disciple_final_1779447066274.png';
@@ -121,7 +121,7 @@ interface AvatarPanelProps {
 }
 
 // Outfits database with matching pre-generated image assets for default/flex/charge/roar positions
-const OUTFITS = [
+export const OUTFITS = [
   {
     id: 'vanguard_cadet',
     name: 'Vanguard Cadet',
@@ -252,6 +252,18 @@ const OUTFITS = [
   }
 ];
 
+// Map outfits / operatives to their corresponding banners automatically
+export const OUTFIT_TO_BANNER: Record<string, string> = {
+  vanguard_cadet: 'default_slate',
+  neon_striker: 'neon_pump',
+  shadow_hunter: 'beast_mode',
+  cyber_beast: 'zen_lifter',
+  golden_disciple: 'titan_gold',
+  omega_prime: 'shadow_smoke',
+  shadow_wraith: 'aether_light',
+  lumen_sentinel: 'lumen_sentinel'
+};
+
 // Auras with premium, outer glow and custom blended overlay effects
 const AURAS = [
   { id: 'none', name: 'No Aura', price: 0, desc: 'Clean focus.' },
@@ -266,7 +278,7 @@ const AURAS = [
 ];
 
 // Premium styled overlay elements for the character canvas matching the chosen aura
-const AURA_STYLING: Record<string, { outerGlow: string; innerEffects: React.ReactNode }> = {
+export const AURA_STYLING: Record<string, { outerGlow: string; innerEffects: React.ReactNode }> = {
   none: { outerGlow: '', innerEffects: null },
   void_core: {
     outerGlow: 'shadow-[0_0_120px_rgba(168,85,247,0.95),_0_0_60px_rgba(168,85,247,0.6)] border-purple-500/70',
@@ -469,7 +481,7 @@ const EMOTES = [
 ];
 
 // Display Titles
-const TITLES = [
+export const TITLES = [
   // Free / Starters / Cadet
   { id: 'lifter', name: 'Lifter', desc: 'Standard cadet.', price: 0 },
 
@@ -492,7 +504,7 @@ const TITLES = [
 ];
 
 // Final Form styling configurations matching the character ID
-const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; particles: string; bannerText: string; overlayGradient: string }> = {
+export const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; particles: string; bannerText: string; overlayGradient: string }> = {
   vanguard_cadet: { color: '#9ca3af', glow: 'shadow-[0_0_90px_rgba(156,163,175,0.9),_0_0_45px_rgba(156,163,175,0.6)]', particles: '#9ca3af', bannerText: 'CADET // LIMIT BREAK', overlayGradient: 'from-zinc-400/20 to-transparent' },
   neon_striker: { color: '#d946ef', glow: 'shadow-[0_0_100px_rgba(217,70,239,1),_0_0_50px_rgba(217,70,239,0.7)]', particles: '#d946ef', bannerText: 'STRIKER // NEON FORCE', overlayGradient: 'from-fuchsia-500/30 to-transparent' },
   shadow_hunter: { color: '#f43f5e', glow: 'shadow-[0_0_100px_rgba(244,63,94,1),_0_0_50px_rgba(244,63,94,0.7)]', particles: '#f43f5e', bannerText: 'HUNTER // DOOMSDAY OVERDRIVE', overlayGradient: 'from-rose-500/30 to-transparent' },
@@ -912,7 +924,7 @@ interface ProfileBanner {
 }
 
 // Profile banner templates matching current Gym Themes (opacities reduced by 10% to prevent excess brightness)
-const BANNERS: ProfileBanner[] = [
+export const BANNERS: ProfileBanner[] = [
   { 
     id: 'default_slate', 
     name: 'Default Slate', 
@@ -996,7 +1008,7 @@ const BANNERS: ProfileBanner[] = [
 ];
 
 // Banner Borders aligned with core themes
-const BORDERS = [
+export const BORDERS = [
   { 
     id: 'none', 
     name: 'No border', 
@@ -1514,7 +1526,7 @@ const BORDERS = [
 ];
 
 export default function AvatarPanel({ profile, setProfile, saveSettings, setToast, archivedWorkouts, currentUser }: AvatarPanelProps) {
-  const [activeTab, setActiveTab] = useState<'customization' | 'auras' | 'emotes' | 'titles' | 'banners' | 'bannerBorders'>('customization');
+  const [activeTab, setActiveTab] = useState<'operatives' | 'auras' | 'emotes' | 'titles' | 'operativeBorders'>('operatives');
   const [isClaimingBonus, setIsClaimingBonus] = useState(false);
 
   // Tab scroll & swipe controls for mobile availability
@@ -1583,7 +1595,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   const equippedBackItem = profile?.equippedBackItem ?? 'none';
   const equippedEmote = profile?.equippedEmote ?? 'none';
   const equippedTitle = profile?.equippedTitle ?? 'lifter';
-  const equippedBanner = profile?.equippedBanner ?? 'titan_gold';
+  const equippedBanner = OUTFIT_TO_BANNER[equippedOutfit] || 'default_slate';
   const equippedBorder = profile?.equippedBorder ?? 'none';
 
   // Level XP Helper
@@ -1787,7 +1799,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   // Helper inside click handlers to buy and equip cosmetics
   const buyOrEquipItem = async (category: typeof activeTab, itemId: string, price: number) => {
     let itemName = itemId;
-    if (category === 'customization') {
+    if (category === 'operatives') {
       itemName = OUTFITS.find(o => o.id === itemId)?.name || itemId;
     } else if (category === 'auras') {
       itemName = AURAS.find(a => a.id === itemId)?.name || itemId;
@@ -1795,15 +1807,13 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       itemName = EMOTES.find(e => e.id === itemId)?.name || itemId;
     } else if (category === 'titles') {
       itemName = TITLES.find(t => t.id === itemId)?.name || itemId;
-    } else if (category === 'banners') {
-      itemName = BANNERS.find(b => b.id === itemId)?.name || itemId;
-    } else if (category === 'bannerBorders') {
+    } else if (category === 'operativeBorders') {
       itemName = BORDERS.find(b => b.id === itemId)?.name || itemId;
     }
 
     let isPurchase = false;
 
-    if (category === 'customization') {
+    if (category === 'operatives') {
       const isAlreadyUnlocked = unlockedOutfits.includes(itemId);
       if (isAlreadyUnlocked) {
         const updated = { equippedOutfit: itemId };
@@ -1890,29 +1900,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         await saveSettings(updated);
       }
     }
-    else if (category === 'banners') {
-      const dbKey = `unlocked_banner_${itemId}`;
-      const isUnlocked = itemId === 'titan_gold' || (profile as any)?.[dbKey];
-      if (isUnlocked) {
-        const updated = { equippedBanner: itemId };
-        setProfile(prev => prev ? { ...prev, ...updated } : null);
-        await saveSettings(updated);
-      } else {
-        if (credits < price) {
-          setToast({ message: `Insufficient Coins to purchase ${itemName}!`, type: 'info' });
-          return;
-        }
-        isPurchase = true;
-        const updated = {
-          avatarCredits: credits - price,
-          [dbKey]: true,
-          equippedBanner: itemId
-        };
-        setProfile(prev => prev ? { ...prev, ...updated } : null);
-        await saveSettings(updated);
-      }
-    }
-    else if (category === 'bannerBorders') {
+    else if (category === 'operativeBorders') {
       const dbKey = `unlocked_border_${itemId}`;
       const isUnlocked = itemId === 'none' || (profile as any)?.[dbKey];
       if (isUnlocked) {
@@ -2681,12 +2669,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             className="flex flex-1 overflow-x-auto no-scrollbar scroll-smooth relative"
           >
             {[
-              { id: 'customization', label: 'Customization' },
+              { id: 'operatives', label: 'Operatives' },
               { id: 'auras', label: 'Auras' },
               { id: 'emotes', label: 'Emotes' },
               { id: 'titles', label: 'Titles' },
-              { id: 'banners', label: 'Banners' },
-              { id: 'bannerBorders', label: 'Banner Borders' }
+              { id: 'operativeBorders', label: 'Operative Borders' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -2732,15 +2719,15 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               transition={{ duration: 0.2 }}
               className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
             >
-              {/* Tab 1: Customization Outfits */}
-              {activeTab === 'customization' && OUTFITS.map((outfit) => {
+              {/* Tab 1: Operatives Outfits */}
+              {activeTab === 'operatives' && OUTFITS.map((outfit) => {
                 const isUnlocked = unlockedOutfits.includes(outfit.id);
                 const isEquipped = equippedOutfit === outfit.id;
                 
                 return (
                   <div 
                     key={outfit.id} 
-                    onClick={() => buyOrEquipItem('customization', outfit.id, outfit.price)}
+                    onClick={() => buyOrEquipItem('operatives', outfit.id, outfit.price)}
                     className={`group/card relative rounded-lg border p-4 bg-black/85 cursor-pointer flex flex-col justify-between h-48 transition-all overflow-hidden ${
                       isEquipped 
                         ? 'border-gym-accent bg-gym-accent/[0.15]' 
@@ -2950,77 +2937,8 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 );
               })}
 
-              {/* Tab 5: Banners */}
-              {activeTab === 'banners' && BANNERS.map((banner) => {
-                const dbKey = `unlocked_banner_${banner.id}`;
-                const isUnlocked = banner.id === 'titan_gold' || (profile as any)?.[dbKey];
-                const isEquipped = equippedBanner === banner.id;
-
-                return (
-                  <div 
-                    key={banner.id}
-                    onClick={() => buyOrEquipItem('banners', banner.id, banner.price)}
-                    className={`relative rounded-lg border p-5 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden group/bitem ${
-                      isEquipped 
-                        ? 'border-gym-accent shadow-[0_0_15px_rgba(212,175,55,0.25)]' 
-                        : isUnlocked 
-                          ? 'border-white/25 hover:border-white/45 bg-black/85' 
-                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100'
-                    }`}
-                  >
-                    {/* The dynamic banner preview gradient directly within the list item card */}
-                    {banner.bgImage ? (
-                      <div 
-                        className="absolute inset-0 z-0 transition-opacity duration-300 bg-cover bg-center opacity-80 group-hover/bitem:opacity-[0.98]" 
-                        style={{ backgroundImage: `url(${banner.bgImage})` }}
-                      />
-                    ) : (
-                      <div className={`absolute inset-0 z-0 transition-opacity duration-300 ${banner.bgStyle} opacity-80 group-hover/bitem:opacity-[0.98]`} />
-                    )}
-                    
-                    {/* Dark gradient mask to keep texts ultra-readable */}
-                    <div className="absolute inset-0 z-0 bg-gradient-to-t from-black via-black/60 to-black/20" />
-                    
-                    {/* Ambient Glow matching banner */}
-                    {banner.glowColor && (
-                      <div className={`absolute -top-6 -right-6 w-32 h-32 rounded-full filter blur-[25px] opacity-60 mix-blend-screen transition-all duration-300 group-hover/bitem:scale-110 pointer-events-none z-0 ${banner.glowColor}`} />
-                    )}
-
-                    <div className="relative z-10 w-full">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Tv className="w-4 h-4 text-gym-accent" />
-                          <h5 className="text-white font-black font-sans uppercase tracking-widest text-sm">{banner.name}</h5>
-                        </div>
-                        {!isUnlocked && <Lock className="w-3.5 h-3.5 text-white/20" />}
-                      </div>
-                      <p className="text-[10px] text-white/60 leading-tight font-light mt-1">{banner.desc}</p>
-                    </div>
-
-                    <div className="relative z-10 border-t border-white/10 pt-3 flex items-center justify-between mt-auto w-full">
-                      <span className="text-[8px] font-mono text-white/45 uppercase tracking-widest">Card Grid Banner</span>
-                      
-                      <div className="flex items-center gap-2">
-                        {isEquipped ? (
-                          <div className="bg-gym-accent text-black font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-sm flex items-center gap-1 select-none">
-                            <Check className="w-3 h-3 stroke-[3]" /> Active
-                          </div>
-                        ) : isUnlocked ? (
-                          <span className="text-[9px] uppercase font-bold text-white/80 tracking-widest hover:text-white transition-colors">Equip</span>
-                        ) : (
-                          <div className="bg-black/60 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 hover:border-white/25 transition-all">
-                            <Coins className="w-3.5 h-3.5" /> {banner.price.toLocaleString()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-                );
-              })}
-
-              {/* Tab 6: Banner Borders */}
-              {activeTab === 'bannerBorders' && BORDERS.map((borderItem) => {
+              {/* Tab 5: Operative Borders */}
+              {activeTab === 'operativeBorders' && BORDERS.map((borderItem) => {
                 const dbKey = `unlocked_border_${borderItem.id}`;
                 const isUnlocked = borderItem.id === 'none' || (profile as any)?.[dbKey];
                 const isEquipped = equippedBorder === borderItem.id;
@@ -3028,7 +2946,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 return (
                   <div 
                     key={borderItem.id}
-                    onClick={() => buyOrEquipItem('bannerBorders', borderItem.id, borderItem.price)}
+                    onClick={() => buyOrEquipItem('operativeBorders', borderItem.id, borderItem.price)}
                     className={`relative rounded-lg border p-5 bg-black/85 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
                       isEquipped 
                         ? 'border-gym-accent bg-gym-accent/[0.15]' 

@@ -10,9 +10,10 @@ interface SessionSet {
 
 interface AnatomyChartProps {
   sets: SessionSet[];
+  compact?: boolean;
 }
 
-const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
+const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets, compact = false }) => {
   // Count unique exercises per muscle group
   const muscleExerciseCount = sets.reduce((acc, set) => {
     let muscleGroup: string | null = null;
@@ -59,13 +60,13 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
   const groupsToShow = ['chest', 'back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-12 py-10">
+    <div className={compact ? "grid grid-cols-2 gap-4 py-2" : "grid grid-cols-1 md:grid-cols-2 gap-12 py-10"}>
       {/* Front View */}
       <div className="flex flex-col items-center">
-        <h4 className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-8">Front Evolution</h4>
-        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.25))' }}>
+        <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em] mb-3" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-8"}>Front Evolution</h4>
+        <svg viewBox="0 0 200 400" className={compact ? "w-full max-w-[120px] h-auto" : "w-full max-w-[240px] h-auto"} style={{ filter: compact ? 'drop-shadow(0 0 8px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.2))' : 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.25))' }}>
           {/* Stylized Body Outline - Front */}
-          <g fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
+          <g fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={compact ? "1" : "1.5"}>
             <path d={bodyOutlinePath} />
           </g>
 
@@ -117,10 +118,10 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
 
       {/* Back View */}
       <div className="flex flex-col items-center">
-        <h4 className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-8">Rear Evolution</h4>
-        <svg viewBox="0 0 200 400" className="w-full max-w-[240px] h-auto" style={{ filter: 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.25))' }}>
+        <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em] mb-3" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-8"}>Rear Evolution</h4>
+        <svg viewBox="0 0 200 400" className={compact ? "w-full max-w-[120px] h-auto" : "w-full max-w-[240px] h-auto"} style={{ filter: compact ? 'drop-shadow(0 0 8px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.25))' : 'drop-shadow(0 0 20px rgba(var(--gym-accent-rgb, 212, 175, 55), 0.25))' }}>
           {/* Stylized Body Outline - Back */}
-          <g fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5">
+          <g fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={compact ? "1" : "1.5"}>
             <path d={bodyOutlinePath} />
           </g>
 
@@ -176,25 +177,27 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets }) => {
         </svg>
       </div>
 
-      <div className="md:col-span-2 mt-8">
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-4">
-          {groupsToShow.map(group => (
-            <div key={group} className="bg-zinc-950/80 border border-white/15 p-4 rounded-sm flex flex-col items-center text-center backdrop-blur-sm">
-              <span className="text-[9px] text-white/40 uppercase font-bold tracking-widest mb-1">
-                {group === 'core' ? 'abs/core' : group}
-              </span>
-              <div className="text-sm font-medium text-white">{muscleExerciseCount[group]?.size ? `${Math.round(intensityToLoad(getIntensity(group)))}%` : "0%"}</div>
-              <div className="w-full bg-white/10 h-1 mt-3 rounded-full overflow-hidden">
-                <motion.div 
-                   initial={{ width: 0 }}
-                   animate={{ width: `${getIntensity(group) * 100}%` }}
-                   className={`h-full ${getPoolColorClass(group)}`}
-                />
+      {!compact && (
+        <div className="md:col-span-2 mt-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-4">
+            {groupsToShow.map(group => (
+              <div key={group} className="bg-zinc-950/80 border border-white/15 p-4 rounded-sm flex flex-col items-center text-center backdrop-blur-sm">
+                <span className="text-[9px] text-white/40 uppercase font-bold tracking-widest mb-1">
+                  {group === 'core' ? 'abs/core' : group}
+                </span>
+                <div className="text-sm font-medium text-white">{muscleExerciseCount[group]?.size ? `${Math.round(intensityToLoad(getIntensity(group)))}%` : "0%"}</div>
+                <div className="w-full bg-white/10 h-1 mt-3 rounded-full overflow-hidden">
+                  <motion.div 
+                     initial={{ width: 0 }}
+                     animate={{ width: `${getIntensity(group) * 100}%` }}
+                     className={`h-full ${getPoolColorClass(group)}`}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
