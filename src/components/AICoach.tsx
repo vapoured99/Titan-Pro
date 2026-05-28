@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cpu, Sparkles, AlertTriangle, CheckCircle, Zap, RotateCcw, Shield } from 'lucide-react';
+import { Cpu, Sparkles, AlertTriangle, CheckCircle, Zap, RotateCcw, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 import { POOLS } from '../data/exercises';
 
 interface SessionSet {
@@ -32,6 +32,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [advice, setAdvice] = React.useState<CoachRecommendation | null>(null);
+  const [isMinimized, setIsMinimized] = React.useState(false);
 
   const today = React.useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -171,38 +172,104 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
   };
 
   return (
-    <div className="bg-black/60 border border-white/10 rounded-sm p-6 relative overflow-hidden backdrop-blur-md mt-8">
+    <div className="bg-black/60 border border-white/10 rounded-sm p-4 sm:p-6 relative overflow-hidden backdrop-blur-md mt-8 transition-all duration-300">
       {/* Dynamic Cyber Deco Grid Bars */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gym-accent/30 to-transparent" />
       <div className="absolute top-0 right-10 w-24 h-24 bg-gym-accent/5 rounded-full blur-3xl -z-10" />
 
       {/* Header Info */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4 mb-5">
+      <div className="flex flex-row items-center justify-between gap-4 border-b border-white/5 pb-4 mb-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/30 flex items-center justify-center text-gym-accent shadow-sm shadow-gym-accent/10">
             <Cpu className="w-4 h-4 animate-pulse" />
           </div>
           <div>
-            <h4 className="text-[10px] text-gym-accent font-black uppercase tracking-[0.3em] font-mono">TACTICAL OPERATIVE CO-PILOT</h4>
-            <p className="text-xs text-white/40 font-light">Real-time biomechanical target guidance & recovery assessment</p>
+            <h4 className="text-[10px] text-gym-accent font-black uppercase tracking-[0.3em] font-mono leading-none">TACTICAL OPERATIVE CO-PILOT</h4>
+            <p className="text-[9px] sm:text-xs text-white/40 font-light mt-0.5">Real-time biomechanical target guidance</p>
           </div>
         </div>
 
-        {advice && (
+        <div className="flex items-center gap-3">
+          {advice && !isMinimized && (
+            <button
+              onClick={executeAnalysis}
+              type="button"
+              disabled={loading}
+              className="hidden sm:flex items-center gap-2 text-[9px] text-white/40 hover:text-gym-accent uppercase tracking-widest font-black font-mono transition-all cursor-pointer disabled:opacity-50"
+            >
+              <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin text-gym-accent' : ''}`} />
+              Re-Analyze
+            </button>
+          )}
+
+          {/* Minimize / Maximize Toggle */}
           <button
-            onClick={executeAnalysis}
+            onClick={() => setIsMinimized(!isMinimized)}
             type="button"
-            disabled={loading}
-            className="flex items-center gap-2 self-start sm:self-center text-[9px] text-white/40 hover:text-gym-accent uppercase tracking-widest font-black font-mono transition-all cursor-pointer disabled:opacity-50"
+            className="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-gym-accent hover:border-gym-accent/40 hover:bg-gym-accent/5 transition-all cursor-pointer shrink-0"
+            title={isMinimized ? "Expand Intelligence Dashboard" : "Collapse Dashboard Area"}
           >
-            <RotateCcw className={`w-3 h-3 ${loading ? 'animate-spin text-gym-accent' : ''}`} />
-            Re-Analyze Biometrics
+            {isMinimized ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </button>
-        )}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
-        {!advice ? (
+        {isMinimized ? (
+          /* Sleek Minimized Space-Saving Strip */
+          <motion.div
+            key="minimized-directive"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 font-mono pt-1"
+          >
+            <div className="flex items-center gap-3 flex-wrap">
+              {advice ? (
+                <>
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-gym-accent/10 border border-gym-accent/30 rounded-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                    <span className="text-[9px] text-gym-accent font-black uppercase tracking-wider">{advice.recoveryScore}% READY</span>
+                  </div>
+                  <div className="text-[10px] text-white/60">
+                    <span className="text-white/30 uppercase mr-1.5">[STATUS]:</span>
+                    <span>{advice.overallStatus}</span>
+                  </div>
+                  <div className="hidden md:inline text-[9px] text-white/30 truncate max-w-sm">
+                    • Focus: {advice.customWorkoutRecommendation}
+                  </div>
+                </>
+              ) : (
+                <div className="text-[10px] text-white/40 flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-gym-accent/60" />
+                  <span>BIOMETRIC SCAN INACTIVE. INITIATE TACTICAL AUDIT BELOW.</span>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {advice && (
+                <button
+                  onClick={executeAnalysis}
+                  disabled={loading}
+                  type="button"
+                  className="flex items-center gap-1.5 text-[8px] border border-white/10 hover:border-gym-accent/30 px-2 py-1 uppercase tracking-wider font-black text-white/40 hover:text-gym-accent bg-[#030303] transition-all rounded-sm cursor-pointer"
+                >
+                  <RotateCcw className={`w-2.5 h-2.5 ${loading ? 'animate-spin text-gym-accent' : ''}`} />
+                  {loading ? 'ANALYZING...' : 'REFRESH'}
+                </button>
+              )}
+
+              <button
+                onClick={() => setIsMinimized(false)}
+                type="button"
+                className="bg-gym-accent hover:brightness-110 text-black font-black uppercase tracking-widest text-[8px] sm:text-[9px] px-3.5 py-1.5 rounded-sm transition-all cursor-pointer flex items-center gap-1 shadow-sm shadow-gym-accent/15"
+              >
+                Expand Directive
+              </button>
+            </div>
+          </motion.div>
+        ) : !advice ? (
           /* Blank state / Inactive directive */
           <motion.div
             key="analyze-prompt"
@@ -246,7 +313,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
               <div className="lg:col-span-8 bg-[#050505] border border-white/5 p-4 rounded-sm flex flex-col justify-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/[0.02] rounded-full blur-2xl" />
                 <span className="text-[8px] text-gym-accent font-black uppercase tracking-widest block mb-1 font-mono">OPERATIVE DIRECTIVE</span>
-                <p className="text-base font-light italic font-serif text-white leading-snug tracking-tight">
+                <p className="text-sm sm:text-base font-light italic font-serif text-white leading-snug tracking-tight">
                   "{advice.shortMotivationalQuote}"
                 </p>
               </div>
