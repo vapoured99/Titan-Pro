@@ -36,7 +36,8 @@ import {
   Repeat,
   Edit2,
   LayoutDashboard,
-  Coins
+  Coins,
+  Youtube
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -4568,7 +4569,7 @@ export default function App() {
                                         </span>
                                       )}
                                     </div>
-                                    <h4 className="text-2xl font-light italic font-serif text-gym-accent mt-1 drop-shadow-sm">{ex.name}</h4>
+                                    <h4 className="text-2xl font-light italic font-serif text-gym-accent mt-1 pt-0.5 pb-1 leading-normal drop-shadow-sm">{ex.name}</h4>
                                   </div>
                                   <div className="flex gap-2">
                                     <button 
@@ -4981,19 +4982,19 @@ export default function App() {
         {guidanceEx && (() => {
           const resolvedEx = findExerciseByName(guidanceEx.name) || guidanceEx;
           return (
-            <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+            <div className="fixed inset-0 z-[110] flex justify-center overflow-y-auto p-4 sm:p-10 font-sans">
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setGuidanceEx(null)}
-                className="absolute inset-0 bg-black/90 backdrop-blur-md"
+                className="fixed inset-0 bg-black/90 backdrop-blur-md"
               />
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9, y: 30 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                className="relative w-full max-w-xl bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl"
+                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-sm flex flex-col shadow-2xl my-auto z-10"
               >
                 <div className="p-10 border-b border-white/5 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/5 rounded-full blur-3xl -mr-16 -mt-16" />
@@ -5004,7 +5005,7 @@ export default function App() {
                       </div>
                       <div>
                         <span className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.4em] block mb-1">Evolutionary Guidance</span>
-                        <h3 className="text-3xl font-light italic font-serif text-white tracking-tight">{resolvedEx.name}</h3>
+                        <h3 className="text-3xl font-light italic font-serif text-white tracking-tight pt-1.5 pb-1 leading-normal pr-1">{resolvedEx.name}</h3>
                       </div>
                     </div>
                     
@@ -5056,6 +5057,53 @@ export default function App() {
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Video Demonstration Section */}
+                <div className="p-10 pb-5 bg-white/[0.01] border-t border-b border-white/5">
+                  <h4 className="text-[9px] font-black text-gym-accent uppercase tracking-[0.4em] mb-6 flex items-center gap-3">
+                    <div className="h-px flex-1 bg-gym-accent/20" />
+                    Video Demonstration
+                    <div className="h-px flex-1 bg-gym-accent/20" />
+                  </h4>
+                  
+                  {resolvedEx.pool !== 'cardio' && (
+                    resolvedEx.youtubeId ? (
+                      <div className="rounded-sm overflow-hidden border border-white/10 bg-black aspect-video relative shadow-lg">
+                        <iframe
+                          className="w-full h-full"
+                          src={`https://www.youtube.com/embed/${resolvedEx.youtubeId}?rel=0`}
+                          title={`PureGym Form Guide: ${resolvedEx.name}`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <div className="p-6 rounded-sm border border-dashed border-white/10 bg-white/[0.005] flex flex-col items-center justify-center text-center gap-3 py-10">
+                        <Youtube className="w-8 h-8 text-white/20" />
+                        <div>
+                          <span className="text-xs font-bold text-white uppercase tracking-wider block">Form Video Search Fallback</span>
+                          <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">
+                            No embedded database video. Accessing custom YouTube channel queries
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  )}
+
+                  {resolvedEx.youtubeUrl && (
+                    <div className={`${resolvedEx.pool === 'cardio' ? '' : 'mt-4'} flex justify-center`}>
+                      <a
+                        href={resolvedEx.youtubeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] px-5 py-2.5 border border-white/10 hover:border-gym-accent rounded-sm text-white/60 hover:text-white hover:bg-gym-accent/5 transition-all cursor-pointer"
+                      >
+                        <Youtube className="w-4 h-4 text-red-500" />
+                        Watch Tutorial on YouTube
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-8 border-t border-white/5 bg-white/[0.02] flex justify-end">
