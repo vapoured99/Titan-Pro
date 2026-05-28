@@ -2999,7 +2999,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                         </div>
                         {!isUnlocked && <Lock className="w-3.5 h-3.5 text-white/20" />}
                       </div>
-                      <p className="text-[10px] text-white/40 leading-tight font-light mt-1">{title.desc}</p>
+                      <p className="text-xs text-white/95 leading-normal font-normal mt-1.5">{title.desc}</p>
                     </div>
 
                     <div className="border-t border-white/5 pt-3 flex items-center justify-between mt-auto">

@@ -185,7 +185,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
           </div>
           <div>
             <h4 className="text-[10px] text-gym-accent font-black uppercase tracking-[0.3em] font-mono leading-none">TACTICAL OPERATIVE CO-PILOT</h4>
-            <p className="text-[9px] sm:text-xs text-white/40 font-light mt-0.5">Real-time biomechanical target guidance</p>
+            <p className="text-xs sm:text-sm text-white font-medium mt-1">Real-time biomechanical target guidance</p>
           </div>
         </div>
 
@@ -240,7 +240,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
                   </div>
                 </>
               ) : (
-                <div className="text-[10px] text-white/40 flex items-center gap-2">
+                <div className="text-xs text-white/90 flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-gym-accent/60" />
                   <span>BIOMETRIC SCAN INACTIVE. INITIATE TACTICAL AUDIT BELOW.</span>
                 </div>
@@ -280,7 +280,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
           >
             <Sparkles className="w-8 h-8 text-white/15 mb-3" />
             <h5 className="text-sm font-semibold text-white/80">Operative Bot Ready for Directive</h5>
-            <p className="text-xs text-white/40 max-w-md mx-auto mt-1 mb-5">
+            <p className="text-sm text-white/90 max-w-md mx-auto mt-2 mb-5 font-normal">
               Initiate a 5-day physiological biomechanics scan to decipher muscle recruitment cycles and formulate today's tactical workout.
             </p>
             <button
@@ -321,9 +321,9 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
               {/* Recovery Score Dial */}
               <div className="lg:col-span-4 bg-[#050505] border border-white/5 p-4 rounded-sm flex items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <span className="text-[8px] text-white/40 font-black uppercase tracking-widest font-mono block">SYSTEM STATUS</span>
-                  <div className="text-xs font-semibold text-white/80">{advice.overallStatus}</div>
-                  <div className="text-[9px] text-white/30 uppercase tracking-wider">Aggregate Bio-Recovery</div>
+                  <span className="text-[9px] text-white/70 font-black uppercase tracking-widest font-mono block">SYSTEM STATUS</span>
+                  <div className="text-sm font-semibold text-white">{advice.overallStatus}</div>
+                  <div className="text-[10px] text-white/80 uppercase tracking-wider font-medium">Aggregate Bio-Recovery</div>
                 </div>
 
                 <div className="relative w-20 h-20 flex items-center justify-center">
@@ -412,12 +412,12 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
             {/* Bottom block: Detailed Recommendation & Physiology Analysis */}
             <div className="bg-[#050505] border border-white/5 p-5 rounded-sm space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2">
-                <h5 className="text-[9px] font-black font-mono text-white/40 uppercase tracking-[0.3em]">PHYSIOLOGICAL REPORT & RECOMMENDATION</h5>
-                <span className="text-[9px] text-gym-accent font-mono font-black uppercase tracking-widest">
+                <h5 className="text-[10px] font-black font-mono text-white/80 uppercase tracking-[0.3em]">PHYSIOLOGICAL REPORT & RECOMMENDATION</h5>
+                <span className="text-[10px] text-gym-accent font-mono font-black uppercase tracking-widest">
                   FOCUS: {advice.customWorkoutRecommendation}
                 </span>
               </div>
-              <p className="text-xs text-white/70 font-light leading-relaxed tracking-wide font-sans">
+              <p className="text-sm text-white/90 font-light leading-relaxed tracking-wide font-sans">
                 {advice.personalizedAdvice}
               </p>
             </div>

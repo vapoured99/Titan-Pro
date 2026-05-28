@@ -256,7 +256,7 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
       {/* Top Info overlay details */}
       <div className="relative z-10 flex justify-between items-start transition-all duration-300">
         <div>
-          <span className="text-[9px] uppercase tracking-[0.2em] text-white/30 block leading-tight">ACTIVE SPECIMEN</span>
+          <span className="text-[10px] uppercase tracking-[0.2em] text-white font-bold block leading-tight mb-0.5">ACTIVE SPECIMEN</span>
           <span className="text-base font-black text-white font-mono tracking-wider">{activeOutfit.name.toUpperCase()}</span>
         </div>
         <div className="flex gap-1.5 items-center">
@@ -353,11 +353,11 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
       {/* Character Footer displaying title */}
       <div className="relative z-10 flex items-center justify-between transition-all duration-300 w-full border-t border-white/10 pt-4">
         <div>
-          <span className="text-[8px] uppercase tracking-[0.34em] text-white/30 block leading-tight">Athletic Title</span>
+          <span className="text-[10px] uppercase tracking-[0.34em] text-white font-bold block leading-tight mb-1">Athletic Title</span>
           <span className="text-2xl font-light italic font-serif text-white tracking-wide leading-none select-none drop-shadow">
             {getActiveTitle().name.toUpperCase()}
           </span>
-          <span className="text-[10px] text-white/40 block mt-1 tracking-normal font-light italic">{getActiveTitle().desc}</span>
+          <span className="text-xs text-white/95 block mt-1 tracking-normal font-normal leading-relaxed">{getActiveTitle().desc}</span>
         </div>
         <div className="w-10 h-10 rounded-full border border-gym-accent/30 bg-gym-accent/10 flex items-center justify-center shadow-inner shrink-0">
           <Crown className="w-5 h-5 text-gym-accent" />

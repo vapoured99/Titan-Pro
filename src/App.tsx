@@ -37,7 +37,8 @@ import {
   Edit2,
   LayoutDashboard,
   Coins,
-  Youtube
+  Youtube,
+  Compass
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -57,6 +58,7 @@ import AICoach from './components/AICoach';
 import AvatarPanel, { OUTFITS, TITLES } from './components/AvatarPanel';
 import { AvatarDisplayCard } from './components/AvatarDisplayCard';
 import { TransparentCharacter } from './components/TransparentCharacter';
+import TacticalMap from './components/TacticalMap';
 import { 
   auth, 
   db, 
@@ -874,7 +876,7 @@ export default function App() {
   // State for session view selection
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(null);
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
-  const [activeView, setActiveView] = useState<'console' | 'workout' | 'library' | 'progress' | 'session' | 'routines' | 'profile' | 'anatomy' | 'avatar'>('console');
+  const [activeView, setActiveView] = useState<'console' | 'workout' | 'library' | 'progress' | 'session' | 'routines' | 'map' | 'profile' | 'anatomy' | 'avatar'>('console');
   const [routines, setRoutines] = useState<any[]>([]);
   const [savingRoutineWorkout, setSavingRoutineWorkout] = useState<any | null>(null);
   const [expandedRoutinesDays, setExpandedRoutinesDays] = useState<Record<number, boolean>>({});
@@ -2388,6 +2390,7 @@ export default function App() {
             { id: 'anatomy', label: 'Anatomy', icon: Layout },
             { id: 'session', label: 'Session', icon: History },
             { id: 'routines', label: 'Routines', icon: Repeat },
+            { id: 'map', label: 'Tactical Map', icon: Compass },
           ].map(nav => (
             <button
               key={nav.id}
@@ -2403,7 +2406,10 @@ export default function App() {
               {nav.id === 'routines' ? (
                 <Repeat className={`w-4 h-4 shrink-0 ${activeView === 'routines' ? 'text-gym-accent' : ''}`} />
               ) : null}
-              {nav.id !== 'routines' && nav.label}
+              {nav.id === 'map' ? (
+                <Compass className={`w-4 h-4 shrink-0 ${activeView === 'map' ? 'text-gym-accent' : 'text-theme-text-muted/65 hover:text-white'}`} />
+              ) : null}
+              {nav.id !== 'routines' && nav.id !== 'map' && nav.label}
               {activeView === nav.id && (
                 <motion.div 
                   layoutId="nav-underline" 
@@ -2499,7 +2505,7 @@ export default function App() {
                     <h3 className="text-xl font-light italic font-serif flex items-center gap-3">
                       Athlete Command Console
                     </h3>
-                    <p className="text-[10px] text-white/30 uppercase tracking-[0.25em] font-bold">Biometric &amp; Combat Readiness Command Center</p>
+                    <p className="text-xs text-white/90 uppercase tracking-[0.25em] font-bold">Biometric &amp; Combat Readiness Command Center</p>
                   </div>
                   <div className="flex items-center gap-3 bg-white/[0.02] border border-white/5 px-4 py-2 rounded-sm text-xs font-mono text-white/60">
                     <span className="w-2 h-2 rounded-full bg-gym-accent animate-pulse" />
@@ -2551,8 +2557,8 @@ export default function App() {
                   {/* Card 2: Anatomy */}
                   <div className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md">
                     <div>
-                      <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest mb-1 font-mono">Physiological Evolution</h4>
-                      <p className="text-xs text-white/30 font-light leading-snug">Real-time dynamic muscle density simulation. Dark sectors denote untapped muscle pools.</p>
+                      <h4 className="text-[10px] text-white uppercase font-black tracking-widest mb-1 font-mono">Physiological Evolution</h4>
+                      <p className="text-sm text-white/90 font-light leading-snug">Real-time dynamic muscle density simulation. Dark sectors denote untapped muscle pools.</p>
                     </div>
                     
                     <div className="flex-1 flex items-center justify-center my-2">
@@ -2576,8 +2582,8 @@ export default function App() {
                   {/* Card 3: Next Exercises */}
                   <div className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md">
                     <div>
-                      <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest mb-1 font-mono">Next Active Exercises</h4>
-                      <p className="text-xs text-white/30 font-light leading-snug">Mapped from training programming active modules.</p>
+                      <h4 className="text-[10px] text-white uppercase font-black tracking-widest mb-1 font-mono">Next Active Exercises</h4>
+                      <p className="text-sm text-white/90 font-light leading-snug">Mapped from training programming active modules.</p>
                     </div>
 
                     <div className="flex-1 my-4 overflow-y-auto max-h-[190px] no-scrollbar pr-1">
@@ -2643,10 +2649,10 @@ export default function App() {
                   <div className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md">
                     <div className="mb-4">
                       <div className="flex justify-between items-baseline">
-                        <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest font-mono">Weight Density</h4>
+                        <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">Weight Density</h4>
                         <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">{profile?.bodyweight ? `${profile.bodyweight} KG` : "N/A"}</span>
                       </div>
-                      <p className="text-[10px] text-white/20 tracking-wider">Dynamic change tracking over time</p>
+                      <p className="text-xs text-white/80 font-normal tracking-wide mt-0.5">Dynamic change tracking over time</p>
                     </div>
                     
                     <div className="h-[120px] w-full">
@@ -2687,12 +2693,12 @@ export default function App() {
                   <div className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md">
                     <div className="mb-4">
                       <div className="flex justify-between items-baseline">
-                        <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest font-mono">Volume Progression</h4>
+                        <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">Volume Progression</h4>
                         <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">
                           {archivedWorkouts.length > 0 ? `${Math.round(archivedWorkouts.reduce((acc, w) => acc + (w.totalVolume || 0), 0) / archivedWorkouts.length)} KG (avg)` : "0 KG"}
                         </span>
                       </div>
-                      <p className="text-[10px] text-white/20 tracking-wider">Lifting volumes across physical cycles</p>
+                      <p className="text-xs text-white/80 font-normal tracking-wide mt-0.5">Lifting volumes across physical cycles</p>
                     </div>
 
                     <div className="h-[120px] w-full">
@@ -2727,12 +2733,12 @@ export default function App() {
                   <div className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md">
                     <div className="mb-4">
                       <div className="flex justify-between items-baseline">
-                        <h4 className="text-[9px] text-white/40 uppercase font-black tracking-widest font-mono">Caloric Expenditure</h4>
+                        <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">Caloric Expenditure</h4>
                         <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">
                           {archivedWorkouts.length > 0 ? `${Math.round(archivedWorkouts.reduce((sum, w) => sum + getWorkoutCalories(w), 0))} KCAL` : "0 KCAL"}
                         </span>
                       </div>
-                      <p className="text-[10px] text-white/20 tracking-wider">Dynamic active energy burnout</p>
+                      <p className="text-xs text-white/80 font-normal tracking-wide mt-0.5">Dynamic active energy burnout</p>
                     </div>
 
                     <div className="h-[120px] w-full">
@@ -4098,6 +4104,16 @@ export default function App() {
                   </div>
                 );
               })}
+            </motion.div>
+          ) : activeView === 'map' ? (
+            <motion.div
+              key="map-view"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-3 pb-20"
+            >
+              <TacticalMap />
             </motion.div>
           ) : activeView === 'avatar' ? (
             <motion.div
