@@ -151,6 +151,19 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
     return statuses[group]?.filterUrl || 'none';
   };
 
+  const getPulseClass = (group: string) => {
+    const state = statuses[group];
+    if (!state) return '';
+    if (state.daysDiff === 0) {
+      return 'pulse-strong';
+    } else if (state.daysDiff === 1 || state.daysDiff === 2) {
+      return 'pulse-medium';
+    } else if (state.daysDiff === 3) {
+      return 'pulse-minor';
+    }
+    return '';
+  };
+
   // Stylized Body Outline (Blocky style from reference image) - extended to cover biceps and forearms
   const bodyOutlinePath = "M100,40 Q110,40 115,50 L115,70 Q130,75 140,90 Q145,110 142,130 Q138,150 134,165 L127,160 Q130,145 130,110 Q125,180 120,250 L130,350 L110,350 L105,260 L95,260 L90,350 L70,350 L80,250 Q75,180 70,110 Q70,145 73,160 L66,165 Q62,150 58,130 Q55,110 60,90 Q70,75 85,70 L85,50 Q90,40 100,40 Z";
 
@@ -158,6 +171,31 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
 
   return (
     <div className={compact ? "grid grid-cols-2 gap-4 py-2 w-full" : "grid grid-cols-1 md:grid-cols-2 gap-12 py-4 w-full"}>
+      {/* Dynamic styles injected for pulsing live effects */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes minor-pulse {
+          0%, 100% { opacity: 0.85; }
+          50% { opacity: 1; }
+        }
+        @keyframes medium-pulse {
+          0%, 100% { opacity: 0.55; }
+          50% { opacity: 1; }
+        }
+        @keyframes strong-pulse {
+          0%, 100% { opacity: 0.35; }
+          50% { opacity: 1; }
+        }
+        .pulse-minor {
+          animation: minor-pulse 2.2s infinite ease-in-out;
+        }
+        .pulse-medium {
+          animation: medium-pulse 1.3s infinite ease-in-out;
+        }
+        .pulse-strong {
+          animation: strong-pulse 0.75s infinite ease-in-out;
+        }
+      `}} />
+
       {/* Front View */}
       <div className="flex flex-col items-center">
         <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em] mb-2" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-6"}>Front Evolution Grid</h4>
@@ -207,49 +245,49 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
             d="M85,75 Q75,75 70,90 L75,105 Q80,105 85,95 Z M115,75 Q125,75 130,90 L125,105 Q120,105 115,95 Z" 
             fill={getFill('shoulders')} 
             filter={getFilter('shoulders')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('shoulders')}`}
           />
           {/* Chest */}
           <path 
             d="M88,90 Q100,85 112,90 L115,115 Q100,120 85,115 Z" 
             fill={getFill('chest')} 
             filter={getFilter('chest')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('chest')}`}
           />
           {/* Abs (Core) */}
           <path 
             d="M90,125 Q100,122 110,125 L108,185 Q100,188 92,185 Z" 
             fill={getFill('core')} 
             filter={getFilter('core')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('core')}`}
           />
           {/* Biceps */}
           <path 
             d="M65,105 Q60,115 62,130 L70,125 Q72,115 70,105 Z M135,105 Q140,115 138,130 L130,125 Q128,115 130,105 Z" 
             fill={getFill('biceps')} 
             filter={getFilter('biceps')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('biceps')}`}
           />
           {/* Forearms */}
           <path 
             d="M62,130 Q62,150 66,165 L73,160 Q70,145 70,125 Z M138,130 Q138,150 134,165 L127,160 Q130,145 130,125 Z" 
             fill={getFill('forearms')} 
             filter={getFilter('forearms')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('forearms')}`}
           />
           {/* Quads (Upper Legs) */}
           <path 
             d="M82,200 Q90,195 98,200 L95,255 L85,255 Z M102,200 Q110,195 118,200 L115,255 L105,255 Z" 
             fill={getFill('quads')} 
             filter={getFilter('quads')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('quads')}`}
           />
           {/* Calves (Lower Legs) */}
           <path 
             d="M84,265 L92,265 L88,330 L80,330 Z M116,265 L108,265 L112,330 L120,330 Z" 
             fill={getFill('calves')} 
             filter={getFilter('calves')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('calves')}`}
           />
         </svg>
       </div>
@@ -269,56 +307,56 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
             d="M85,85 Q100,75 115,85 L120,135 Q100,145 80,135 Z" 
             fill={getFill('back')} 
             filter={getFilter('back')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('back')}`}
           />
           {/* Middle/Lower Back */}
           <path 
             d="M90,140 Q100,145 110,140 L115,180 Q100,185 85,180 Z" 
             fill={getFill('back')} 
             filter={getFilter('back')}
-            className="transition-all duration-1000 opacity-100"
+            className={`transition-all duration-1000 opacity-100 ${getPulseClass('back')}`}
           />
           {/* Shoulders */}
           <path 
             d="M85,75 Q75,75 70,90 L75,105 Q80,105 85,95 Z M115,75 Q125,75 130,90 L125,105 Q120,105 115,95 Z" 
             fill={getFill('shoulders')} 
             filter={getFilter('shoulders')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('shoulders')}`}
           />
           {/* Triceps */}
           <path 
             d="M62,105 Q58,115 60,130 L68,135 Q70,120 68,105 Z M138,105 Q142,115 140,130 L132,135 Q130,120 132,105 Z" 
             fill={getFill('triceps')} 
             filter={getFilter('triceps')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('triceps')}`}
           />
           {/* Forearms */}
           <path 
             d="M60,130 Q60,150 64,165 L71,160 Q68,145 68,135 Z M140,130 Q140,150 136,165 L129,160 Q132,145 132,135 Z" 
             fill={getFill('forearms')} 
             filter={getFilter('forearms')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('forearms')}`}
           />
           {/* Glutes */}
           <path 
             d="M82,185 C75,185 75,220 82,225 C90,225 100,215 100,215 C100,215 110,225 118,225 C125,220 125,185 118,185 C110,185 100,195 100,195 C100,195 90,185 82,185 Z" 
             fill={getFill('glutes')} 
             filter={getFilter('glutes')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('glutes')}`}
           />
           {/* Hamstrings */}
           <path 
             d="M82,225 L95,225 L92,265 L84,265 Z M118,225 L105,225 L108,265 L116,265 Z" 
             fill={getFill('hamstrings')} 
             filter={getFilter('hamstrings')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('hamstrings')}`}
           />
           {/* Calves (Lower Legs) */}
           <path 
             d="M84,265 L92,265 L88,335 L78,335 Z M116,265 L108,265 L112,335 L122,335 Z" 
             fill={getFill('calves')} 
             filter={getFilter('calves')}
-            className="transition-all duration-1000"
+            className={`transition-all duration-1000 ${getPulseClass('calves')}`}
           />
         </svg>
       </div>
