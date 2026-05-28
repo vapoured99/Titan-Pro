@@ -89,6 +89,7 @@ import midnightCityBg from './assets/images/midnight_city_bg_1779282230526.png';
 import voidEclipseBg from './assets/images/void_eclipse_bg_1779447103424.png';
 import celestialLightBg from './assets/images/celestial_light_bg_1779447123837.png';
 import lumenSentinelBg from './assets/images/banner_lumen_sentinel_1779449818555.png';
+import lumenSentinelBgNew from './assets/images/lumen_sentinel_bg_1779719240506.png';
 import solarAscentBg from './assets/images/solar_ascent_bg_1779457047851.png';
 import cosmicVortexBg from './assets/images/cosmic_vortex_bg_new_1779719240506.png';
 import overgrownCyberCityBg from './assets/images/cyber_city_bg_new_1779719262117.png';
@@ -114,12 +115,13 @@ interface GymTheme {
   accentLight: string;
   accentDark: string;
   bg: string;
-  bgImage: string;
+  bgImage?: string;
   opacity: string;
   textVibe: string;
   testPrimary: string;
   testMuted: string;
   testSubtle: string;
+  isGradient?: boolean;
 }
 
 const GYM_THEMES: Record<string, GymTheme> = {
@@ -260,7 +262,7 @@ const GYM_THEMES: Record<string, GymTheme> = {
     accentLight: '#bae6fd',
     accentDark: '#0284c7',
     bg: '#040b17',
-    bgImage: lumenSentinelBg,
+    bgImage: lumenSentinelBgNew,
     opacity: 'opacity-40',
     textVibe: 'Lumen Sentinel. Ascend into the celestial light of flawless execution.',
     testPrimary: '#f0f9ff',
@@ -314,6 +316,150 @@ const GYM_THEMES: Record<string, GymTheme> = {
     testPrimary: '#ecfdf5',
     testMuted: 'rgba(167, 243, 208, 0.45)',
     testSubtle: 'rgba(16, 185, 129, 0.2)'
+  },
+  gradient_red: {
+    id: 'gradient_red',
+    name: 'Crimson Eclipse',
+    description: 'Minimalist deep space crimson aura.',
+    accent: '#ef4444',
+    accentRgb: '239, 68, 68',
+    accentLight: '#fca5a5',
+    accentDark: '#991b1b',
+    bg: '#000000',
+    opacity: 'opacity-0',
+    textVibe: 'Crimson Eclipse. Deep, aggressive dark training state.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(239, 68, 68, 0.2)',
+    isGradient: true
+  },
+  gradient_orange: {
+    id: 'gradient_orange',
+    name: 'Volcanic Amber',
+    description: 'Minimalist volcanic fire aura.',
+    accent: '#f97316',
+    accentRgb: '249, 115, 22',
+    accentLight: '#ffedd5',
+    accentDark: '#9a3412',
+    bg: '#000000',
+    opacity: 'opacity-0',
+    textVibe: 'Volcanic Amber. Heat-forged focus and raw drive.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(249, 115, 22, 0.2)',
+    isGradient: true
+  },
+  gradient_gold: {
+    id: 'gradient_gold',
+    name: 'Aurum Eclipse',
+    description: 'Minimalist absolute premium gold aura.',
+    accent: '#d4af37',
+    accentRgb: '212, 175, 55',
+    accentLight: '#f1e5ac',
+    accentDark: '#c5a028',
+    bg: '#000000',
+    opacity: 'opacity-0',
+    textVibe: 'Aurum Eclipse. Sophisticated champion-status pursuit.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(212, 175, 55, 0.2)',
+    isGradient: true
+  },
+  gradient_green: {
+    id: 'gradient_green',
+    name: 'Jade Transcendence',
+    description: 'Minimalist forest emerald aura.',
+    accent: '#10b981',
+    accentRgb: '16, 185, 129',
+    accentLight: '#a7f3d0',
+    accentDark: '#065f46',
+    bg: '#000000',
+    opacity: 'opacity-0',
+    textVibe: 'Jade Transcendence. Pure focus, tranquil execution.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(16, 185, 129, 0.2)',
+    isGradient: true
+  },
+  gradient_cyan: {
+    id: 'gradient_cyan',
+    name: 'Cyan Absolution',
+    description: 'Minimalist neon electric cyber cyan aura.',
+    accent: '#06b6d4',
+    accentRgb: '6, 182, 212',
+    accentLight: '#cffafe',
+    accentDark: '#155e75',
+    bg: '#000000',
+    opacity: 'opacity-0',
+    textVibe: 'Cyan Absolution. High-frequency digital training halo.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(6, 182, 212, 0.2)',
+    isGradient: true
+  },
+  gradient_blue: {
+    id: 'gradient_blue',
+    name: 'Deep Cobalt',
+    description: 'Minimalist electric twilight wave aura.',
+    accent: '#3b82f6',
+    accentRgb: '59, 130, 246',
+    accentLight: '#dbeafe',
+    accentDark: '#1e40af',
+    bg: '#000000',
+    opacity: 'opacity-0',
+    textVibe: 'Deep Cobalt. Dark ocean power, rhythmic discipline.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(59, 130, 246, 0.2)',
+    isGradient: true
+  },
+  gradient_violet: {
+    id: 'gradient_violet',
+    name: 'Amethyst Singularity',
+    description: 'Minimalist deep galactic cosmic violet aura.',
+    accent: '#a855f7',
+    accentRgb: '168, 85, 247',
+    accentLight: '#f3e8ff',
+    accentDark: '#6b21a8',
+    bg: '#000000',
+    opacity: 'opacity-0',
+    textVibe: 'Amethyst Singularity. Intense, mysterious dimension shift.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(168, 85, 247, 0.2)',
+    isGradient: true
+  },
+  gradient_pink: {
+    id: 'gradient_pink',
+    name: 'Rose Hyperspace',
+    description: 'Minimalist vibrant hyper-synth-pink aura.',
+    accent: '#ec4899',
+    accentRgb: '236, 72, 153',
+    accentLight: '#fce7f3',
+    accentDark: '#9d174d',
+    bg: '#000000',
+    opacity: 'opacity-0',
+    textVibe: 'Rose Hyperspace. Electric charge, limitless potential.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(236, 72, 153, 0.2)',
+    isGradient: true
+  },
+  gradient_mono: {
+    id: 'gradient_mono',
+    name: 'Stark Obsidian',
+    description: 'Minimalist carbon metal neutral steel aura.',
+    accent: '#94a3b8',
+    accentRgb: '148, 163, 184',
+    accentLight: '#cbd5e1',
+    accentDark: '#334155',
+    bg: '#000000',
+    opacity: 'opacity-0',
+    textVibe: 'Stark Obsidian. Zero noise, high performance layout.',
+    testPrimary: '#ffffff',
+    testMuted: 'rgba(255, 255, 255, 0.45)',
+    testSubtle: 'rgba(148, 163, 184, 0.2)',
+    isGradient: true
   }
 };
 
@@ -1982,16 +2128,24 @@ export default function App() {
             --theme-text-subtle: ${authTheme.testSubtle} !important;
           }
         `}</style>
-        {/* Background Image */}
+        {/* Background Atmosphere */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-          <img 
-            key={authTheme.id}
-            src={authTheme.bgImage} 
-            alt="Gym Background" 
-            className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(authTheme.id)} ${authTheme.opacity}`}
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}40, ${authTheme.bg}ff)` }} />
+          {authTheme.isGradient ? (
+            <div className="absolute inset-0 bg-[#000000]" style={{
+              backgroundImage: `radial-gradient(circle at 50% 30%, ${authTheme.accent}15 0%, #000000 85%)`
+            }} />
+          ) : (
+            <>
+              <img 
+                key={authTheme.id}
+                src={authTheme.bgImage} 
+                alt="Gym Background" 
+                className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(authTheme.id)} ${authTheme.opacity}`}
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}40, ${authTheme.bg}ff)` }} />
+            </>
+          )}
         </div>
         <Loader2 className="w-12 h-12 text-gym-accent animate-spin relative z-10" />
       </div>
@@ -2012,16 +2166,24 @@ export default function App() {
             --theme-text-subtle: ${authTheme.testSubtle} !important;
           }
         `}</style>
-        {/* Background Image */}
+        {/* Background Atmosphere */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-          <img 
-            key={authTheme.id}
-            src={authTheme.bgImage} 
-            alt="Gym Background" 
-            className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(authTheme.id)} ${authTheme.opacity} scale-105`}
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}60, ${authTheme.bg}ff)` }} />
+          {authTheme.isGradient ? (
+            <div className="absolute inset-0 bg-[#000000]" style={{
+              backgroundImage: `radial-gradient(circle at 50% 30%, ${authTheme.accent}15 0%, #000000 85%)`
+            }} />
+          ) : (
+            <>
+              <img 
+                key={authTheme.id}
+                src={authTheme.bgImage} 
+                alt="Gym Background" 
+                className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(authTheme.id)} ${authTheme.opacity} scale-105`}
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${authTheme.bg}a0, ${authTheme.bg}60, ${authTheme.bg}ff)` }} />
+            </>
+          )}
         </div>
 
         <motion.div 
@@ -2142,16 +2304,24 @@ export default function App() {
           --theme-text-subtle: ${activeTheme.testSubtle} !important;
         }
       `}</style>
-      {/* Background Image */}
+      {/* Background Atmosphere */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <img 
-          key={activeTheme.id}
-          src={activeTheme.bgImage} 
-          alt="Gym Background" 
-          className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(activeTheme.id)} ${activeTheme.opacity}`}
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${activeTheme.bg}a0, ${activeTheme.bg}40, ${activeTheme.bg}ff)` }} />
+        {activeTheme.isGradient ? (
+          <div className="absolute inset-0 bg-[#000000]" style={{
+            backgroundImage: `radial-gradient(circle at 50% 40%, ${activeTheme.accent}20 0%, #000000 100%)`
+          }} />
+        ) : (
+          <>
+            <img 
+              key={activeTheme.id}
+              src={activeTheme.bgImage} 
+              alt="Gym Background" 
+              className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(activeTheme.id)} ${activeTheme.opacity}`}
+              referrerPolicy="no-referrer"
+            />
+            <div className="absolute inset-0 transition-colors duration-500" style={{ background: `linear-gradient(to bottom, ${activeTheme.bg}a0, ${activeTheme.bg}40, ${activeTheme.bg}ff)` }} />
+          </>
+        )}
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 py-12 pb-32">
@@ -3865,7 +4035,7 @@ export default function App() {
                   </p>
                   
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {Object.values(GYM_THEMES).map((theme) => {
+                    {Object.values(GYM_THEMES).filter(t => !t.isGradient).map((theme) => {
                       const isActive = theme.id === currentThemeId;
                       return (
                         <button
@@ -3913,6 +4083,62 @@ export default function App() {
                         </button>
                       );
                     })}
+                  </div>
+
+                  {/* Row of minimalist gradient theme circles */}
+                  <div className="mt-8 pt-8 border-t border-white/5">
+                    <h5 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.3em] mb-3 flex items-center justify-between">
+                      <span>Minimalist Aura Atmospheres</span>
+                      <span className="text-[8px] opacity-40 uppercase tracking-widest font-bold">Ambient Gradients</span>
+                    </h5>
+                    <p className="text-xs text-white/40 mb-6 font-light leading-relaxed">
+                      Prefer a distraction-free layout? Select a sleek black/color gradient aura below.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-4 sm:gap-5 py-2">
+                      {Object.values(GYM_THEMES).filter(t => t.isGradient).map((theme) => {
+                        const isActive = theme.id === currentThemeId;
+                        return (
+                          <div key={theme.id} className="group relative flex flex-col items-center">
+                            <button
+                              onClick={async () => {
+                                setCurrentThemeId(theme.id);
+                                localStorage.setItem('gym-theme-id', theme.id);
+                                saveSettings({ themeId: theme.id });
+                                setToast({ message: `🎯 Equipped Minimalist Aura: ${theme.name}!`, type: 'success' });
+                              }}
+                              type="button"
+                              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full cursor-pointer transition-all duration-300 relative flex items-center justify-center p-0.5 ${
+                                isActive 
+                                  ? 'scale-110 ring-2 ring-gym-accent ring-offset-2 ring-offset-[#050505] shadow-lg shadow-gym-accent/25' 
+                                  : 'hover:scale-105 border border-white/10 hover:border-white/35'
+                              }`}
+                              style={{
+                                background: `radial-gradient(circle, ${theme.accent} 0%, #0c0c0c 100%)`
+                              }}
+                              aria-label={`Select ${theme.name}`}
+                            >
+                              {/* Inner accent core */}
+                              <span 
+                                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full transition-all duration-300 ${
+                                  isActive ? 'scale-110 shadow-inner' : 'scale-75 group-hover:scale-95'
+                                }`}
+                                style={{ 
+                                  backgroundColor: theme.accent,
+                                  boxShadow: isActive ? `0 0 8px ${theme.accent}` : 'none'
+                                }}
+                              />
+                            </button>
+                            
+                            {/* Theme short label */}
+                            <span className={`text-[8px] font-mono tracking-wider mt-2.5 transition-colors duration-200 ${
+                              isActive ? 'text-gym-accent font-black' : 'text-white/35 group-hover:text-white/60'
+                            }`}>
+                              {theme.name.split(' ')[0]}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
