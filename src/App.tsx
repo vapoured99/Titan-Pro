@@ -2555,7 +2555,7 @@ export default function App() {
                     </div>
                     
                     <div className="flex-1 flex items-center justify-center my-2">
-                      <AnatomyChart sets={sessionSets} compact={true} />
+                      <AnatomyChart sets={sessionSets} archivedWorkouts={archivedWorkouts} compact={true} />
                     </div>
 
                     <div className="pt-4 border-t border-white/5 flex items-center justify-between">
@@ -3567,18 +3567,23 @@ export default function App() {
                 <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Real-time muscle recruitment mapping</p>
               </div>
 
-              <AnatomyChart sets={sessionSets} />
+              <AnatomyChart sets={sessionSets} archivedWorkouts={archivedWorkouts} />
               
               {sessionSets.length === 0 && (
-                <div className="py-12 px-8 bg-white/[0.02] border border-white/5 rounded-sm text-center">
-                   <Activity className="w-8 h-8 text-white/10 mx-auto mb-4" />
-                   <p className="text-sm font-light text-white/40 italic font-serif">No active session data recorded to map physiological evolution.</p>
-                   <button 
-                     onClick={() => setActiveView('workout')}
-                     className="mt-6 text-[10px] text-gym-accent font-bold uppercase tracking-widest border-b border-gym-accent/30 hover:border-gym-accent transition-all cursor-pointer"
-                   >
-                     Commence Recording in Programming
-                   </button>
+                <div className="py-6 px-8 bg-white/[0.01] border border-white/5 border-dashed rounded-sm text-center mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-left">
+                    <Activity className="w-5 h-5 text-white/20 flex-shrink-0" />
+                    <div>
+                      <p className="text-xs font-semibold text-white/60">No Real-time Session Active</p>
+                      <p className="text-[10px] text-white/30 uppercase tracking-wider">Visualizing tracked muscle recovery over the last 5 days. Start a workout to log active stimulation.</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setActiveView('workout')}
+                    className="text-[9px] bg-gym-accent text-black font-black uppercase tracking-widest px-4 py-2 hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer rounded-sm"
+                  >
+                    Start Workout &rarr;
+                  </button>
                 </div>
               )}
             </motion.div>
