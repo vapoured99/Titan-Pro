@@ -48,13 +48,7 @@ import {
   onAuthStateChanged
 } from '../lib/firebase';
 
-const API_KEY =
-  (process.env.GOOGLE_MAPS_PLATFORM_KEY || '').trim() ||
-  (process.env.GOOGLE_MAPS_API_KEY || '').trim() ||
-  (process.env.GOOGLE_MAPS_KEY || '').trim() ||
-  ((import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || '').trim() ||
-  ((globalThis as any).GOOGLE_MAPS_PLATFORM_KEY || '').trim() ||
-  '';
+const API_KEY: string = 'AIzaSyCYJg6XySBcT9cX6hFkZYxvRF4RMbCf2WU';
 
 const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
 
@@ -509,37 +503,13 @@ export default function TacticalMap() {
   const [localApiKey, setLocalApiKey] = useState<string>(() => {
     return localStorage.getItem('gym_google_maps_key') || '';
   });
-  const [dynamicApiKey, setDynamicApiKey] = useState<string>('');
-  const [isKeyLoading, setIsKeyLoading] = useState<boolean>(true);
+  const [dynamicApiKey, setDynamicApiKey] = useState<string>(API_KEY);
+  const [isKeyLoading, setIsKeyLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    fetch('/api/maps-key')
-      .then(async res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-        const text = await res.text();
-        const trimmed = text.trim();
-        if (trimmed.startsWith('<') || trimmed.toLowerCase().startsWith('<!doctype')) {
-          throw new Error("Received HTML routing callback instead of JSON payload.");
-        }
-        return JSON.parse(trimmed);
-      })
-      .then(data => {
-        if (data && data.key) {
-          setDynamicApiKey(data.key);
-        } else {
-          setDynamicApiKey(API_KEY);
-        }
-        setIsKeyLoading(false);
-      })
-      .catch(err => {
-        // Safe silent fallback: the application is hosted on a static deploy (like Vercel) where API routes are inactive,
-        // or the server is momentarily booting. Seamlessly fallback to the built-in and manually-configured keys.
-        console.warn("API route '/api/maps-key' bypassed or not found on this host. Falling back to built-in or device-local keys.", err.message);
-        setDynamicApiKey(API_KEY);
-        setIsKeyLoading(false);
-      });
+    // API key is statically assigned for instant loading and reliability.
+    setDynamicApiKey(API_KEY);
+    setIsKeyLoading(false);
   }, []);
 
   const [activePreset, setActivePreset] = useState<typeof PRESET_TRAILS[0] | null>(PRESET_TRAILS[0]);
