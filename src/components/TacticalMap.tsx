@@ -514,7 +514,17 @@ export default function TacticalMap() {
 
   useEffect(() => {
     fetch('/api/maps-key')
-      .then(res => res.json())
+      .then(async res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! Status: ${res.status}`);
+        }
+        const text = await res.text();
+        const trimmed = text.trim();
+        if (trimmed.startsWith('<') || trimmed.toLowerCase().startsWith('<!doctype')) {
+          throw new Error("Received HTML routing callback instead of JSON payload.");
+        }
+        return JSON.parse(trimmed);
+      })
       .then(data => {
         if (data && data.key) {
           setDynamicApiKey(data.key);
