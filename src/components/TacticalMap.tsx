@@ -534,7 +534,9 @@ export default function TacticalMap() {
         setIsKeyLoading(false);
       })
       .catch(err => {
-        console.error("Failed to fetch maps API key from server:", err);
+        // Safe silent fallback: the application is hosted on a static deploy (like Vercel) where API routes are inactive,
+        // or the server is momentarily booting. Seamlessly fallback to the built-in and manually-configured keys.
+        console.warn("API route '/api/maps-key' bypassed or not found on this host. Falling back to built-in or device-local keys.", err.message);
         setDynamicApiKey(API_KEY);
         setIsKeyLoading(false);
       });
