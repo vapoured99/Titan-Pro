@@ -147,152 +147,232 @@ const tacticalMinimalDarkStyles = [
 // Tactical Preset Trails for direct demo & exploration
 const PRESET_TRAILS = [
   {
-    id: 'ascent_patrol',
-    name: 'Hazlehead Forest Loop',
-    category: 'parks',
-    origin: { lat: 57.1420, lng: -2.1700 }, // Hazlehead Park Area
-    destination: { lat: 57.1465, lng: -2.1852 },
-    originText: 'Hazlehead Pavilion',
-    destinationText: 'Pine Wood Boundary',
-    difficulty: 'EASY',
-    kcalEstPerKm: 68,
-    details: 'Scenic forest trails with wood sculptures and flat terrains.',
-    trailType: 'Nature Recovery Ruck'
-  },
-  {
-    id: 'central_intel',
-    name: 'Duthie Park & Deeside Way',
-    category: 'parks',
-    origin: { lat: 57.1325, lng: -2.1030 }, // Duthie Park Winter Gardens
-    destination: { lat: 57.1260, lng: -2.1332 },
-    originText: 'Winter Gardens Portal',
-    destinationText: 'Old Railroad Junction',
+    id: 'loch_muick_circular',
+    name: 'Loch Muick: Classic Circular Loop',
+    category: 'hike',
+    origin: { lat: 56.9535, lng: -3.1530 }, // Spittal of Glen Muick path
+    destination: { lat: 56.9388, lng: -3.1895 }, // Glas-allt Shiel gravel path
+    originText: 'Glen Muick Visitor Centre',
+    destinationText: 'Glas-allt Shiel Royal Lodge Path',
     difficulty: 'MEDIUM',
-    kcalEstPerKm: 75,
-    details: 'Paved trail following the historic railway path along the River Dee.',
-    trailType: 'Base Aero Workout'
+    kcalEstPerKm: 74,
+    details: 'A world-famous 12.1km flat, well-maintained gravel circuit looping entirely around Loch Muick under the shadow of Lochnagar on AllTrails.',
+    trailType: 'Lochside Gravel Circuit'
   },
   {
-    id: 'haddo_country_park',
-    name: 'Haddo House Country Park',
-    category: 'parks',
-    origin: { lat: 57.4042, lng: -2.2215 },
-    destination: { lat: 57.3975, lng: -2.2155 },
-    originText: 'Haddo House Entrance',
-    destinationText: 'Pheasantry Wood Lake',
-    difficulty: 'EASY',
-    kcalEstPerKm: 65,
-    details: 'Serene parklands, lime avenue, lake, and historical monuments.',
-    trailType: 'Scenic Recover'
-  },
-  {
-    id: 'glen_tanar_forest',
-    name: 'Glen Tanar Forest Trail',
-    category: 'parks',
-    origin: { lat: 57.0625, lng: -2.8520 },
-    destination: { lat: 57.0392, lng: -2.8810 },
-    originText: 'Glen Tanar Visitor Centre',
-    destinationText: 'Mount Keen Foothills Link',
-    difficulty: 'HARD',
-    kcalEstPerKm: 92,
-    details: 'Intense remote run through ancient Caledonian forest paths & rocky glens.',
-    trailType: 'Endurance Wilderness Quest'
-  },
-  {
-    id: 'alpine_ridge',
-    name: 'Balgownie Bridge & Donmouth',
-    category: 'historical',
-    origin: { lat: 57.1770, lng: -2.0835 }, // Brig o' Balgownie
-    destination: { lat: 57.1695, lng: -2.0725 },
-    originText: 'Brig o\' Balgownie',
-    destinationText: 'Donmouth Nature Reserve',
-    difficulty: 'HARD',
-    kcalEstPerKm: 88,
-    details: 'Historical cobblestones and coastal headwinds along the mouth of the River Don.',
-    trailType: 'Tactical Windy Interval'
-  },
-  {
-    id: 'dunnottar_castle_trail',
-    name: 'Dunnottar Castle Coastal Path',
-    category: 'historical',
-    origin: { lat: 56.9691, lng: -2.2031 },
-    destination: { lat: 56.9458, lng: -2.1972 },
-    originText: 'Stonehaven Harbour',
-    destinationText: 'Dunnottar Castle Cliff',
-    difficulty: 'HARD',
-    kcalEstPerKm: 90,
-    details: 'Rugged cliffside adventure to the glorious medieval fortress ruin.',
-    trailType: 'Coastal Fortress Ascent'
-  },
-  {
-    id: 'crathes_castle_gardens',
-    name: 'Crathes Castle Wood walks',
-    category: 'historical',
-    origin: { lat: 57.0620, lng: -2.4395 },
-    destination: { lat: 57.0583, lng: -2.4452 },
-    originText: 'Crathes Visitors Courtyard',
-    destinationText: 'Coy Burn Mill Trail',
+    id: 'loch_muick_glasallt',
+    name: 'Loch Muick: Glas-allt Shiel Falls Hike',
+    category: 'hike',
+    origin: { lat: 56.9535, lng: -3.1530 }, // Visitor Centre main track
+    destination: { lat: 56.9395, lng: -3.1950 }, // Waterfall rocky trackway
+    originText: 'Spittal of Glen Muick Gate',
+    destinationText: 'Glas-allt Cascade Viewpoint',
     difficulty: 'MEDIUM',
-    kcalEstPerKm: 78,
-    details: 'Enchanted woodland walk alongside the stunning 16th-century tower house gardens.',
-    trailType: 'Heritage Rucking'
+    kcalEstPerKm: 79,
+    details: 'A beautiful 8.5km out-and-back trail heading directly to Victoria’s waterfall cascading down the granite cliffs above Loch Muick on AllTrails.',
+    trailType: 'Watercourse Cliff Trail'
   },
   {
-    id: 'tolquhon_castle_walk',
-    name: 'Tolquhon Castle Estate Walk',
-    category: 'historical',
-    origin: { lat: 57.3488, lng: -2.2135 },
-    destination: { lat: 57.3495, lng: -2.2148 },
-    originText: 'Tolquhon Castle Gatehouse',
-    destinationText: 'Castle Keep Courtyard',
-    difficulty: 'EASY',
-    kcalEstPerKm: 60,
-    details: 'Enchanting level wildflower meadows around the magnificent late-medieval ruin.',
-    trailType: 'Heritage Recovery Stroll'
-  },
-  {
-    id: 'bennachie_mither_tap',
-    name: 'Bennachie Mither Tap Ascent',
-    category: 'trails',
-    origin: { lat: 57.2862, lng: -2.4820 }, // Bennachie Visitor Centre
-    destination: { lat: 57.2915, lng: -2.4835 }, // Mither Tap Summit
-    originText: 'Bennachie Visitor Centre',
-    destinationText: 'Mither Tap Summit Peak',
+    id: 'loch_muick_broad_cairn',
+    name: 'Loch Muick: Broad Cairn Mountain Trail',
+    category: 'hike',
+    origin: { lat: 56.9535, lng: -3.1530 }, // Visitor Centre path
+    destination: { lat: 56.9185, lng: -3.2505 }, // Broad Cairn summit trail on land
+    originText: 'Glen Muick Base Trailhead',
+    destinationText: 'Broad Cairn Summit Ridge',
     difficulty: 'HARD',
     kcalEstPerKm: 95,
-    details: 'Steep historic granite slopes leading to the ancient hillfort summit of Bennachie.',
-    trailType: 'Peak Elevation Challenge'
+    details: 'An extreme, rocky 14.2km mountain trek climbing from Loch Muick up to the Broad Cairn Munro peak on historic stone paths on AllTrails.',
+    trailType: 'High Peak Alpine Trail'
   },
   {
-    id: 'scolty_banchory',
-    name: 'Scolty Hill Woodland Trail',
-    category: 'trails',
-    origin: { lat: 57.0425, lng: -2.5020 }, // Scolty Woods Car Park
-    destination: { lat: 57.0375, lng: -2.5055 }, // Scolty Hill Monument
-    originText: 'Scolty Woods Entry',
-    destinationText: 'Scolty Tower Monument',
+    id: 'loch_muick_lochnagar',
+    name: 'Loch Muick to Lochnagar summit Peak',
+    category: 'hike',
+    origin: { lat: 56.9535, lng: -3.1530 }, // Visitor Centre path
+    destination: { lat: 56.9565, lng: -3.2425 }, // Lochnagar rocky path
+    originText: 'Spittal of Glen Muick Barn',
+    destinationText: 'Lochnagar Cliff Crest Summit',
+    difficulty: 'HARD',
+    kcalEstPerKm: 98,
+    details: 'A classic 17.5km mountain endurance hike climbing past boulder fields and scenic waterfalls to the high dramatic cliffs of Lochnagar on AllTrails.',
+    trailType: 'Rugged Munro Mountain Hike'
+  },
+  {
+    id: 'balmoral_cairns_pyramid',
+    name: 'Balmoral Estate: Prince Albert’s Cairn Walk',
+    category: 'hike',
+    origin: { lat: 57.0392, lng: -3.2088 }, // Crathie stone bridge path
+    destination: { lat: 57.0274, lng: -3.2185 }, // Pyramid monument trail
+    originText: 'Crathie Settlement Bridge',
+    destinationText: 'Balmoral Pyramid Cairn Peak',
     difficulty: 'MEDIUM',
-    kcalEstPerKm: 82,
-    details: 'Beautiful mixed woodland climb with panoramic views of River Dee & Banchory.',
-    trailType: 'Ascent Multi-terrain Interval'
+    kcalEstPerKm: 85,
+    details: 'A scenic yet steep 2.5km woodland hike through Royal estate pine forests to the iconic granite pyramid monument on AllTrails.',
+    trailType: 'Royal Commemorative Trail'
   },
   {
-    id: 'deeside_way_banchory',
-    name: 'Deeside Way: Banchory Path',
-    category: 'trails',
-    origin: { lat: 57.0505, lng: -2.4930 },
-    destination: { lat: 57.0592, lng: -2.4350 },
-    originText: 'Banchory East Station',
-    destinationText: 'Crathes Forest Link',
+    id: 'balmoral_craig_gowan',
+    name: 'Balmoral Estate: Craig Gowan Circular',
+    category: 'hike',
+    origin: { lat: 57.0390, lng: -3.2180 }, // Woodland gate path
+    destination: { lat: 57.0305, lng: -3.2290 }, // Hill crest forestry trail
+    originText: 'Balmoral Castle West Gate',
+    destinationText: 'Craig Gowan Pine Summit',
+    difficulty: 'EASY',
+    kcalEstPerKm: 70,
+    details: 'A peaceful, shady 6.2km walk exploring the lower pine hills and castle viewing points on wide gravel forest roads on AllTrails.',
+    trailType: 'Pine Hill Forest Road'
+  },
+  {
+    id: 'braemar_creag_choinnich',
+    name: 'Braemar: Creag Choinnich Hill Trail',
+    category: 'hike',
+    origin: { lat: 57.0045, lng: -3.3910 }, // Braemar forest entry path
+    destination: { lat: 57.0065, lng: -3.3810 }, // Hill overlook trail
+    originText: 'Braemar Woods Car Park Path',
+    destinationText: 'Creag Choinnich Rock viewpoint',
+    difficulty: 'HARD',
+    kcalEstPerKm: 89,
+    details: 'A steep, short 3.4km woodland scramble up Braemar’s majestic micro peak, delivering panoramic views of the River Dee on AllTrails.',
+    trailType: 'Technical Woods Climb'
+  },
+  {
+    id: 'clachnaben_tor_summit',
+    name: 'Clachnaben: Forest Track & Granite Tor Route',
+    category: 'hike',
+    origin: { lat: 56.9688, lng: -2.5775 }, // Clachnaben Quarry Car Park B974
+    destination: { lat: 56.9535, lng: -2.6010 }, // Clachnaben summit Peak point
+    originText: 'Clachnaben Quarry Car Park B974',
+    destinationText: 'Clachnaben Summit Granite Tor',
+    difficulty: 'HARD',
+    kcalEstPerKm: 89,
+    details: 'A popular 8.5km hill climb walking through dense forest, climbing steep gravel steps on heather moorland to reach the iconic summit on AllTrails.',
+    trailType: 'Steep Hill Climb Hike'
+  },
+  {
+    id: 'kincardine_oneil_dee',
+    name: "Kincardine O'Neil: Woods and River Dee Loop",
+    category: 'hike',
+    origin: { lat: 57.0838, lng: -2.6780 }, // Kincardine O'Neil village trailhead
+    destination: { lat: 57.0705, lng: -2.6685 }, // River Dee bank trail
+    originText: "Kincardine O'Neil Village Hall",
+    destinationText: "River Dee Woodland Path Edge",
+    difficulty: 'MEDIUM',
+    kcalEstPerKm: 72,
+    details: "A charming 7.5km loop joining sections of the historical Deeside Way and lovely dirt paths alongside the majestic River Dee on AllTrails.",
+    trailType: 'Woodland & Riverbank Loop'
+  },
+  {
+    id: 'scolty_wood_march',
+    name: 'Scolty Hill: Scolty Wood & March Loop',
+    category: 'hike',
+    origin: { lat: 57.0425, lng: -2.5020 }, // Forest ground start
+    destination: { lat: 57.0445, lng: -2.4890 }, // Wooded margin trail
+    originText: 'Scolty Wood Main Trailhead',
+    destinationText: 'March Woodland Track',
     difficulty: 'EASY',
     kcalEstPerKm: 72,
-    details: 'Smooth flat multi-purpose former rail track trail ideal for pacing and splits.',
-    trailType: 'Aerobic Pacing Run'
+    details: 'An relaxing 3.2km flat route following the perimeter field boundaries and larch alleys of Scolty Wood on AllTrails.',
+    trailType: 'Larch Alley Gravel Walk'
+  },
+  {
+    id: 'scolty_monument_climb',
+    name: 'Scolty Hill: Scolty Monument Tower Climb',
+    category: 'hike',
+    origin: { lat: 57.0425, lng: -2.5020 }, // Wood car park trailhead
+    destination: { lat: 57.0375, lng: -2.5055 }, // Monument peak trail
+    originText: 'Scolty Hill Base Gate',
+    destinationText: 'Scolty Monument Stone Summit',
+    difficulty: 'MEDIUM',
+    kcalEstPerKm: 81,
+    details: 'A rocky, heather-hemmed 2.4km climb straight up Scolty Hill to reach the famous 1840 general memorial stone tower on AllTrails.',
+    trailType: 'Woodland Summit Scramble'
+  },
+  {
+    id: 'crathes_coy_burn',
+    name: 'Crathes Castle: Coy Burn Forest Walk',
+    category: 'hike',
+    origin: { lat: 57.0620, lng: -2.4395 }, // Courtyard gravel path
+    destination: { lat: 57.0583, lng: -2.4452 }, // Coyote river-bend trail
+    originText: 'Crathes Castle Main Courtyard',
+    destinationText: 'Coy Burn Streamway Path',
+    difficulty: 'EASY',
+    kcalEstPerKm: 67,
+    details: 'A peaceful, mossy 2.8km trail tracing the winding Coy Burn stream under great ancient broad-leaved forest trees on AllTrails.',
+    trailType: 'Historical Estate Streamway'
+  },
+  {
+    id: 'crathes_ley_way',
+    name: 'Crathes Castle: Ley Way Forest Trail Loop',
+    category: 'hike',
+    origin: { lat: 57.0620, lng: -2.4395 }, // Courtyard gravel path
+    destination: { lat: 57.0695, lng: -2.4485 }, // Ley forest dirt trail
+    originText: 'Crathes Castle Main Lawn',
+    destinationText: 'Ley Wood Northern boundary',
+    difficulty: 'MEDIUM',
+    kcalEstPerKm: 74,
+    details: 'A winding 4.2km loop through dense mixed coniferous wood structures, tracking deer trails on rich loam pathways on AllTrails.',
+    trailType: 'Conifer Border Loam Path'
+  },
+  {
+    id: 'dunnottar_cliff_trail',
+    name: 'Dunnottar Castle: Coastal Cliff Trail',
+    category: 'hike',
+    origin: { lat: 56.9605, lng: -2.2033 }, // Cliff edge path start
+    destination: { lat: 56.9458, lng: -2.1995 }, // Main tourist gate
+    originText: 'Stonehaven Bay Trailhead',
+    destinationText: 'Dunnottar Castle Gatehouse Path',
+    difficulty: 'MEDIUM',
+    kcalEstPerKm: 86,
+    details: 'A spectacular, windy 2.7km grassy dirt singletrack tracing high, cliff edges directly above coastal coves to the castle gates on AllTrails.',
+    trailType: 'Ocean-Facing Singletrack'
+  },
+  {
+    id: 'dunnottar_war_memorial',
+    name: 'Stonehaven: War Memorial & Dunnottar Loop',
+    category: 'hike',
+    origin: { lat: 56.9615, lng: -2.2045 }, // Harbour pathway
+    destination: { lat: 56.9560, lng: -2.1990 }, // War Memorial hill path
+    originText: 'Stonehaven Harbour Quay Path',
+    destinationText: 'Black Hill War Memorial Hill',
+    difficulty: 'EASY',
+    kcalEstPerKm: 75,
+    details: 'A scenic 3.6km historical walk climbing from the stone harbour to the magnificent circular stone temple monument on AllTrails.',
+    trailType: 'Coastal Monument Loop'
+  },
+  {
+    id: 'haddo_house_lake',
+    name: 'Haddo House: Lake & Pheasantry Wood Walk',
+    category: 'hike',
+    origin: { lat: 57.4042, lng: -2.2215 }, // Courtyard path
+    destination: { lat: 57.3975, lng: -2.2155 }, // South lake trail
+    originText: 'Haddo Courtyard Gates',
+    destinationText: 'Pheasantry Lake Dirt Trail',
+    difficulty: 'EASY',
+    kcalEstPerKm: 65,
+    details: 'A smooth, loop-designed 1.8km historic path through pheasantry wood and lakeside margins on AllTrails.',
+    trailType: 'Lakeside Estate Trail'
+  },
+  {
+    id: 'haddo_house_monument',
+    name: 'Haddo House: Monument & Estate Loop',
+    category: 'hike',
+    origin: { lat: 57.4042, lng: -2.2215 }, // Courtyard path
+    destination: { lat: 57.4110, lng: -2.2355 }, // Monument forest road
+    originText: 'Haddo Courtyard Gates',
+    destinationText: 'Deer Park Monument Road',
+    difficulty: 'MEDIUM',
+    kcalEstPerKm: 72,
+    details: 'A beautiful 3.5km broad forest-road and grass trail leading up to the historic monuments of Haddo estate parkland on AllTrails.',
+    trailType: 'Broad Estate Forest Track'
   }
 ];
 
 export const getCategoryIconDetails = (catType: string | null) => {
   switch (catType) {
+    case 'hike':
+      return { icon: Footprints, color: '#f97316', text: 'Aberdeenshire Hike' };
     case 'parks':
       return { icon: Trees, color: '#22c55e', text: 'Parks & Woods' };
     case 'trails':
@@ -616,10 +696,10 @@ export default function TacticalMap() {
     scrollContainerRef.current.scrollTop = scrollTopRef.current - scrollDistance;
   };
 
-  // Map state to control center
+    // Map state to control center
   const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral>({ lat: 57.1420, lng: -2.1700 });
   const [selectedPlace, setSelectedPlace] = useState<google.maps.places.Place | null>(null);
-  const [activeCategoryType, setActiveCategoryType] = useState<'parks' | 'trails' | 'historical' | null>(null);
+  const [activeCategoryType, setActiveCategoryType] = useState<'hike' | null>('hike');
   const [activeDifficultyFilter, setActiveDifficultyFilter] = useState<'ALL' | 'EASY' | 'MEDIUM' | 'HARD'>('ALL');
 
   // Auto-select first preset of chosen category & difficulty when changed
@@ -1427,25 +1507,13 @@ export default function TacticalMap() {
               {/* Categorical filters dropdown */}
               <div className="flex items-center gap-1.5 mt-1.5">
                 <span className="text-[7.5px] text-white/40 font-mono uppercase shrink-0">SECTOR:</span>
-                <div className="flex gap-1 overflow-x-auto no-scrollbar width-full">
-                  {[
-                    { id: null, label: 'ALL' },
-                    { id: 'trails', label: 'TRAILS' },
-                    { id: 'parks', label: 'PARKS' },
-                    { id: 'historical', label: 'HISTORIC' }
-                  ].map((cat) => (
-                    <button
-                      key={cat.label}
-                      onClick={() => setActiveCategoryType(cat.id as any)}
-                      className={`px-1.5 py-0.5 text-[7.5px] font-mono rounded-xs border transition-all ${
-                        activeCategoryType === cat.id
-                          ? 'bg-white/10 border-white/20 text-white font-bold'
-                          : 'bg-transparent border-transparent text-white/45'
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    className="px-2 py-0.5 text-[7.5px] font-mono rounded-xs border transition-all bg-gym-accent border-gym-accent text-black font-extrabold uppercase tracking-wider"
+                  >
+                    Hikes
+                  </button>
                 </div>
               </div>
             </div>
