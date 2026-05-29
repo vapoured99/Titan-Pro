@@ -49,9 +49,11 @@ import {
 } from '../lib/firebase';
 
 const API_KEY =
-  process.env.GOOGLE_MAPS_PLATFORM_KEY ||
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
-  (globalThis as any).GOOGLE_MAPS_PLATFORM_KEY ||
+  (process.env.GOOGLE_MAPS_PLATFORM_KEY || '').trim() ||
+  (process.env.GOOGLE_MAPS_API_KEY || '').trim() ||
+  (process.env.GOOGLE_MAPS_KEY || '').trim() ||
+  ((import.meta as any).env?.VITE_GOOGLE_MAPS_PLATFORM_KEY || '').trim() ||
+  ((globalThis as any).GOOGLE_MAPS_PLATFORM_KEY || '').trim() ||
   '';
 
 const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
@@ -431,17 +433,38 @@ function RouteTracker({ origin, destination, middleWaypoints, shouldLoopBack, on
       .then(({ routes }) => {
         if (routes && routes[0]) {
           const route = routes[0];
-          // Create themed line and style via standard setOptions method to bypass type limitations
-          const newPolylines = route.createPolylines();
-          newPolylines.forEach(p => {
-            p.setOptions({
+          // Create themed line and style via standard setOptions method to bypass type limitations safely
+          const newPolylines = typeof route.createPolylines === 'function' ? route.createPolylines() : null;
+          if (newPolylines && Array.isArray(newPolylines)) {
+            newPolylines.forEach(p => {
+              if (p) {
+                p.setOptions({
+                  strokeColor: '#00ffcc',
+                  strokeOpacity: 0.85,
+                  strokeWeight: 6,
+                });
+                p.setMap(map);
+              }
+            });
+            polylinesRef.current = newPolylines;
+          } else if (route.path) {
+            // Robust fallback if createPolylines is undefined: construct dynamic lines directly
+            const rawCoords: any[] = [];
+            route.path.forEach((pos: any) => {
+              if (pos) {
+                rawCoords.push({ lat: pos.lat, lng: pos.lng });
+              }
+            });
+            const fallbackPolyline = new google.maps.Polyline({
+              path: rawCoords,
+              geodesic: true,
               strokeColor: '#00ffcc',
               strokeOpacity: 0.85,
               strokeWeight: 6,
+              map: map
             });
-            p.setMap(map);
-          });
-          polylinesRef.current = newPolylines;
+            polylinesRef.current = [fallbackPolyline];
+          }
 
           // Convert string formats
           const distanceKm = route.distanceMeters ? (route.distanceMeters / 1000).toFixed(2) + ' KM' : 'N/A';
@@ -483,6 +506,9 @@ function RouteTracker({ origin, destination, middleWaypoints, shouldLoopBack, on
 }
 
 export default function TacticalMap() {
+  const [localApiKey, setLocalApiKey] = useState<string>(() => {
+    return localStorage.getItem('gym_google_maps_key') || '';
+  });
   const [dynamicApiKey, setDynamicApiKey] = useState<string>('');
   const [isKeyLoading, setIsKeyLoading] = useState<boolean>(true);
 
@@ -867,7 +893,7 @@ export default function TacticalMap() {
     }
   };
 
-  const activeKey = dynamicApiKey || API_KEY;
+  const activeKey = localApiKey || dynamicApiKey || API_KEY;
   const hasValidActiveKey = Boolean(activeKey) && activeKey !== 'YOUR_API_KEY';
 
   // Stable deterministic elevation generator based on coordinates
@@ -942,13 +968,93 @@ export default function TacticalMap() {
               <li>
                 Define <code>GOOGLE_MAPS_PLATFORM_KEY</code> as a Secret inside your development workstation:
                 <ul className="list-disc list-inside pl-4 mt-1 space-y-1 text-white/55">
-                  <li>Click the <strong>Settings (⚙️ gear icon)</strong> at the top right of the workspace.</li>
+                   <li>Click the <strong>Settings (⚙️ gear icon)</strong> at the top right of the workspace.</li>
                   <li>Go to <strong>Secrets</strong>.</li>
                   <li>Click <strong>Add Secret</strong> and name it <code>GOOGLE_MAPS_PLATFORM_KEY</code>, paste your key as the value, and click save.</li>
                 </ul>
               </li>
               <li>The Athlete Console will automatically reload and hot-patch with offline navigation.</li>
             </ol>
+          </div>
+
+          {/* Secure local device direct key activation option */}
+          <div className="border-t border-white/10 pt-5 mt-4 text-left space-y-2.5">
+            <p className="font-bold text-gym-accent uppercase tracking-wider text-xs">
+              🔑 Direct Device Activation (For Phone/Live Web App):
+            </p>
+            <p className="text-[11px] text-white/60 leading-normal">
+              If accessing on your phone or a shared preview URL where workstation secrets don't propagate, paste your Google Maps API Key below. It will save directly and securely strictly to this browser's local safety store.
+            </p>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const val = formData.get('manualApiKey') as string;
+              if (val && val.trim()) {
+                localStorage.setItem('gym_google_maps_key', val.trim());
+                setLocalApiKey(val.trim());
+              }
+            }} className="flex gap-2">
+              <input
+                type="password"
+                name="manualApiKey"
+                placeholder="Paste Your API Key (AIzaSy...)"
+                required
+                className="flex-1 bg-white/5 border border-white/10 focus:border-gym-accent/50 rounded-sm px-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none font-mono"
+              />
+              <button
+                type="submit"
+                className="px-4 py-1.5 bg-gym-accent text-black font-mono font-black text-xs uppercase hover:bg-gym-accent/90 transition-all rounded-sm cursor-pointer select-none border-none"
+              >
+                ACTIVATE KEY
+              </button>
+            </form>
+
+            {/* Referer / Domain Restriction Help Card */}
+            <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 p-4 rounded-sm text-xs space-y-2 mt-4">
+              <p className="font-bold uppercase tracking-wider text-[11px] text-gym-accent flex items-center gap-1.5">
+                ⚠️ HOW TO AUTHORIZE YOUR PHONE & LIVE WEBPAGE:
+              </p>
+              <p className="text-[11px] leading-relaxed text-white/80">
+                The <code>RefererNotAllowedMapError</code> happens because Google's servers are blocking request origins not specified in your API key's safety restrictions. Follow these precise steps or options to authorize your phone or shared URL:
+              </p>
+              
+              <div className="space-y-3 mt-2 text-white/70">
+                <div className="bg-white/5 p-2 rounded-sm border border-white/5">
+                  <span className="font-bold text-white text-[10px] block mb-1 uppercase tracking-wider text-gym-accent">Option A: Disable Website Restrictions (Quickest & Safest for testing)</span>
+                  <p className="text-[11px] leading-relaxed mb-1.5 text-white/85">
+                    If this is a private or experimental credentials key, loosening restrictions allows you to preview on all mobile devices and dev stations immediately:
+                  </p>
+                  <ol className="list-decimal pl-4 text-[11px] space-y-1 text-white/75">
+                    <li>Go to the <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-gym-accent underline hover:text-white">Google Cloud Console</a>.</li>
+                    <li>Open parent menu <strong>APIs &amp; Services</strong> &gt; <strong>Credentials</strong>.</li>
+                    <li>Click the pencil edit icon next to your Google Maps API Key.</li>
+                    <li>Scroll down to the <strong>Set an application restriction</strong> section.</li>
+                    <li>Select <strong>"None"</strong> (this removes background referer validation rejects).</li>
+                    <li>Click the blue <strong>Save</strong> button at the bottom. Wait 1 min and refresh!</li>
+                  </ol>
+                </div>
+
+                <div className="bg-white/5 p-2 rounded-sm border border-white/5">
+                  <span className="font-bold text-white text-[10px] block mb-1 uppercase tracking-wider text-gym-accent">Option B: Set Specific Website Referers (Strict Security)</span>
+                  <p className="text-[11px] leading-relaxed mb-1.5 text-white/85">
+                    If you want to keep strict HTTP restrictions enabled, you must whitelist the preview cloud containers exactly:
+                  </p>
+                  <ol className="list-decimal pl-4 text-[11px] space-y-1 text-white/75">
+                    <li>Within the Google Cloud Console, edit your API Key config.</li>
+                    <li>Ensure <strong>"Website restrictions"</strong> / <strong>"HTTP referrers (web sites)"</strong> is selected.</li>
+                    <li>Under <strong>Website restrictions</strong>, locate the URLs text fields and add these items:
+                      <ul className="list-disc pl-4 mt-1 space-y-0.5 text-white/90 font-mono text-[10px] bg-black/30 p-1.5 rounded-sm">
+                        <li><code>*.run.app/*</code> &nbsp;<span className="text-white/40 font-sans text-[10px]">(matches all previews on phone)</span></li>
+                        <li><code>https://ais-dev-bzhhelxbljh7cbeay67ouu-853669939350.europe-west2.run.app/*</code></li>
+                        <li><code>https://ais-pre-bzhhelxbljh7cbeay67ouu-853669939350.europe-west2.run.app/*</code></li>
+                      </ul>
+                    </li>
+                    <li>Make sure they are entered individually or cover all domains, then click the blue <strong>Save</strong> button.</li>
+                    <li>Note: Google applies changes asynchronously, so please allow up to 2-3 minutes for the restrictions to take full effect worldwide.</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -981,6 +1087,24 @@ export default function TacticalMap() {
     setTrailCompleted(false);
   };
 
+  // Helper to completely clear the entire route from the map
+  const handleClearRouteMap = () => {
+    setCustomOrigin(null);
+    setCustomDestination(null);
+    setMiddleWaypoints([]);
+    setActivePreset(null);
+    stopSimulation();
+    if (trailTimerRef.current) {
+      clearInterval(trailTimerRef.current);
+      trailTimerRef.current = null;
+    }
+    setIsTrailActive(false);
+    setTrailCompleted(false);
+    setRouteDistance('0.00 KM');
+    setRouteDuration('0 MINS');
+    setPathPoints([]);
+  };
+
   // Helper to remove custom waypoints
   const handleRemoveWaypoint = (idx: number) => {
     setMiddleWaypoints(prev => prev.filter((_, i) => i !== idx));
@@ -995,6 +1119,20 @@ export default function TacticalMap() {
           <p className="text-[10px] text-white/50 uppercase tracking-[0.2em] font-bold mt-1">Biochemical Traversal Calibration &amp; Route Discovery</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {localApiKey && (
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.removeItem('gym_google_maps_key');
+                setLocalApiKey('');
+                alert('Device-specific key cleared successfully.');
+              }}
+              className="px-3 py-1.5 bg-red-500/15 border border-red-500/30 hover:bg-red-500/25 text-red-400 text-[9px] font-mono tracking-wider font-semibold rounded-sm uppercase cursor-pointer"
+              title="Click to remove custom device key"
+            >
+              🔒 Clear Local Key
+            </button>
+          )}
           <button
             onClick={triggerCurrentLocation}
             className="px-3.5 py-1.5 bg-white/5 border border-white/10 hover:border-gym-accent/40 text-white text-[9px] font-bold uppercase tracking-wider font-mono rounded-sm flex items-center gap-2 transition-all cursor-pointer select-none"
@@ -1250,14 +1388,32 @@ export default function TacticalMap() {
               </div>
             )}
 
-            {(customOrigin || customDestination || middleWaypoints.length > 0) && (
-              <button
-                onClick={handleClearCustomRoute}
-                className="w-full py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 hover:border-red-500/25 text-[8px] font-mono uppercase tracking-wider rounded-sm transition-all"
-              >
-                RESTORE DEFAULT PATROL
-              </button>
-            )}
+            <div className="flex gap-1.5 pt-1">
+              {(customOrigin || customDestination || middleWaypoints.length > 0) && (
+                <button
+                  type="button"
+                  onClick={handleClearCustomRoute}
+                  className="flex-1 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 border border-white/5 hover:border-white/10 text-[8px] font-mono uppercase tracking-wider rounded-sm transition-all cursor-pointer"
+                >
+                  RESTORE DEFAULT
+                </button>
+              )}
+              
+              {(activePreset || customOrigin || customDestination || middleWaypoints.length > 0) ? (
+                <button
+                  type="button"
+                  onClick={handleClearRouteMap}
+                  className="flex-1 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 hover:border-red-500/20 text-[8px] font-mono uppercase tracking-wider rounded-sm transition-all cursor-pointer flex items-center justify-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  CLEAR ACTIVE ROUTE
+                </button>
+              ) : (
+                <div className="w-full text-center py-1.5 text-white/30 text-[8px] uppercase tracking-wider font-mono bg-white/[0.01] border border-dashed border-white/5 rounded-sm">
+                  NO ACTIVE ROUTE
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Section C: Preset Trail Explorer */}
