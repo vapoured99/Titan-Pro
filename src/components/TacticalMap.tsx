@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   APIProvider, 
   Map, 
@@ -36,7 +36,8 @@ import {
   Trash2,
   Plus,
   X,
-  List
+  List,
+  Save
 } from 'lucide-react';
 import { 
   db, 
@@ -147,225 +148,238 @@ const tacticalMinimalDarkStyles = [
 // Tactical Preset Trails for direct demo & exploration
 const PRESET_TRAILS = [
   {
-    id: 'loch_muick_circular',
-    name: 'Loch Muick: Classic Circular Loop',
+    id: 'lochnagar_summit',
+    name: 'Lochnagar: High Mountain Path',
     category: 'hike',
-    origin: { lat: 56.9535, lng: -3.1530 }, // Spittal of Glen Muick path
-    destination: { lat: 56.9388, lng: -3.1895 }, // Glas-allt Shiel gravel path
-    originText: 'Glen Muick Visitor Centre',
-    destinationText: 'Glas-allt Shiel Royal Lodge Path',
-    difficulty: 'MEDIUM',
-    kcalEstPerKm: 74,
-    details: 'A world-famous 12.1km flat, well-maintained gravel circuit looping entirely around Loch Muick under the shadow of Lochnagar on AllTrails.',
-    trailType: 'Lochside Gravel Circuit'
-  },
-  {
-    id: 'loch_muick_glasallt',
-    name: 'Loch Muick: Glas-allt Shiel Falls Hike',
-    category: 'hike',
-    origin: { lat: 56.9535, lng: -3.1530 }, // Visitor Centre main track
-    destination: { lat: 56.9395, lng: -3.1950 }, // Waterfall rocky trackway
-    originText: 'Spittal of Glen Muick Gate',
-    destinationText: 'Glas-allt Cascade Viewpoint',
-    difficulty: 'MEDIUM',
-    kcalEstPerKm: 79,
-    details: 'A beautiful 8.5km out-and-back trail heading directly to Victoria’s waterfall cascading down the granite cliffs above Loch Muick on AllTrails.',
-    trailType: 'Watercourse Cliff Trail'
-  },
-  {
-    id: 'loch_muick_broad_cairn',
-    name: 'Loch Muick: Broad Cairn Mountain Trail',
-    category: 'hike',
-    origin: { lat: 56.9535, lng: -3.1530 }, // Visitor Centre path
-    destination: { lat: 56.9185, lng: -3.2505 }, // Broad Cairn summit trail on land
-    originText: 'Glen Muick Base Trailhead',
-    destinationText: 'Broad Cairn Summit Ridge',
-    difficulty: 'HARD',
-    kcalEstPerKm: 95,
-    details: 'An extreme, rocky 14.2km mountain trek climbing from Loch Muick up to the Broad Cairn Munro peak on historic stone paths on AllTrails.',
-    trailType: 'High Peak Alpine Trail'
-  },
-  {
-    id: 'loch_muick_lochnagar',
-    name: 'Loch Muick to Lochnagar summit Peak',
-    category: 'hike',
-    origin: { lat: 56.9535, lng: -3.1530 }, // Visitor Centre path
-    destination: { lat: 56.9565, lng: -3.2425 }, // Lochnagar rocky path
-    originText: 'Spittal of Glen Muick Barn',
-    destinationText: 'Lochnagar Cliff Crest Summit',
+    origin: { lat: 56.9535, lng: -3.1530 },
+    destination: { lat: 56.9565, lng: -3.2425 },
+    originText: 'Glen Muick Spittal',
+    destinationText: 'Lochnagar Summit Crest',
     difficulty: 'HARD',
     kcalEstPerKm: 98,
-    details: 'A classic 17.5km mountain endurance hike climbing past boulder fields and scenic waterfalls to the high dramatic cliffs of Lochnagar on AllTrails.',
+    details: 'A magnificent, challenging mountain trail scaling the high heather fields and dramatic rock amphitheater of Lochnagar on AllTrails.',
     trailType: 'Rugged Munro Mountain Hike'
   },
   {
-    id: 'balmoral_cairns_pyramid',
-    name: 'Balmoral Estate: Prince Albert’s Cairn Walk',
+    id: 'balmoral_cairns',
+    name: "Prince Albert's Pyramid Cairn Walk",
     category: 'hike',
-    origin: { lat: 57.0392, lng: -3.2088 }, // Crathie stone bridge path
-    destination: { lat: 57.0274, lng: -3.2185 }, // Pyramid monument trail
-    originText: 'Crathie Settlement Bridge',
-    destinationText: 'Balmoral Pyramid Cairn Peak',
+    origin: { lat: 57.0392, lng: -3.2088 },
+    destination: { lat: 57.0274, lng: -3.2185 },
+    originText: 'Crathie Stone Bridge',
+    destinationText: 'Balmoral Pyramid Monument',
     difficulty: 'MEDIUM',
     kcalEstPerKm: 85,
-    details: 'A scenic yet steep 2.5km woodland hike through Royal estate pine forests to the iconic granite pyramid monument on AllTrails.',
+    details: 'A steep woodland trail ascending the historic pine slopes within the Royal Balmoral Estate to reach the striking stone pyramid on AllTrails.',
     trailType: 'Royal Commemorative Trail'
   },
   {
-    id: 'balmoral_craig_gowan',
-    name: 'Balmoral Estate: Craig Gowan Circular',
+    id: 'bennachie_mither_tap',
+    name: 'Bennachie: Mither Tap Circular',
     category: 'hike',
-    origin: { lat: 57.0390, lng: -3.2180 }, // Woodland gate path
-    destination: { lat: 57.0305, lng: -3.2290 }, // Hill crest forestry trail
-    originText: 'Balmoral Castle West Gate',
-    destinationText: 'Craig Gowan Pine Summit',
+    origin: { lat: 57.2917, lng: -2.4764 },
+    destination: { lat: 57.2911, lng: -2.4835 },
+    originText: 'Rowantree Base Car Park',
+    destinationText: 'Mither Tap Hill Fort Summit',
+    difficulty: 'MEDIUM',
+    kcalEstPerKm: 82,
+    details: 'Aberdeenshire’s iconic peak trail climbing wood steps and heather tracks to an impressive ancient Pictish hill fort summit on AllTrails.',
+    trailType: 'Iron Age Hill Fort Climb'
+  },
+  {
+    id: 'dunnottar_coastal_walk',
+    name: 'Stonehaven to Dunnottar Coastal Path',
+    category: 'hike',
+    origin: { lat: 56.9605, lng: -2.2033 },
+    destination: { lat: 56.9458, lng: -2.1995 },
+    originText: 'Stonehaven Old Harbour',
+    destinationText: 'Dunnottar Castle Cliffside Entrance',
+    difficulty: 'EASY',
+    kcalEstPerKm: 76,
+    details: 'A spectacularly scenic cliff-edge trail with dramatic ocean breezes leading directly to the iconic medieval fortress on AllTrails.',
+    trailType: 'Ocean-Facing Historic Track'
+  },
+  {
+    id: 'burn_o_vat_circular',
+    name: "Muir of Dinnet: Burn o' Vat Loop",
+    category: 'hike',
+    origin: { lat: 57.0865, lng: -2.9390 },
+    destination: { lat: 57.0875, lng: -2.9460 },
+    originText: 'Muir of Dinnet Visitor Centre',
+    destinationText: 'Burn o Vat Cave Entryway',
     difficulty: 'EASY',
     kcalEstPerKm: 70,
-    details: 'A peaceful, shady 6.2km walk exploring the lower pine hills and castle viewing points on wide gravel forest roads on AllTrails.',
-    trailType: 'Pine Hill Forest Road'
+    details: 'An easy woodland walk with birch groves leading to a deep glacial geological giant pothole cave on AllTrails.',
+    trailType: 'Glacial Cave Woodland Trail'
   },
   {
-    id: 'braemar_creag_choinnich',
-    name: 'Braemar: Creag Choinnich Hill Trail',
+    id: 'scolty_tower_hike',
+    name: 'Scolty Hill: Monument Tower Climb',
     category: 'hike',
-    origin: { lat: 57.0045, lng: -3.3910 }, // Braemar forest entry path
-    destination: { lat: 57.0065, lng: -3.3810 }, // Hill overlook trail
-    originText: 'Braemar Woods Car Park Path',
-    destinationText: 'Creag Choinnich Rock viewpoint',
-    difficulty: 'HARD',
-    kcalEstPerKm: 89,
-    details: 'A steep, short 3.4km woodland scramble up Braemar’s majestic micro peak, delivering panoramic views of the River Dee on AllTrails.',
-    trailType: 'Technical Woods Climb'
-  },
-  {
-    id: 'clachnaben_tor_summit',
-    name: 'Clachnaben: Forest Track & Granite Tor Route',
-    category: 'hike',
-    origin: { lat: 56.9688, lng: -2.5775 }, // Clachnaben Quarry Car Park B974
-    destination: { lat: 56.9535, lng: -2.6010 }, // Clachnaben summit Peak point
-    originText: 'Clachnaben Quarry Car Park B974',
-    destinationText: 'Clachnaben Summit Granite Tor',
-    difficulty: 'HARD',
-    kcalEstPerKm: 89,
-    details: 'A popular 8.5km hill climb walking through dense forest, climbing steep gravel steps on heather moorland to reach the iconic summit on AllTrails.',
-    trailType: 'Steep Hill Climb Hike'
-  },
-  {
-    id: 'kincardine_oneil_dee',
-    name: "Kincardine O'Neil: Woods and River Dee Loop",
-    category: 'hike',
-    origin: { lat: 57.0838, lng: -2.6780 }, // Kincardine O'Neil village trailhead
-    destination: { lat: 57.0705, lng: -2.6685 }, // River Dee bank trail
-    originText: "Kincardine O'Neil Village Hall",
-    destinationText: "River Dee Woodland Path Edge",
-    difficulty: 'MEDIUM',
-    kcalEstPerKm: 72,
-    details: "A charming 7.5km loop joining sections of the historical Deeside Way and lovely dirt paths alongside the majestic River Dee on AllTrails.",
-    trailType: 'Woodland & Riverbank Loop'
-  },
-  {
-    id: 'scolty_wood_march',
-    name: 'Scolty Hill: Scolty Wood & March Loop',
-    category: 'hike',
-    origin: { lat: 57.0425, lng: -2.5020 }, // Forest ground start
-    destination: { lat: 57.0445, lng: -2.4890 }, // Wooded margin trail
-    originText: 'Scolty Wood Main Trailhead',
-    destinationText: 'March Woodland Track',
-    difficulty: 'EASY',
-    kcalEstPerKm: 72,
-    details: 'An relaxing 3.2km flat route following the perimeter field boundaries and larch alleys of Scolty Wood on AllTrails.',
-    trailType: 'Larch Alley Gravel Walk'
-  },
-  {
-    id: 'scolty_monument_climb',
-    name: 'Scolty Hill: Scolty Monument Tower Climb',
-    category: 'hike',
-    origin: { lat: 57.0425, lng: -2.5020 }, // Wood car park trailhead
-    destination: { lat: 57.0375, lng: -2.5055 }, // Monument peak trail
-    originText: 'Scolty Hill Base Gate',
-    destinationText: 'Scolty Monument Stone Summit',
+    origin: { lat: 57.0425, lng: -2.5020 },
+    destination: { lat: 57.0375, lng: -2.5055 },
+    originText: 'Scolty Base Forest Lot',
+    destinationText: 'Scolty Memorial Tower Peak',
     difficulty: 'MEDIUM',
     kcalEstPerKm: 81,
-    details: 'A rocky, heather-hemmed 2.4km climb straight up Scolty Hill to reach the famous 1840 general memorial stone tower on AllTrails.',
-    trailType: 'Woodland Summit Scramble'
+    details: 'A beautiful coniferous pine forest walk ascending directly to the historic 1840 memorial stone tower overlooking River Dee on AllTrails.',
+    trailType: 'Pine Forest Hill Ascent'
   },
   {
-    id: 'crathes_coy_burn',
+    id: 'clachnaben_granite_tor',
+    name: 'Clachnaben: Granite Tor Track',
+    category: 'hike',
+    origin: { lat: 56.9688, lng: -2.5775 },
+    destination: { lat: 56.9535, lng: -2.6010 },
+    originText: 'Clachnaben Quarry Parking B974',
+    destinationText: 'Clachnaben Summit Tor Peak',
+    difficulty: 'HARD',
+    kcalEstPerKm: 89,
+    details: 'A rugged moorland trail climbing stairs through extensive heather carpets to reach the distinctive granite rocky summit on AllTrails.',
+    trailType: 'Stony Highland Tor Climb'
+  },
+  {
+    id: 'craigievar_castle_walk',
+    name: 'Craigievar Castle: Pink Estate Circuit',
+    category: 'hike',
+    origin: { lat: 57.1742, lng: -2.7198 },
+    destination: { lat: 57.1700, lng: -2.7290 },
+    originText: 'Craigievar Visitor Gatehouse',
+    destinationText: 'Upper Estate Parkland Loop',
+    difficulty: 'EASY',
+    kcalEstPerKm: 68,
+    details: 'A magical estate walk exploring peaceful deciduous woodland and wildflower meadows encircling the iconic pink castle on AllTrails.',
+    trailType: 'Historical Castle Parkland'
+  },
+  {
+    id: 'forvie_reserve_dunes',
+    name: 'Forvie NNR: Newburgh Sands & Ruins',
+    category: 'hike',
+    origin: { lat: 57.3205, lng: -1.9968 },
+    destination: { lat: 57.3325, lng: -1.9750 },
+    originText: 'River Ythan Beach Parking',
+    destinationText: 'Forvie Church Sandy Ruins',
+    difficulty: 'MEDIUM',
+    kcalEstPerKm: 78,
+    details: 'A spectacular wilderness walk across vast sand dunes, coastal cliffs, and the ruins of a 12th-century church sunken in sand on AllTrails.',
+    trailType: 'Wild Coastal Sand Dunes'
+  },
+  {
+    id: 'morven_deeside_climb',
+    name: 'Morven: Deeside Graham Mountain Peak',
+    category: 'hike',
+    origin: { lat: 57.1402, lng: -2.9835 },
+    destination: { lat: 57.1215, lng: -3.0310 },
+    originText: 'Morven Trailhead Off B9119',
+    destinationText: 'Morven High Stony Summit',
+    difficulty: 'HARD',
+    kcalEstPerKm: 94,
+    details: 'A challenging, open highland scramble up the heather ridges and high stone domes of Morven, offering epic panoramas on AllTrails.',
+    trailType: 'Open Heather Highland Munro'
+  },
+  {
+    id: 'tap_o_noth_fort',
+    name: "Tap o' Noth: Ancient Vitrified Fort Walk",
+    category: 'hike',
+    origin: { lat: 57.3375, lng: -2.8420 },
+    destination: { lat: 57.3450, lng: -2.8540 },
+    originText: 'Rhynie Base Forest Road',
+    destinationText: 'Tap o Noth Stone Ramparts',
+    difficulty: 'MEDIUM',
+    kcalEstPerKm: 83,
+    details: 'An archaeological hill walk to Scotland’s second highest prehistoric vitrified stone fort ruins, perched atop a steep cone on AllTrails.',
+    trailType: 'Prehistoric Fortress Ascent'
+  },
+  {
+    id: 'newburgh_seal_view',
+    name: 'Newburgh Seal Beach & Estuary Loop',
+    category: 'hike',
+    origin: { lat: 57.3175, lng: -2.0010 },
+    destination: { lat: 57.3195, lng: -1.9890 },
+    originText: 'Ythan River Estuary Point',
+    destinationText: 'Newburgh Sandy Seal Lookout',
+    difficulty: 'EASY',
+    kcalEstPerKm: 66,
+    details: 'A level walk along the sandy shore, offering close views of hundreds of hauled-out grey seals resting across the River Ythan on AllTrails.',
+    trailType: 'Estuary Wildlife Shoreline'
+  },
+  {
+    id: 'linn_of_dee_quoich',
+    name: 'Linn of Dee & River Quoich Pines',
+    category: 'hike',
+    origin: { lat: 56.9890, lng: -3.4835 },
+    destination: { lat: 57.0020, lng: -3.4475 },
+    originText: 'Linn of Dee Historic Bridge',
+    destinationText: 'Water of Quoich Punch Bowl',
+    difficulty: 'MEDIUM',
+    kcalEstPerKm: 75,
+    details: 'A beautiful riverside forest trail following deep canyons, mountain torrents, and gorgeous remnants of the Caledonian pine woods on AllTrails.',
+    trailType: 'Wild River Caledonian Woods'
+  },
+  {
+    id: 'mount_keen_esk_trail',
+    name: 'Mount Keen Munro: Glen Esk Path',
+    category: 'hike',
+    origin: { lat: 56.8967, lng: -2.9094 },
+    destination: { lat: 56.9698, lng: -2.9736 },
+    originText: 'Auchronie Car Park (Glen Esk)',
+    destinationText: 'Mount Keen Munro Summit Peak',
+    difficulty: 'HARD',
+    kcalEstPerKm: 96,
+    details: 'A dramatic, remote highland path climbing past tumbling rivers towards Scotland’s easternmost Munro peak on AllTrails.',
+    trailType: 'Remote Munro Wilderness Hike'
+  },
+  {
+    id: 'crathes_coy_burn_new',
     name: 'Crathes Castle: Coy Burn Forest Walk',
     category: 'hike',
-    origin: { lat: 57.0620, lng: -2.4395 }, // Courtyard gravel path
-    destination: { lat: 57.0583, lng: -2.4452 }, // Coyote river-bend trail
-    originText: 'Crathes Castle Main Courtyard',
-    destinationText: 'Coy Burn Streamway Path',
+    origin: { lat: 57.0620, lng: -2.4395 },
+    destination: { lat: 57.0583, lng: -2.4452 },
+    originText: 'Crathes Castle Main Gate',
+    destinationText: 'Coy Burn Streamway Loop',
     difficulty: 'EASY',
     kcalEstPerKm: 67,
-    details: 'A peaceful, mossy 2.8km trail tracing the winding Coy Burn stream under great ancient broad-leaved forest trees on AllTrails.',
+    details: 'A peaceful, mossy estate trail following the lovely Coy Burn river under huge historical oak trees and garden ponds on AllTrails.',
     trailType: 'Historical Estate Streamway'
   },
   {
-    id: 'crathes_ley_way',
-    name: 'Crathes Castle: Ley Way Forest Trail Loop',
+    id: 'arbuthnott_bervie_loop',
+    name: 'Arbuthnott Water: Bervie Stream Walk',
     category: 'hike',
-    origin: { lat: 57.0620, lng: -2.4395 }, // Courtyard gravel path
-    destination: { lat: 57.0695, lng: -2.4485 }, // Ley forest dirt trail
-    originText: 'Crathes Castle Main Lawn',
-    destinationText: 'Ley Wood Northern boundary',
-    difficulty: 'MEDIUM',
-    kcalEstPerKm: 74,
-    details: 'A winding 4.2km loop through dense mixed coniferous wood structures, tracking deer trails on rich loam pathways on AllTrails.',
-    trailType: 'Conifer Border Loam Path'
-  },
-  {
-    id: 'dunnottar_cliff_trail',
-    name: 'Dunnottar Castle: Coastal Cliff Trail',
-    category: 'hike',
-    origin: { lat: 56.9605, lng: -2.2033 }, // Cliff edge path start
-    destination: { lat: 56.9458, lng: -2.1995 }, // Main tourist gate
-    originText: 'Stonehaven Bay Trailhead',
-    destinationText: 'Dunnottar Castle Gatehouse Path',
-    difficulty: 'MEDIUM',
-    kcalEstPerKm: 86,
-    details: 'A spectacular, windy 2.7km grassy dirt singletrack tracing high, cliff edges directly above coastal coves to the castle gates on AllTrails.',
-    trailType: 'Ocean-Facing Singletrack'
-  },
-  {
-    id: 'dunnottar_war_memorial',
-    name: 'Stonehaven: War Memorial & Dunnottar Loop',
-    category: 'hike',
-    origin: { lat: 56.9615, lng: -2.2045 }, // Harbour pathway
-    destination: { lat: 56.9560, lng: -2.1990 }, // War Memorial hill path
-    originText: 'Stonehaven Harbour Quay Path',
-    destinationText: 'Black Hill War Memorial Hill',
+    origin: { lat: 56.8435, lng: -2.3360 },
+    destination: { lat: 56.8375, lng: -2.3275 },
+    originText: 'Arbuthnott Historic Parish',
+    destinationText: 'River Bervie Sandy Crossing',
     difficulty: 'EASY',
-    kcalEstPerKm: 75,
-    details: 'A scenic 3.6km historical walk climbing from the stone harbour to the magnificent circular stone temple monument on AllTrails.',
-    trailType: 'Coastal Monument Loop'
+    kcalEstPerKm: 71,
+    details: 'A lovely countryside woodland loop following the peaceful bends of the Bervie Water stream through deep historic Aberdeenshire fields on AllTrails.',
+    trailType: 'Country Riverbank Woodland'
   },
   {
-    id: 'haddo_house_lake',
-    name: 'Haddo House: Lake & Pheasantry Wood Walk',
+    id: 'kincardine_oneil_deeside',
+    name: 'Kincardine O’Neil: Deeside Way Woods',
     category: 'hike',
-    origin: { lat: 57.4042, lng: -2.2215 }, // Courtyard path
-    destination: { lat: 57.3975, lng: -2.2155 }, // South lake trail
-    originText: 'Haddo Courtyard Gates',
-    destinationText: 'Pheasantry Lake Dirt Trail',
-    difficulty: 'EASY',
-    kcalEstPerKm: 65,
-    details: 'A smooth, loop-designed 1.8km historic path through pheasantry wood and lakeside margins on AllTrails.',
-    trailType: 'Lakeside Estate Trail'
-  },
-  {
-    id: 'haddo_house_monument',
-    name: 'Haddo House: Monument & Estate Loop',
-    category: 'hike',
-    origin: { lat: 57.4042, lng: -2.2215 }, // Courtyard path
-    destination: { lat: 57.4110, lng: -2.2355 }, // Monument forest road
-    originText: 'Haddo Courtyard Gates',
-    destinationText: 'Deer Park Monument Road',
+    origin: { lat: 57.0838, lng: -2.6780 },
+    destination: { lat: 57.0705, lng: -2.6685 },
+    originText: "Kincardine O'Neil Old Hall",
+    destinationText: 'River Dee Forest Bank',
     difficulty: 'MEDIUM',
-    kcalEstPerKm: 72,
-    details: 'A beautiful 3.5km broad forest-road and grass trail leading up to the historic monuments of Haddo estate parkland on AllTrails.',
-    trailType: 'Broad Estate Forest Track'
+    kcalEstPerKm: 73,
+    details: 'A charming historical walk combining sections of the Victorian Deeside railway route and riverbank paths on AllTrails.',
+    trailType: 'Historical Railway & Forestbank'
+  },
+  {
+    id: 'loch_skene_sanctuary',
+    name: 'Loch of Skene: Forest Sanctuary Trail',
+    category: 'hike',
+    origin: { lat: 57.1585, lng: -2.3335 },
+    destination: { lat: 57.1650, lng: -2.3480 },
+    originText: 'Garlogie Old Wood Gate',
+    destinationText: 'Loch of Skene Lakeside Overlook',
+    difficulty: 'EASY',
+    kcalEstPerKm: 69,
+    details: 'A peaceful, leafy path traversing quiet woodlands and farmland leading to viewpoints over the vast Skene bird sanctuary on AllTrails.',
+    trailType: 'Bird Sanctuary Lakeside Path'
   }
 ];
 
@@ -443,16 +457,17 @@ function LocalPlacesSearch({ query, onPlacesFound, setSearchLoading }: LocalPlac
   return null;
 }
 
-// Component to handle calculating and drawing the path using standard Route API
+// Component to handle calculating and drawing the path using standard Route API or OpenRouteService API
 interface RouteTrackerProps {
   origin: google.maps.LatLngLiteral | null;
   destination: google.maps.LatLngLiteral | null;
   middleWaypoints: google.maps.LatLngLiteral[];
   shouldLoopBack: boolean;
   onStatsCalibrated: (dist: string, dur: string, pathPoints: google.maps.LatLngLiteral[]) => void;
+  routingEngine?: 'google' | 'openrouteservice';
 }
 
-function RouteTracker({ origin, destination, middleWaypoints, shouldLoopBack, onStatsCalibrated }: RouteTrackerProps) {
+function RouteTracker({ origin, destination, middleWaypoints, shouldLoopBack, onStatsCalibrated, routingEngine = 'openrouteservice' }: RouteTrackerProps) {
   const map = useMap();
   const routesLib = useMapsLibrary('routes');
   const polylinesRef = useRef<google.maps.Polyline[]>([]);
@@ -461,120 +476,212 @@ function RouteTracker({ origin, destination, middleWaypoints, shouldLoopBack, on
   const waypointsSerialized = JSON.stringify(middleWaypoints);
 
   useEffect(() => {
-    if (!routesLib || !map || !origin || !destination) return;
+    let active = true;
+
+    if (!map) return;
 
     // Remove previous polylines
     polylinesRef.current.forEach(polyline => polyline.setMap(null));
     polylinesRef.current = [];
 
-    const intermediates: any[] = [];
+    if (!origin || !destination) {
+      onStatsCalibrated('0.00 KM', '0 MINS', []);
+      return;
+    }
 
-    // Add optional custom middle waypoints
-    middleWaypoints.forEach(wp => {
-      intermediates.push({
-        location: wp,
-        via: false
-      });
-    });
+    const calculateGoogleRoute = () => {
+      if (!routesLib) return;
 
-    let reqDestination = destination;
-    const isSame = Math.abs(origin.lat - destination.lat) < 0.00001 && Math.abs(origin.lng - destination.lng) < 0.00001;
-
-    if (shouldLoopBack) {
-      // Loop back returns home to origin
-      reqDestination = origin;
-      // Far point added to intermediates list
-      if (!isSame) {
+      const intermediates: any[] = [];
+      middleWaypoints.forEach(wp => {
         intermediates.push({
-          location: destination,
+          location: wp,
           via: false
         });
-      }
-    }
+      });
 
-    const request: any = {
-      origin,
-      destination: reqDestination,
-      travelMode: 'WALKING',
-      fields: ['path', 'distanceMeters', 'durationMillis', 'viewport']
+      let reqDestination = destination;
+      const isSame = Math.abs(origin.lat - destination.lat) < 0.00001 && Math.abs(origin.lng - destination.lng) < 0.00001;
+
+      if (shouldLoopBack) {
+        reqDestination = origin;
+        if (!isSame) {
+          intermediates.push({
+            location: destination,
+            via: false
+          });
+        }
+      }
+
+      const request: any = {
+        origin,
+        destination: reqDestination,
+        travelMode: 'WALKING',
+        fields: ['path', 'distanceMeters', 'durationMillis', 'viewport']
+      };
+
+      if (intermediates.length > 0) {
+        request.intermediates = intermediates;
+      }
+
+      routesLib.Route.computeRoutes(request)
+        .then(({ routes }) => {
+          if (!active) return;
+          if (routes && routes[0]) {
+            const route = routes[0];
+            const newPolylines = typeof route.createPolylines === 'function' ? route.createPolylines() : null;
+            if (newPolylines && Array.isArray(newPolylines)) {
+              newPolylines.forEach(p => {
+                if (p) {
+                  p.setOptions({
+                    strokeColor: '#f97316',
+                    strokeOpacity: 0.85,
+                    strokeWeight: 6,
+                  });
+                  p.setMap(map);
+                }
+              });
+              polylinesRef.current = newPolylines;
+            } else if (route.path) {
+              const rawCoords: any[] = [];
+              route.path.forEach((pos: any) => {
+                if (pos) {
+                  rawCoords.push({ lat: pos.lat, lng: pos.lng });
+                }
+              });
+              const fallbackPolyline = new google.maps.Polyline({
+                path: rawCoords,
+                geodesic: true,
+                strokeColor: '#f97316',
+                strokeOpacity: 0.85,
+                strokeWeight: 6,
+                map: map
+              });
+              polylinesRef.current = [fallbackPolyline];
+            }
+
+            const distanceKm = route.distanceMeters ? (route.distanceMeters / 1000).toFixed(2) + ' KM' : 'N/A';
+            const durationVal = typeof route.durationMillis === 'string' 
+              ? parseInt(route.durationMillis) 
+              : (route.durationMillis as number || 0);
+
+            const durationMins = durationVal ? Math.ceil(durationVal / 60000) + ' MINS' : 'N/A';
+
+            const pathPoints: google.maps.LatLngLiteral[] = [];
+            if (route.path) {
+              route.path.forEach(pos => {
+                if (pos) {
+                  pathPoints.push({ lat: pos.lat, lng: pos.lng });
+                }
+              });
+            }
+
+            onStatsCalibrated(distanceKm, durationMins, pathPoints);
+
+            if (route.viewport) {
+              map.fitBounds(route.viewport);
+            }
+          }
+        })
+        .catch(err => {
+          if (!active) return;
+          console.error("Google maps fallback failed:", err);
+        });
     };
 
-    if (intermediates.length > 0) {
-      request.intermediates = intermediates;
-    }
+    if (routingEngine === 'openrouteservice') {
+      const allCoords: google.maps.LatLngLiteral[] = [];
+      allCoords.push(origin);
+      middleWaypoints.forEach(wp => {
+        allCoords.push({ lat: wp.lat, lng: wp.lng });
+      });
 
-    routesLib.Route.computeRoutes(request)
-      .then(({ routes }) => {
-        if (routes && routes[0]) {
-          const route = routes[0];
-          // Create themed line and style via standard setOptions method to bypass type limitations safely
-          const newPolylines = typeof route.createPolylines === 'function' ? route.createPolylines() : null;
-          if (newPolylines && Array.isArray(newPolylines)) {
-            newPolylines.forEach(p => {
-              if (p) {
-                p.setOptions({
-                  strokeColor: '#00ffcc',
-                  strokeOpacity: 0.85,
-                  strokeWeight: 6,
-                });
-                p.setMap(map);
-              }
-            });
-            polylinesRef.current = newPolylines;
-          } else if (route.path) {
-            // Robust fallback if createPolylines is undefined: construct dynamic lines directly
-            const rawCoords: any[] = [];
-            route.path.forEach((pos: any) => {
-              if (pos) {
-                rawCoords.push({ lat: pos.lat, lng: pos.lng });
-              }
-            });
-            const fallbackPolyline = new google.maps.Polyline({
-              path: rawCoords,
+      let reqDestination = destination;
+      const isSame = Math.abs(origin.lat - destination.lat) < 0.00001 && Math.abs(origin.lng - destination.lng) < 0.00001;
+
+      if (shouldLoopBack) {
+        reqDestination = origin;
+        if (!isSame) {
+          allCoords.push(destination);
+        }
+      }
+      allCoords.push(reqDestination);
+
+      fetch("/api/openrouteservice/directions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          coordinates: allCoords,
+          profile: "foot-hiking"
+        })
+      })
+        .then(res => {
+          if (!active) throw new Error("cancelled");
+          if (!res.ok) {
+            throw new Error(`OpenRouteService responded with status ${res.status}`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (!active) return;
+          if (data && data.features && data.features[0]) {
+            const feature = data.features[0];
+            const geom = feature.geometry;
+            const props = feature.properties;
+            const summary = props ? props.summary : null;
+
+            const pathPoints: google.maps.LatLngLiteral[] = [];
+            if (geom && geom.coordinates) {
+              geom.coordinates.forEach((coord: [number, number]) => {
+                pathPoints.push({ lat: coord[1], lng: coord[0] });
+              });
+            }
+
+            const distanceMKey = summary ? summary.distance : 0;
+            const distanceKm = distanceMKey ? (distanceMKey / 1000).toFixed(2) + ' KM' : 'N/A';
+
+            const durationSKey = summary ? summary.duration : 0;
+            const durationMins = durationSKey ? Math.ceil(durationSKey / 60) + ' MINS' : 'N/A';
+
+            const line = new google.maps.Polyline({
+              path: pathPoints,
               geodesic: true,
-              strokeColor: '#00ffcc',
+              strokeColor: '#f97316', // Hike indicator color
               strokeOpacity: 0.85,
               strokeWeight: 6,
               map: map
             });
-            polylinesRef.current = [fallbackPolyline];
+            polylinesRef.current = [line];
+
+            onStatsCalibrated(distanceKm, durationMins, pathPoints);
+
+            if (pathPoints.length > 0) {
+              const bounds = new google.maps.LatLngBounds();
+              pathPoints.forEach(pt => bounds.extend(pt));
+              map.fitBounds(bounds);
+            }
+          } else {
+            throw new Error("No features returned in OpenRouteService directions response");
           }
-
-          // Convert string formats
-          const distanceKm = route.distanceMeters ? (route.distanceMeters / 1000).toFixed(2) + ' KM' : 'N/A';
-          
-          // Safely parse duration supporting both string and number types
-          const durationVal = typeof route.durationMillis === 'string' 
-            ? parseInt(route.durationMillis) 
-            : (route.durationMillis as number || 0);
-
-          const durationMins = durationVal ? Math.ceil(durationVal / 60000) + ' MINS' : 'N/A';
-
-          // Extract path points for active runner GPS simulation as plain LatLngLiterals
-          const pathPoints: google.maps.LatLngLiteral[] = [];
-          if (route.path) {
-            route.path.forEach(pos => {
-              if (pos) {
-                pathPoints.push({ lat: pos.lat, lng: pos.lng });
-              }
-            });
-          }
-
-          onStatsCalibrated(distanceKm, durationMins, pathPoints);
-
-          if (route.viewport) {
-            map.fitBounds(route.viewport);
-          }
-        }
-      })
-      .catch(err => {
-        console.error("Path calculation failed:", err);
-      });
+        })
+        .catch(err => {
+          if (!active) return;
+          if (err.message === "cancelled") return;
+          console.warn("OpenRouteService failed, falling back to Google Maps:", err);
+          calculateGoogleRoute();
+        });
+    } else {
+      calculateGoogleRoute();
+    }
 
     return () => {
+      active = false;
       polylinesRef.current.forEach(p => p.setMap(null));
+      polylinesRef.current = [];
     };
-  }, [routesLib, map, origin, destination, waypointsSerialized, shouldLoopBack]);
+  }, [routesLib, map, origin, destination, waypointsSerialized, shouldLoopBack, routingEngine, onStatsCalibrated]);
 
   return null;
 }
@@ -592,13 +699,38 @@ export default function TacticalMap() {
     setIsKeyLoading(false);
   }, []);
 
-  const [activePreset, setActivePreset] = useState<typeof PRESET_TRAILS[0] | null>(PRESET_TRAILS[0]);
+  const [allTrails, setAllTrails] = useState<typeof PRESET_TRAILS>(() => {
+    const saved = localStorage.getItem('tactical_custom_routes');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return [...PRESET_TRAILS, ...parsed];
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return PRESET_TRAILS;
+  });
+
+  const [activePreset, setActivePreset] = useState<typeof PRESET_TRAILS[0] | null>(null);
   const [customOrigin, setCustomOrigin] = useState<google.maps.LatLngLiteral | null>(null);
   const [customDestination, setCustomDestination] = useState<google.maps.LatLngLiteral | null>(null);
   
   // Custom intermediate waypoints and loop back option states
   const [shouldLoopBack, setShouldLoopBack] = useState<boolean>(true);
   const [middleWaypoints, setMiddleWaypoints] = useState<google.maps.LatLngLiteral[]>([]);
+  const [routingEngine, setRoutingEngine] = useState<'google' | 'openrouteservice'>('openrouteservice');
+
+  // Fields for saving route to directory
+  const [saveRouteName, setSaveRouteName] = useState<string>('');
+  const [saveRouteDifficulty, setSaveRouteDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD'>('MEDIUM');
+  const [saveRouteType, setSaveRouteType] = useState<string>('Custom Workout Path');
+  const [saveRouteDetails, setSaveRouteDetails] = useState<string>('');
+  const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
 
   // State from computed path routes
   const [routeDistance, setRouteDistance] = useState<string>('0.00 KM');
@@ -697,23 +829,32 @@ export default function TacticalMap() {
   };
 
     // Map state to control center
-  const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral>({ lat: 57.1420, lng: -2.1700 });
+  const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral>(PRESET_TRAILS[0].origin);
   const [selectedPlace, setSelectedPlace] = useState<google.maps.places.Place | null>(null);
   const [activeCategoryType, setActiveCategoryType] = useState<'hike' | null>('hike');
   const [activeDifficultyFilter, setActiveDifficultyFilter] = useState<'ALL' | 'EASY' | 'MEDIUM' | 'HARD'>('ALL');
 
+  // Track user selection/interaction to avoid auto-selecting preset trails on mount
+  const userInteractedRef = useRef<boolean>(false);
+
   // Auto-select first preset of chosen category & difficulty when changed
   useEffect(() => {
+    if (!userInteractedRef.current) {
+      userInteractedRef.current = true;
+      return;
+    }
+
     if (activeCategoryType) {
-      const match = PRESET_TRAILS.find(
+      const match = allTrails.find(
         p => p.category === activeCategoryType && 
         (activeDifficultyFilter === 'ALL' || p.difficulty === activeDifficultyFilter)
-      ) || PRESET_TRAILS.find(p => p.category === activeCategoryType);
+      ) || allTrails.find(p => p.category === activeCategoryType);
 
       if (match) {
         handlePresetSelect(match);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategoryType, activeDifficultyFilter]);
 
   const handleAutoSelectPlace = (place: google.maps.places.Place) => {
@@ -852,11 +993,11 @@ export default function TacticalMap() {
     }
   };
 
-  const handleStatsCalibrated = (dist: string, dur: string, points: google.maps.LatLngLiteral[]) => {
+  const handleStatsCalibrated = useCallback((dist: string, dur: string, points: google.maps.LatLngLiteral[]) => {
     setRouteDistance(dist);
     setRouteDuration(dur);
     setPathPoints(points);
-  };
+  }, []);
 
   const startSimulation = () => {
     if (pathPoints.length === 0) return;
@@ -893,7 +1034,7 @@ export default function TacticalMap() {
     setActivePreset(preset);
     setCustomOrigin(null);
     setCustomDestination(null);
-    setMiddleWaypoints([]); // Reset middle checkpoints on new preset select
+    setMiddleWaypoints((preset as any).middleWaypoints || []); // Load preset middle checkpoints on new select
     setMapCenter(preset.origin);
 
     // Reset tracking indicators
@@ -984,12 +1125,12 @@ export default function TacticalMap() {
 
   // Filtered list of preset trails matching selected parameters
   const matchingTrails = useMemo(() => {
-    return PRESET_TRAILS.filter((trail) => {
+    return allTrails.filter((trail) => {
       const matchesCategory = !activeCategoryType || trail.category === activeCategoryType;
       const matchesDifficulty = activeDifficultyFilter === 'ALL' || trail.difficulty === activeDifficultyFilter;
       return matchesCategory && matchesDifficulty;
     });
-  }, [activeCategoryType, activeDifficultyFilter]);
+  }, [activeCategoryType, activeDifficultyFilter, allTrails]);
 
   if (isKeyLoading) {
     return (
@@ -1139,7 +1280,11 @@ export default function TacticalMap() {
     setCustomOrigin(null);
     setCustomDestination(null);
     setMiddleWaypoints([]);
-    setActivePreset(PRESET_TRAILS[0]);
+    if (activePreset) {
+      setMiddleWaypoints((activePreset as any).middleWaypoints || []);
+    } else {
+      setActivePreset(null);
+    }
     stopSimulation();
     if (trailTimerRef.current) {
       clearInterval(trailTimerRef.current);
@@ -1170,6 +1315,86 @@ export default function TacticalMap() {
   // Helper to remove custom waypoints
   const handleRemoveWaypoint = (idx: number) => {
     setMiddleWaypoints(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  // Helper to save a custom route to directory
+  const handleSaveCustomRouteToDirectory = () => {
+    if (!saveRouteName.trim()) {
+      setSaveStatus({ type: 'error', message: 'Please enter a name to save the route.' });
+      setTimeout(() => setSaveStatus(null), 4000);
+      return;
+    }
+    const originCoord = customOrigin || (activePreset ? activePreset.origin : null);
+    const destCoord = customDestination || (activePreset ? activePreset.destination : null);
+
+    if (!originCoord || !destCoord) {
+      setSaveStatus({ type: 'error', message: 'The route must have active starting and finishing points.' });
+      setTimeout(() => setSaveStatus(null), 4000);
+      return;
+    }
+
+    const newTrailId = 'custom_' + Date.now();
+    const newTrail = {
+      id: newTrailId,
+      name: saveRouteName.trim(),
+      category: 'hike' as const,
+      origin: { lat: originCoord.lat, lng: originCoord.lng },
+      destination: { lat: destCoord.lat, lng: destCoord.lng },
+      originText: 'Custom Start',
+      destinationText: 'Custom Finish',
+      difficulty: saveRouteDifficulty,
+      kcalEstPerKm: saveRouteDifficulty === 'EASY' ? 60 : saveRouteDifficulty === 'MEDIUM' ? 75 : 95,
+      details: saveRouteDetails.trim() || 'A user-designed custom tactical routing traversal.',
+      trailType: saveRouteType.trim() || 'Custom Workout Path',
+      middleWaypoints: middleWaypoints.map(wp => ({ lat: wp.lat, lng: wp.lng }))
+    };
+
+    const updatedRoutes = [...allTrails, newTrail];
+    
+    // Save only custom ones to localStorage to keep payload light
+    const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
+    localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
+
+    setAllTrails(updatedRoutes);
+    setActivePreset(newTrail);
+    
+    // Reset inputs
+    setSaveRouteName('');
+    setSaveRouteDetails('');
+    setSaveRouteType('Custom Workout Path');
+    
+    setSaveStatus({ type: 'success', message: `Route "${newTrail.name}" successfully created!` });
+    setTimeout(() => setSaveStatus(null), 4000);
+  };
+
+  // Helper to delete a custom route
+  const handleDeleteCustomRoute = (id: string) => {
+    if (deleteConfirmId !== id) {
+      setDeleteConfirmId(id);
+      setTimeout(() => {
+        setDeleteConfirmId(prev => prev === id ? null : prev);
+      }, 4000);
+      return;
+    }
+
+    const updatedRoutes = allTrails.filter(t => t.id !== id);
+    const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
+    localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
+    
+    setAllTrails(updatedRoutes);
+    setDeleteConfirmId(null);
+
+    // fallback to no active route / blank canvas state
+    setActivePreset(null);
+    setMiddleWaypoints([]);
+    setCustomOrigin(null);
+    setCustomDestination(null);
+    setRouteDistance('0.00 KM');
+    setRouteDuration('0 MINS');
+    setPathPoints([]);
+
+    setSaveStatus({ type: 'success', message: 'Custom route deleted successfully.' });
+    setTimeout(() => setSaveStatus(null), 4000);
   };
 
   return (
@@ -1371,6 +1596,19 @@ export default function TacticalMap() {
               </label>
             </div>
 
+            {/* Geospatial Router Selection core */}
+            <div className="flex flex-col gap-1 p-2 bg-emerald-500/5 border border-emerald-500/20 rounded-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] text-emerald-400 font-mono tracking-wider font-bold uppercase">🛰️ ORS VECTOR ACTIVE</span>
+                <span className="text-[7px] bg-emerald-500/20 text-emerald-300 font-extrabold uppercase px-1.5 py-0.5 border border-emerald-500/30 rounded-xs">
+                  Foot-Hiking Walking Mode
+                </span>
+              </div>
+              <p className="text-[7.5px] text-white/50 leading-relaxed font-mono">
+                Using deep-terrain OpenRouteService to index paths across woodlands, Munro ridges, and rugged hill tracks.
+              </p>
+            </div>
+
             {/* Custom Coordinates selector triggers */}
             <div className="space-y-1.5">
               <div className="grid grid-cols-3 gap-1 shadow-sm">
@@ -1476,6 +1714,83 @@ export default function TacticalMap() {
                 </div>
               )}
             </div>
+
+            {/* Save Custom Route form section */}
+            {(customOrigin || customDestination || middleWaypoints.length > 0) && (
+              <div className="bg-white/[0.01] border border-gym-accent/25 hover:border-gym-accent/40 p-3 rounded-sm space-y-2.5 mt-2 transition-all">
+                <div className="flex items-center gap-1.5 border-b border-white/5 pb-1.5">
+                  <span className="text-[9px] text-gym-accent font-mono font-black uppercase tracking-wider">💾 SAVE CUSTOM ROUTE TO DIRECTORY</span>
+                </div>
+                
+                {saveStatus && (
+                  <div className={`p-2 rounded-xs border text-[9px] font-mono uppercase tracking-wider text-center ${
+                    saveStatus.type === 'success' 
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                      : 'bg-red-500/10 border-red-500/20 text-red-400'
+                  }`}>
+                    {saveStatus.message}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <div className="space-y-1">
+                    <label className="text-[7.5px] text-white/55 font-mono uppercase tracking-wider block">ROUTE NAME:</label>
+                    <input 
+                      type="text"
+                      placeholder="e.g. My Custom Woodland Loop"
+                      value={saveRouteName}
+                      onChange={(e) => setSaveRouteName(e.target.value)}
+                      className="w-full bg-[#030304] border border-white/10 rounded-xs p-1.5 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[9px] font-bold"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className="text-[7.5px] text-white/55 font-mono uppercase tracking-wider block">DIFFICULTY:</label>
+                      <select 
+                        value={saveRouteDifficulty}
+                        onChange={(e) => setSaveRouteDifficulty(e.target.value as any)}
+                        className="w-full bg-[#030304] border border-white/10 rounded-xs p-1.5 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[9px]"
+                      >
+                        <option value="EASY">EASY</option>
+                        <option value="MEDIUM">MEDIUM</option>
+                        <option value="HARD">HARD</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[7.5px] text-white/55 font-mono uppercase tracking-wider block">TRAIL TYPE:</label>
+                      <input 
+                        type="text"
+                        placeholder="e.g. Woodland Hike"
+                        value={saveRouteType}
+                        onChange={(e) => setSaveRouteType(e.target.value)}
+                        className="w-full bg-[#030304] border border-white/10 rounded-xs p-1.5 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[9px] font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[7.5px] text-white/55 font-mono uppercase tracking-wider block">DETAILS / BRIEF:</label>
+                    <textarea 
+                      placeholder="Brief description of terrain, landmarks, or target workout profile..."
+                      value={saveRouteDetails}
+                      onChange={(e) => setSaveRouteDetails(e.target.value)}
+                      rows={2}
+                      className="w-full bg-[#030304] border border-white/10 rounded-xs p-1.5 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[9px] resize-none"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveCustomRouteToDirectory}
+                    className="w-full py-1.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-black uppercase tracking-wider rounded-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer font-mono"
+                  >
+                    <Save className="w-3 h-3 text-black" />
+                    SAVE TO DIRECTORY
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Section C: Preset Trail Explorer */}
@@ -1524,26 +1839,52 @@ export default function TacticalMap() {
               <select
                 value={activePreset?.id || ""}
                 onChange={(e) => {
-                  const matched = PRESET_TRAILS.find(t => t.id === e.target.value);
-                  if (matched) handlePresetSelect(matched);
+                  const matched = allTrails.find(t => t.id === e.target.value);
+                  if (matched) {
+                    handlePresetSelect(matched);
+                  } else {
+                    handleClearRouteMap();
+                  }
                 }}
-                className="w-full bg-[#030304] border border-white/5 rounded-xs p-2 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[10px]"
+                className="w-full bg-[#030304] border border-white/5 rounded-xs p-2 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[10px] cursor-pointer"
               >
-                {matchingTrails.length === 0 ? (
-                  <option value="">No matching ranges</option>
-                ) : (
-                  matchingTrails.map((trail) => (
-                    <option key={trail.id} value={trail.id}>
-                      [{trail.difficulty}] {trail.name} — {trail.trailType}
-                    </option>
-                  ))
-                )}
+                <option value="">-- [BLANK CANVAS: PLOT CUSTOM ROUTE] --</option>
+                {matchingTrails.map((trail) => (
+                  <option key={trail.id} value={trail.id}>
+                    [{trail.difficulty}] {trail.name} — {trail.trailType}
+                  </option>
+                ))}
               </select>
+
+              {saveStatus && (
+                <div className={`p-2 rounded-xs border text-[9px] font-mono uppercase tracking-wider text-center ${
+                  saveStatus.type === 'success' 
+                    ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                    : 'bg-red-500/10 border-red-500/20 text-red-400'
+                }`}>
+                  {saveStatus.message}
+                </div>
+              )}
 
               {activePreset && (
                 <div className="bg-white/[0.01] border border-white/5 p-2 rounded-sm text-[9.5px] font-mono text-white/70 space-y-1">
                   <p className="leading-tight"><span className="text-gym-accent uppercase tracking-wider font-extrabold mr-1">[DESCR]:</span>{activePreset.details}</p>
                 </div>
+              )}
+
+              {activePreset && activePreset.id.startsWith('custom_') && (
+                <button
+                  type="button"
+                  onClick={() => handleDeleteCustomRoute(activePreset.id)}
+                  className={`w-full py-1.5 border text-[8px] font-mono uppercase tracking-wider rounded-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 mt-1 ${
+                    deleteConfirmId === activePreset.id 
+                    ? "bg-red-600 hover:bg-red-700 text-white border-red-500 font-bold animate-pulse" 
+                    : "bg-red-950/40 hover:bg-red-900/40 text-red-400 border-red-500/10"
+                  }`}
+                >
+                  <Trash2 className="w-3 h-3" />
+                  {deleteConfirmId === activePreset.id ? "TAP AGAIN TO CONFIRM DELETION" : "DELETE CUSTOM ROUTE FROM DIRECTORY"}
+                </button>
               )}
             </div>
           </div>
@@ -1626,9 +1967,14 @@ export default function TacticalMap() {
                   {originCoord && (
                     <AdvancedMarker 
                       position={originCoord}
-                      title="Origin Vector Alpha"
+                      title="Route Start Point"
                     >
-                      <Pin background="#00ffcc" borderColor="#000" glyphColor="#000" />
+                      <div className="flex flex-col items-center justify-center select-none">
+                        <Pin background="#10b981" borderColor="#ffffff" glyphColor="#ffffff" glyph="S" />
+                        <div className="mt-0.5 px-1 bg-black/90 text-[#10b981] font-mono text-[8px] font-extrabold uppercase tracking-widest rounded border border-[#10b981]/30 shadow-md whitespace-nowrap">
+                          START
+                        </div>
+                      </div>
                     </AdvancedMarker>
                   )}
 
@@ -1636,9 +1982,14 @@ export default function TacticalMap() {
                   {destCoord && (
                     <AdvancedMarker 
                       position={destCoord}
-                      title="Destination Vector Gate"
+                      title="Route Finish Point"
                     >
-                      <Pin background="#a855f7" borderColor="#000" glyphColor="#fff" />
+                      <div className="flex flex-col items-center justify-center select-none">
+                        <Pin background="#ef4444" borderColor="#ffffff" glyphColor="#ffffff" glyph="F" />
+                        <div className="mt-0.5 px-1 bg-black/90 text-[#ef4444] font-mono text-[8px] font-extrabold uppercase tracking-widest rounded border border-[#ef4444]/30 shadow-md whitespace-nowrap">
+                          FINISH
+                        </div>
+                      </div>
                     </AdvancedMarker>
                   )}
 
@@ -1767,6 +2118,7 @@ export default function TacticalMap() {
                     middleWaypoints={middleWaypoints}
                     shouldLoopBack={shouldLoopBack}
                     onStatsCalibrated={handleStatsCalibrated} 
+                    routingEngine={routingEngine}
                   />
 
                   {/* Search loader connector */}

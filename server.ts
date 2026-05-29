@@ -119,6 +119,55 @@ Format your response strictly as JSON conforming to the requested schema. Provid
     res.json({ key: key.trim() });
   });
 
+  // API Route to proxy OpenRouteService directions requests securely
+  app.post("/api/openrouteservice/directions", async (req, res) => {
+    try {
+      const { coordinates, profile = "foot-hiking" } = req.body;
+
+      if (!coordinates || !Array.isArray(coordinates) || coordinates.length < 2) {
+        return res.status(400).json({ error: "At least origin and destination coordinates are required." });
+      }
+
+      const apiKey = process.env.OPENROUTESERVICE_API_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ error: "OPENROUTESERVICE_API_KEY is not configured inside the environment variables." });
+      }
+
+      // Convert coordinates from { lat, lng } to [lng, lat] format for OpenRouteService
+      const orsCoordinates = coordinates.map((coord: any) => [
+        parseFloat(coord.lng),
+        parseFloat(coord.lat)
+      ]);
+
+      const url = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Accept": "application/json, application/geo+json, application/gpx+xml, text/csv; charset=utf-8",
+          "Authorization": apiKey,
+          "Content-Type": "application/json; charset=utf-8"
+        },
+        body: JSON.stringify({
+          coordinates: orsCoordinates
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        console.error("OpenRouteService API Error context:", errText);
+        return res.status(response.status).json({ error: `OpenRouteService error: ${errText || response.statusText}` });
+      }
+
+      const data = await response.json();
+      res.json(data);
+    } catch (error: any) {
+      console.error("OpenRouteService API Proxy Error:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch directions from OpenRouteService" });
+    }
+  });
+
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
