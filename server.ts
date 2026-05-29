@@ -109,6 +109,11 @@ Format your response strictly as JSON conforming to the requested schema. Provid
     }
   });
 
+  // API Route for Google Maps key retrieval at runtime (to support deployed mobile versions securely)
+  app.get("/api/maps-key", (req, res) => {
+    res.json({ key: process.env.GOOGLE_MAPS_PLATFORM_KEY || "" });
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
