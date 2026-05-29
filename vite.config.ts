@@ -2,11 +2,28 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig} from 'vite';
+import dotenv from 'dotenv';
+
+// Load environmental variables during build-time so they are successfully compiled into the SPA bundle
+dotenv.config();
 
 export default defineConfig(() => {
+  const mapsKey = (
+    process.env.GOOGLE_MAPS_PLATFORM_KEY || 
+    process.env.GOOGLE_MAPS_API_KEY || 
+    process.env.GOOGLE_MAPS_KEY || 
+    process.env.VITE_GOOGLE_MAPS_PLATFORM_KEY ||
+    process.env.MAPS_API_KEY ||
+    ''
+  ).trim();
+
   return {
     define: {
-      'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(process.env.GOOGLE_MAPS_PLATFORM_KEY || '')
+      'process.env.GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(mapsKey),
+      'process.env.GOOGLE_MAPS_API_KEY': JSON.stringify(mapsKey),
+      'process.env.GOOGLE_MAPS_KEY': JSON.stringify(mapsKey),
+      'process.env.VITE_GOOGLE_MAPS_PLATFORM_KEY': JSON.stringify(mapsKey),
+      'process.env.MAPS_API_KEY': JSON.stringify(mapsKey),
     },
     plugins: [react(), tailwindcss()],
     resolve: {
