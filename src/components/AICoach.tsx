@@ -55,6 +55,20 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
   const findMuscleGroupForExercise = (exerciseName: string): string | null => {
     if (!exerciseName) return null;
     const cleanName = exerciseName.trim().toLowerCase();
+    try {
+      const saved = localStorage.getItem('gym_custom_exercises');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const found = parsed.find(e => e.name?.trim().toLowerCase() === cleanName);
+          if (found) {
+            return found.muscleGroup || found.pool;
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Error reading custom exercises in AICoach:", e);
+    }
     for (const [poolKey, exercises] of Object.entries(POOLS)) {
       const ex = exercises.find(e => e.name.trim().toLowerCase() === cleanName);
       if (ex) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ChevronDown, 
   Dumbbell, 
@@ -541,6 +541,18 @@ const calculateCaloriesBurned = (sets: SessionSet[], userProfile: UserProfile | 
   const findExByName = (name: string): Exercise | null => {
     if (!name) return null;
     const searchName = name.trim().toLowerCase();
+    try {
+      const saved = localStorage.getItem('gym_custom_exercises');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const found = parsed.find(e => e.name?.trim().toLowerCase() === searchName);
+          if (found) return found;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse custom exercises in findExByName:", e);
+    }
     for (const pool of Object.values(POOLS)) {
       const ex = pool.find(e => e.name.trim().toLowerCase() === searchName);
       if (ex) return ex;
@@ -884,6 +896,41 @@ export default function App() {
   const [editingRoutineName, setEditingRoutineName] = useState<string>("");
   const [guidanceEx, setGuidanceEx] = useState<Exercise | null>(null);
 
+  const [customExercises, setCustomExercises] = useState<Exercise[]>(() => {
+    const saved = localStorage.getItem('gym_custom_exercises');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        console.error("Failed to parse local custom exercises:", e);
+      }
+    }
+    return [];
+  });
+  const [showAddCustomModal, setShowAddCustomModal] = useState(false);
+  const [customExName, setCustomExName] = useState("");
+  const [customExPool, setCustomExPool] = useState<'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms'>("chest");
+  const [customExCategory, setCustomExCategory] = useState<'compound' | 'isolation'>("compound");
+  const [creatingCustomForDay, setCreatingCustomForDay] = useState<number | null>(null);
+
+  const combinedPools: Record<string, Exercise[]> = useMemo(() => {
+    const merged: Record<string, Exercise[]> = { ...POOLS };
+    customExercises.forEach(ex => {
+      const poolKey = ex.pool;
+      if (merged[poolKey]) {
+        if (!merged[poolKey].some(e => e.name.trim().toLowerCase() === ex.name.trim().toLowerCase())) {
+          merged[poolKey] = [...merged[poolKey], ex];
+        }
+      } else {
+        merged[poolKey] = [ex];
+      }
+    });
+    return merged;
+  }, [customExercises]);
+
   const [toast, setToast] = useState<{message: string, type: 'success' | 'pb' | 'info'} | null>(null);
 
   // Auto-dismiss any toast after exactly 3.0 seconds (3000ms)
@@ -960,7 +1007,7 @@ export default function App() {
   const findExerciseByName = (name: string): Exercise | null => {
     if (!name) return null;
     const searchName = name.trim().toLowerCase();
-    for (const pool of Object.values(POOLS)) {
+    for (const pool of Object.values(combinedPools)) {
       const ex = pool.find(e => e.name.trim().toLowerCase() === searchName);
       if (ex) return ex;
     }
@@ -985,6 +1032,18 @@ export default function App() {
     setArchivedWorkouts([]);
     setRoutines([]);
     setProfile(null);
+    if (!currentUser) {
+      const saved = localStorage.getItem('gym_custom_exercises');
+      if (saved) {
+        try {
+          setCustomExercises(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to parse local custom exercises:", e);
+        }
+      } else {
+        setCustomExercises([]);
+      }
+    }
   }, [currentUser]);
 
   // Data Sync
@@ -1110,6 +1169,15 @@ export default function App() {
       setRoutines(routineList.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
     }, (err) => console.error("Routines listener error:", err));
 
+    const unsubscribeCustomExercises = onSnapshot(collection(db, `users/${currentUser.uid}/custom_exercises`), (snapshot) => {
+      const list: Exercise[] = [];
+      snapshot.forEach(d => {
+        list.push(d.data() as Exercise);
+      });
+      setCustomExercises(list);
+      localStorage.setItem('gym_custom_exercises', JSON.stringify(list));
+    }, (err) => console.error("Custom exercises listener error:", err));
+
     return () => {
       unsubscribeWorkout();
       unsubscribeSettings();
@@ -1118,12 +1186,13 @@ export default function App() {
       unsubscribePbs();
       unsubscribeWeight();
       unsubscribeRoutines();
+      unsubscribeCustomExercises();
     };
   }, [currentUser]);
 
   useEffect(() => {
     if (searchQuery.trim()) {
-      const allSections = Object.keys(POOLS).map(k => k.charAt(0).toUpperCase() + k.slice(1));
+      const allSections = Object.keys(combinedPools).map(k => k.charAt(0).toUpperCase() + k.slice(1));
       const newState: Record<string, boolean> = {};
       allSections.forEach(s => newState[s] = true);
       setExpandedLibrarySections(newState);
@@ -1504,10 +1573,10 @@ export default function App() {
     if (!ex) return;
 
     let poolKey = ex.pool;
-    if (!poolKey || !POOLS[poolKey]) {
+    if (!poolKey || !combinedPools[poolKey]) {
       const lowerExName = ex.name.trim().toLowerCase();
       // Search across ALL pools to find which one contains this exercise
-      for (const [key, exercises] of Object.entries(POOLS)) {
+      for (const [key, exercises] of Object.entries(combinedPools)) {
         if (exercises.some(e => e.name.trim().toLowerCase() === lowerExName)) {
           poolKey = key as any;
           break;
@@ -1515,7 +1584,7 @@ export default function App() {
       }
     }
 
-    if (!poolKey || !POOLS[poolKey]) {
+    if (!poolKey || !combinedPools[poolKey]) {
       console.warn("Could not find pool for exercise:", ex.name, "poolKey:", poolKey);
       // Fallback: If we still can't find it, try to guess from common strings or default to chest
       const low = ex.name.toLowerCase();
@@ -1533,7 +1602,7 @@ export default function App() {
       }
     }
 
-    const pool = POOLS[poolKey];
+    const pool = combinedPools[poolKey];
     // Filter out current exercise and any other exercise already in the day
     const currentDayExNames = new Set(day.map(d => d.name.trim().toLowerCase()));
     const otherExercises = pool.filter(e => {
@@ -1563,6 +1632,57 @@ export default function App() {
         return next;
       });
     }, 2000);
+  };
+
+  const handleAddCustomExerciseSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customExName.trim()) return;
+
+    const name = customExName.trim();
+    // Validate uniqueness across static and custom lists
+    const existsInPools = Object.values(POOLS).some(pool => 
+      pool.some(ex => ex.name.toLowerCase() === name.toLowerCase())
+    );
+    const existsInCustom = customExercises.some(ex => 
+      ex.name.toLowerCase() === name.toLowerCase()
+    );
+
+    if (existsInPools || existsInCustom) {
+      setToast({ message: `"${name}" is already in the exercise library`, type: "info" });
+      return;
+    }
+
+    const newEx: Exercise = {
+      name,
+      pool: customExPool,
+      icon: "Dumbbell",
+      category: customExCategory,
+      instructions: [' awaiting guidance steps']
+    };
+
+    // Save to local hooks state and localstorage
+    const updated = [...customExercises, newEx];
+    setCustomExercises(updated);
+    localStorage.setItem('gym_custom_exercises', JSON.stringify(updated));
+
+    // Persist to user's custom_exercises directory in Firestore if logged in
+    if (currentUser) {
+      try {
+        const idSafe = name.replace(/\//g, '-');
+        await setDoc(doc(db, `users/${currentUser.uid}/custom_exercises`, idSafe), newEx);
+      } catch (err) {
+        console.error("Failed to sync custom exercise to cloud:", err);
+      }
+    }
+
+    if (creatingCustomForDay !== null) {
+      handleAddExerciseToPlan(creatingCustomForDay, newEx);
+      setCreatingCustomForDay(null);
+    } else {
+      setToast({ message: `"${name}" added to Exercise Library`, type: "success" });
+    }
+    setCustomExName("");
+    setShowAddCustomModal(false);
   };
 
   const handleAddExerciseToPlan = (dayIndex: number, ex: Exercise) => {
@@ -1765,7 +1885,7 @@ export default function App() {
       const totalVolume = sessionSets.reduce((sum, s) => {
         const searchName = s.exerciseName?.trim().toLowerCase();
         let isCardio = false;
-        for (const pool of Object.values(POOLS)) {
+        for (const pool of Object.values(combinedPools)) {
           const found = pool.find(e => e.name.trim().toLowerCase() === searchName);
           if (found && found.pool === 'cardio') {
             isCardio = true;
@@ -1948,7 +2068,7 @@ export default function App() {
 
       const exercisesToSet: Exercise[] = uniqueExNames.map(name => {
         let foundEx: Exercise | null = null;
-        for (const [_, list] of Object.entries(POOLS)) {
+        for (const [_, list] of Object.entries(combinedPools)) {
           const match = list.find(e => e.name.trim().toLowerCase() === name.toLowerCase());
           if (match) {
             foundEx = match;
@@ -2789,33 +2909,47 @@ export default function App() {
                   </h3>
                   <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Comprehensive Exercise Library</p>
                 </div>
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                  <input 
-                    type="text"
-                    placeholder="Search by name or category..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="bg-black/60 border border-white/20 rounded-sm pl-11 pr-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-full md:w-72 text-white"
-                  />
-                  <div className="absolute top-full right-0 mt-2">
-                    <a 
-                      href="https://www.puregym.com/exercises/" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="text-[9px] text-gym-accent/60 hover:text-gym-accent uppercase tracking-[0.2em] font-bold transition-colors flex items-center gap-2"
-                    >
-                      <ExternalLink className="w-2.5 h-2.5" />
-                      Official PureGym Guides
-                    </a>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 self-stretch md:self-auto">
+                  <button
+                    onClick={() => {
+                      setCustomExName("");
+                      setCustomExPool("chest");
+                      setCustomExCategory("compound");
+                      setShowAddCustomModal(true);
+                    }}
+                    className="flex items-center justify-center gap-2 px-5 py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black text-gym-accent rounded-sm text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add Custom Exercise
+                  </button>
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <input 
+                      type="text"
+                      placeholder="Search by name or category..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="bg-black/60 border border-white/20 rounded-sm pl-11 pr-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-full md:w-72 text-white"
+                    />
+                    <div className="absolute top-full right-0 mt-2">
+                      <a 
+                        href="https://www.puregym.com/exercises/" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-[9px] text-gym-accent/60 hover:text-gym-accent uppercase tracking-[0.2em] font-bold transition-colors flex items-center gap-2"
+                      >
+                        <ExternalLink className="w-2.5 h-2.5" />
+                        Official PureGym Guides
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
 
               <div className="h-6" /> 
 
-              {[
-                ...Object.entries(POOLS).map(([key, list]) => ({ 
+               {[
+                ...Object.entries(combinedPools).map(([key, list]) => ({ 
                   title: key.charAt(0).toUpperCase() + key.slice(1), 
                   list: list.filter(ex => 
                     ex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -4783,12 +4917,27 @@ export default function App() {
                     <span className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-1">Select Exercise</span>
                     <h3 className="text-xl font-light italic font-serif">Add to {DAY_CONFIG[addingToDay].name}</h3>
                   </div>
-                  <button 
-                    onClick={() => { setAddingToDay(null); setModalSearch(""); }}
-                    className="p-2 text-white/20 hover:text-white transition-all cursor-pointer"
-                  >
-                    Close
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => {
+                        setCustomExName("");
+                        setCustomExPool(DAY_CONFIG[addingToDay].pools[0] as any);
+                        setCustomExCategory("compound");
+                        setCreatingCustomForDay(addingToDay);
+                        setShowAddCustomModal(true);
+                      }}
+                      className="flex items-center gap-2 px-3 py-2 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black text-gym-accent rounded-sm text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Create Custom
+                    </button>
+                    <button 
+                      onClick={() => { setAddingToDay(null); setModalSearch(""); }}
+                      className="p-2 text-white/20 hover:text-white transition-all cursor-pointer text-sm"
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
                 <div className="relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
@@ -4805,7 +4954,7 @@ export default function App() {
 
               <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                 {DAY_CONFIG[addingToDay].pools.map(poolKey => {
-                  const pool = POOLS[poolKey] || [];
+                  const pool = combinedPools[poolKey] || [];
                   const filtered = pool.filter(ex => 
                     ex.name.toLowerCase().includes(modalSearch.toLowerCase()) &&
                     !currentDays[addingToDay].some(p => p.name === ex.name)
@@ -4997,6 +5146,123 @@ export default function App() {
                   </button>
                 </div>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Add Custom Exercise Modal */}
+      <AnimatePresence>
+        {showAddCustomModal && (
+          <div className="fixed inset-0 z-[105] flex items-center justify-center p-6 sm:p-12 font-sans text-white">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => { setShowAddCustomModal(false); setCreatingCustomForDay(null); }}
+              className="absolute inset-0 bg-black/85 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl p-8"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <span className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] block mb-1">
+                    {creatingCustomForDay !== null ? `For ${DAY_CONFIG[creatingCustomForDay].name}` : "Create Exercise"}
+                  </span>
+                  <h3 className="text-xl font-light italic font-serif">Add Custom Movement</h3>
+                </div>
+                <button 
+                  onClick={() => { setShowAddCustomModal(false); setCreatingCustomForDay(null); }}
+                  className="p-2 text-white/20 hover:text-white transition-all cursor-pointer text-sm"
+                >
+                  Close
+                </button>
+              </div>
+
+              <form onSubmit={handleAddCustomExerciseSubmit} className="space-y-6">
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">Exercise Name</label>
+                  <input 
+                    type="text"
+                    required
+                    placeholder="e.g., Kettlebell Deadlift"
+                    value={customExName}
+                    onChange={(e) => setCustomExName(e.target.value)}
+                    className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white font-light"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">Category (Muscle Group / Pool)</label>
+                  <select
+                    value={customExPool}
+                    onChange={(e) => setCustomExPool(e.target.value as any)}
+                    className="w-full bg-black border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white cursor-pointer font-light"
+                  >
+                    {creatingCustomForDay !== null ? (
+                      DAY_CONFIG[creatingCustomForDay].pools.map(poolKey => (
+                        <option key={poolKey} value={poolKey}>
+                          {poolKey.charAt(0).toUpperCase() + poolKey.slice(1)}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="chest">Chest</option>
+                        <option value="back">Back</option>
+                        <option value="shoulders">Shoulders</option>
+                        <option value="legs">Legs</option>
+                        <option value="biceps">Biceps</option>
+                        <option value="triceps">Triceps</option>
+                        <option value="core">Core</option>
+                        <option value="cardio">Cardio</option>
+                        <option value="equipment">Equipment</option>
+                        <option value="forearms">Forearms</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">Movement Type</label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setCustomExCategory('compound')}
+                      className={`py-3 rounded-sm border text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
+                        customExCategory === 'compound'
+                          ? 'border-gym-accent bg-gym-accent/10 text-gym-accent'
+                          : 'border-white/10 bg-white/[0.02] text-white/60 hover:border-white/25'
+                      }`}
+                    >
+                      Compound
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCustomExCategory('isolation')}
+                      className={`py-3 rounded-sm border text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
+                        customExCategory === 'isolation'
+                          ? 'border-gym-accent bg-gym-accent/10 text-gym-accent'
+                          : 'border-white/10 bg-white/[0.02] text-white/60 hover:border-white/25'
+                      }`}
+                    >
+                      Isolation
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    className="w-full bg-gym-accent text-black hover:bg-white hover:text-black font-black uppercase tracking-widest py-4 rounded-sm text-sm transition-all focus:outline-none shadow-md shadow-gym-accent/5 cursor-pointer"
+                  >
+                    Add to Archive
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

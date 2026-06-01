@@ -411,6 +411,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
+      name: "Low to High Cable Row", 
+      icon: "ArrowUp", 
+      pool: "back",
+      instructions: [
+        "Set the cable pulley at the lowest position and attach a D-handle or rope.",
+        "Stand facing the machine, step back to create tension on the cable, and assume a stable split stance.",
+        "Engage your core and pull the handle up and back toward your lower ribs or chest, leading with your elbow.",
+        "Squeeze your lats and middle back at the peak of the movement.",
+        "Slowly extend your arm back down to the starting position under control."
+      ]
+    },
+    { 
       name: "Single Arm Bent Over Row", 
       icon: "ArrowLeftRight", 
       pool: "back",
@@ -2026,6 +2038,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Lateral Box Jumps": "bNHwR90FO0I",
   "Leg Extensions": "4ZDm5EbiFI8",
   "Low to High Cable Flys": "QcTcWpkn_bw",
+  "Low to High Cable Row": "QelgBRgIsjY",
   "Lunges": "mAgbXQdd4LM",
   "Lying Hamstring Curl": "QjNFk4F5dAs",
   "Lying Leg Raises": "xJJu-WiROM8",
