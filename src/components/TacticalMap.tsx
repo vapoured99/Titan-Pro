@@ -37,7 +37,8 @@ import {
   Plus,
   X,
   List,
-  Save
+  Save,
+  Upload
 } from 'lucide-react';
 import { 
   db, 
@@ -398,70 +399,70 @@ export const getCategoryIconDetails = (catType: string | null) => {
   }
 };
 
-// Map each trail to a beautiful related landscape photo from Unsplash
+// Map each trail to a beautiful, locally-cached real photograph of the actual location in Scotland
 export const getTrailImage = (trail: any): string => {
-  if (!trail) return 'https://images.unsplash.com/photo-1518098268026-4e43a1a009de?auto=format&fit=crop&w=600&q=80';
-  const searchStr = `${trail.name || ''} ${trail.trailType || ''} ${trail.id || ''}`.toLowerCase();
+  if (!trail) return '/images/lochnagar_summit.jpg';
   
-  if (searchStr.includes('lochnagar')) {
-    return 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80'; // high rocky mountain peaks
-  }
-  if (searchStr.includes('balmoral') || searchStr.includes('cairn') || searchStr.includes('pyramid')) {
-    return 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&w=600&q=80'; // Pine woods with stone monument feel
-  }
-  if (searchStr.includes('bennachie') || searchStr.includes('mither')) {
-    return 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=600&q=80'; // Misty green rocky hills
-  }
-  if (searchStr.includes('dunnottar') || searchStr.includes('stonehaven') || searchStr.includes('castle')) {
-    return 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=600&q=80'; // Cliffside dunnottar castle-like fortress
-  }
-  if (searchStr.includes('vat') || searchStr.includes('pothole') || searchStr.includes('dinnet')) {
-    return 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80'; // Ancient woodlands/rocks
-  }
-  if (searchStr.includes('scolty') || searchStr.includes('tower')) {
-    return 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=600&q=80'; // Tower view in tall forest
-  }
-  if (searchStr.includes('clachnaben') || searchStr.includes('tor')) {
-    return 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=600&q=80'; // Highland granite peaks
-  }
-  if (searchStr.includes('craigievar')) {
-    return 'https://images.unsplash.com/photo-1508849789987-4e5333c12b78?auto=format&fit=crop&w=600&q=80'; // Beautiful European castle grounds
-  }
-  if (searchStr.includes('forvie') || searchStr.includes('dune') || searchStr.includes('sands')) {
-    return 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80'; // Coastal sand dunes wild landscape
-  }
-  if (searchStr.includes('morven')) {
-    return 'https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&w=600&q=80'; // Highlands open ridges
-  }
-  if (searchStr.includes('noth') || searchStr.includes('vitrified')) {
-    return 'https://images.unsplash.com/photo-1508020963904-3feb6a2529c6?auto=format&fit=crop&w=600&q=80'; // Ancient lush peaks of Scotland
-  }
-  if (searchStr.includes('newburgh') || searchStr.includes('seal') || searchStr.includes('estuary')) {
-    return 'https://images.unsplash.com/photo-1555529669-e69e7aa0dc9a?auto=format&fit=crop&w=600&q=80'; // Wild beach seals resting close-up
-  }
-  if (searchStr.includes('dee') || searchStr.includes('quoich') || searchStr.includes('linn')) {
-    return 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80'; // Caledonian river woodland pines
-  }
-  if (searchStr.includes('keen') || searchStr.includes('esk')) {
-    return 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80'; // Highland stream mountain base
-  }
-  if (searchStr.includes('crathes') || searchStr.includes('coy') || searchStr.includes('burn')) {
-    return 'https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?auto=format&fit=crop&w=600&q=80'; // Lush deep woods with small streamways
-  }
-  if (searchStr.includes('arbuthnott') || searchStr.includes('bervie')) {
-    return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'; // Bervie water countryside path
-  }
-  if (searchStr.includes('kincardine') || searchStr.includes('oneil')) {
-    return 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=600&q=80'; // Ancient railway woodland trail
-  }
-  if (searchStr.includes('skene') || searchStr.includes('sanctuary')) {
-    return 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80'; // Lake-facing serene forest overlook
-  }
-  if (searchStr.includes('muick')) {
-    return 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=600&q=80'; // Beautiful Loch Muick/highland lake scenery
+  // Return custom-assigned image (url or base64 data) first
+  if (trail.imageUrl) {
+    return trail.imageUrl;
   }
   
-  return 'https://images.unsplash.com/photo-1518098268026-4e43a1a009de?auto=format&fit=crop&w=600&q=80'; // Default cinematic Scottish highlands panorama
+  const presetIds = [
+    'lochnagar_summit',
+    'balmoral_cairns',
+    'bennachie_mither_tap',
+    'dunnottar_coastal_walk',
+    'burn_o_vat_circular',
+    'scolty_tower_hike',
+    'clachnaben_granite_tor',
+    'craigievar_castle_walk',
+    'forvie_reserve_dunes',
+    'morven_deeside_climb',
+    'tap_o_noth_fort',
+    'newburgh_seal_view',
+    'linn_of_dee_quoich',
+    'mount_keen_esk_trail',
+    'crathes_coy_burn_new',
+    'arbuthnott_bervie_loop',
+    'kincardine_oneil_deeside',
+    'loch_skene_sanctuary'
+  ];
+
+  if (trail.id && presetIds.includes(trail.id)) {
+    return `/images/${trail.id}.jpg`;
+  }
+
+  // Soft match using keywords if id is custom or dynamically generated
+  const idStr = String(trail.id || '').toLowerCase();
+  const nameStr = String(trail.name || '').toLowerCase();
+  const searchStr = `${nameStr} ${idStr}`.toLowerCase();
+
+  if (searchStr.includes('lochnagar')) return '/images/lochnagar_summit.jpg';
+  if (searchStr.includes('bennachie') || searchStr.includes('mither')) return '/images/bennachie_mither_tap.jpg';
+  if (searchStr.includes('muick')) return '/images/loch_muick.jpg';
+  if (searchStr.includes('balmoral') || searchStr.includes('cairn') || searchStr.includes('pyramid')) return '/images/balmoral_cairns.jpg';
+  if (searchStr.includes('dunnottar') || searchStr.includes('castle')) {
+    if (searchStr.includes('craigievar')) return '/images/craigievar_castle_walk.jpg';
+    if (searchStr.includes('crathes')) return '/images/crathes_coy_burn_new.jpg';
+    return '/images/dunnottar_coastal_walk.jpg';
+  }
+  if (searchStr.includes('vat') || searchStr.includes('pothole') || searchStr.includes('dinnet')) return '/images/burn_o_vat_circular.jpg';
+  if (searchStr.includes('scolty') || searchStr.includes('tower')) return '/images/scolty_tower_hike.jpg';
+  if (searchStr.includes('clachnaben') || searchStr.includes('tor')) return '/images/clachnaben_granite_tor.jpg';
+  if (searchStr.includes('craigievar')) return '/images/craigievar_castle_walk.jpg';
+  if (searchStr.includes('forvie') || searchStr.includes('dune') || searchStr.includes('sands')) return '/images/forvie_reserve_dunes.jpg';
+  if (searchStr.includes('morven')) return '/images/morven_deeside_climb.jpg';
+  if (searchStr.includes('noth') || searchStr.includes('vitrified')) return '/images/tap_o_noth_fort.jpg';
+  if (searchStr.includes('newburgh') || searchStr.includes('seal') || searchStr.includes('estuary')) return '/images/newburgh_seal_view.jpg';
+  if (searchStr.includes('dee') || searchStr.includes('quoich') || searchStr.includes('linn')) return '/images/linn_of_dee_quoich.jpg';
+  if (searchStr.includes('keen') || searchStr.includes('esk')) return '/images/mount_keen_esk_trail.jpg';
+  if (searchStr.includes('crathes') || searchStr.includes('coy') || searchStr.includes('burn')) return '/images/crathes_coy_burn_new.jpg';
+  if (searchStr.includes('arbuthnott') || searchStr.includes('bervie')) return '/images/arbuthnott_bervie_loop.jpg';
+  if (searchStr.includes('kincardine') || searchStr.includes('oneil')) return '/images/kincardine_oneil_deeside.jpg';
+  if (searchStr.includes('skene') || searchStr.includes('sanctuary')) return '/images/loch_skene_sanctuary.jpg';
+
+  return '/images/lochnagar_summit.jpg'; // Real majestic Scottish highland cliffside fallback
 };
 
 // Robust helper to safely read latitude and longitude from any Google Maps representation
@@ -794,6 +795,7 @@ export default function TacticalMap() {
   const [saveRouteDifficulty, setSaveRouteDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD'>('MEDIUM');
   const [saveRouteType, setSaveRouteType] = useState<string>('Custom Workout Path');
   const [saveRouteDetails, setSaveRouteDetails] = useState<string>('');
+  const [saveRouteImageUrl, setSaveRouteImageUrl] = useState<string>('');
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -1412,7 +1414,8 @@ export default function TacticalMap() {
       kcalEstPerKm: saveRouteDifficulty === 'EASY' ? 60 : saveRouteDifficulty === 'MEDIUM' ? 75 : 95,
       details: saveRouteDetails.trim() || 'A user-designed custom tactical routing traversal.',
       trailType: saveRouteType.trim() || 'Custom Workout Path',
-      middleWaypoints: middleWaypoints.map(wp => ({ lat: wp.lat, lng: wp.lng }))
+      middleWaypoints: middleWaypoints.map(wp => ({ lat: wp.lat, lng: wp.lng })),
+      imageUrl: saveRouteImageUrl.trim()
     };
 
     const updatedRoutes = [...allTrails, newTrail];
@@ -1428,8 +1431,48 @@ export default function TacticalMap() {
     setSaveRouteName('');
     setSaveRouteDetails('');
     setSaveRouteType('Custom Workout Path');
+    setSaveRouteImageUrl('');
     
     setSaveStatus({ type: 'success', message: `Route "${newTrail.name}" successfully created!` });
+    setTimeout(() => setSaveStatus(null), 4000);
+  };
+
+  // Helper to handle image uploads for custom routes
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          setSaveRouteImageUrl(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleClearSelectedImage = () => {
+    setSaveRouteImageUrl('');
+  };
+
+  const handleUpdateActiveCustomRouteImage = (imgUrl: string) => {
+    if (!activePreset || !activePreset.id.startsWith('custom_')) return;
+    
+    const updatedRoutes = allTrails.map(t => {
+      if (t.id === activePreset.id) {
+        return { ...t, imageUrl: imgUrl };
+      }
+      return t;
+    });
+    
+    // Save to localStorage
+    const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
+    localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
+    
+    setAllTrails(updatedRoutes);
+    setActivePreset({ ...activePreset, imageUrl: imgUrl });
+    
+    setSaveStatus({ type: 'success', message: 'Custom route image updated successfully!' });
     setTimeout(() => setSaveStatus(null), 4000);
   };
 
@@ -1833,6 +1876,58 @@ export default function TacticalMap() {
                     />
                   </div>
 
+                  <div className="space-y-1">
+                    <label className="text-[7.5px] text-white/55 font-mono uppercase tracking-wider block">ROUTE IMAGE OPTION (OPTIONAL):</label>
+                    <div className="space-y-1">
+                      <input 
+                        type="text"
+                        placeholder="Paste Image URL or Leave Blank"
+                        value={saveRouteImageUrl}
+                        onChange={(e) => setSaveRouteImageUrl(e.target.value)}
+                        className="w-full bg-[#030304] border border-white/10 rounded-xs p-1.5 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[9px]"
+                      />
+                      
+                      <div className="flex gap-1.5">
+                        <input 
+                          type="file"
+                          accept="image/*"
+                          id="save-route-img-new"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                        />
+                        <label 
+                          htmlFor="save-route-img-new"
+                          className="flex-1 py-1 px-2 bg-white/5 hover:bg-white/10 text-[7.5px] font-mono text-white/80 uppercase tracking-wider rounded-xs cursor-pointer border border-white/10 text-center flex items-center justify-center gap-1"
+                        >
+                          <Upload className="w-2.5 h-2.5 text-gym-accent" />
+                          CHOOSE IMAGE FILE
+                        </label>
+                        {saveRouteImageUrl && (
+                          <button
+                            type="button"
+                            onClick={handleClearSelectedImage}
+                            className="px-2 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 rounded-xs text-[7.5px] font-mono uppercase tracking-wider cursor-pointer"
+                          >
+                            CLEAR
+                          </button>
+                        )}
+                      </div>
+                      
+                      {saveRouteImageUrl && (
+                        <div className="relative h-14 overflow-hidden rounded-xs border border-white/5 bg-black/60 mt-1">
+                          <img 
+                            src={saveRouteImageUrl} 
+                            alt="Preview Custom" 
+                            className="w-full h-full object-cover opacity-70"
+                          />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                            <span className="text-[7px] text-gym-accent font-mono uppercase tracking-widest font-black">IMAGE STAGED</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   <button
                     type="button"
                     onClick={handleSaveCustomRouteToDirectory}
@@ -1922,6 +2017,50 @@ export default function TacticalMap() {
                   </div>
                   <div className="bg-white/[0.01] border border-white/5 p-2 rounded-sm text-[9.5px] font-mono text-white/70 space-y-1">
                     <p className="leading-tight"><span className="text-gym-accent uppercase tracking-wider font-extrabold mr-1">[DESCR]:</span>{activePreset.details}</p>
+                  </div>
+                </div>
+              )}
+
+              {activePreset && activePreset.id.startsWith('custom_') && (
+                <div className="bg-[#0c0c10] border border-white/5 rounded-sm p-2 space-y-1.5 mt-1">
+                  <span className="text-[7.5px] text-white/55 font-mono uppercase tracking-wider block">📷 UPDATE ROUTE FILE/URL PHOTO:</span>
+                  
+                  <div className="space-y-1.5">
+                    <input 
+                      type="text"
+                      placeholder="Paste Custom Image URL"
+                      value={activePreset.imageUrl || ''}
+                      onChange={(e) => handleUpdateActiveCustomRouteImage(e.target.value)}
+                      className="w-full bg-[#030304] border border-white/10 rounded-sm p-1 text-[8.5px] text-white font-mono"
+                    />
+                    
+                    <div className="relative">
+                      <input 
+                        type="file"
+                        accept="image/*"
+                        id="update-route-img-active"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              if (typeof reader.result === 'string') {
+                                handleUpdateActiveCustomRouteImage(reader.result);
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      <label 
+                        htmlFor="update-route-img-active"
+                        className="w-full py-1 bg-white/5 hover:bg-white/10 text-[7.5px] font-mono text-white/80 uppercase tracking-wider rounded-xs cursor-pointer border border-white/10 text-center flex items-center justify-center gap-1"
+                      >
+                        <Upload className="w-2.5 h-2.5 text-gym-accent" />
+                        OR CHOOSE IMAGE FILE
+                      </label>
+                    </div>
                   </div>
                 </div>
               )}
