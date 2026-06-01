@@ -844,48 +844,89 @@ export default function TacticalMap() {
 
   // Synchronized user, status, error states for premium military-grade vector directory backup
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [syncStatus, setSyncStatus] = useState<'OFFLINE' | 'SYNCING' | 'CONNECTED' | 'ERROR'>('OFFLINE');
-  const [syncErrorMessage, setSyncErrorMessage] = useState<string>('');
 
-  // Real-time synchronization of bodyweight settings for metabolic calculations and custom routes database synchronization
+  // Real-time synchronization of bodyweight settings and global custom routes directory from Firestore
   useEffect(() => {
     let unsubscribeSnap: (() => void) | null = null;
     let unsubscribeCustomRoutes: (() => void) | null = null;
+
+    // Set up continuous global subscription to "global_custom_routes" independent of auth status
+    try {
+      const globalColRef = collection(db, 'global_custom_routes');
+      unsubscribeCustomRoutes = onSnapshot(
+        globalColRef,
+        (snapshot) => {
+          const fireStoreRoutes: any[] = [];
+          snapshot.forEach((subDoc) => {
+            fireStoreRoutes.push({ ...subDoc.data(), id: subDoc.id });
+          });
+
+          const localSaved = localStorage.getItem('tactical_custom_routes');
+          const routeMap = new Map<string, any>();
+
+          // 1. Add firestore routes
+          fireStoreRoutes.forEach(r => {
+            routeMap.set(r.id, r);
+          });
+
+          // 2. Add local storage routes if not already in Firestore (and backport them to Firestore)
+          if (localSaved) {
+            try {
+              const parsed = JSON.parse(localSaved);
+              if (Array.isArray(parsed)) {
+                parsed.forEach(r => {
+                  if (!routeMap.has(r.id)) {
+                    routeMap.set(r.id, r);
+                    // Seamlessly sync offline browser-contained custom routes to global Cloud DB
+                    setDoc(doc(db, `global_custom_routes/${r.id}`), r).catch(err => {
+                      console.warn("Auto-syncing offline custom route to global Firestore failed:", err);
+                    });
+                  }
+                });
+              }
+            } catch (e) {
+              console.error("Local storage parse err during merge:", e);
+            }
+          }
+
+          const merged = Array.from(routeMap.values());
+          setAllTrails([...PRESET_TRAILS, ...merged]);
+        },
+        (err) => {
+          console.warn("Could not sync global custom routes from Firestore:", err);
+          
+          // Fallback: Restore custom routes from localStorage if offline/denied
+          const saved = localStorage.getItem('tactical_custom_routes');
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed)) {
+                setAllTrails([...PRESET_TRAILS, ...parsed]);
+              }
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        }
+      );
+    } catch (err) {
+      console.warn("Error setting up global custom routes listener:", err);
+    }
     
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       
-      // Clear previous snapshot listeners if user status changed
+      // Clear previous snapshot settings listener if user status changed
       if (unsubscribeSnap) {
         unsubscribeSnap();
         unsubscribeSnap = null;
       }
-      if (unsubscribeCustomRoutes) {
-        unsubscribeCustomRoutes();
-        unsubscribeCustomRoutes = null;
-      }
       
       if (!user) {
         setUserWeight(75);
-        setSyncStatus('OFFLINE');
-        // Fallback: Restore custom routes from localStorage when signed out
-        const saved = localStorage.getItem('tactical_custom_routes');
-        if (saved) {
-          try {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed)) {
-              setAllTrails([...PRESET_TRAILS, ...parsed]);
-            }
-          } catch (e) {
-            console.error(e);
-          }
-        } else {
-          setAllTrails(PRESET_TRAILS);
-        }
         return;
       }
       
-      setSyncStatus('SYNCING');
       const settingsPath = `users/${user.uid}/profile/settings`;
       try {
         unsubscribeSnap = onSnapshot(
@@ -904,62 +945,6 @@ export default function TacticalMap() {
         );
       } catch (err) {
         console.warn("Error setting up bodyweight listener:", err);
-      }
-
-      // Live Firestore custom routes synchronization
-      const customColPath = `users/${user.uid}/custom_routes`;
-      try {
-        unsubscribeCustomRoutes = onSnapshot(
-          collection(db, customColPath),
-          (snapshot) => {
-            const fireStoreRoutes: any[] = [];
-            snapshot.forEach((subDoc) => {
-              fireStoreRoutes.push({ ...subDoc.data(), id: subDoc.id });
-            });
-
-            const localSaved = localStorage.getItem('tactical_custom_routes');
-            const routeMap = new Map<string, any>();
-
-            // 1. Add firestore routes
-            fireStoreRoutes.forEach(r => {
-              routeMap.set(r.id, r);
-            });
-
-            // 2. Add local storage routes if not already in Firestore
-            if (localSaved) {
-              try {
-                const parsed = JSON.parse(localSaved);
-                if (Array.isArray(parsed)) {
-                  parsed.forEach(r => {
-                    if (!routeMap.has(r.id)) {
-                      routeMap.set(r.id, r);
-                      // Backport local storage routes to firestore safely when logged in
-                      setDoc(doc(db, `users/${user.uid}/custom_routes/${r.id}`), r).catch(err => {
-                        console.warn("Auto-syncing offline custom route to Firestore failed:", err);
-                      });
-                    }
-                  });
-                }
-              } catch (e) {
-                console.error("Local storage parse err during merge:", e);
-              }
-            }
-
-            const merged = Array.from(routeMap.values());
-            setAllTrails([...PRESET_TRAILS, ...merged]);
-            setSyncStatus('CONNECTED');
-            setSyncErrorMessage('');
-          },
-          (err) => {
-            console.warn("Could not sync custom routes from Firestore:", err);
-            setSyncStatus('ERROR');
-            setSyncErrorMessage(err.message || 'Permission denied or network issue');
-          }
-        );
-      } catch (err: any) {
-        console.warn("Error setting up custom routes listener:", err);
-        setSyncStatus('ERROR');
-        setSyncErrorMessage(err.message || 'Setup initialization error');
       }
     });
 
@@ -1529,14 +1514,11 @@ export default function TacticalMap() {
     const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
     localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
 
-    // Save to Firestore if authenticated
-    const user = auth.currentUser;
-    if (user) {
-      const routePath = `users/${user.uid}/custom_routes/${newTrailId}`;
-      setDoc(doc(db, routePath), newTrail).catch(err => {
-        console.error("Failed to save custom route to Firestore:", err);
-      });
-    }
+    // Save to Firestore globally so everyone can view and sync
+    const routePath = `global_custom_routes/${newTrailId}`;
+    setDoc(doc(db, routePath), newTrail).catch(err => {
+      console.error("Failed to save custom route to Firestore globally:", err);
+    });
 
     setAllTrails(updatedRoutes);
     setActivePreset(newTrail);
@@ -1551,124 +1533,7 @@ export default function TacticalMap() {
     setTimeout(() => setSaveStatus(null), 4000);
   };
 
-  // Export custom trajectories to clipboard as high-tech vector recovery codes
-  const handleExportRoutes = () => {
-    const customOnly = allTrails.filter(t => String(t.id || '').startsWith('custom_'));
-    const dataStr = JSON.stringify(customOnly, null, 2);
-    navigator.clipboard.writeText(dataStr);
-    setSaveStatus({ type: 'success', message: 'Registry backup copied to clipboard! Keep this code secure.' });
-    setTimeout(() => setSaveStatus(null), 4000);
-  };
 
-  // Download custom routes registry locally as .json backup file
-  const handleDownloadRoutesFile = () => {
-    const customOnly = allTrails.filter(t => String(t.id || '').startsWith('custom_'));
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(customOnly, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `tactical_scout_registry_${Date.now()}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-    setSaveStatus({ type: 'success', message: 'Vector registry backup .json downloaded!' });
-    setTimeout(() => setSaveStatus(null), 4000);
-  };
-
-  // Restore custom routes from high-tech JSON registry backup files
-  const handleImportRoutesFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const text = event.target?.result as string;
-        const parsed = JSON.parse(text);
-        if (Array.isArray(parsed)) {
-          const validRoutes = parsed.filter(r => r.name && r.id);
-          if (validRoutes.length === 0) {
-            setSaveStatus({ type: 'error', message: 'No valid custom routes resolved from file structure.' });
-            setTimeout(() => setSaveStatus(null), 4000);
-            return;
-          }
-          
-          const routeMap = new Map<string, any>();
-          allTrails.forEach(t => routeMap.set(t.id, t));
-          validRoutes.forEach(v => routeMap.set(v.id, v));
-          
-          const merged = Array.from(routeMap.values());
-          setAllTrails(merged);
-          
-          const customOnly = merged.filter((t: any) => String(t.id || '').startsWith('custom_'));
-          localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
-          
-          const user = auth.currentUser;
-          if (user) {
-            validRoutes.forEach(r => {
-              setDoc(doc(db, `users/${user.uid}/custom_routes/${r.id}`), r).catch(err => {
-                console.warn("Backporting custom route to cloud vault failed:", err);
-              });
-            });
-          }
-          
-          setSaveStatus({ type: 'success', message: `Import successful: Restored ${validRoutes.length} route design(s)!` });
-          setTimeout(() => setSaveStatus(null), 4000);
-        } else {
-          setSaveStatus({ type: 'error', message: 'Invalid registry block. Must be a valid JSON array.' });
-          setTimeout(() => setSaveStatus(null), 4000);
-        }
-      } catch (err) {
-        setSaveStatus({ type: 'error', message: 'Failed to read registry backup file.' });
-        setTimeout(() => setSaveStatus(null), 4000);
-      }
-    };
-    reader.readAsText(file);
-    e.target.value = '';
-  };
-
-  // Explicitly trigger synchronization of routes collection to Firestore
-  const handleForceSyncToCloud = async () => {
-    const user = auth.currentUser;
-    if (!user) {
-      setSaveStatus({ type: 'error', message: 'No authenticated session. Sign in to sync securely.' });
-      setTimeout(() => setSaveStatus(null), 4000);
-      return;
-    }
-    
-    setSyncStatus('SYNCING');
-    try {
-      const customOnly = allTrails.filter(t => String(t.id || '').startsWith('custom_'));
-      if (customOnly.length === 0) {
-        setSaveStatus({ type: 'success', message: 'Nothing to push! Vector registry completely synced with cloud.' });
-        setSyncStatus('CONNECTED');
-        setTimeout(() => setSaveStatus(null), 4000);
-        return;
-      }
-      
-      let syncErrorCount = 0;
-      for (const r of customOnly) {
-        try {
-          await setDoc(doc(db, `users/${user.uid}/custom_routes/${r.id}`), r);
-        } catch (e) {
-          console.error("Single vector sync failure:", e);
-          syncErrorCount++;
-        }
-      }
-      
-      if (syncErrorCount > 0) {
-        setSaveStatus({ type: 'error', message: `Vault partial backup: Synced ${customOnly.length - syncErrorCount}, failed ${syncErrorCount}.` });
-        setSyncStatus('ERROR');
-      } else {
-        setSaveStatus({ type: 'success', message: `Synchronized ${customOnly.length} vector route designs successfully into Cloud vault!` });
-        setSyncStatus('CONNECTED');
-      }
-      setTimeout(() => setSaveStatus(null), 4000);
-    } catch (err: any) {
-      setSaveStatus({ type: 'error', message: `Vault backup crash: ${err.message || 'unknown error'}` });
-      setSyncStatus('ERROR');
-      setTimeout(() => setSaveStatus(null), 4000);
-    }
-  };
 
   // Helper to handle image uploads for custom routes
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1702,14 +1567,11 @@ export default function TacticalMap() {
     const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
     localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
 
-    // Update in Firestore if authenticated
-    const user = auth.currentUser;
-    if (user) {
-      const routePath = `users/${user.uid}/custom_routes/${activePreset.id}`;
-      setDoc(doc(db, routePath), { ...activePreset, imageUrl: imgUrl }).catch(err => {
-        console.error("Failed to update custom route image in Firestore:", err);
-      });
-    }
+    // Update in Firestore globally
+    const routePath = `global_custom_routes/${activePreset.id}`;
+    setDoc(doc(db, routePath), { ...activePreset, imageUrl: imgUrl }).catch(err => {
+      console.error("Failed to update custom route image in Firestore globally:", err);
+    });
     
     setAllTrails(updatedRoutes);
     setActivePreset({ ...activePreset, imageUrl: imgUrl });
@@ -1732,14 +1594,11 @@ export default function TacticalMap() {
     const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
     localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
 
-    // Delete from Firestore if authenticated
-    const user = auth.currentUser;
-    if (user) {
-      const routePath = `users/${user.uid}/custom_routes/${id}`;
-      deleteDoc(doc(db, routePath)).catch(err => {
-        console.error("Failed to delete custom route from Firestore:", err);
-      });
-    }
+    // Delete from Firestore globally
+    const routePath = `global_custom_routes/${id}`;
+    deleteDoc(doc(db, routePath)).catch(err => {
+      console.error("Failed to delete custom route from Firestore globally:", err);
+    });
     
     setAllTrails(updatedRoutes);
     setDeleteConfirmId(null);
@@ -2063,7 +1922,7 @@ export default function TacticalMap() {
             </div>
 
             {/* Save Custom Route form section */}
-            {(customOrigin || customDestination || middleWaypoints.length > 0) && (
+            {(customOrigin || customDestination || middleWaypoints.length > 0) && !activePreset && (
               <div className="bg-white/[0.01] border border-gym-accent/25 hover:border-gym-accent/40 p-3 rounded-sm space-y-2.5 mt-2 transition-all">
                 <div className="flex items-center gap-1.5 border-b border-white/5 pb-1.5">
                   <span className="text-[9px] text-gym-accent font-mono font-black uppercase tracking-wider">💾 SAVE CUSTOM ROUTE TO DIRECTORY</span>
@@ -2194,84 +2053,8 @@ export default function TacticalMap() {
 
           {/* Section C: Preset Trail Explorer */}
           <div className="bg-[#08080a] border border-white/10 p-4 rounded-sm space-y-3 shadow-lg relative">
-            <span className="text-[10px] text-white/80 font-mono font-bold uppercase tracking-wider block">TRAIL PRESETS &amp; SYNC</span>
+            <span className="text-[10px] text-white/80 font-mono font-bold uppercase tracking-wider block">TRAIL DIRECTORY &amp; PRESETS</span>
 
-            {/* Real-time Cloud Sync & Vector Security Status Header */}
-            <div className="bg-white/[0.01] border border-white/10 p-2.5 rounded-sm space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[8.5px] text-white/40 font-mono uppercase tracking-widest font-bold">Vector Vault Sync:</span>
-                <div className="flex items-center gap-1.5">
-                  {syncStatus === 'OFFLINE' ? (
-                    <span className="text-[7.5px] font-mono font-bold text-yellow-400 bg-yellow-400/10 px-1.5 py-0.5 rounded-xs animate-pulse">
-                      ⚠️ sandbox offline
-                    </span>
-                  ) : syncStatus === 'SYNCING' ? (
-                    <span className="text-[7.5px] font-mono font-bold text-sky-400 bg-sky-400/10 px-1.5 py-0.5 rounded-xs flex items-center gap-1">
-                      <Loader2 className="w-2.5 h-2.5 animate-spin text-sky-400" />
-                      syncing...
-                    </span>
-                  ) : syncStatus === 'CONNECTED' ? (
-                    <span className="text-[7.5px] font-mono font-bold text-gym-accent bg-gym-accent/10 px-1.5 py-0.5 rounded-xs">
-                      🟢 cloud connected
-                    </span>
-                  ) : (
-                    <span className="text-[7.5px] font-mono font-bold text-red-100 bg-red-400/20 px-1.5 py-0.5 rounded-xs">
-                      🔴 NOT SYNCING
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {syncStatus === 'OFFLINE' ? (
-                <p className="text-[8px] text-white/45 leading-relaxed font-sans">
-                  Custom routes are stored on this browser sandbox. Sign-in under the user panel to enable cloud vault sync. Or use the manual utility tools below to export locally.
-                </p>
-              ) : syncStatus === 'CONNECTED' ? (
-                <p className="text-[8px] text-gym-accent/70 leading-relaxed font-mono uppercase text-[7px] tracking-wider">
-                  Verified: Vector routes registry fully synced with secure Cloud database.
-                </p>
-              ) : (
-                <p className="text-[8px] text-red-400/70 leading-relaxed font-sans">
-                  Vault error: {syncErrorMessage || 'Unknown network interference'}.
-                </p>
-              )}
-
-              {/* Recovery and Sync Buttons */}
-              <div className="flex items-center gap-1.5 pt-0.5">
-                {currentUser && (
-                  <button
-                    type="button"
-                    onClick={handleForceSyncToCloud}
-                    disabled={syncStatus === 'SYNCING'}
-                    className="flex-1 py-1 px-1.5 bg-gym-accent/10 hover:bg-gym-accent text-white hover:text-black border border-gym-accent/20 hover:border-transparent text-[7.5px] font-mono uppercase tracking-wider rounded-xs flex items-center justify-center gap-1 transition-all cursor-pointer font-bold disabled:opacity-50"
-                  >
-                    <RotateCw className={`w-2 h-2 ${syncStatus === 'SYNCING' ? 'animate-spin' : ''}`} />
-                    Sync Vault
-                  </button>
-                )}
-                
-                <button
-                  type="button"
-                  onClick={handleDownloadRoutesFile}
-                  className="flex-1 py-1 px-1.5 bg-white/[0.02] hover:bg-white/5 border border-white/5 text-white/80 hover:text-white text-[7.5px] font-mono uppercase tracking-wider rounded-xs flex items-center justify-center gap-1 transition-all cursor-pointer font-medium"
-                >
-                  <Save className="w-2 h-2" />
-                  Backup .json
-                </button>
-
-                <label className="flex-1 py-1 px-1.5 bg-white/[0.02] hover:bg-white/5 border border-white/5 text-white/80 hover:text-white text-[7.5px] font-mono uppercase tracking-wider rounded-xs flex items-center justify-center gap-1 transition-all cursor-pointer font-medium text-center">
-                  <Upload className="w-2 h-2" />
-                  Restore
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={handleImportRoutesFile}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
-            
             {/* Source Segment Tabs for Presets vs. User Custom Routes */}
             <div className="flex border-b border-white/5 pb-2">
               <button

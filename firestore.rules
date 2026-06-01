@@ -28,7 +28,9 @@ service cloud.firestore {
       }
     }
 
-    // Global PB/Sets logic for cross-user comparisons (if needed) - Keeping it simple for now
-    // match /public_stats/{docId} { ... }
+    // Global shared custom routes collection
+    match /global_custom_routes/{routeId} {
+      allow read, write: if true;
+    }
   }
 }
