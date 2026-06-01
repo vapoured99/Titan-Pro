@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import fs from "fs";
 
 dotenv.config();
 
@@ -167,6 +168,30 @@ Format your response strictly as JSON conforming to the requested schema. Provid
     }
   });
 
+
+  // Bulletproof image response streamer ensuring high-performance image loading on mobile devices
+  app.get('/images/:filename', (req, res, next) => {
+    const filename = req.params.filename;
+    
+    // Prevent directory traversal attacks
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      return res.status(403).send('Access Denied');
+    }
+
+    const possiblePaths = [
+      path.join(process.cwd(), 'public/images', filename),
+      path.join(process.cwd(), 'dist/images', filename)
+    ];
+
+    for (const filePath of possiblePaths) {
+      if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24h
+        return res.sendFile(filePath);
+      }
+    }
+    next();
+  });
 
   // Explicitly serve static trail images from both public and dist directories for maximum redundancy
   app.use('/images', express.static(path.join(process.cwd(), 'public/images')));

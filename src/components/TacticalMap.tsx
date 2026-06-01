@@ -964,6 +964,7 @@ export default function TacticalMap() {
   const [selectedPlace, setSelectedPlace] = useState<google.maps.places.Place | null>(null);
   const [activeCategoryType, setActiveCategoryType] = useState<'hike' | null>('hike');
   const [activeDifficultyFilter, setActiveDifficultyFilter] = useState<'ALL' | 'EASY' | 'MEDIUM' | 'HARD'>('ALL');
+  const [trailSource, setTrailSource] = useState<'all' | 'official' | 'custom'>('all');
 
   // Track user selection/interaction to avoid auto-selecting preset trails on mount
   const userInteractedRef = useRef<boolean>(false);
@@ -1257,11 +1258,16 @@ export default function TacticalMap() {
   // Filtered list of preset trails matching selected parameters
   const matchingTrails = useMemo(() => {
     return allTrails.filter((trail) => {
+      // Filter by trail source
+      const isCustom = String(trail.id || '').startsWith('custom_');
+      if (trailSource === 'official' && isCustom) return false;
+      if (trailSource === 'custom' && !isCustom) return false;
+
       const matchesCategory = !activeCategoryType || trail.category === activeCategoryType;
       const matchesDifficulty = activeDifficultyFilter === 'ALL' || trail.difficulty === activeDifficultyFilter;
       return matchesCategory && matchesDifficulty;
     });
-  }, [activeCategoryType, activeDifficultyFilter, allTrails]);
+  }, [activeCategoryType, activeDifficultyFilter, allTrails, trailSource]);
 
   if (isKeyLoading) {
     return (
@@ -2035,6 +2041,57 @@ export default function TacticalMap() {
           <div className="bg-[#08080a] border border-white/10 p-4 rounded-sm space-y-3 shadow-lg relative">
             <span className="text-[10px] text-white/80 font-mono font-bold uppercase tracking-wider block">TRAIL PRESETS</span>
             
+            {/* Source Segment Tabs for Presets vs. User Custom Routes */}
+            <div className="flex border-b border-white/5 pb-2">
+              <button
+                type="button"
+                onClick={() => setTrailSource('all')}
+                className={`flex-1 py-1.5 px-2 text-[8px] font-mono uppercase tracking-wider text-center border-b-2 font-bold transition-all cursor-pointer ${
+                  trailSource === 'all'
+                    ? 'border-gym-accent text-gym-accent bg-gym-accent/5'
+                    : 'border-transparent text-white/50 hover:text-white hover:bg-white/[0.02]'
+                }`}
+              >
+                🛰️ All ({allTrails.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setTrailSource('official')}
+                className={`flex-1 py-1.5 px-2 text-[8px] font-mono uppercase tracking-wider text-center border-b-2 font-bold transition-all cursor-pointer ${
+                  trailSource === 'official'
+                    ? 'border-gym-accent text-gym-accent bg-gym-accent/5'
+                    : 'border-transparent text-white/50 hover:text-white hover:bg-white/[0.02]'
+                }`}
+              >
+                🏔️ Official ({allTrails.filter(t => !String(t.id || '').startsWith('custom_')).length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setTrailSource('custom')}
+                className={`flex-1 py-1.5 px-2 text-[8px] font-mono uppercase tracking-wider text-center border-b-2 font-bold transition-all relative cursor-pointer ${
+                  trailSource === 'custom'
+                    ? 'border-gym-accent text-gym-accent bg-gym-accent/5'
+                    : 'border-transparent text-white/50 hover:text-white hover:bg-white/[0.02]'
+                }`}
+              >
+                🛠️ My Designs ({allTrails.filter(t => String(t.id || '').startsWith('custom_')).length})
+                {allTrails.filter(t => String(t.id || '').startsWith('custom_')).length > 0 && (
+                  <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                )}
+              </button>
+            </div>
+
+            {/* Empty State when viewing custom designs but none exist */}
+            {trailSource === 'custom' && matchingTrails.length === 0 && (
+              <div className="bg-white/[0.01] border border-dashed border-white/10 p-3.5 rounded-sm text-center space-y-2 my-2">
+                <Compass className="w-5 h-5 text-gym-accent/40 mx-auto animate-pulse" />
+                <p className="text-[9.5px] uppercase font-mono tracking-wider text-white/80">Vector Registry Empty</p>
+                <p className="text-[8.5px] text-white/45 leading-relaxed font-sans">
+                  Click two or more locations on the Google Map to draw a navigation vector, then click &quot;Save Route Info&quot; under the map to register your first custom route into this list!
+                </p>
+              </div>
+            )}
+
             {/* Quick Filter Controls */}
             <div className="space-y-2 border-b border-white/5 pb-2.5">
               <div className="grid grid-cols-4 gap-1">
@@ -2097,7 +2154,6 @@ export default function TacticalMap() {
                     <img 
                       src={getTrailImage(activePreset)} 
                       alt={activePreset.name} 
-                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-300"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
