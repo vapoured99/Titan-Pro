@@ -1956,7 +1956,22 @@ export default function App() {
         updatedAt: serverTimestamp() 
       }, { merge: true });
 
+      // Clear all categories in the programming tab
+      const currentWorkoutRef = doc(db, `users/${currentUser.uid}/workout/current`);
+      const emptyDaysObj: Record<string, Exercise[]> = {};
+      for (let i = 0; i < 6; i++) {
+        emptyDaysObj[`d${i}`] = [];
+      }
+      batch.set(currentWorkoutRef, {
+        days: emptyDaysObj,
+        version: 2,
+        updatedAt: serverTimestamp()
+      });
+
       await batch.commit();
+      
+      // Update local state for instant feedback
+      setCurrentDays([[], [], [], [], [], []]);
       
       // sessionSets will be cleared via onSnapshot
       setSelectedWorkoutId(workoutRef.id);
