@@ -178,19 +178,6 @@ const PRESET_TRAILS = [
     trailType: 'Royal Commemorative Trail'
   },
   {
-    id: 'bennachie_mither_tap',
-    name: 'Bennachie: Mither Tap Circular',
-    category: 'hike',
-    origin: { lat: 57.2917, lng: -2.4764 },
-    destination: { lat: 57.2911, lng: -2.4835 },
-    originText: 'Rowantree Base Car Park',
-    destinationText: 'Mither Tap Hill Fort Summit',
-    difficulty: 'MEDIUM',
-    kcalEstPerKm: 82,
-    details: 'Aberdeenshire’s iconic peak trail climbing wood steps and heather tracks to an impressive ancient Pictish hill fort summit on AllTrails.',
-    trailType: 'Iron Age Hill Fort Climb'
-  },
-  {
     id: 'dunnottar_coastal_walk',
     name: 'Stonehaven to Dunnottar Coastal Path',
     category: 'hike',
