@@ -28,9 +28,5 @@ service cloud.firestore {
       }
     }
 
-    // Global shared custom routes collection
-    match /global_custom_routes/{routeId} {
-      allow read, write: if true;
-    }
   }
 }

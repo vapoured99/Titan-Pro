@@ -132,9 +132,9 @@
       "schema": "UserProfile",
       "description": "User specific settings and metadata."
     },
-    "/global_custom_routes/{routeId}": {
+    "/users/{userId}/custom_routes/{routeId}": {
       "schema": "CustomRoute",
-      "description": "Global shared custom routes designed by users for tactical outdoor mappings."
+      "description": "User-specific custom routes designed by the user, carrying across multiple devices securely within their account."
     }
   }
 }

@@ -757,88 +757,44 @@ export default function TacticalMap() {
   // Synchronized user, status, error states for premium military-grade vector directory backup
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Real-time synchronization of bodyweight settings and global custom routes directory from Firestore
+  // Real-time synchronization of bodyweight settings and account-specific custom routes directory from Firestore
   useEffect(() => {
     let unsubscribeSnap: (() => void) | null = null;
     let unsubscribeCustomRoutes: (() => void) | null = null;
-
-    // Set up continuous global subscription to "global_custom_routes" independent of auth status
-    try {
-      const globalColRef = collection(db, 'global_custom_routes');
-      unsubscribeCustomRoutes = onSnapshot(
-        globalColRef,
-        (snapshot) => {
-          const fireStoreRoutes: any[] = [];
-          snapshot.forEach((subDoc) => {
-            fireStoreRoutes.push({ ...subDoc.data(), id: subDoc.id });
-          });
-
-          const localSaved = localStorage.getItem('tactical_custom_routes');
-          const routeMap = new Map<string, any>();
-
-          // 1. Add firestore routes
-          fireStoreRoutes.forEach(r => {
-            routeMap.set(r.id, r);
-          });
-
-          // 2. Add local storage routes if not already in Firestore (and backport them to Firestore)
-          if (localSaved) {
-            try {
-              const parsed = JSON.parse(localSaved);
-              if (Array.isArray(parsed)) {
-                parsed.forEach(r => {
-                  if (!routeMap.has(r.id)) {
-                    routeMap.set(r.id, r);
-                    // Seamlessly sync offline browser-contained custom routes to global Cloud DB
-                    setDoc(doc(db, `global_custom_routes/${r.id}`), r).catch(err => {
-                      console.warn("Auto-syncing offline custom route to global Firestore failed:", err);
-                    });
-                  }
-                });
-              }
-            } catch (e) {
-              console.error("Local storage parse err during merge:", e);
-            }
-          }
-
-          const merged = Array.from(routeMap.values());
-          setAllTrails([...PRESET_TRAILS, ...merged]);
-        },
-        (err) => {
-          console.warn("Could not sync global custom routes from Firestore:", err);
-          
-          // Fallback: Restore custom routes from localStorage if offline/denied
-          const saved = localStorage.getItem('tactical_custom_routes');
-          if (saved) {
-            try {
-              const parsed = JSON.parse(saved);
-              if (Array.isArray(parsed)) {
-                setAllTrails([...PRESET_TRAILS, ...parsed]);
-              }
-            } catch (e) {
-              console.error(e);
-            }
-          }
-        }
-      );
-    } catch (err) {
-      console.warn("Error setting up global custom routes listener:", err);
-    }
     
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       
-      // Clear previous snapshot settings listener if user status changed
+      // Clear previous snapshot settings/routes listeners
       if (unsubscribeSnap) {
         unsubscribeSnap();
         unsubscribeSnap = null;
       }
+      if (unsubscribeCustomRoutes) {
+        unsubscribeCustomRoutes();
+        unsubscribeCustomRoutes = null;
+      }
       
       if (!user) {
         setUserWeight(75);
+        // Fallback: Restore custom routes from localStorage when signed out / offline
+        const saved = localStorage.getItem('tactical_custom_routes');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) {
+              setAllTrails([...PRESET_TRAILS, ...parsed]);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        } else {
+          setAllTrails(PRESET_TRAILS);
+        }
         return;
       }
       
+      // Setup user bodyweight settings listener
       const settingsPath = `users/${user.uid}/profile/settings`;
       try {
         unsubscribeSnap = onSnapshot(
@@ -857,6 +813,69 @@ export default function TacticalMap() {
         );
       } catch (err) {
         console.warn("Error setting up bodyweight listener:", err);
+      }
+
+      // Connect to secure, account-specific custom routes subcollection
+      const customColPath = `users/${user.uid}/custom_routes`;
+      try {
+        unsubscribeCustomRoutes = onSnapshot(
+          collection(db, customColPath),
+          (snapshot) => {
+            const fireStoreRoutes: any[] = [];
+            snapshot.forEach((subDoc) => {
+              fireStoreRoutes.push({ ...subDoc.data(), id: subDoc.id });
+            });
+
+            const localSaved = localStorage.getItem('tactical_custom_routes');
+            const routeMap = new Map<string, any>();
+
+            // 1. Load firestore user-specific routes
+            fireStoreRoutes.forEach(r => {
+              routeMap.set(r.id, r);
+            });
+
+            // 2. Load and verify local routes to migrate or merge
+            if (localSaved) {
+              try {
+                const parsed = JSON.parse(localSaved);
+                if (Array.isArray(parsed)) {
+                  parsed.forEach(r => {
+                    if (!routeMap.has(r.id)) {
+                      routeMap.set(r.id, r);
+                      // Migrate and backup offline-created route onto their logged-in account
+                      setDoc(doc(db, `users/${user.uid}/custom_routes/${r.id}`), r).catch(err => {
+                        console.warn("Auto-syncing offline custom route to user Firestore block failed:", err);
+                      });
+                    }
+                  });
+                }
+              } catch (e) {
+                console.error("Local storage parse err during merge:", e);
+              }
+            }
+
+            const merged = Array.from(routeMap.values());
+            setAllTrails([...PRESET_TRAILS, ...merged]);
+          },
+          (err) => {
+            console.warn("Could not sync custom routes from Firestore:", err);
+            
+            // Fallback to local storage if reading was blocked or offline
+            const saved = localStorage.getItem('tactical_custom_routes');
+            if (saved) {
+              try {
+                const parsed = JSON.parse(saved);
+                if (Array.isArray(parsed)) {
+                  setAllTrails([...PRESET_TRAILS, ...parsed]);
+                }
+              } catch (e) {
+                console.error(e);
+              }
+            }
+          }
+        );
+      } catch (err) {
+        console.warn("Error setting up personal custom routes listener:", err);
       }
     });
 
@@ -1426,11 +1445,13 @@ export default function TacticalMap() {
     const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
     localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
 
-    // Save to Firestore globally so everyone can view and sync
-    const routePath = `global_custom_routes/${newTrailId}`;
-    setDoc(doc(db, routePath), newTrail).catch(err => {
-      console.error("Failed to save custom route to Firestore globally:", err);
-    });
+    // Save to Firestore under user settings directory if logged in
+    if (currentUser) {
+      const routePath = `users/${currentUser.uid}/custom_routes/${newTrailId}`;
+      setDoc(doc(db, routePath), newTrail).catch(err => {
+        console.error("Failed to save custom route to Firestore:", err);
+      });
+    }
 
     setAllTrails(updatedRoutes);
     setActivePreset(newTrail);
@@ -1458,11 +1479,13 @@ export default function TacticalMap() {
     const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
     localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
 
-    // Delete from Firestore globally
-    const routePath = `global_custom_routes/${id}`;
-    deleteDoc(doc(db, routePath)).catch(err => {
-      console.error("Failed to delete custom route from Firestore globally:", err);
-    });
+    // Delete from Firestore user directory if logged in
+    if (currentUser) {
+      const routePath = `users/${currentUser.uid}/custom_routes/${id}`;
+      deleteDoc(doc(db, routePath)).catch(err => {
+        console.error("Failed to delete custom route from Firestore:", err);
+      });
+    }
     
     setAllTrails(updatedRoutes);
     setDeleteConfirmId(null);
