@@ -169,7 +169,14 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
       });
 
       if (!response.ok) {
-        throw new Error('Intelligence scan returned server-side validation anomaly.');
+        let errMsg = 'Intelligence scan returned server-side validation anomaly.';
+        try {
+          const errData = await response.json();
+          if (errData && errData.error) {
+            errMsg = errData.error;
+          }
+        } catch (_) {}
+        throw new Error(errMsg);
       }
 
       const data: CoachRecommendation = await response.json();
@@ -227,6 +234,16 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
           </button>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-4 bg-red-950/20 border border-red-500/30 p-3 rounded-sm text-red-400 font-mono text-[10px] uppercase tracking-wider flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold">[SYSTEM DEFECT / QUOTA EXHAUSTED]: </span>
+            <span className="normal-case block mt-1 text-white/95 text-[11px] leading-relaxed select-text">{error}</span>
+          </div>
+        </div>
+      )}
 
       <AnimatePresence mode="wait">
         {isMinimized ? (
