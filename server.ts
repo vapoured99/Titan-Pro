@@ -109,6 +109,104 @@ Format your response strictly as JSON conforming to the requested schema. Provid
     }
   });
 
+  // API Route to load all hardcoded custom routes from server storage
+  app.get("/api/hardcoded-routes", (req, res) => {
+    try {
+      const routesPath = path.join(process.cwd(), "src/data/hardcoded_routes.json");
+      if (fs.existsSync(routesPath)) {
+        const fileContent = fs.readFileSync(routesPath, "utf-8");
+        return res.json(JSON.parse(fileContent));
+      }
+      return res.json([]);
+    } catch (err: any) {
+      console.error("Error reading hardcoded_routes.json:", err);
+      res.status(500).json({ error: "Failed to read hardcoded routes" });
+    }
+  });
+
+  // API Route to store a custom route permanently into the hardcoded JSON repo on server disk
+  app.post("/api/hardcoded-routes", (req, res) => {
+    try {
+      const newRoute = req.body;
+      if (!newRoute || !newRoute.id) {
+        return res.status(400).json({ error: "Invalid route payload" });
+      }
+
+      const routesPath = path.join(process.cwd(), "src/data/hardcoded_routes.json");
+      let routes: any[] = [];
+      if (fs.existsSync(routesPath)) {
+        try {
+          const fileContent = fs.readFileSync(routesPath, "utf-8");
+          routes = JSON.parse(fileContent);
+          if (!Array.isArray(routes)) routes = [];
+        } catch (e) {
+          routes = [];
+        }
+      }
+
+      // Overwrite if same route id already exists, otherwise append
+      const existingIdx = routes.findIndex(r => r.id === newRoute.id);
+      if (existingIdx !== -1) {
+        routes[existingIdx] = newRoute;
+      } else {
+        routes.push(newRoute);
+      }
+
+      fs.writeFileSync(routesPath, JSON.stringify(routes, null, 2), "utf-8");
+      
+      // Also write to dist/src/data mirror if it exists (for active production build paths)
+      const distDataPath = path.join(process.cwd(), "dist/src/data/hardcoded_routes.json");
+      const distDir = path.dirname(distDataPath);
+      if (!fs.existsSync(distDir)) {
+        fs.mkdirSync(distDir, { recursive: true });
+      }
+      fs.writeFileSync(distDataPath, JSON.stringify(routes, null, 2), "utf-8");
+
+      return res.json({ success: true, routes });
+    } catch (err: any) {
+      console.error("Error writing hardcoded_routes.json:", err);
+      res.status(500).json({ error: "Failed to write hardcoded routes" });
+    }
+  });
+
+  // API Route to delete a custom route permanently from the hardcoded JSON repo
+  app.delete("/api/hardcoded-routes/:id", (req, res) => {
+    try {
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: "Route ID is required" });
+      }
+
+      const routesPath = path.join(process.cwd(), "src/data/hardcoded_routes.json");
+      if (fs.existsSync(routesPath)) {
+        let routes: any[] = [];
+        try {
+          const fileContent = fs.readFileSync(routesPath, "utf-8");
+          routes = JSON.parse(fileContent);
+          if (!Array.isArray(routes)) routes = [];
+        } catch (e) {
+          routes = [];
+        }
+
+        const filtered = routes.filter(r => r.id !== id);
+        fs.writeFileSync(routesPath, JSON.stringify(filtered, null, 2), "utf-8");
+
+        const distDataPath = path.join(process.cwd(), "dist/src/data/hardcoded_routes.json");
+        const distDir = path.dirname(distDataPath);
+        if (!fs.existsSync(distDir)) {
+          fs.mkdirSync(distDir, { recursive: true });
+        }
+        fs.writeFileSync(distDataPath, JSON.stringify(filtered, null, 2), "utf-8");
+
+        return res.json({ success: true, routes: filtered });
+      }
+      return res.json({ success: true, routes: [] });
+    } catch (err: any) {
+      console.error("Error deleting hardcoded route:", err);
+      res.status(500).json({ error: "Failed to delete hardcoded route" });
+    }
+  });
+
   // API Route for Google Maps key retrieval at runtime (to support deployed mobile versions securely)
   app.get("/api/maps-key", (req, res) => {
     const key = process.env.GOOGLE_MAPS_PLATFORM_KEY || 

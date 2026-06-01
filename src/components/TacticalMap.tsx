@@ -690,21 +690,6 @@ export default function TacticalMap() {
     setIsKeyLoading(false);
   }, []);
 
-  const [allTrails, setAllTrails] = useState<typeof PRESET_TRAILS>(() => {
-    const saved = localStorage.getItem('tactical_custom_routes');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          return [...PRESET_TRAILS, ...parsed];
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    return PRESET_TRAILS;
-  });
-
   const [activePreset, setActivePreset] = useState<typeof PRESET_TRAILS[0] | null>(null);
   const [customOrigin, setCustomOrigin] = useState<google.maps.LatLngLiteral | null>(null);
   const [customDestination, setCustomDestination] = useState<google.maps.LatLngLiteral | null>(null);
@@ -743,6 +728,23 @@ export default function TacticalMap() {
   const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentStepIndexRef = useRef<number>(0);
 
+  // Initial safe load of trails
+  const [allTrails, setAllTrails] = useState<typeof PRESET_TRAILS>(() => {
+    const saved = localStorage.getItem('tactical_custom_routes');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const sanitized = parsed.filter(t => t && typeof t.id === 'string');
+          return [...PRESET_TRAILS, ...sanitized];
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return PRESET_TRAILS;
+  });
+
   // Active Trail Tracking States
   const [userWeight, setUserWeight] = useState<number>(75);
   const [isTrailActive, setIsTrailActive] = useState<boolean>(false);
@@ -756,12 +758,43 @@ export default function TacticalMap() {
 
   // Synchronized user, status, error states for premium military-grade vector directory backup
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const serverRoutesRef = useRef<any[]>([]);
 
   // Real-time synchronization of bodyweight settings and account-specific custom routes directory from Firestore
   useEffect(() => {
     let unsubscribeSnap: (() => void) | null = null;
     let unsubscribeCustomRoutes: (() => void) | null = null;
     
+    // Fetch server-side hardcoded routes first
+    fetch('/api/hardcoded-routes')
+      .then(res => res.json())
+      .then(serverRoutes => {
+        if (Array.isArray(serverRoutes)) {
+          serverRoutesRef.current = serverRoutes;
+          
+          // Inject these hardcoded routes into view immediately
+          setAllTrails(prev => {
+            const routeMap = new globalThis.Map();
+            // Official presets
+            PRESET_TRAILS.forEach(t => {
+              if (t && t.id) routeMap.set(t.id, t);
+            });
+            // Sever-side hardcoded paths
+            serverRoutes.forEach(t => {
+              if (t && t.id) routeMap.set(t.id, t);
+            });
+            // Retain any existing browser state
+            if (Array.isArray(prev)) {
+              prev.forEach(t => {
+                if (t && t.id && !routeMap.has(t.id)) routeMap.set(t.id, t);
+              });
+            }
+            return Array.from(routeMap.values());
+          });
+        }
+      })
+      .catch(err => console.warn("Failed to preload hardcoded routes from server disk:", err));
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       
@@ -779,18 +812,35 @@ export default function TacticalMap() {
         setUserWeight(75);
         // Fallback: Restore custom routes from localStorage when signed out / offline
         const saved = localStorage.getItem('tactical_custom_routes');
+        const routeMap = new globalThis.Map<string, any>();
+        
+        // 1. Base PRESET_TRAILS
+        PRESET_TRAILS.forEach(t => {
+          if (t && t.id) routeMap.set(t.id, t);
+        });
+        
+        // 2. Server hardcoded routes
+        if (Array.isArray(serverRoutesRef.current)) {
+          serverRoutesRef.current.forEach(t => {
+            if (t && t.id) routeMap.set(t.id, t);
+          });
+        }
+        
+        // 3. LocalStorage
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed)) {
-              setAllTrails([...PRESET_TRAILS, ...parsed]);
+              parsed.forEach(t => {
+                if (t && t.id) routeMap.set(t.id, t);
+              });
             }
           } catch (e) {
             console.error(e);
           }
-        } else {
-          setAllTrails(PRESET_TRAILS);
         }
+        
+        setAllTrails(Array.from(routeMap.values()));
         return;
       }
       
@@ -823,29 +873,51 @@ export default function TacticalMap() {
           (snapshot) => {
             const fireStoreRoutes: any[] = [];
             snapshot.forEach((subDoc) => {
-              fireStoreRoutes.push({ ...subDoc.data(), id: subDoc.id });
+              if (subDoc.exists()) {
+                fireStoreRoutes.push({ ...subDoc.data(), id: subDoc.id });
+              }
             });
 
             const localSaved = localStorage.getItem('tactical_custom_routes');
-            const routeMap = new Map<string, any>();
+            const routeMap = new globalThis.Map<string, any>();
 
-            // 1. Load firestore user-specific routes
-            fireStoreRoutes.forEach(r => {
-              routeMap.set(r.id, r);
+            // 1. Load base preset trails
+            PRESET_TRAILS.forEach(t => {
+              if (t && t.id) routeMap.set(t.id, t);
             });
 
-            // 2. Load and verify local routes to migrate or merge
+            // 2. Load server-side hardcoded paths
+            if (Array.isArray(serverRoutesRef.current)) {
+              serverRoutesRef.current.forEach(t => {
+                if (t && t.id) routeMap.set(t.id, t);
+              });
+            }
+
+            // 3. Load firestore user-specific routes
+            fireStoreRoutes.forEach(r => {
+              if (r && r.id) routeMap.set(r.id, r);
+            });
+
+            // 4. Load and verify local routes to migrate or merge
             if (localSaved) {
               try {
                 const parsed = JSON.parse(localSaved);
                 if (Array.isArray(parsed)) {
                   parsed.forEach(r => {
-                    if (!routeMap.has(r.id)) {
-                      routeMap.set(r.id, r);
-                      // Migrate and backup offline-created route onto their logged-in account
-                      setDoc(doc(db, `users/${user.uid}/custom_routes/${r.id}`), r).catch(err => {
-                        console.warn("Auto-syncing offline custom route to user Firestore block failed:", err);
-                      });
+                    if (r && r.id) {
+                      if (!routeMap.has(r.id)) {
+                        routeMap.set(r.id, r);
+                        // Migrate and backup offline-created route onto their logged-in account
+                        setDoc(doc(db, `users/${user.uid}/custom_routes/${r.id}`), r).catch(err => {
+                          console.warn("Auto-syncing offline custom route to user Firestore block failed:", err);
+                        });
+                        // Backup hardcoded to server folder as well
+                        fetch('/api/hardcoded-routes', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(r)
+                        }).catch(err => console.warn("Failed backporting offline route to server disk:", err));
+                      }
                     }
                   });
                 }
@@ -855,23 +927,37 @@ export default function TacticalMap() {
             }
 
             const merged = Array.from(routeMap.values());
-            setAllTrails([...PRESET_TRAILS, ...merged]);
+            setAllTrails(merged);
           },
           (err) => {
             console.warn("Could not sync custom routes from Firestore:", err);
             
-            // Fallback to local storage if reading was blocked or offline
+            // Fallback to local storage + server storage if reading was blocked or offline
             const saved = localStorage.getItem('tactical_custom_routes');
+            const routeMap = new globalThis.Map<string, any>();
+            
+            PRESET_TRAILS.forEach(t => {
+              if (t && t.id) routeMap.set(t.id, t);
+            });
+            if (Array.isArray(serverRoutesRef.current)) {
+              serverRoutesRef.current.forEach(t => {
+                if (t && t.id) routeMap.set(t.id, t);
+              });
+            }
+            
             if (saved) {
               try {
                 const parsed = JSON.parse(saved);
                 if (Array.isArray(parsed)) {
-                  setAllTrails([...PRESET_TRAILS, ...parsed]);
+                  parsed.forEach(t => {
+                    if (t && t.id) routeMap.set(t.id, t);
+                  });
                 }
               } catch (e) {
                 console.error(e);
               }
             }
+            setAllTrails(Array.from(routeMap.values()));
           }
         );
       } catch (err) {
@@ -1445,6 +1531,24 @@ export default function TacticalMap() {
     const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
     localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
 
+    // Post to backend server to hardcode the custom route permanently on server memory/disk
+    fetch('/api/hardcoded-routes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newTrail)
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.routes) {
+        serverRoutesRef.current = data.routes;
+      }
+    })
+    .catch(err => {
+      console.warn("Failed to write hardcoded route to server database files:", err);
+    });
+
     // Save to Firestore under user settings directory if logged in
     if (currentUser) {
       const routePath = `users/${currentUser.uid}/custom_routes/${newTrailId}`;
@@ -1461,7 +1565,7 @@ export default function TacticalMap() {
     setSaveRouteDetails('');
     setSaveRouteType('Custom Workout Path');
     
-    setSaveStatus({ type: 'success', message: `Route "${newTrail.name}" successfully created!` });
+    setSaveStatus({ type: 'success', message: `Route "${newTrail.name}" successfully created & hardcoded!` });
     setTimeout(() => setSaveStatus(null), 4000);
   };
 
@@ -1478,6 +1582,20 @@ export default function TacticalMap() {
     const updatedRoutes = allTrails.filter(t => t.id !== id);
     const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
     localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
+
+    // Send delete request to backend server to permanently purge from hardcoded repository disk
+    fetch(`/api/hardcoded-routes/${id}`, {
+      method: 'DELETE'
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.routes) {
+        serverRoutesRef.current = data.routes;
+      }
+    })
+    .catch(err => {
+      console.warn("Failed to delete hardcoded route from server disk:", err);
+    });
 
     // Delete from Firestore user directory if logged in
     if (currentUser) {
