@@ -84,6 +84,27 @@
         "lastWorkoutDate": { "type": "string" },
         "updatedAt": { "type": "string", "format": "date-time" }
       }
+    },
+    "CustomRoute": {
+      "title": "Custom Route",
+      "description": "A user-designed workout or trail path for outdoor mapping.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string", "enum": ["hike", "scout", "parks", "trails", "historical"] },
+        "origin": { "type": "object" },
+        "destination": { "type": "object" },
+        "originText": { "type": "string" },
+        "destinationText": { "type": "string" },
+        "difficulty": { "type": "string", "enum": ["EASY", "MEDIUM", "HARD"] },
+        "kcalEstPerKm": { "type": "number" },
+        "details": { "type": "string" },
+        "trailType": { "type": "string" },
+        "middleWaypoints": { "type": "array" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["id", "name", "origin", "destination"]
     }
   },
   "firestore": {
@@ -110,6 +131,10 @@
     "/users/{userId}/profile/settings": {
       "schema": "UserProfile",
       "description": "User specific settings and metadata."
+    },
+    "/users/{userId}/custom_routes/{routeId}": {
+      "schema": "CustomRoute",
+      "description": "Custom routes designed by the user for tactical outdoor mappings."
     }
   }
 }

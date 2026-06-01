@@ -168,6 +168,10 @@ Format your response strictly as JSON conforming to the requested schema. Provid
   });
 
 
+  // Explicitly serve static trail images from both public and dist directories for maximum redundancy
+  app.use('/images', express.static(path.join(process.cwd(), 'public/images')));
+  app.use('/images', express.static(path.join(process.cwd(), 'dist/images')));
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
