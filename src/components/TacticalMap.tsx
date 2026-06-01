@@ -57,48 +57,6 @@ const API_KEY: string = 'AIzaSyCYJg6XySBcT9cX6hFkZYxvRF4RMbCf2WU';
 
 const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
 
-import imgArbuthnottBervieLoop from '../assets/images/arbuthnott_bervie_loop.jpg';
-import imgBalmoralCairns from '../assets/images/balmoral_cairns.jpg';
-import imgBennachieMitherTap from '../assets/images/bennachie_mither_tap.jpg';
-import imgBurnOVatCircular from '../assets/images/burn_o_vat_circular.jpg';
-import imgClachnabenGraniteTor from '../assets/images/clachnaben_granite_tor.jpg';
-import imgCraigievarCastleWalk from '../assets/images/craigievar_castle_walk.jpg';
-import imgCrathesCoyBurnNew from '../assets/images/crathes_coy_burn_new.jpg';
-import imgDunnottarCoastalWalk from '../assets/images/dunnottar_coastal_walk.jpg';
-import imgForvieReserveDunes from '../assets/images/forvie_reserve_dunes.jpg';
-import imgKincardineOneilDeeside from '../assets/images/kincardine_oneil_deeside.jpg';
-import imgLinnOfDeeQuoich from '../assets/images/linn_of_dee_quoich.jpg';
-import imgLochMuick from '../assets/images/loch_muick.jpg';
-import imgLochSkeneSanctuary from '../assets/images/loch_skene_sanctuary.jpg';
-import imgLochnagarSummit from '../assets/images/lochnagar_summit.jpg';
-import imgMorvenDeesideClimb from '../assets/images/morven_deeside_climb.jpg';
-import imgMountKeenEskTrail from '../assets/images/mount_keen_esk_trail.jpg';
-import imgNewburghSealView from '../assets/images/newburgh_seal_view.jpg';
-import imgScoltyTowerHike from '../assets/images/scolty_tower_hike.jpg';
-import imgTapONothFort from '../assets/images/tap_o_noth_fort.jpg';
-
-const TRAIL_IMAGES: Record<string, string> = {
-  arbuthnott_bervie_loop: imgArbuthnottBervieLoop,
-  balmoral_cairns: imgBalmoralCairns,
-  bennachie_mither_tap: imgBennachieMitherTap,
-  burn_o_vat_circular: imgBurnOVatCircular,
-  clachnaben_granite_tor: imgClachnabenGraniteTor,
-  craigievar_castle_walk: imgCraigievarCastleWalk,
-  crathes_coy_burn_new: imgCrathesCoyBurnNew,
-  dunnottar_coastal_walk: imgDunnottarCoastalWalk,
-  forvie_reserve_dunes: imgForvieReserveDunes,
-  kincardine_oneil_deeside: imgKincardineOneilDeeside,
-  linn_of_dee_quoich: imgLinnOfDeeQuoich,
-  loch_muick: imgLochMuick,
-  loch_skene_sanctuary: imgLochSkeneSanctuary,
-  lochnagar_summit: imgLochnagarSummit,
-  morven_deeside_climb: imgMorvenDeesideClimb,
-  mount_keen_esk_trail: imgMountKeenEskTrail,
-  newburgh_seal_view: imgNewburghSealView,
-  scolty_tower_hike: imgScoltyTowerHike,
-  tap_o_noth_fort: imgTapONothFort
-};
-
 // High-tech dark-mode map style configurations matching the Gym aesthetic
 const tacticalMinimalDarkStyles = [
   { elementType: "geometry", stylers: [{ color: "#0a0a0c" }] },
@@ -431,51 +389,6 @@ export const getCategoryIconDetails = (catType: string | null) => {
   }
 };
 
-// Map each trail to a beautiful, locally-cached real photograph of the actual location in Scotland
-export const getTrailImage = (trail: any): string => {
-  if (!trail) return TRAIL_IMAGES.lochnagar_summit;
-  
-  // Return custom-assigned image (url or base64 data) first
-  if (trail.imageUrl) {
-    return trail.imageUrl;
-  }
-  
-  if (trail.id && TRAIL_IMAGES[trail.id]) {
-    return TRAIL_IMAGES[trail.id];
-  }
-
-  // Soft match using keywords if id is custom or dynamically generated
-  const idStr = String(trail.id || '').toLowerCase();
-  const nameStr = String(trail.name || '').toLowerCase();
-  const searchStr = `${nameStr} ${idStr}`.toLowerCase();
-
-  if (searchStr.includes('lochnagar')) return TRAIL_IMAGES.lochnagar_summit;
-  if (searchStr.includes('bennachie') || searchStr.includes('mither')) return TRAIL_IMAGES.bennachie_mither_tap;
-  if (searchStr.includes('muick')) return TRAIL_IMAGES.loch_muick;
-  if (searchStr.includes('balmoral') || searchStr.includes('cairn') || searchStr.includes('pyramid')) return TRAIL_IMAGES.balmoral_cairns;
-  if (searchStr.includes('dunnottar') || searchStr.includes('castle')) {
-    if (searchStr.includes('craigievar')) return TRAIL_IMAGES.craigievar_castle_walk;
-    if (searchStr.includes('crathes')) return TRAIL_IMAGES.crathes_coy_burn_new;
-    return TRAIL_IMAGES.dunnottar_coastal_walk;
-  }
-  if (searchStr.includes('vat') || searchStr.includes('pothole') || searchStr.includes('dinnet')) return TRAIL_IMAGES.burn_o_vat_circular;
-  if (searchStr.includes('scolty') || searchStr.includes('tower')) return TRAIL_IMAGES.scolty_tower_hike;
-  if (searchStr.includes('clachnaben') || searchStr.includes('tor')) return TRAIL_IMAGES.clachnaben_granite_tor;
-  if (searchStr.includes('craigievar')) return TRAIL_IMAGES.craigievar_castle_walk;
-  if (searchStr.includes('forvie') || searchStr.includes('dune') || searchStr.includes('sands')) return TRAIL_IMAGES.forvie_reserve_dunes;
-  if (searchStr.includes('morven')) return TRAIL_IMAGES.morven_deeside_climb;
-  if (searchStr.includes('noth') || searchStr.includes('vitrified')) return TRAIL_IMAGES.tap_o_noth_fort;
-  if (searchStr.includes('newburgh') || searchStr.includes('seal') || searchStr.includes('estuary')) return TRAIL_IMAGES.newburgh_seal_view;
-  if (searchStr.includes('dee') || searchStr.includes('quoich') || searchStr.includes('linn')) return TRAIL_IMAGES.linn_of_dee_quoich;
-  if (searchStr.includes('keen') || searchStr.includes('esk')) return TRAIL_IMAGES.mount_keen_esk_trail;
-  if (searchStr.includes('crathes') || searchStr.includes('coy') || searchStr.includes('burn')) return TRAIL_IMAGES.crathes_coy_burn_new;
-  if (searchStr.includes('arbuthnott') || searchStr.includes('bervie')) return TRAIL_IMAGES.arbuthnott_bervie_loop;
-  if (searchStr.includes('kincardine') || searchStr.includes('oneil')) return TRAIL_IMAGES.kincardine_oneil_deeside;
-  if (searchStr.includes('skene') || searchStr.includes('sanctuary')) return TRAIL_IMAGES.loch_skene_sanctuary;
-
-  return TRAIL_IMAGES.lochnagar_summit; // Real majestic Scottish highland cliffside fallback
-};
-
 // Robust helper to safely read latitude and longitude from any Google Maps representation
 export const getSafeLatLng = (location: any): google.maps.LatLngLiteral => {
   if (!location) return { lat: 0, lng: 0 };
@@ -806,7 +719,6 @@ export default function TacticalMap() {
   const [saveRouteDifficulty, setSaveRouteDifficulty] = useState<'EASY' | 'MEDIUM' | 'HARD'>('MEDIUM');
   const [saveRouteType, setSaveRouteType] = useState<string>('Custom Workout Path');
   const [saveRouteDetails, setSaveRouteDetails] = useState<string>('');
-  const [saveRouteImageUrl, setSaveRouteImageUrl] = useState<string>('');
   const [saveStatus, setSaveStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -1505,7 +1417,7 @@ export default function TacticalMap() {
       details: saveRouteDetails.trim() || 'A user-designed custom tactical routing traversal.',
       trailType: saveRouteType.trim() || 'Custom Workout Path',
       middleWaypoints: middleWaypoints.map(wp => ({ lat: wp.lat, lng: wp.lng })),
-      imageUrl: saveRouteImageUrl.trim()
+      imageUrl: ''
     };
 
     const updatedRoutes = [...allTrails, newTrail];
@@ -1527,56 +1439,8 @@ export default function TacticalMap() {
     setSaveRouteName('');
     setSaveRouteDetails('');
     setSaveRouteType('Custom Workout Path');
-    setSaveRouteImageUrl('');
     
     setSaveStatus({ type: 'success', message: `Route "${newTrail.name}" successfully created!` });
-    setTimeout(() => setSaveStatus(null), 4000);
-  };
-
-
-
-  // Helper to handle image uploads for custom routes
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          setSaveRouteImageUrl(reader.result);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleClearSelectedImage = () => {
-    setSaveRouteImageUrl('');
-  };
-
-  const handleUpdateActiveCustomRouteImage = (imgUrl: string) => {
-    if (!activePreset || !activePreset.id.startsWith('custom_')) return;
-    
-    const updatedRoutes = allTrails.map(t => {
-      if (t.id === activePreset.id) {
-        return { ...t, imageUrl: imgUrl };
-      }
-      return t;
-    });
-    
-    // Save to localStorage
-    const customOnly = updatedRoutes.filter(t => t.id.startsWith('custom_'));
-    localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
-
-    // Update in Firestore globally
-    const routePath = `global_custom_routes/${activePreset.id}`;
-    setDoc(doc(db, routePath), { ...activePreset, imageUrl: imgUrl }).catch(err => {
-      console.error("Failed to update custom route image in Firestore globally:", err);
-    });
-    
-    setAllTrails(updatedRoutes);
-    setActivePreset({ ...activePreset, imageUrl: imgUrl });
-    
-    setSaveStatus({ type: 'success', message: 'Custom route image updated successfully!' });
     setTimeout(() => setSaveStatus(null), 4000);
   };
 
@@ -1986,57 +1850,7 @@ export default function TacticalMap() {
                     />
                   </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[7.5px] text-white/55 font-mono uppercase tracking-wider block">ROUTE IMAGE OPTION (OPTIONAL):</label>
-                    <div className="space-y-1">
-                      <input 
-                        type="text"
-                        placeholder="Paste Image URL or Leave Blank"
-                        value={saveRouteImageUrl}
-                        onChange={(e) => setSaveRouteImageUrl(e.target.value)}
-                        className="w-full bg-[#030304] border border-white/10 rounded-xs p-1.5 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[9px]"
-                      />
-                      
-                      <div className="flex gap-1.5">
-                        <input 
-                          type="file"
-                          accept="image/*"
-                          id="save-route-img-new"
-                          onChange={handleImageUpload}
-                          className="hidden"
-                        />
-                        <label 
-                          htmlFor="save-route-img-new"
-                          className="flex-1 py-1 px-2 bg-white/5 hover:bg-white/10 text-[7.5px] font-mono text-white/80 uppercase tracking-wider rounded-xs cursor-pointer border border-white/10 text-center flex items-center justify-center gap-1"
-                        >
-                          <Upload className="w-2.5 h-2.5 text-gym-accent" />
-                          CHOOSE IMAGE FILE
-                        </label>
-                        {saveRouteImageUrl && (
-                          <button
-                            type="button"
-                            onClick={handleClearSelectedImage}
-                            className="px-2 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 rounded-xs text-[7.5px] font-mono uppercase tracking-wider cursor-pointer"
-                          >
-                            CLEAR
-                          </button>
-                        )}
-                      </div>
-                      
-                      {saveRouteImageUrl && (
-                        <div className="relative h-14 overflow-hidden rounded-xs border border-white/5 bg-black/60 mt-1">
-                          <img 
-                            src={saveRouteImageUrl} 
-                            alt="Preview Custom" 
-                            className="w-full h-full object-cover opacity-70"
-                          />
-                          <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                            <span className="text-[7px] text-gym-accent font-mono uppercase tracking-widest font-black">IMAGE STAGED</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+
 
                   <button
                     type="button"
@@ -2164,63 +1978,14 @@ export default function TacticalMap() {
 
               {activePreset && (
                 <div className="space-y-2">
-                  <div className="relative w-full h-32 overflow-hidden rounded-sm border border-white/5 bg-neutral-950">
-                    <img 
-                      src={getTrailImage(activePreset)} 
-                      alt={activePreset.name} 
-                      className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-300"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                    <div className="absolute top-2 left-2 bg-black/75 px-1.5 py-0.5 rounded-xs border border-white/5 text-[7px] text-gym-accent uppercase font-mono tracking-wider">
+                  <div className="relative w-full py-2.5 px-3 rounded-sm border border-white/5 bg-neutral-955 flex items-center justify-between">
+                    <span className="text-[8px] text-white/50 font-mono uppercase tracking-widest font-bold">Active Trajectory Target</span>
+                    <span className="bg-black/75 px-1.5 py-0.5 rounded-xs border border-white/5 text-[7px] text-gym-accent uppercase font-mono tracking-wider font-extrabold">
                       {activePreset.trailType || 'Custom Scout Path'}
-                    </div>
+                    </span>
                   </div>
                   <div className="bg-white/[0.01] border border-white/5 p-2 rounded-sm text-[9.5px] font-mono text-white/70 space-y-1">
                     <p className="leading-tight"><span className="text-gym-accent uppercase tracking-wider font-extrabold mr-1">[DESCR]:</span>{activePreset.details}</p>
-                  </div>
-                </div>
-              )}
-
-              {activePreset && activePreset.id.startsWith('custom_') && (
-                <div className="bg-[#0c0c10] border border-white/5 rounded-sm p-2 space-y-1.5 mt-1">
-                  <span className="text-[7.5px] text-white/55 font-mono uppercase tracking-wider block">📷 UPDATE ROUTE FILE/URL PHOTO:</span>
-                  
-                  <div className="space-y-1.5">
-                    <input 
-                      type="text"
-                      placeholder="Paste Custom Image URL"
-                      value={activePreset.imageUrl || ''}
-                      onChange={(e) => handleUpdateActiveCustomRouteImage(e.target.value)}
-                      className="w-full bg-[#030304] border border-white/10 rounded-sm p-1 text-[8.5px] text-white font-mono"
-                    />
-                    
-                    <div className="relative">
-                      <input 
-                        type="file"
-                        accept="image/*"
-                        id="update-route-img-active"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              if (typeof reader.result === 'string') {
-                                handleUpdateActiveCustomRouteImage(reader.result);
-                              }
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                        className="hidden"
-                      />
-                      <label 
-                        htmlFor="update-route-img-active"
-                        className="w-full py-1 bg-white/5 hover:bg-white/10 text-[7.5px] font-mono text-white/80 uppercase tracking-wider rounded-xs cursor-pointer border border-white/10 text-center flex items-center justify-center gap-1"
-                      >
-                        <Upload className="w-2.5 h-2.5 text-gym-accent" />
-                        OR CHOOSE IMAGE FILE
-                      </label>
-                    </div>
                   </div>
                 </div>
               )}
