@@ -57,6 +57,48 @@ const API_KEY: string = 'AIzaSyCYJg6XySBcT9cX6hFkZYxvRF4RMbCf2WU';
 
 const hasValidKey = Boolean(API_KEY) && API_KEY !== 'YOUR_API_KEY';
 
+import imgArbuthnottBervieLoop from '../assets/images/arbuthnott_bervie_loop.jpg';
+import imgBalmoralCairns from '../assets/images/balmoral_cairns.jpg';
+import imgBennachieMitherTap from '../assets/images/bennachie_mither_tap.jpg';
+import imgBurnOVatCircular from '../assets/images/burn_o_vat_circular.jpg';
+import imgClachnabenGraniteTor from '../assets/images/clachnaben_granite_tor.jpg';
+import imgCraigievarCastleWalk from '../assets/images/craigievar_castle_walk.jpg';
+import imgCrathesCoyBurnNew from '../assets/images/crathes_coy_burn_new.jpg';
+import imgDunnottarCoastalWalk from '../assets/images/dunnottar_coastal_walk.jpg';
+import imgForvieReserveDunes from '../assets/images/forvie_reserve_dunes.jpg';
+import imgKincardineOneilDeeside from '../assets/images/kincardine_oneil_deeside.jpg';
+import imgLinnOfDeeQuoich from '../assets/images/linn_of_dee_quoich.jpg';
+import imgLochMuick from '../assets/images/loch_muick.jpg';
+import imgLochSkeneSanctuary from '../assets/images/loch_skene_sanctuary.jpg';
+import imgLochnagarSummit from '../assets/images/lochnagar_summit.jpg';
+import imgMorvenDeesideClimb from '../assets/images/morven_deeside_climb.jpg';
+import imgMountKeenEskTrail from '../assets/images/mount_keen_esk_trail.jpg';
+import imgNewburghSealView from '../assets/images/newburgh_seal_view.jpg';
+import imgScoltyTowerHike from '../assets/images/scolty_tower_hike.jpg';
+import imgTapONothFort from '../assets/images/tap_o_noth_fort.jpg';
+
+const TRAIL_IMAGES: Record<string, string> = {
+  arbuthnott_bervie_loop: imgArbuthnottBervieLoop,
+  balmoral_cairns: imgBalmoralCairns,
+  bennachie_mither_tap: imgBennachieMitherTap,
+  burn_o_vat_circular: imgBurnOVatCircular,
+  clachnaben_granite_tor: imgClachnabenGraniteTor,
+  craigievar_castle_walk: imgCraigievarCastleWalk,
+  crathes_coy_burn_new: imgCrathesCoyBurnNew,
+  dunnottar_coastal_walk: imgDunnottarCoastalWalk,
+  forvie_reserve_dunes: imgForvieReserveDunes,
+  kincardine_oneil_deeside: imgKincardineOneilDeeside,
+  linn_of_dee_quoich: imgLinnOfDeeQuoich,
+  loch_muick: imgLochMuick,
+  loch_skene_sanctuary: imgLochSkeneSanctuary,
+  lochnagar_summit: imgLochnagarSummit,
+  morven_deeside_climb: imgMorvenDeesideClimb,
+  mount_keen_esk_trail: imgMountKeenEskTrail,
+  newburgh_seal_view: imgNewburghSealView,
+  scolty_tower_hike: imgScoltyTowerHike,
+  tap_o_noth_fort: imgTapONothFort
+};
+
 // High-tech dark-mode map style configurations matching the Gym aesthetic
 const tacticalMinimalDarkStyles = [
   { elementType: "geometry", stylers: [{ color: "#0a0a0c" }] },
@@ -391,36 +433,15 @@ export const getCategoryIconDetails = (catType: string | null) => {
 
 // Map each trail to a beautiful, locally-cached real photograph of the actual location in Scotland
 export const getTrailImage = (trail: any): string => {
-  if (!trail) return '/images/lochnagar_summit.jpg';
+  if (!trail) return TRAIL_IMAGES.lochnagar_summit;
   
   // Return custom-assigned image (url or base64 data) first
   if (trail.imageUrl) {
     return trail.imageUrl;
   }
   
-  const presetIds = [
-    'lochnagar_summit',
-    'balmoral_cairns',
-    'bennachie_mither_tap',
-    'dunnottar_coastal_walk',
-    'burn_o_vat_circular',
-    'scolty_tower_hike',
-    'clachnaben_granite_tor',
-    'craigievar_castle_walk',
-    'forvie_reserve_dunes',
-    'morven_deeside_climb',
-    'tap_o_noth_fort',
-    'newburgh_seal_view',
-    'linn_of_dee_quoich',
-    'mount_keen_esk_trail',
-    'crathes_coy_burn_new',
-    'arbuthnott_bervie_loop',
-    'kincardine_oneil_deeside',
-    'loch_skene_sanctuary'
-  ];
-
-  if (trail.id && presetIds.includes(trail.id)) {
-    return `/images/${trail.id}.jpg`;
+  if (trail.id && TRAIL_IMAGES[trail.id]) {
+    return TRAIL_IMAGES[trail.id];
   }
 
   // Soft match using keywords if id is custom or dynamically generated
@@ -428,31 +449,31 @@ export const getTrailImage = (trail: any): string => {
   const nameStr = String(trail.name || '').toLowerCase();
   const searchStr = `${nameStr} ${idStr}`.toLowerCase();
 
-  if (searchStr.includes('lochnagar')) return '/images/lochnagar_summit.jpg';
-  if (searchStr.includes('bennachie') || searchStr.includes('mither')) return '/images/bennachie_mither_tap.jpg';
-  if (searchStr.includes('muick')) return '/images/loch_muick.jpg';
-  if (searchStr.includes('balmoral') || searchStr.includes('cairn') || searchStr.includes('pyramid')) return '/images/balmoral_cairns.jpg';
+  if (searchStr.includes('lochnagar')) return TRAIL_IMAGES.lochnagar_summit;
+  if (searchStr.includes('bennachie') || searchStr.includes('mither')) return TRAIL_IMAGES.bennachie_mither_tap;
+  if (searchStr.includes('muick')) return TRAIL_IMAGES.loch_muick;
+  if (searchStr.includes('balmoral') || searchStr.includes('cairn') || searchStr.includes('pyramid')) return TRAIL_IMAGES.balmoral_cairns;
   if (searchStr.includes('dunnottar') || searchStr.includes('castle')) {
-    if (searchStr.includes('craigievar')) return '/images/craigievar_castle_walk.jpg';
-    if (searchStr.includes('crathes')) return '/images/crathes_coy_burn_new.jpg';
-    return '/images/dunnottar_coastal_walk.jpg';
+    if (searchStr.includes('craigievar')) return TRAIL_IMAGES.craigievar_castle_walk;
+    if (searchStr.includes('crathes')) return TRAIL_IMAGES.crathes_coy_burn_new;
+    return TRAIL_IMAGES.dunnottar_coastal_walk;
   }
-  if (searchStr.includes('vat') || searchStr.includes('pothole') || searchStr.includes('dinnet')) return '/images/burn_o_vat_circular.jpg';
-  if (searchStr.includes('scolty') || searchStr.includes('tower')) return '/images/scolty_tower_hike.jpg';
-  if (searchStr.includes('clachnaben') || searchStr.includes('tor')) return '/images/clachnaben_granite_tor.jpg';
-  if (searchStr.includes('craigievar')) return '/images/craigievar_castle_walk.jpg';
-  if (searchStr.includes('forvie') || searchStr.includes('dune') || searchStr.includes('sands')) return '/images/forvie_reserve_dunes.jpg';
-  if (searchStr.includes('morven')) return '/images/morven_deeside_climb.jpg';
-  if (searchStr.includes('noth') || searchStr.includes('vitrified')) return '/images/tap_o_noth_fort.jpg';
-  if (searchStr.includes('newburgh') || searchStr.includes('seal') || searchStr.includes('estuary')) return '/images/newburgh_seal_view.jpg';
-  if (searchStr.includes('dee') || searchStr.includes('quoich') || searchStr.includes('linn')) return '/images/linn_of_dee_quoich.jpg';
-  if (searchStr.includes('keen') || searchStr.includes('esk')) return '/images/mount_keen_esk_trail.jpg';
-  if (searchStr.includes('crathes') || searchStr.includes('coy') || searchStr.includes('burn')) return '/images/crathes_coy_burn_new.jpg';
-  if (searchStr.includes('arbuthnott') || searchStr.includes('bervie')) return '/images/arbuthnott_bervie_loop.jpg';
-  if (searchStr.includes('kincardine') || searchStr.includes('oneil')) return '/images/kincardine_oneil_deeside.jpg';
-  if (searchStr.includes('skene') || searchStr.includes('sanctuary')) return '/images/loch_skene_sanctuary.jpg';
+  if (searchStr.includes('vat') || searchStr.includes('pothole') || searchStr.includes('dinnet')) return TRAIL_IMAGES.burn_o_vat_circular;
+  if (searchStr.includes('scolty') || searchStr.includes('tower')) return TRAIL_IMAGES.scolty_tower_hike;
+  if (searchStr.includes('clachnaben') || searchStr.includes('tor')) return TRAIL_IMAGES.clachnaben_granite_tor;
+  if (searchStr.includes('craigievar')) return TRAIL_IMAGES.craigievar_castle_walk;
+  if (searchStr.includes('forvie') || searchStr.includes('dune') || searchStr.includes('sands')) return TRAIL_IMAGES.forvie_reserve_dunes;
+  if (searchStr.includes('morven')) return TRAIL_IMAGES.morven_deeside_climb;
+  if (searchStr.includes('noth') || searchStr.includes('vitrified')) return TRAIL_IMAGES.tap_o_noth_fort;
+  if (searchStr.includes('newburgh') || searchStr.includes('seal') || searchStr.includes('estuary')) return TRAIL_IMAGES.newburgh_seal_view;
+  if (searchStr.includes('dee') || searchStr.includes('quoich') || searchStr.includes('linn')) return TRAIL_IMAGES.linn_of_dee_quoich;
+  if (searchStr.includes('keen') || searchStr.includes('esk')) return TRAIL_IMAGES.mount_keen_esk_trail;
+  if (searchStr.includes('crathes') || searchStr.includes('coy') || searchStr.includes('burn')) return TRAIL_IMAGES.crathes_coy_burn_new;
+  if (searchStr.includes('arbuthnott') || searchStr.includes('bervie')) return TRAIL_IMAGES.arbuthnott_bervie_loop;
+  if (searchStr.includes('kincardine') || searchStr.includes('oneil')) return TRAIL_IMAGES.kincardine_oneil_deeside;
+  if (searchStr.includes('skene') || searchStr.includes('sanctuary')) return TRAIL_IMAGES.loch_skene_sanctuary;
 
-  return '/images/lochnagar_summit.jpg'; // Real majestic Scottish highland cliffside fallback
+  return TRAIL_IMAGES.lochnagar_summit; // Real majestic Scottish highland cliffside fallback
 };
 
 // Robust helper to safely read latitude and longitude from any Google Maps representation
@@ -821,12 +842,19 @@ export default function TacticalMap() {
   const [trailCompleted, setTrailCompleted] = useState<boolean>(false);
   const trailTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Synchronized user, status, error states for premium military-grade vector directory backup
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [syncStatus, setSyncStatus] = useState<'OFFLINE' | 'SYNCING' | 'CONNECTED' | 'ERROR'>('OFFLINE');
+  const [syncErrorMessage, setSyncErrorMessage] = useState<string>('');
+
   // Real-time synchronization of bodyweight settings for metabolic calculations and custom routes database synchronization
   useEffect(() => {
     let unsubscribeSnap: (() => void) | null = null;
     let unsubscribeCustomRoutes: (() => void) | null = null;
     
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      
       // Clear previous snapshot listeners if user status changed
       if (unsubscribeSnap) {
         unsubscribeSnap();
@@ -839,6 +867,7 @@ export default function TacticalMap() {
       
       if (!user) {
         setUserWeight(75);
+        setSyncStatus('OFFLINE');
         // Fallback: Restore custom routes from localStorage when signed out
         const saved = localStorage.getItem('tactical_custom_routes');
         if (saved) {
@@ -856,6 +885,7 @@ export default function TacticalMap() {
         return;
       }
       
+      setSyncStatus('SYNCING');
       const settingsPath = `users/${user.uid}/profile/settings`;
       try {
         unsubscribeSnap = onSnapshot(
@@ -917,13 +947,19 @@ export default function TacticalMap() {
 
             const merged = Array.from(routeMap.values());
             setAllTrails([...PRESET_TRAILS, ...merged]);
+            setSyncStatus('CONNECTED');
+            setSyncErrorMessage('');
           },
           (err) => {
             console.warn("Could not sync custom routes from Firestore:", err);
+            setSyncStatus('ERROR');
+            setSyncErrorMessage(err.message || 'Permission denied or network issue');
           }
         );
-      } catch (err) {
+      } catch (err: any) {
         console.warn("Error setting up custom routes listener:", err);
+        setSyncStatus('ERROR');
+        setSyncErrorMessage(err.message || 'Setup initialization error');
       }
     });
 
@@ -1515,6 +1551,125 @@ export default function TacticalMap() {
     setTimeout(() => setSaveStatus(null), 4000);
   };
 
+  // Export custom trajectories to clipboard as high-tech vector recovery codes
+  const handleExportRoutes = () => {
+    const customOnly = allTrails.filter(t => String(t.id || '').startsWith('custom_'));
+    const dataStr = JSON.stringify(customOnly, null, 2);
+    navigator.clipboard.writeText(dataStr);
+    setSaveStatus({ type: 'success', message: 'Registry backup copied to clipboard! Keep this code secure.' });
+    setTimeout(() => setSaveStatus(null), 4000);
+  };
+
+  // Download custom routes registry locally as .json backup file
+  const handleDownloadRoutesFile = () => {
+    const customOnly = allTrails.filter(t => String(t.id || '').startsWith('custom_'));
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(customOnly, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `tactical_scout_registry_${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    setSaveStatus({ type: 'success', message: 'Vector registry backup .json downloaded!' });
+    setTimeout(() => setSaveStatus(null), 4000);
+  };
+
+  // Restore custom routes from high-tech JSON registry backup files
+  const handleImportRoutesFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed = JSON.parse(text);
+        if (Array.isArray(parsed)) {
+          const validRoutes = parsed.filter(r => r.name && r.id);
+          if (validRoutes.length === 0) {
+            setSaveStatus({ type: 'error', message: 'No valid custom routes resolved from file structure.' });
+            setTimeout(() => setSaveStatus(null), 4000);
+            return;
+          }
+          
+          const routeMap = new Map<string, any>();
+          allTrails.forEach(t => routeMap.set(t.id, t));
+          validRoutes.forEach(v => routeMap.set(v.id, v));
+          
+          const merged = Array.from(routeMap.values());
+          setAllTrails(merged);
+          
+          const customOnly = merged.filter((t: any) => String(t.id || '').startsWith('custom_'));
+          localStorage.setItem('tactical_custom_routes', JSON.stringify(customOnly));
+          
+          const user = auth.currentUser;
+          if (user) {
+            validRoutes.forEach(r => {
+              setDoc(doc(db, `users/${user.uid}/custom_routes/${r.id}`), r).catch(err => {
+                console.warn("Backporting custom route to cloud vault failed:", err);
+              });
+            });
+          }
+          
+          setSaveStatus({ type: 'success', message: `Import successful: Restored ${validRoutes.length} route design(s)!` });
+          setTimeout(() => setSaveStatus(null), 4000);
+        } else {
+          setSaveStatus({ type: 'error', message: 'Invalid registry block. Must be a valid JSON array.' });
+          setTimeout(() => setSaveStatus(null), 4000);
+        }
+      } catch (err) {
+        setSaveStatus({ type: 'error', message: 'Failed to read registry backup file.' });
+        setTimeout(() => setSaveStatus(null), 4000);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  // Explicitly trigger synchronization of routes collection to Firestore
+  const handleForceSyncToCloud = async () => {
+    const user = auth.currentUser;
+    if (!user) {
+      setSaveStatus({ type: 'error', message: 'No authenticated session. Sign in to sync securely.' });
+      setTimeout(() => setSaveStatus(null), 4000);
+      return;
+    }
+    
+    setSyncStatus('SYNCING');
+    try {
+      const customOnly = allTrails.filter(t => String(t.id || '').startsWith('custom_'));
+      if (customOnly.length === 0) {
+        setSaveStatus({ type: 'success', message: 'Nothing to push! Vector registry completely synced with cloud.' });
+        setSyncStatus('CONNECTED');
+        setTimeout(() => setSaveStatus(null), 4000);
+        return;
+      }
+      
+      let syncErrorCount = 0;
+      for (const r of customOnly) {
+        try {
+          await setDoc(doc(db, `users/${user.uid}/custom_routes/${r.id}`), r);
+        } catch (e) {
+          console.error("Single vector sync failure:", e);
+          syncErrorCount++;
+        }
+      }
+      
+      if (syncErrorCount > 0) {
+        setSaveStatus({ type: 'error', message: `Vault partial backup: Synced ${customOnly.length - syncErrorCount}, failed ${syncErrorCount}.` });
+        setSyncStatus('ERROR');
+      } else {
+        setSaveStatus({ type: 'success', message: `Synchronized ${customOnly.length} vector route designs successfully into Cloud vault!` });
+        setSyncStatus('CONNECTED');
+      }
+      setTimeout(() => setSaveStatus(null), 4000);
+    } catch (err: any) {
+      setSaveStatus({ type: 'error', message: `Vault backup crash: ${err.message || 'unknown error'}` });
+      setSyncStatus('ERROR');
+      setTimeout(() => setSaveStatus(null), 4000);
+    }
+  };
+
   // Helper to handle image uploads for custom routes
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -2039,7 +2194,83 @@ export default function TacticalMap() {
 
           {/* Section C: Preset Trail Explorer */}
           <div className="bg-[#08080a] border border-white/10 p-4 rounded-sm space-y-3 shadow-lg relative">
-            <span className="text-[10px] text-white/80 font-mono font-bold uppercase tracking-wider block">TRAIL PRESETS</span>
+            <span className="text-[10px] text-white/80 font-mono font-bold uppercase tracking-wider block">TRAIL PRESETS &amp; SYNC</span>
+
+            {/* Real-time Cloud Sync & Vector Security Status Header */}
+            <div className="bg-white/[0.01] border border-white/10 p-2.5 rounded-sm space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[8.5px] text-white/40 font-mono uppercase tracking-widest font-bold">Vector Vault Sync:</span>
+                <div className="flex items-center gap-1.5">
+                  {syncStatus === 'OFFLINE' ? (
+                    <span className="text-[7.5px] font-mono font-bold text-yellow-400 bg-yellow-400/10 px-1.5 py-0.5 rounded-xs animate-pulse">
+                      ⚠️ sandbox offline
+                    </span>
+                  ) : syncStatus === 'SYNCING' ? (
+                    <span className="text-[7.5px] font-mono font-bold text-sky-400 bg-sky-400/10 px-1.5 py-0.5 rounded-xs flex items-center gap-1">
+                      <Loader2 className="w-2.5 h-2.5 animate-spin text-sky-400" />
+                      syncing...
+                    </span>
+                  ) : syncStatus === 'CONNECTED' ? (
+                    <span className="text-[7.5px] font-mono font-bold text-gym-accent bg-gym-accent/10 px-1.5 py-0.5 rounded-xs">
+                      🟢 cloud connected
+                    </span>
+                  ) : (
+                    <span className="text-[7.5px] font-mono font-bold text-red-100 bg-red-400/20 px-1.5 py-0.5 rounded-xs">
+                      🔴 NOT SYNCING
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {syncStatus === 'OFFLINE' ? (
+                <p className="text-[8px] text-white/45 leading-relaxed font-sans">
+                  Custom routes are stored on this browser sandbox. Sign-in under the user panel to enable cloud vault sync. Or use the manual utility tools below to export locally.
+                </p>
+              ) : syncStatus === 'CONNECTED' ? (
+                <p className="text-[8px] text-gym-accent/70 leading-relaxed font-mono uppercase text-[7px] tracking-wider">
+                  Verified: Vector routes registry fully synced with secure Cloud database.
+                </p>
+              ) : (
+                <p className="text-[8px] text-red-400/70 leading-relaxed font-sans">
+                  Vault error: {syncErrorMessage || 'Unknown network interference'}.
+                </p>
+              )}
+
+              {/* Recovery and Sync Buttons */}
+              <div className="flex items-center gap-1.5 pt-0.5">
+                {currentUser && (
+                  <button
+                    type="button"
+                    onClick={handleForceSyncToCloud}
+                    disabled={syncStatus === 'SYNCING'}
+                    className="flex-1 py-1 px-1.5 bg-gym-accent/10 hover:bg-gym-accent text-white hover:text-black border border-gym-accent/20 hover:border-transparent text-[7.5px] font-mono uppercase tracking-wider rounded-xs flex items-center justify-center gap-1 transition-all cursor-pointer font-bold disabled:opacity-50"
+                  >
+                    <RotateCw className={`w-2 h-2 ${syncStatus === 'SYNCING' ? 'animate-spin' : ''}`} />
+                    Sync Vault
+                  </button>
+                )}
+                
+                <button
+                  type="button"
+                  onClick={handleDownloadRoutesFile}
+                  className="flex-1 py-1 px-1.5 bg-white/[0.02] hover:bg-white/5 border border-white/5 text-white/80 hover:text-white text-[7.5px] font-mono uppercase tracking-wider rounded-xs flex items-center justify-center gap-1 transition-all cursor-pointer font-medium"
+                >
+                  <Save className="w-2 h-2" />
+                  Backup .json
+                </button>
+
+                <label className="flex-1 py-1 px-1.5 bg-white/[0.02] hover:bg-white/5 border border-white/5 text-white/80 hover:text-white text-[7.5px] font-mono uppercase tracking-wider rounded-xs flex items-center justify-center gap-1 transition-all cursor-pointer font-medium text-center">
+                  <Upload className="w-2 h-2" />
+                  Restore
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportRoutesFile}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
             
             {/* Source Segment Tabs for Presets vs. User Custom Routes */}
             <div className="flex border-b border-white/5 pb-2">
