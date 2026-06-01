@@ -398,6 +398,72 @@ export const getCategoryIconDetails = (catType: string | null) => {
   }
 };
 
+// Map each trail to a beautiful related landscape photo from Unsplash
+export const getTrailImage = (trail: any): string => {
+  if (!trail) return 'https://images.unsplash.com/photo-1518098268026-4e43a1a009de?auto=format&fit=crop&w=600&q=80';
+  const searchStr = `${trail.name || ''} ${trail.trailType || ''} ${trail.id || ''}`.toLowerCase();
+  
+  if (searchStr.includes('lochnagar')) {
+    return 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80'; // high rocky mountain peaks
+  }
+  if (searchStr.includes('balmoral') || searchStr.includes('cairn') || searchStr.includes('pyramid')) {
+    return 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&w=600&q=80'; // Pine woods with stone monument feel
+  }
+  if (searchStr.includes('bennachie') || searchStr.includes('mither')) {
+    return 'https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=600&q=80'; // Misty green rocky hills
+  }
+  if (searchStr.includes('dunnottar') || searchStr.includes('stonehaven') || searchStr.includes('castle')) {
+    return 'https://images.unsplash.com/photo-1549488344-1f9b8d2bd1f3?auto=format&fit=crop&w=600&q=80'; // Cliffside dunnottar castle-like fortress
+  }
+  if (searchStr.includes('vat') || searchStr.includes('pothole') || searchStr.includes('dinnet')) {
+    return 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80'; // Ancient woodlands/rocks
+  }
+  if (searchStr.includes('scolty') || searchStr.includes('tower')) {
+    return 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=600&q=80'; // Tower view in tall forest
+  }
+  if (searchStr.includes('clachnaben') || searchStr.includes('tor')) {
+    return 'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=600&q=80'; // Highland granite peaks
+  }
+  if (searchStr.includes('craigievar')) {
+    return 'https://images.unsplash.com/photo-1508849789987-4e5333c12b78?auto=format&fit=crop&w=600&q=80'; // Beautiful European castle grounds
+  }
+  if (searchStr.includes('forvie') || searchStr.includes('dune') || searchStr.includes('sands')) {
+    return 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80'; // Coastal sand dunes wild landscape
+  }
+  if (searchStr.includes('morven')) {
+    return 'https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&w=600&q=80'; // Highlands open ridges
+  }
+  if (searchStr.includes('noth') || searchStr.includes('vitrified')) {
+    return 'https://images.unsplash.com/photo-1508020963904-3feb6a2529c6?auto=format&fit=crop&w=600&q=80'; // Ancient lush peaks of Scotland
+  }
+  if (searchStr.includes('newburgh') || searchStr.includes('seal') || searchStr.includes('estuary')) {
+    return 'https://images.unsplash.com/photo-1555529669-e69e7aa0dc9a?auto=format&fit=crop&w=600&q=80'; // Wild beach seals resting close-up
+  }
+  if (searchStr.includes('dee') || searchStr.includes('quoich') || searchStr.includes('linn')) {
+    return 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80'; // Caledonian river woodland pines
+  }
+  if (searchStr.includes('keen') || searchStr.includes('esk')) {
+    return 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80'; // Highland stream mountain base
+  }
+  if (searchStr.includes('crathes') || searchStr.includes('coy') || searchStr.includes('burn')) {
+    return 'https://images.unsplash.com/photo-1425913397330-cf8af2ff40a1?auto=format&fit=crop&w=600&q=80'; // Lush deep woods with small streamways
+  }
+  if (searchStr.includes('arbuthnott') || searchStr.includes('bervie')) {
+    return 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'; // Bervie water countryside path
+  }
+  if (searchStr.includes('kincardine') || searchStr.includes('oneil')) {
+    return 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=600&q=80'; // Ancient railway woodland trail
+  }
+  if (searchStr.includes('skene') || searchStr.includes('sanctuary')) {
+    return 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80'; // Lake-facing serene forest overlook
+  }
+  if (searchStr.includes('muick')) {
+    return 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?auto=format&fit=crop&w=600&q=80'; // Beautiful Loch Muick/highland lake scenery
+  }
+  
+  return 'https://images.unsplash.com/photo-1518098268026-4e43a1a009de?auto=format&fit=crop&w=600&q=80'; // Default cinematic Scottish highlands panorama
+};
+
 // Robust helper to safely read latitude and longitude from any Google Maps representation
 export const getSafeLatLng = (location: any): google.maps.LatLngLiteral => {
   if (!location) return { lat: 0, lng: 0 };
@@ -1596,19 +1662,6 @@ export default function TacticalMap() {
               </label>
             </div>
 
-            {/* Geospatial Router Selection core */}
-            <div className="flex flex-col gap-1 p-2 bg-emerald-500/5 border border-emerald-500/20 rounded-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] text-emerald-400 font-mono tracking-wider font-bold uppercase">🛰️ ORS VECTOR ACTIVE</span>
-                <span className="text-[7px] bg-emerald-500/20 text-emerald-300 font-extrabold uppercase px-1.5 py-0.5 border border-emerald-500/30 rounded-xs">
-                  Foot-Hiking Walking Mode
-                </span>
-              </div>
-              <p className="text-[7.5px] text-white/50 leading-relaxed font-mono">
-                Using deep-terrain OpenRouteService to index paths across woodlands, Munro ridges, and rugged hill tracks.
-              </p>
-            </div>
-
             {/* Custom Coordinates selector triggers */}
             <div className="space-y-1.5">
               <div className="grid grid-cols-3 gap-1 shadow-sm">
@@ -1818,19 +1871,6 @@ export default function TacticalMap() {
                   );
                 })}
               </div>
-
-              {/* Categorical filters dropdown */}
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <span className="text-[7.5px] text-white/40 font-mono uppercase shrink-0">SECTOR:</span>
-                <div className="flex gap-1">
-                  <button
-                    type="button"
-                    className="px-2 py-0.5 text-[7.5px] font-mono rounded-xs border transition-all bg-gym-accent border-gym-accent text-black font-extrabold uppercase tracking-wider"
-                  >
-                    Hikes
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Micro dropdown presets list to make map screen highly efficient */}
@@ -1867,8 +1907,22 @@ export default function TacticalMap() {
               )}
 
               {activePreset && (
-                <div className="bg-white/[0.01] border border-white/5 p-2 rounded-sm text-[9.5px] font-mono text-white/70 space-y-1">
-                  <p className="leading-tight"><span className="text-gym-accent uppercase tracking-wider font-extrabold mr-1">[DESCR]:</span>{activePreset.details}</p>
+                <div className="space-y-2">
+                  <div className="relative w-full h-32 overflow-hidden rounded-sm border border-white/5 bg-neutral-950">
+                    <img 
+                      src={getTrailImage(activePreset)} 
+                      alt={activePreset.name} 
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity duration-300"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                    <div className="absolute top-2 left-2 bg-black/75 px-1.5 py-0.5 rounded-xs border border-white/5 text-[7px] text-gym-accent uppercase font-mono tracking-wider">
+                      {activePreset.trailType || 'Custom Scout Path'}
+                    </div>
+                  </div>
+                  <div className="bg-white/[0.01] border border-white/5 p-2 rounded-sm text-[9.5px] font-mono text-white/70 space-y-1">
+                    <p className="leading-tight"><span className="text-gym-accent uppercase tracking-wider font-extrabold mr-1">[DESCR]:</span>{activePreset.details}</p>
+                  </div>
                 </div>
               )}
 
