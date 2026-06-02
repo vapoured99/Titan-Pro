@@ -54,6 +54,7 @@ import {
   Area
 } from 'recharts';
 import AnatomyChart from './components/AnatomyChart';
+import AnatomyDashboard from './components/AnatomyDashboard';
 import AICoach from './components/AICoach';
 import AvatarPanel, { OUTFITS, TITLES } from './components/AvatarPanel';
 import { AvatarDisplayCard } from './components/AvatarDisplayCard';
@@ -3719,32 +3720,28 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-8"
             >
-              <div className="border-b border-white/5 pb-8">
-                <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                  Physiological Analysis
-                </h3>
-                <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Real-time muscle recruitment mapping</p>
+              <div className="border-b border-white/5 pb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                    Anatomical & Performance Matrix
+                  </h3>
+                  <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Dynamic Biomechanical Analysis & Power Standards</p>
+                </div>
+                <div>
+                  <span className="text-[10px] bg-gym-accent/10 border border-gym-accent/20 px-3 py-1 text-gym-accent font-mono uppercase tracking-widest">
+                    Live Analyzer Active
+                  </span>
+                </div>
               </div>
 
-              <AnatomyChart sets={sessionSets} archivedWorkouts={archivedWorkouts} />
-              
-              {sessionSets.length === 0 && (
-                <div className="py-6 px-8 bg-white/[0.01] border border-white/5 border-dashed rounded-sm text-center mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 text-left">
-                    <Activity className="w-5 h-5 text-white/20 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-white/60">No Real-time Session Active</p>
-                      <p className="text-[10px] text-white/30 uppercase tracking-wider">Visualizing tracked muscle recovery over the last 5 days. Start a workout to log active stimulation.</p>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => setActiveView('workout')}
-                    className="text-[9px] bg-gym-accent text-black font-black uppercase tracking-widest px-4 py-2 hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer rounded-sm"
-                  >
-                    Start Workout &rarr;
-                  </button>
-                </div>
-              )}
+              <AnatomyDashboard 
+                sessionSets={sessionSets}
+                archivedWorkouts={archivedWorkouts}
+                profile={profile}
+                saveSettings={saveSettings}
+                setToast={setToast}
+                setActiveView={setActiveView}
+              />
             </motion.div>
           ) : activeView === 'session' ? (
             <motion.div 
