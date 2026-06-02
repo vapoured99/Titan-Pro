@@ -55,6 +55,7 @@ import {
 } from 'recharts';
 import AnatomyChart from './components/AnatomyChart';
 import AnatomyDashboard from './components/AnatomyDashboard';
+import Sparkline from './components/Sparkline';
 import AICoach from './components/AICoach';
 import AvatarPanel, { OUTFITS, TITLES } from './components/AvatarPanel';
 import { AvatarDisplayCard } from './components/AvatarDisplayCard';
@@ -3020,18 +3021,27 @@ export default function App() {
                                            </div>
                                         )}
                                      </div>
-                                     <AnimatePresence>
-                                        {flashMessage[ex.name] && (
-                                          <motion.span 
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.8 }}
-                                            className="text-[8px] font-bold text-gym-accent uppercase tracking-widest"
-                                          >
-                                            {flashMessage[ex.name]}
-                                          </motion.span>
-                                        )}
-                                     </AnimatePresence>
+                                     <div className="flex items-center gap-2.5">
+                                       <Sparkline 
+                                         exName={ex.name}
+                                         sessionSets={sessionSets}
+                                         archivedWorkouts={archivedWorkouts}
+                                         width={65}
+                                         height={16}
+                                       />
+                                       <AnimatePresence>
+                                          {flashMessage[ex.name] && (
+                                            <motion.span 
+                                              initial={{ opacity: 0, scale: 0.8 }}
+                                              animate={{ opacity: 1, scale: 1 }}
+                                              exit={{ opacity: 0, scale: 0.8 }}
+                                              className="text-[8px] font-bold text-gym-accent uppercase tracking-widest"
+                                            >
+                                              {flashMessage[ex.name]}
+                                            </motion.span>
+                                          )}
+                                       </AnimatePresence>
+                                     </div>
                                   </div>
                                   
                                   <div className="flex gap-4 mb-4 mt-6">
@@ -4224,9 +4234,18 @@ export default function App() {
                                           return acc;
                                         }, {})
                                       ).map(([exName, exSets]: [string, any]) => (
-                                        <div key={exName} className="flex justify-between items-start gap-4 pb-2 border-b border-white/5 last:border-0 last:pb-0">
-                                          <span className="text-[10px] text-white/70 font-semibold uppercase tracking-wider">{exName}</span>
-                                          <div className="flex flex-wrap gap-1.5 justify-end">
+                                        <div key={exName} className="flex justify-between items-center gap-4 pb-2 border-b border-white/5 last:border-0 last:pb-0">
+                                          <div className="flex items-center gap-2 max-w-[50%] min-w-0">
+                                            <span className="text-[10px] text-white/70 font-semibold uppercase tracking-wider truncate" title={exName}>{exName}</span>
+                                            <Sparkline 
+                                              exName={exName}
+                                              sessionSets={sessionSets}
+                                              archivedWorkouts={archivedWorkouts}
+                                              width={55}
+                                              height={12}
+                                            />
+                                          </div>
+                                          <div className="flex flex-wrap gap-1.5 justify-end flex-1">
                                             {exSets.map((set: any, idx: number) => (
                                               <span 
                                                 key={idx} 
@@ -4740,7 +4759,16 @@ export default function App() {
                                         </span>
                                       )}
                                     </div>
-                                    <h4 className="text-2xl font-light italic font-serif text-gym-accent mt-1 pt-0.5 pb-1 leading-normal drop-shadow-sm">{ex.name}</h4>
+                                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                                      <h4 className="text-2xl font-light italic font-serif text-gym-accent pt-0.5 pb-1 leading-none drop-shadow-sm">{ex.name}</h4>
+                                      <Sparkline 
+                                        exName={ex.name}
+                                        sessionSets={sessionSets}
+                                        archivedWorkouts={archivedWorkouts}
+                                        width={65}
+                                        height={16}
+                                      />
+                                    </div>
                                   </div>
                                   <div className="flex gap-2">
                                     <button 
