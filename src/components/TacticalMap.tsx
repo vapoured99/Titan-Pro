@@ -1412,8 +1412,11 @@ export default function TacticalMap() {
                   </ol>
                 </div>
 
-                <div className="bg-white/5 p-2 rounded-sm border border-white/5">
-                  <span className="font-bold text-white text-[10px] block mb-1 uppercase tracking-wider text-gym-accent">Option B: Set Specific Website Referers (Strict Security)</span>
+                <div className="bg-gym-accent/5 p-3 rounded-sm border border-gym-accent/45 shadow-[0_0_15px_rgba(255,215,0,0.05)]">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-gym-accent text-[10px] block uppercase tracking-wider">Option B: Set Specific Website Referers (Strict Security - Recommended)</span>
+                    <span className="bg-gym-accent/20 text-gym-accent text-[8px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wide">Secure Production Mode</span>
+                  </div>
                   <p className="text-[11px] leading-relaxed mb-1.5 text-white/85">
                     If you want to keep strict HTTP restrictions enabled, you must whitelist the preview cloud containers exactly:
                   </p>
