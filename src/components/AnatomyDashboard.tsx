@@ -659,6 +659,16 @@ export default function AnatomyDashboard({
                           if (Math.cos(v.angle) > 0.1) textAnchor = "start";
                           else if (Math.cos(v.angle) < -0.1) textAnchor = "end";
 
+                          const labelMap: Record<string, string> = {
+                            chest: 'CHEST',
+                            back: 'BACK',
+                            shoulders: 'SHOULDERS',
+                            legs: 'LEGS',
+                            arms: 'ARMS',
+                            core: 'CORE'
+                          };
+                          const displayName = labelMap[v.key] || v.key.toUpperCase();
+
                           return (
                             <text
                               key={i}
@@ -667,7 +677,7 @@ export default function AnatomyDashboard({
                               textAnchor={textAnchor}
                               className="text-[9px] text-white font-mono tracking-wider font-extrabold uppercase fill-white"
                             >
-                              {v.key === 'legs' ? 'Legs' : v.key === 'arms' ? 'Arms' : v.key}
+                              {displayName}
                             </text>
                           );
                         })}

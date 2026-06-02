@@ -193,7 +193,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
   };
 
   return (
-    <div className="bg-black/60 border border-white/10 rounded-sm p-4 sm:p-6 relative overflow-hidden backdrop-blur-md mt-8 transition-all duration-300">
+    <div className="bg-black/60 border border-white/10 rounded-sm p-4 sm:p-6 relative overflow-hidden backdrop-blur-md transition-all duration-300 h-full">
       {/* Dynamic Cyber Deco Grid Bars */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gym-accent/30 to-transparent" />
       <div className="absolute top-0 right-10 w-24 h-24 bg-gym-accent/5 rounded-full blur-3xl -z-10" />

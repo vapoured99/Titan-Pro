@@ -212,7 +212,9 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
 
       {/* Front View */}
       <div className="flex flex-col items-center">
-        <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em] mb-2" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-6"}>Front Evolution Grid</h4>
+        <div className={compact ? "h-8 flex items-center justify-center text-center mb-2" : "min-h-[2.5rem] flex items-center justify-center text-center mb-6"}>
+          <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em]" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em]"}>Front Evolution Grid</h4>
+        </div>
         <svg viewBox="0 0 200 400" className={compact ? "w-full max-w-[120px] h-auto" : "w-full max-w-[240px] h-auto"}>
           {/* Cybernetic High-Contrast SVG Glow Filters */}
           <defs>
@@ -308,7 +310,9 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
 
       {/* Back View */}
       <div className="flex flex-col items-center">
-        <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em] mb-2" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-6"}>Rear Evolution Grid</h4>
+        <div className={compact ? "h-8 flex items-center justify-center text-center mb-2" : "min-h-[2.5rem] flex items-center justify-center text-center mb-6"}>
+          <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em]" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em]"}>Rear Evolution Grid</h4>
+        </div>
         <svg viewBox="0 0 200 400" className={compact ? "w-full max-w-[120px] h-auto" : "w-full max-w-[240px] h-auto"}>
           {/* Stylized Body Outline - Back */}
           <g fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth={compact ? "1" : "1.5"}>

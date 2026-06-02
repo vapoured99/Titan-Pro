@@ -57,6 +57,7 @@ import AnatomyChart from './components/AnatomyChart';
 import AnatomyDashboard from './components/AnatomyDashboard';
 import Sparkline from './components/Sparkline';
 import AICoach from './components/AICoach';
+import RadarChart from './components/RadarChart';
 import AvatarPanel, { OUTFITS, TITLES } from './components/AvatarPanel';
 import { AvatarDisplayCard } from './components/AvatarDisplayCard';
 import { TransparentCharacter } from './components/TransparentCharacter';
@@ -2907,8 +2908,15 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* AI Tactical Operative Coach Bar */}
-                <AICoach sets={sessionSets} archivedWorkouts={archivedWorkouts} userId={profile?.id || 'anonymous'} />
+                {/* AI Tactical Operative Coach & Radar Chart side-by-side */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mt-8">
+                  <div className="lg:col-span-8">
+                    <AICoach sets={sessionSets} archivedWorkouts={archivedWorkouts} userId={profile?.id || 'anonymous'} />
+                  </div>
+                  <div className="lg:col-span-4">
+                    <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={250} />
+                  </div>
+                </div>
               </motion.div>
             );
           })() : activeView === 'library' ? (
