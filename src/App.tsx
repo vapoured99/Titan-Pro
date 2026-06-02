@@ -511,10 +511,10 @@ interface WeightEntry {
 }
 
 const DAY_CONFIG = [
-  { label: "1", name: "Chest & Triceps", pools: ['chest', 'triceps'], icon: <Dumbbell className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "2", name: "Back & Biceps", pools: ['back', 'biceps'], icon: <ArrowUp className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "3", name: "Shoulders & Forearms", pools: ['shoulders', 'forearms'], icon: <ArrowUpCircle className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "4", name: "Legs & Core", pools: ['legs', 'core'], icon: <Flame className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "1", name: "Chest & Triceps", pools: ['upper_chest', 'middle_chest', 'lower_chest', 'long_triceps', 'lateral_triceps', 'medial_triceps'], icon: <Dumbbell className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "2", name: "Back & Biceps", pools: ['upper_back', 'lower_back', 'long_biceps', 'short_biceps', 'brachialis'], icon: <ArrowUp className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "3", name: "Shoulders & Forearms", pools: ['front_delts', 'side_delts', 'rear_delts', 'forearms'], icon: <ArrowUpCircle className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "4", name: "Legs & Core", pools: ['legs', 'upper_core', 'lower_core', 'obliques'], icon: <Flame className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
   { label: "5", name: "Cardio", pools: ['cardio'], icon: <Activity className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
   { label: "6", name: "Equipment", pools: ['equipment'], icon: <Dumbbell className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
 ];
@@ -915,7 +915,7 @@ export default function App() {
   });
   const [showAddCustomModal, setShowAddCustomModal] = useState(false);
   const [customExName, setCustomExName] = useState("");
-  const [customExPool, setCustomExPool] = useState<'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms'>("chest");
+  const [customExPool, setCustomExPool] = useState<'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps'>("middle_chest");
   const [customExCategory, setCustomExCategory] = useState<'compound' | 'isolation'>("compound");
   const [creatingCustomForDay, setCreatingCustomForDay] = useState<number | null>(null);
 
@@ -1592,12 +1592,17 @@ export default function App() {
       // Fallback: If we still can't find it, try to guess from common strings or default to chest
       const low = ex.name.toLowerCase();
       if (low.includes("chest") || low.includes("press") || low.includes("bench") || low.includes("fly")) poolKey = "chest";
-      else if (low.includes("row") || low.includes("lat") || low.includes("back") || low.includes("pull")) poolKey = "back";
+      else if (low.includes("rack pull") || low.includes("exten") || low.includes("good morning")) poolKey = "lower_back";
+      else if (low.includes("row") || low.includes("lat") || low.includes("back") || low.includes("pull") || low.includes("chin")) poolKey = "upper_back";
       else if (low.includes("bicep") || low.includes("curl")) poolKey = "biceps";
       else if (low.includes("tricep") || low.includes("skull") || low.includes("dip")) poolKey = "triceps";
       else if (low.includes("squat") || low.includes("leg") || low.includes("deadlift") || low.includes("hamstring")) poolKey = "legs";
-      else if (low.includes("shoulder") || low.includes("raise") || low.includes("press")) poolKey = "shoulders";
-      else if (low.includes("ab") || low.includes("crunch") || low.includes("core") || low.includes("sit up") || low.includes("plank")) poolKey = "core";
+      else if (low.includes("lateral raise")) poolKey = "side_delts";
+      else if (low.includes("rear delt") || low.includes("face pull")) poolKey = "rear_delts";
+      else if (low.includes("shoulder") || low.includes("raise") || low.includes("press") || low.includes("arnold")) poolKey = "front_delts";
+      else if (low.includes("oblique") || low.includes("twist") || low.includes("side plank") || low.includes("heel tap") || low.includes("bicycle")) poolKey = "obliques";
+      else if (low.includes("leg raise") || low.includes("flutter") || low.includes("reverse crunch") || low.includes("deadbug")) poolKey = "lower_core";
+      else if (low.includes("ab") || low.includes("crunch") || low.includes("core") || low.includes("sit up") || low.includes("plank")) poolKey = "upper_core";
       
       if (!poolKey) {
         alert(`Cannot determine exercise category for "${ex.name}". Please manually swap via Library.`);
@@ -2668,7 +2673,7 @@ export default function App() {
 
                 {/* Bento Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Card 1: Avatar */}
+                  {/* Card 1: Radar Chart */}
                   <div className="flex flex-col gap-4 h-full">
                     {/* Level & XP Progression Info */}
                     <div className="bg-black/70 border border-white/10 rounded-sm p-4 backdrop-blur-md">
@@ -2686,9 +2691,9 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Elite Live-Updating Avatar Showcase Display Card */}
+                    {/* Biomechanical Balance Star Radar Chart */}
                     <div className="flex-1">
-                      <AvatarDisplayCard profile={profile} currentUser={currentUser} />
+                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={250} />
                     </div>
                   </div>
 
@@ -2908,14 +2913,9 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* AI Tactical Operative Coach & Radar Chart side-by-side */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch mt-8">
-                  <div className="lg:col-span-8">
-                    <AICoach sets={sessionSets} archivedWorkouts={archivedWorkouts} userId={profile?.id || 'anonymous'} />
-                  </div>
-                  <div className="lg:col-span-4">
-                    <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={250} />
-                  </div>
+                {/* AI Tactical Operative Coach (extended to full width) */}
+                <div className="mt-8">
+                  <AICoach sets={sessionSets} archivedWorkouts={archivedWorkouts} userId={profile?.id || 'anonymous'} />
                 </div>
               </motion.div>
             );
@@ -2973,16 +2973,60 @@ export default function App() {
 
               <div className="h-6" /> 
 
-               {[
-                ...Object.entries(combinedPools).map(([key, list]) => ({ 
-                  title: key.charAt(0).toUpperCase() + key.slice(1), 
-                  list: list.filter(ex => 
-                    ex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                    ex.pool.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                    ex.category?.toLowerCase().includes(searchQuery.toLowerCase())
-                  )
-                }))
-              ].filter(s => s.list.length > 0).map(section => (
+              {(() => {
+                const categoryOrder = ['chest', 'back', 'shoulders', 'legs', 'biceps', 'triceps', 'forearms', 'core', 'cardio', 'equipment'];
+                return categoryOrder.map(catKey => {
+                  let list: Exercise[] = [];
+                  if (catKey === 'chest') {
+                     list = [
+                       ...(combinedPools['upper_chest'] || []),
+                       ...(combinedPools['middle_chest'] || []),
+                       ...(combinedPools['lower_chest'] || [])
+                     ];
+                  } else if (catKey === 'back') {
+                     list = [
+                       ...(combinedPools['upper_back'] || []),
+                       ...(combinedPools['lower_back'] || [])
+                     ];
+                  } else if (catKey === 'shoulders') {
+                     list = [
+                       ...(combinedPools['front_delts'] || []),
+                       ...(combinedPools['side_delts'] || []),
+                       ...(combinedPools['rear_delts'] || [])
+                     ];
+                  } else if (catKey === 'biceps') {
+                     list = [
+                       ...(combinedPools['long_biceps'] || []),
+                       ...(combinedPools['short_biceps'] || []),
+                       ...(combinedPools['brachialis'] || [])
+                     ];
+                  } else if (catKey === 'triceps') {
+                     list = [
+                       ...(combinedPools['long_triceps'] || []),
+                       ...(combinedPools['lateral_triceps'] || []),
+                       ...(combinedPools['medial_triceps'] || [])
+                     ];
+                  } else if (catKey === 'core') {
+                     list = [
+                       ...(combinedPools['upper_core'] || []),
+                       ...(combinedPools['lower_core'] || []),
+                       ...(combinedPools['obliques'] || [])
+                     ];
+                  } else {
+                     list = combinedPools[catKey] || [];
+                  }
+
+                  return {
+                    key: catKey,
+                    title: catKey.charAt(0).toUpperCase() + catKey.slice(1),
+                    list: list.filter(ex => 
+                      ex.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                      ex.pool.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      (ex.category && ex.category.toLowerCase().includes(searchQuery.toLowerCase()))
+                    )
+                  };
+                }).filter(s => s.list.length > 0);
+              })().map(section => (
                 <div key={section.title} className="mb-6 border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
                   <button 
                     onClick={() => setExpandedLibrarySections(prev => ({ ...prev, [section.title]: !prev[section.title] }))}
@@ -3006,90 +3050,92 @@ export default function App() {
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                       >
                         <div className="px-6 pb-8 pt-2">
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {section.list.map(ex => {
+                          {(() => {
+                            const renderCard = (ex: Exercise) => {
                               const Icon = iconMap[ex.icon] || Dumbbell;
                               return (
-                                <div key={ex.name} className="bg-black/60 border border-white/10 rounded-sm p-5 hover:border-white/35 transition-all group">
-                                  <div className="flex items-center justify-between mb-2">
-                                     <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-3">
-                                           <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors" />
-                                           <span className="font-medium text-sm text-white/90 group-hover:text-white transition-colors">{ex.name}</span>
-                                        </div>
-                                        {ex.category && (
-                                           <div className="flex items-center gap-1.5 mt-0.5 ml-7">
-                                              <span className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-widest ${
-                                                ex.category === 'compound' 
-                                                  ? 'bg-amber-500/10 text-amber-500/80 border border-amber-500/20' 
-                                                  : 'bg-purple-500/15 text-purple-400 border border-purple-500/20'
-                                              }`}>
-                                                {ex.category}
-                                              </span>
-                                           </div>
-                                        )}
-                                     </div>
-                                     <div className="flex items-center gap-2.5">
-                                       <Sparkline 
-                                         exName={ex.name}
-                                         sessionSets={sessionSets}
-                                         archivedWorkouts={archivedWorkouts}
-                                         width={65}
-                                         height={16}
-                                       />
-                                       <AnimatePresence>
-                                          {flashMessage[ex.name] && (
-                                            <motion.span 
-                                              initial={{ opacity: 0, scale: 0.8 }}
-                                              animate={{ opacity: 1, scale: 1 }}
-                                              exit={{ opacity: 0, scale: 0.8 }}
-                                              className="text-[8px] font-bold text-gym-accent uppercase tracking-widest"
-                                            >
-                                              {flashMessage[ex.name]}
-                                            </motion.span>
+                                <div key={ex.name} className="bg-black/60 border border-white/10 rounded-sm p-5 hover:border-white/35 transition-all group flex flex-col justify-between">
+                                  <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                       <div className="flex flex-col gap-1">
+                                          <div className="flex items-center gap-3">
+                                             <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors" />
+                                             <span className="font-medium text-sm text-white/90 group-hover:text-white transition-colors">{ex.name}</span>
+                                          </div>
+                                          {ex.category && (
+                                             <div className="flex items-center gap-1.5 mt-0.5 ml-7">
+                                                <span className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-widest ${
+                                                  ex.category === 'compound' 
+                                                    ? 'bg-amber-500/10 text-amber-500/80 border border-amber-500/20' 
+                                                    : 'bg-purple-500/15 text-purple-400 border border-purple-500/20'
+                                                }`}>
+                                                  {ex.category}
+                                                </span>
+                                             </div>
                                           )}
-                                       </AnimatePresence>
-                                     </div>
-                                  </div>
-                                  
-                                  <div className="flex gap-4 mb-4 mt-6">
-                                    <div className="flex flex-col flex-1">
-                                      <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">{ex.pool === 'cardio' ? 'Time (min)' : 'Weight'}</span>
-                                      <input 
-                                        type="number"
-                                        inputMode="decimal"
-                                        placeholder="---"
-                                        id={`lib-w-${ex.name.replace(/\s+/g, '-')}`}
-                                        className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
-                                      />
+                                       </div>
+                                       <div className="flex items-center gap-2.5">
+                                         <Sparkline 
+                                           exName={ex.name}
+                                           sessionSets={sessionSets}
+                                           archivedWorkouts={archivedWorkouts}
+                                           width={65}
+                                           height={16}
+                                         />
+                                         <AnimatePresence>
+                                            {flashMessage[ex.name] && (
+                                              <motion.span 
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                className="text-[8px] font-bold text-gym-accent uppercase tracking-widest"
+                                              >
+                                                {flashMessage[ex.name]}
+                                              </motion.span>
+                                            )}
+                                         </AnimatePresence>
+                                       </div>
                                     </div>
-                                    <div className="flex flex-col flex-1">
-                                      <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">{ex.pool === 'cardio' ? 'Speed / Lvl' : 'Reps'}</span>
-                                      <input 
-                                        type="number"
-                                        inputMode="numeric"
-                                        placeholder="---"
-                                        id={`lib-r-${ex.name.replace(/\s+/g, '-')}`}
-                                        className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
-                                      />
+                                    
+                                    <div className="flex gap-4 mb-4 mt-6">
+                                      <div className="flex flex-col flex-1">
+                                        <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">{ex.pool === 'cardio' ? 'Time (min)' : 'Weight'}</span>
+                                        <input 
+                                          type="number"
+                                          inputMode="decimal"
+                                          placeholder="---"
+                                          id={`lib-w-${ex.name.replace(/\s+/g, '-')}`}
+                                          className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                                        />
+                                      </div>
+                                      <div className="flex flex-col flex-1">
+                                        <span className="text-[9px] text-white/20 uppercase tracking-widest mb-1 font-bold">{ex.pool === 'cardio' ? 'Speed / Lvl' : 'Reps'}</span>
+                                        <input 
+                                          type="number"
+                                          inputMode="numeric"
+                                          placeholder="---"
+                                          id={`lib-r-${ex.name.replace(/\s+/g, '-')}`}
+                                          className="w-full bg-transparent border-b border-white/10 py-1 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                                        />
+                                      </div>
+                                      <button 
+                                        onClick={() => {
+                                          const idSafe = ex.name.replace(/\s+/g, '-');
+                                          const wInput = document.getElementById(`lib-w-${idSafe}`) as HTMLInputElement;
+                                          const rInput = document.getElementById(`lib-r-${idSafe}`) as HTMLInputElement;
+                                          const w = wInput?.value;
+                                          const r = rInput?.value;
+                                          if (w && r) {
+                                            handleSaveSet(ex.name, w, r);
+                                            if (wInput) wInput.value = "";
+                                            if (rInput) rInput.value = "";
+                                          }
+                                        }}
+                                        className="bg-transparent border border-white/20 hover:border-gym-accent hover:text-gym-accent text-white/60 px-4 py-2 rounded-sm text-[9px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer mt-auto"
+                                      >
+                                        Log
+                                      </button>
                                     </div>
-                                    <button 
-                                      onClick={() => {
-                                        const idSafe = ex.name.replace(/\s+/g, '-');
-                                        const wInput = document.getElementById(`lib-w-${idSafe}`) as HTMLInputElement;
-                                        const rInput = document.getElementById(`lib-r-${idSafe}`) as HTMLInputElement;
-                                        const w = wInput?.value;
-                                        const r = rInput?.value;
-                                        if (w && r) {
-                                          handleSaveSet(ex.name, w, r);
-                                          if (wInput) wInput.value = "";
-                                          if (rInput) rInput.value = "";
-                                        }
-                                      }}
-                                      className="bg-transparent border border-white/20 hover:border-gym-accent hover:text-gym-accent text-white/60 px-4 py-2 rounded-sm text-[9px] font-bold uppercase tracking-widest transition-all active:scale-95 cursor-pointer mt-auto"
-                                    >
-                                      Log
-                                    </button>
                                   </div>
 
                                   <PBBlock 
@@ -3101,8 +3147,339 @@ export default function App() {
                                   />
                                 </div>
                               );
-                            })}
-                          </div>
+                            };
+
+                             if (section.key === 'back') {
+                              return (
+                                <div className="space-y-8 w-full">
+                                  {/* Upper Back Subsegment */}
+                                  {(() => {
+                                    const upperBackLines = section.list.filter(e => e.pool === 'upper_back');
+                                    if (upperBackLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-gym-accent rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Upper Back Isolation & Lats</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {upperBackLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Lower Back Subsegment */}
+                                  {(() => {
+                                    const lowerBackLines = section.list.filter(e => e.pool === 'lower_back');
+                                    if (lowerBackLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-red-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Lower Back & Spinal Erectors</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {lowerBackLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              );
+                            }
+
+                            if (section.key === 'shoulders') {
+                              return (
+                                <div className="space-y-8 w-full">
+                                  {/* Front Delts Subsegment */}
+                                  {(() => {
+                                    const frontLines = section.list.filter(e => e.pool === 'front_delts');
+                                    if (frontLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-teal-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Front Delts (Anterior Head)</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {frontLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Side Delts Subsegment */}
+                                  {(() => {
+                                    const sideLines = section.list.filter(e => e.pool === 'side_delts');
+                                    if (sideLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-blue-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Side Delts (Lateral Head)</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {sideLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Rear Delts Subsegment */}
+                                  {(() => {
+                                    const rearLines = section.list.filter(e => e.pool === 'rear_delts');
+                                    if (rearLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-pink-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Rear Delts (Posterior Head)</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {rearLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              );
+                            }
+
+                            if (section.key === 'core') {
+                              return (
+                                <div className="space-y-8 w-full">
+                                  {/* Upper Abs Subsegment */}
+                                  {(() => {
+                                    const upperLines = section.list.filter(e => e.pool === 'upper_core');
+                                    if (upperLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-emerald-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Upper Abs</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {upperLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Lower Abs Subsegment */}
+                                  {(() => {
+                                    const lowerLines = section.list.filter(e => e.pool === 'lower_core');
+                                    if (lowerLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-violet-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Lower Abs</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {lowerLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Obliques Subsegment */}
+                                  {(() => {
+                                    const obliquesLines = section.list.filter(e => e.pool === 'obliques');
+                                    if (obliquesLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-amber-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Obliques</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {obliquesLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                   })()}
+                                </div>
+                              );
+                            }
+
+                            if (section.key === 'chest') {
+                              return (
+                                <div className="space-y-8 w-full">
+                                  {/* Upper Chest Subsegment */}
+                                  {(() => {
+                                    const upperLines = section.list.filter(e => e.pool === 'upper_chest');
+                                    if (upperLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-red-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Upper Chest</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {upperLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Middle Chest Subsegment */}
+                                  {(() => {
+                                    const middleLines = section.list.filter(e => e.pool === 'middle_chest');
+                                    if (middleLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-teal-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Middle Chest / General</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {middleLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Lower Chest Subsegment */}
+                                  {(() => {
+                                    const lowerLines = section.list.filter(e => e.pool === 'lower_chest');
+                                    if (lowerLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-blue-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Lower Chest</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {lowerLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              );
+                            }
+
+                            if (section.key === 'biceps') {
+                              return (
+                                <div className="space-y-8 w-full">
+                                  {/* Long Head Biceps Subsegment */}
+                                  {(() => {
+                                    const longLines = section.list.filter(e => e.pool === 'long_biceps');
+                                    if (longLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-pink-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Long Head</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {longLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Short Head Biceps Subsegment */}
+                                  {(() => {
+                                    const shortLines = section.list.filter(e => e.pool === 'short_biceps');
+                                    if (shortLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-emerald-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Short Head</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {shortLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Brachialis Subsegment */}
+                                  {(() => {
+                                    const brachialisLines = section.list.filter(e => e.pool === 'brachialis');
+                                    if (brachialisLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-violet-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Brachialis</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {brachialisLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              );
+                            }
+
+                            if (section.key === 'triceps') {
+                              return (
+                                <div className="space-y-8 w-full">
+                                  {/* Long Head Triceps Subsegment */}
+                                  {(() => {
+                                    const longLines = section.list.filter(e => e.pool === 'long_triceps');
+                                    if (longLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-amber-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Long Head</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {longLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Lateral Head Triceps Subsegment */}
+                                  {(() => {
+                                    const lateralLines = section.list.filter(e => e.pool === 'lateral_triceps');
+                                    if (lateralLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-teal-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Lateral Head</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {lateralLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Medial Head Triceps Subsegment */}
+                                  {(() => {
+                                    const medialLines = section.list.filter(e => e.pool === 'medial_triceps');
+                                    if (medialLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-sky-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Medial Head / Compound</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {medialLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {section.list.map(renderCard)}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </motion.div>
                     )}
@@ -5120,8 +5497,25 @@ export default function App() {
 
                   return (
                     <div key={poolKey} className="mb-8">
-                      <h4 className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-4 ml-2 border-l border-gym-accent/40 pl-3">
-                        {poolKey} Assets
+                       <h4 className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-4 ml-2 border-l border-gym-accent/40 pl-3">
+                        {poolKey === 'upper_back' ? 'Upper Back' : 
+                         poolKey === 'lower_back' ? 'Lower Back' : 
+                         poolKey === 'front_delts' ? 'Front Delts' : 
+                         poolKey === 'side_delts' ? 'Side Delts' : 
+                         poolKey === 'rear_delts' ? 'Rear Delts' : 
+                         poolKey === 'upper_core' ? 'Upper Abs' : 
+                         poolKey === 'lower_core' ? 'Lower Abs' : 
+                         poolKey === 'obliques' ? 'Obliques' : 
+                         poolKey === 'upper_chest' ? 'Upper Chest' : 
+                         poolKey === 'middle_chest' ? 'Middle Chest' : 
+                         poolKey === 'lower_chest' ? 'Lower Chest' : 
+                         poolKey === 'long_biceps' ? 'Long Head Biceps' : 
+                         poolKey === 'short_biceps' ? 'Short Head Biceps' : 
+                         poolKey === 'brachialis' ? 'Brachialis' : 
+                         poolKey === 'long_triceps' ? 'Long Head Triceps' : 
+                         poolKey === 'lateral_triceps' ? 'Lateral Head Triceps' : 
+                         poolKey === 'medial_triceps' ? 'Medial Head Triceps' : 
+                         poolKey} Assets
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {filtered.map(renderExercise)}
@@ -5254,21 +5648,49 @@ export default function App() {
                     {creatingCustomForDay !== null ? (
                       DAY_CONFIG[creatingCustomForDay].pools.map(poolKey => (
                         <option key={poolKey} value={poolKey}>
-                          {poolKey.charAt(0).toUpperCase() + poolKey.slice(1)}
+                          {poolKey === 'upper_back' ? 'Upper Back' : 
+                           poolKey === 'lower_back' ? 'Lower Back' : 
+                           poolKey === 'front_delts' ? 'Front Delts' : 
+                           poolKey === 'side_delts' ? 'Side Delts' : 
+                           poolKey === 'rear_delts' ? 'Rear Delts' : 
+                           poolKey === 'upper_core' ? 'Upper Abs' : 
+                           poolKey === 'lower_core' ? 'Lower Abs' : 
+                           poolKey === 'obliques' ? 'Obliques' : 
+                           poolKey === 'upper_chest' ? 'Upper Chest' : 
+                           poolKey === 'middle_chest' ? 'Middle Chest' : 
+                           poolKey === 'lower_chest' ? 'Lower Chest' : 
+                           poolKey === 'long_biceps' ? 'Long Head Biceps' : 
+                           poolKey === 'short_biceps' ? 'Short Head Biceps' : 
+                           poolKey === 'brachialis' ? 'Brachialis Biceps' : 
+                           poolKey === 'long_triceps' ? 'Long Head Triceps' : 
+                           poolKey === 'lateral_triceps' ? 'Lateral Head Triceps' : 
+                           poolKey === 'medial_triceps' ? 'Medial Head Triceps' : 
+                           poolKey.charAt(0).toUpperCase() + poolKey.slice(1)}
                         </option>
                       ))
                     ) : (
                       <>
-                        <option value="chest">Chest</option>
-                        <option value="back">Back</option>
-                        <option value="shoulders">Shoulders</option>
+                        <option value="upper_chest">Upper Chest</option>
+                        <option value="middle_chest">Middle Chest</option>
+                        <option value="lower_chest">Lower Chest</option>
+                        <option value="upper_back">Upper Back</option>
+                        <option value="lower_back">Lower Back</option>
+                        <option value="front_delts">Front Delts</option>
+                        <option value="side_delts">Side Delts</option>
+                        <option value="rear_delts">Rear Delts</option>
                         <option value="legs">Legs</option>
-                        <option value="biceps">Biceps</option>
-                        <option value="triceps">Triceps</option>
-                        <option value="core">Core</option>
+                        <option value="long_biceps">Long Head Biceps</option>
+                        <option value="short_biceps">Short Head Biceps</option>
+                        <option value="brachialis">Brachialis Biceps</option>
+                        <option value="long_triceps">Long Head Triceps</option>
+                        <option value="lateral_triceps">Lateral Head Triceps</option>
+                        <option value="medial_triceps">Medial Head Triceps</option>
+                        <option value="forearms">Forearms</option>
+                        <option value="upper_core">Upper Abs</option>
+                        <option value="lower_core">Lower Abs</option>
+                        <option value="obliques">Obliques</option>
                         <option value="cardio">Cardio</option>
                         <option value="equipment">Equipment</option>
-                        <option value="forearms">Forearms</option>
                       </>
                     )}
                   </select>

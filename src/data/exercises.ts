@@ -1,9 +1,9 @@
 export interface Exercise {
   name: string;
   icon: string;
-  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms';
+  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps';
   instructions?: string[];
-  muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms';
+  muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps';
   legRegion?: 'upper' | 'lower';
   category?: 'compound' | 'isolation';
   equipmentCategory?: string;
@@ -12,34 +12,11 @@ export interface Exercise {
 }
 
 const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
-  chest: [
-    { 
-      name: "Archer Push Ups", 
-      icon: "Activity", 
-      pool: "chest",
-      instructions: [
-        "Enters a push-up position with hands wider than shoulder-width apart.",
-        "As you lower your body, shift your weight towards one arm while keeping the other arm straight.",
-        "Push back up to the starting position and repeat on the other side.",
-        "Keep your core tight and body in a straight line throughout the movement."
-      ]
-    },
-    { 
-      name: "Barbell Bench Press", 
-      icon: "Dumbbell", 
-      pool: "chest",
-      instructions: [
-        "Lie flat on a bench with your feet firmly planted on the floor.",
-        "Grip the barbell with hands slightly wider than shoulder-width apart.",
-        "Lower the bar slowly to your mid-chest while keeping your elbows at a 45-degree angle.",
-        "Press the bar back up until your arms are fully extended.",
-        "Avoid arching your back excessively and maintain control throughout."
-      ]
-    },
+  upper_chest: [
     { 
       name: "Barbell Incline Bench Press", 
       icon: "ArrowUp", 
-      pool: "chest",
+      pool: "upper_chest",
       instructions: [
         "Set the bench to a 30-45 degree incline.",
         "Lie on the bench and grip the barbell with hands slightly wider than shoulder-width.",
@@ -49,57 +26,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Cable Flyes", 
-      icon: "ArrowLeftRight", 
-      pool: "chest",
-      instructions: [
-        "Set the pulleys to chest height and attach D-handles.",
-        "Stand in the center, grasp handles, and step forward into a staggered stance.",
-        "Bring the handles together in front of you in a wide arc, squeezing your chest.",
-        "Slowly return your arms to the sides in a controlled arc.",
-        "Maintain a slight bend in your elbows throughout the movement."
-      ]
-    },
-    { 
-      name: "Chest Dips", 
-      icon: "ArrowDown", 
-      pool: "chest",
-      instructions: [
-        "Grip the parallel bars and lift yourself up with locked elbows.",
-        "Lean your torso forward slightly and bend your knees.",
-        "Lower your body by bending your elbows until they reach a 90-degree angle.",
-        "Push yourself back up to the starting position.",
-        "Avoid flaring your elbows out excessively to protect your shoulders."
-      ]
-    },
-    { 
-      name: "Decline Dumbbell Bench Press", 
-      icon: "ArrowDown", 
-      pool: "chest",
-      instructions: [
-        "Secure your feet at the top of a decline bench and lie back.",
-        "Hold dumbbells above your lower chest with arms extended.",
-        "Lower the weights slowly toward the sides of your chest.",
-        "Press the dumbbells back up to the starting position.",
-        "Focus on the contraction in your lower chest."
-      ]
-    },
-    { 
-      name: "Decline Dumbbell Fly", 
-      icon: "ArrowLeftRight", 
-      pool: "chest",
-      instructions: [
-        "Lie on a decline bench with your feet secured.",
-        "Hold dumbbells above your chest with a slight bend in your elbows.",
-        "Lower the weights in a wide arc until you feel a stretch in your chest.",
-        "Bring the weights back together over your lower chest.",
-        "Maintain a consistent elbow angle throughout."
-      ]
-    },
-    { 
       name: "Decline Push Ups", 
       icon: "ArrowDown", 
-      pool: "chest",
+      pool: "upper_chest",
       instructions: [
         "Place your feet on a bench or elevated surface and hands on the floor.",
         "Position your hands slightly wider than shoulder-width apart.",
@@ -109,33 +38,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Dumbbell Bench Press", 
-      icon: "Dumbbell", 
-      pool: "chest",
-      instructions: [
-        "Sit on the edge of a flat bench with a dumbbell in each hand, resting on your knees.",
-        "Lie back while bringing the dumbbells to your chest, then press them up to the starting position.",
-        "Slowly lower the weights to the sides of your chest, keeping your elbows at roughly a 45-degree angle.",
-        "Press the dumbbells back up to the top, avoiding letting them touch at the top to maintain tension.",
-        "Keep your feet flat on the floor and your back pressed against the bench."
-      ]
-    },
-    { 
-      name: "Dumbbell Chest Fly", 
-      icon: "ArrowLeftRight", 
-      pool: "chest",
-      instructions: [
-        "Lie on a flat bench with a dumbbell in each hand, arms extended above your chest.",
-        "Keep a slight bend in your elbows and lower your arms out to the sides in a wide arc.",
-        "Stop when you feel a stretch in your chest, but before your elbows go below the bench line.",
-        "Use your chest muscles to pull the dumbbells back to the starting position.",
-        "Maintain the same elbow angle throughout the entire movement."
-      ]
-    },
-    { 
       name: "Incline Dumbbell Chest Fly", 
       icon: "ArrowUp", 
-      pool: "chest",
+      pool: "upper_chest",
       instructions: [
         "Lie on an incline bench set at 30-45 degrees.",
         "Hold dumbbells above your chest with a slight bend in the elbows.",
@@ -147,7 +52,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Incline Dumbbell Chest Press", 
       icon: "ArrowUp", 
-      pool: "chest",
+      pool: "upper_chest",
       instructions: [
         "Sit on an incline bench and hold dumbbells at shoulder height.",
         "Press the weights up until your arms are fully extended over your upper chest.",
@@ -157,21 +62,94 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Incline Push Ups", 
+      name: "Machine Incline Press", 
       icon: "ArrowUp", 
-      pool: "chest",
+      pool: "upper_chest",
       instructions: [
-        "Place your hands on a bench or elevated surface and feet on the floor.",
-        "Position your hands slightly wider than shoulder-width.",
-        "Lower your chest toward the bench while keeping your body straight.",
-        "Push back up to the starting position.",
-        "This variant is easier than standard push-ups and targets the lower chest."
+        "Sit in the incline press machine and adjust the seat height.",
+        "Grip the handles and push them upward along the machine's path.",
+        "Extend your arms fully without locking your elbows.",
+        "Lower the handles back to the starting position slowly.",
+        "Targets the upper chest with added stability."
+      ]
+    },
+    { 
+      name: "Low to High Cable Flys", 
+      icon: "ArrowUp", 
+      pool: "upper_chest",
+      instructions: [
+        "Position the cable pulleys at the lowest setting.",
+        "Stand in the middle and pull the handles up and inward toward your chest.",
+        "Bring your hands together at roughly shoulder height.",
+        "Slowly lower the handles back to the starting position.",
+        "Targets the upper portion of the chest."
+      ]
+    }
+  ],
+  middle_chest: [
+    { 
+      name: "Archer Push Ups", 
+      icon: "Activity", 
+      pool: "middle_chest",
+      instructions: [
+        "Enters a push-up position with hands wider than shoulder-width apart.",
+        "As you lower your body, shift your weight towards one arm while keeping the other arm straight.",
+        "Push back up to the starting position and repeat on the other side.",
+        "Keep your core tight and body in a straight line throughout the movement."
+      ]
+    },
+    { 
+      name: "Barbell Bench Press", 
+      icon: "Dumbbell", 
+      pool: "middle_chest",
+      instructions: [
+        "Lie flat on a bench with your feet firmly planted on the floor.",
+        "Grip the barbell with hands slightly wider than shoulder-width apart.",
+        "Lower the bar slowly to your mid-chest while keeping your elbows at a 45-degree angle.",
+        "Press the bar back up until your arms are fully extended.",
+        "Avoid arching your back excessively and maintain control throughout."
+      ]
+    },
+    { 
+      name: "Cable Flyes", 
+      icon: "ArrowLeftRight", 
+      pool: "middle_chest",
+      instructions: [
+        "Set the pulleys to chest height and attach D-handles.",
+        "Stand in the center, grasp handles, and step forward into a staggered stance.",
+        "Bring the handles together in front of you in a wide arc, squeezing your chest.",
+        "Slowly return your arms to the sides in a controlled arc.",
+        "Maintain a slight bend in your elbows throughout the movement."
+      ]
+    },
+    { 
+      name: "Dumbbell Bench Press", 
+      icon: "Dumbbell", 
+      pool: "middle_chest",
+      instructions: [
+        "Sit on the edge of a flat bench with a dumbbell in each hand, resting on your knees.",
+        "Lie back while bringing the dumbbells to your chest, then press them up to the starting position.",
+        "Slowly lower the weights to the sides of your chest, keeping your elbows at roughly a 45-degree angle.",
+        "Press the dumbbells back up to the top, avoiding letting them touch at the top to maintain tension.",
+        "Keep your feet flat on the floor and your back pressed against the bench."
+      ]
+    },
+    { 
+      name: "Dumbbell Chest Fly", 
+      icon: "ArrowLeftRight", 
+      pool: "middle_chest",
+      instructions: [
+        "Lie on a flat bench with a dumbbell in each hand, arms extended above your chest.",
+        "Keep a slight bend in your elbows and lower your arms out to the sides in a wide arc.",
+        "Stop when you feel a stretch in your chest, but before your elbows go below the bench line.",
+        "Use your chest muscles to pull the dumbbells back to the starting position.",
+        "Maintain the same elbow angle throughout the entire movement."
       ]
     },
     { 
       name: "Machine Fly", 
       icon: "ArrowLeftRight", 
-      pool: "chest",
+      pool: "middle_chest",
       instructions: [
         "Sit in the machine and press your back firmly against the pad.",
         "Grip the handles or place your forearms on the pads.",
@@ -183,7 +161,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Machine Chest Press", 
       icon: "ArrowLeftRight", 
-      pool: "chest",
+      pool: "middle_chest",
       instructions: [
         "Adjust the seat so the handles are at mid-chest height.",
         "Sit back and grip the handles firmly.",
@@ -193,21 +171,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Machine Incline Press", 
-      icon: "ArrowUp", 
-      pool: "chest",
-      instructions: [
-        "Sit in the incline press machine and adjust the seat height.",
-        "Grip the handles and push them upward along the machine's path.",
-        "Extend your arms fully without locking your elbows.",
-        "Lower the handles back to the starting position slowly.",
-        "Targets the upper chest with added stability."
-      ]
-    },
-    { 
       name: "Push Ups", 
       icon: "Activity", 
-      pool: "chest",
+      pool: "middle_chest",
       instructions: [
         "Start in a high plank position with your hands slightly wider than shoulder-width.",
         "Maintain a straight line from your head to your heels, engaging your core.",
@@ -219,7 +185,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Seated Cable Fly", 
       icon: "ArrowLeftRight", 
-      pool: "chest",
+      pool: "middle_chest",
       instructions: [
         "Sit on a bench between two cable pulleys set at chest height.",
         "Grasp the handles and lean forward slightly.",
@@ -231,7 +197,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Seated Chest Press", 
       icon: "ArrowLeftRight", 
-      pool: "chest",
+      pool: "middle_chest",
       instructions: [
         "Sit in a seated chest press machine and adjust the seat.",
         "Push the handles forward until your arms are fully extended.",
@@ -243,7 +209,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Single Arm Chest Press", 
       icon: "Dumbbell", 
-      pool: "chest",
+      pool: "middle_chest",
       instructions: [
         "Lie on a bench and hold one dumbbell in one hand.",
         "Press the dumbbell up while keeping your other hand on your hip or chest for balance.",
@@ -255,7 +221,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Single Arm Chest Fly", 
       icon: "ArrowLeftRight", 
-      pool: "chest",
+      pool: "middle_chest",
       instructions: [
         "Lie on a bench or stand at a cable machine.",
         "Perform a fly motion with a single arm, moving in a wide arc.",
@@ -263,11 +229,61 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Stabilize your body to prevent swinging or rotating.",
         "Slowly return to the starting position."
       ]
+    }
+  ],
+  lower_chest: [
+    { 
+      name: "Chest Dips", 
+      icon: "ArrowDown", 
+      pool: "lower_chest",
+      instructions: [
+        "Grip the parallel bars and lift yourself up with locked elbows.",
+        "Lean your torso forward slightly and bend your knees.",
+        "Lower your body by bending your elbows until they reach a 90-degree angle.",
+        "Push yourself back up to the starting position.",
+        "Avoid flaring your elbows out excessively to protect your shoulders."
+      ]
+    },
+    { 
+      name: "Decline Dumbbell Bench Press", 
+      icon: "ArrowDown", 
+      pool: "lower_chest",
+      instructions: [
+        "Secure your feet at the top of a decline bench and lie back.",
+        "Hold dumbbells above your lower chest with arms extended.",
+        "Lower the weights slowly toward the sides of your chest.",
+        "Press the dumbbells back up to the starting position.",
+        "Focus on the contraction in your lower chest."
+      ]
+    },
+    { 
+      name: "Decline Dumbbell Fly", 
+      icon: "ArrowLeftRight", 
+      pool: "lower_chest",
+      instructions: [
+        "Lie on a decline bench with your feet secured.",
+        "Hold dumbbells above your chest with a slight bend in your elbows.",
+        "Lower the weights in a wide arc until you feel a stretch in your chest.",
+        "Bring the weights back together over your lower chest.",
+        "Maintain a consistent elbow angle throughout."
+      ]
+    },
+    { 
+      name: "Incline Push Ups", 
+      icon: "ArrowUp", 
+      pool: "lower_chest",
+      instructions: [
+        "Place your hands on a bench or elevated surface and feet on the floor.",
+        "Position your hands slightly wider than shoulder-width.",
+        "Lower your chest toward the bench while keeping your body straight.",
+        "Push back up to the starting position.",
+        "This variant is easier than standard push-ups and targets the lower chest."
+      ]
     },
     { 
       name: "Weighted Chest Dips", 
       icon: "Plus", 
-      pool: "chest",
+      pool: "lower_chest",
       instructions: [
         "Attach a weight plate to a dip belt or hold a dumbbell between your feet.",
         "Lower your body until your elbows are at 90 degrees.",
@@ -279,7 +295,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "High to Low Cable Flys", 
       icon: "ArrowDown", 
-      pool: "chest",
+      pool: "lower_chest",
       instructions: [
         "Position the cable pulleys at the highest setting.",
         "Stand in the middle and pull the handles down and inward toward your waist.",
@@ -287,25 +303,13 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Slowly bring the handles back up to the starting position.",
         "Targets the lower portion of the chest."
       ]
-    },
-    { 
-      name: "Low to High Cable Flys", 
-      icon: "ArrowUp", 
-      pool: "chest",
-      instructions: [
-        "Position the cable pulleys at the lowest setting.",
-        "Stand in the middle and pull the handles up and inward toward your chest.",
-        "Bring your hands together at roughly shoulder height.",
-        "Slowly lower the handles back to the starting position.",
-        "Targets the upper portion of the chest."
-      ]
     }
   ],
-  back: [
+  upper_back: [
     { 
       name: "Barbell Bent Over Row", 
       icon: "ArrowLeftRight", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Stand with feet shoulder-width apart and grip the barbell with an overhand grip.",
         "Hinge at your hips and lean forward until your torso is nearly parallel to the floor.",
@@ -317,7 +321,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Close Grip Lat Pulldown", 
       icon: "ArrowDown", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Attach a V-bar or close-grip handle to the lat pulldown machine.",
         "Sit and secure your thighs under the knee pads.",
@@ -329,7 +333,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Dumbbell Bent Over Row", 
       icon: "ArrowLeftRight", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Hold a dumbbell in each hand and hinge at the hips until your torso is nearly parallel to the floor.",
         "Let the weights hang with arms extended and palms facing each other.",
@@ -341,7 +345,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Incline Row (Chest Supported)", 
       icon: "ArrowLeftRight", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Lie face down on an incline bench set at 30-45 degrees.",
         "Hold dumbbells with arms hanging straight down.",
@@ -353,7 +357,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Inverted Row", 
       icon: "ArrowLeftRight", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Set a bar in a rack or use a TRX at waist height.",
         "Lie under the bar and grip it with hands wider than shoulders.",
@@ -365,7 +369,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Lat Pulldowns", 
       icon: "ArrowDown", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Sit at the machine and adjust the knee pad so your thighs are secured.",
         "Grip the bar with a wide, overhand grip, hands wider than shoulder-width.",
@@ -377,7 +381,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Pendlay Row", 
       icon: "ArrowLeftRight", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Stand over a barbell with feet shoulder-width apart.",
         "Hinge forward until your torso is parallel to the floor.",
@@ -387,21 +391,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Rack Pulls", 
-      icon: "ArrowUp", 
-      pool: "back",
-      instructions: [
-        "Set a barbell on the safety pins of a power rack at or just below knee height.",
-        "Grip the bar with hands shoulder-width apart and a flat back.",
-        "Pull the bar up by extending your hips and knees to a standing position.",
-        "Squeeze your back and glutes at the top.",
-        "Slowly lower the bar back to the pins."
-      ]
-    },
-    { 
       name: "Seated Cable Row", 
       icon: "ArrowLeftRight", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Sit at the rowing machine with your feet on the platforms and a slight bend in your knees.",
         "Grip the handle and sit upright with a neutral spine and shoulders back.",
@@ -413,7 +405,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Low to High Cable Row", 
       icon: "ArrowUp", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Set the cable pulley at the lowest position and attach a D-handle or rope.",
         "Stand facing the machine, step back to create tension on the cable, and assume a stable split stance.",
@@ -425,7 +417,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Single Arm Bent Over Row", 
       icon: "ArrowLeftRight", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Place one knee and hand on a flat bench for support.",
         "Hold a dumbbell in the other hand with the arm extended.",
@@ -437,7 +429,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Single Arm Lat Pulldowns", 
       icon: "ArrowDown", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Attach a single handle to the lat pulldown machine.",
         "Sit and grip the handle with one hand.",
@@ -449,7 +441,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Straight Arm Lat Pulldowns", 
       icon: "ArrowDown", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Stand facing the cable machine and grip a bar with arms fully extended.",
         "With a slight bend in your elbows, pull the bar down to your thighs using your lats.",
@@ -461,7 +453,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "T Bar Row", 
       icon: "ArrowLeftRight", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Stand over the T-bar or landmine setup with a wide or narrow handle.",
         "Hinge forward and pull the handles toward your abdomen.",
@@ -473,7 +465,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Wide Grip Lat Pulldowns", 
       icon: "ArrowDown", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Grip the long bar with hands well beyond shoulder-width.",
         "Pull the bar down toward your upper chest.",
@@ -485,7 +477,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Machine Row", 
       icon: "ArrowLeftRight", 
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Sit in the machine and adjust the chest pad.",
         "Grip the handles and pull them toward your waist.",
@@ -497,7 +489,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     {
       name: "Pull Ups",
       icon: "ArrowUp",
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Grasp the pull-up bar with an overhand grip, hands slightly wider than shoulder-width apart.",
         "Hang with your arms fully extended and your feet off the floor, crossing your ankles if needed.",
@@ -509,7 +501,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     {
       name: "Assisted Pull Ups",
       icon: "ArrowUpCircle",
-      pool: "back",
+      pool: "upper_back",
       instructions: [
         "Select an appropriate counterweight on the machine and step onto the platform or place your knees/feet on the padded bar.",
         "Grasp the overhead handles with an overhand grip, hands slightly wider than shoulder-width apart.",
@@ -519,11 +511,83 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     }
   ],
-  shoulders: [
+  lower_back: [
+    { 
+      name: "Rack Pulls", 
+      icon: "ArrowUp", 
+      pool: "lower_back",
+      instructions: [
+        "Set a barbell on the safety pins of a power rack at or just below knee height.",
+        "Grip the bar with hands shoulder-width apart and a flat back.",
+        "Pull the bar up by extending your hips and knees to a standing position.",
+        "Squeeze your back and glutes at the top.",
+        "Slowly lower the bar back to the pins."
+      ]
+    },
+    {
+      name: "Good Mornings",
+      icon: "ArrowDown",
+      pool: "lower_back",
+      instructions: [
+        "Rest a barbell on your upper back / traps with a tight shoulder blades retraction.",
+        "Stand with feet shoulder-width apart, knees slightly unlocked.",
+        "Hinge at your hips, sending your buttocks backward as you lower your straight-back torso toward the floor.",
+        "Stop when your torso is nearly parallel to the floor, then return to upright position by driving through the hips."
+      ]
+    },
+    {
+      name: "Back Hyperextensions",
+      icon: "ArrowUp",
+      pool: "lower_back",
+      instructions: [
+        "Position yourself on a back extension bench with your hips resting on the pad and ankles secured.",
+        "With a flat back, bend forward at the waist as far as you can comfortably stretch.",
+        "Contract your erector spinae (lower back muscles) to raise your upper body until it is in line with your legs.",
+        "Avoid hyperextending or arching your back excessively at the top."
+      ]
+    },
+    {
+      name: "Reverse Hyperextensions",
+      icon: "ArrowUp",
+      pool: "lower_back",
+      instructions: [
+        "Lie face down on a reverse hyperextension machine table with your hips at the edge of the pad.",
+        "Secure your feet in the strap or roller attachment, keeping your legs straight and hanging down.",
+        "Grip the handles firmly to stabilize your upper body and protect your shoulders.",
+        "Engage your lower back, glutes, and hamstrings to lift your legs backward until they are in line with your torso.",
+        "Control the weight as your legs swing back down, allowing a slight, safe decompression stretch at the bottom."
+      ]
+    },
+    {
+      name: "Jefferson Curls",
+      icon: "ArrowDown",
+      pool: "lower_back",
+      instructions: [
+        "Stand tall on an elevated box or flat bench holding a light barbell or kettlebell with both hands hanging straight down.",
+        "Begin the movement by tucking your chin to your chest, then slowly curl your spine downward nose-to-toes, one vertebra at a time.",
+        "Keep your legs completely locked straight as you descend to maximize posterior chain stretch.",
+        "Go as deep as your flexibility allows, letting the weight gently pull you deeper into spinal flexion.",
+        "Slowly reverse the movement under complete control, uncurling your spine from bottom to top until standing upright."
+      ]
+    },
+    {
+      name: "Supermans",
+      icon: "Zap",
+      pool: "lower_back",
+      instructions: [
+        "Lie flat on your stomach on an exercise mat with your legs straight and arms fully extended overhead.",
+        "Keep your neck neutral by looking down at the mat throughout the movement.",
+        "Simultaneously lift your arms, chest, and legs several inches off the floor by contracting your lower back and glutes.",
+        "Hold this contracted flying pose position for 2 to 3 seconds.",
+        "Slowly lower your arms, chest, and legs back to the starting resting position."
+      ]
+    }
+  ],
+  front_delts: [
     { 
       name: "Arnold Press", 
       icon: "ArrowUpCircle", 
-      pool: "shoulders",
+      pool: "front_delts",
       instructions: [
         "Sit on a bench with back support, holding dumbbells in front of your shoulders, palms facing you.",
         "As you press the weights overhead, rotate your palms to face forward.",
@@ -535,7 +599,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Barbell Front Raise", 
       icon: "ArrowUp", 
-      pool: "shoulders",
+      pool: "front_delts",
       instructions: [
         "Stand with feet shoulder-width apart, holding a barbell in front of your thighs.",
         "With a slight bend in the elbows, lift the bar to shoulder height.",
@@ -545,33 +609,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Cable Lateral Raise", 
-      icon: "ArrowLeftRight", 
-      pool: "shoulders",
-      instructions: [
-        "Stand next to a cable machine and grip a handle with the opposite hand.",
-        "Pull the handle across your body and out to the side until it reaches shoulder height.",
-        "Slowly lower the handle back to the starting position.",
-        "Maintain constant tension on the muscle throughout the rep.",
-        "Keep your core engaged for stability."
-      ]
-    },
-    { 
-      name: "Dumbbell Lateral Raise", 
-      icon: "ArrowLeftRight", 
-      pool: "shoulders",
-      instructions: [
-        "Stand tall with a dumbbell in each hand, palms facing your body.",
-        "With a slight bend in your elbows, raise the weights out to the sides until they are at shoulder height.",
-        "Keep your torso still; do not swing the weights.",
-        "Lower the dumbbells back down slowly to your sides.",
-        "Focus on leading with your elbows to maximize shoulder engagement."
-      ]
-    },
-    { 
       name: "Dumbbell Shoulder Press", 
       icon: "ArrowUpCircle", 
-      pool: "shoulders",
+      pool: "front_delts",
       instructions: [
         "Sit on a bench with back support or stand tall, holding a dumbbell in each hand at shoulder height.",
         "Position your elbows out to the sides with palms facing forward.",
@@ -581,21 +621,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Face Pulls", 
-      icon: "ArrowLeftRight", 
-      pool: "shoulders",
-      instructions: [
-        "Set the cable machine to upper-chest height with a rope attachment.",
-        "Hold the rope with an overhand grip, thumbs facing you.",
-        "Pull the rope toward your face while pulling the ends apart, leading with your elbows.",
-        "Squeeze your rear deltoids and upper back at the peak of the movement.",
-        "Slowly return to the starting position, keeping tension on the cable."
-      ]
-    },
-    { 
       name: "Military Press", 
       icon: "ArrowUpCircle", 
-      pool: "shoulders",
+      pool: "front_delts",
       instructions: [
         "Stand with feet shoulder-width apart and grip a barbell with hands slightly wider than shoulders.",
         "Hold the bar at upper-chest level with elbows tucked forward.",
@@ -605,21 +633,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Rear Delt Flyes", 
-      icon: "ArrowLeftRight", 
-      pool: "shoulders",
-      instructions: [
-        "Sit on the edge of a bench and lean forward, or stand and hinge at the hips.",
-        "Hold dumbbells with palms facing each other and arms hanging down.",
-        "Raise the weights out to the sides, focusing on the rear deltoids.",
-        "Squeeze at the top and lower the weights slowly.",
-        "Avoid using your traps; keep the movement in the shoulders."
-      ]
-    },
-    { 
       name: "Shoulder Press Machine", 
       icon: "ArrowUpCircle", 
-      pool: "shoulders",
+      pool: "front_delts",
       instructions: [
         "Sit in the machine and adjust the seat height.",
         "Grip the handles and press them upward until your arms are extended.",
@@ -631,13 +647,65 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Machine Shoulder Press", 
       icon: "ArrowUpCircle", 
-      pool: "shoulders",
+      pool: "front_delts",
       instructions: [
         "Another variant of the machine shoulder press, often with a different grip.",
         "Follow the same pressing motion as the standard machine press.",
         "Adjust the weight to a challenging but manageable level.",
         "Maintain a steady tempo for both the lift and the lower.",
         "Focus on the contraction of the deltoids."
+      ]
+    }
+  ],
+  side_delts: [
+    { 
+      name: "Cable Lateral Raise", 
+      icon: "ArrowLeftRight", 
+      pool: "side_delts",
+      instructions: [
+        "Stand next to a cable machine and grip a handle with the opposite hand.",
+        "Pull the handle across your body and out to the side until it reaches shoulder height.",
+        "Slowly lower the handle back to the starting position.",
+        "Maintain constant tension on the muscle throughout the rep.",
+        "Keep your core engaged for stability."
+      ]
+    },
+    { 
+      name: "Dumbbell Lateral Raise", 
+      icon: "ArrowLeftRight", 
+      pool: "side_delts",
+      instructions: [
+        "Stand tall with a dumbbell in each hand, palms facing your body.",
+        "With a slight bend in your elbows, raise the weights out to the sides until they are at shoulder height.",
+        "Keep your torso still; do not swing the weights.",
+        "Lower the dumbbells back down slowly to your sides.",
+        "Focus on leading with your elbows to maximize shoulder engagement."
+      ]
+    }
+  ],
+  rear_delts: [
+    { 
+      name: "Face Pulls", 
+      icon: "ArrowLeftRight", 
+      pool: "rear_delts",
+      instructions: [
+        "Set the cable machine to upper-chest height with a rope attachment.",
+        "Hold the rope with an overhand grip, thumbs facing you.",
+        "Pull the rope toward your face while pulling the ends apart, leading with your elbows.",
+        "Squeeze your rear deltoids and upper back at the peak of the movement.",
+        "Slowly return to the starting position, keeping tension on the cable."
+      ]
+    },
+    { 
+      name: "Rear Delt Flyes", 
+      icon: "ArrowLeftRight", 
+      pool: "rear_delts",
+      instructions: [
+        "Sit on the edge of a bench and lean forward, or stand and hinge at the hips.",
+        "Hold dumbbells with palms facing each other and arms hanging down.",
+        "Raise the weights out to the sides, focusing on the rear deltoids.",
+        "Squeeze at the top and lower the weights slowly.",
+        "Avoid using your traps; keep the movement in the shoulders."
       ]
     }
   ],
@@ -825,11 +893,11 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     }
   ],
-  biceps: [
+  long_biceps: [
     { 
       name: "Barbell Bicep Curl", 
       icon: "ArrowUpCircle", 
-      pool: "biceps",
+      pool: "long_biceps",
       instructions: [
         "Stand with feet shoulder-width apart, holding a barbell with an underhand grip.",
         "Keep your elbows tucked into your sides and your torso stationary.",
@@ -839,9 +907,35 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
+      name: "Dumbbell Bicep Curls", 
+      icon: "ArrowUpCircle", 
+      pool: "long_biceps",
+      instructions: [
+        "Stand with a dumbbell in each hand, arms fully extended at your sides.",
+        "Keep your elbows tucked close to your torso and palms facing forward.",
+        "Curl the weights toward your shoulders while contracting your biceps.",
+        "Hold the contraction shortly at the top.",
+        "Lower the dumbbells back to the starting position with a controlled tempo."
+      ]
+    },
+    {
+      name: "Incline Dumbbell Curls",
+      icon: "Dumbbell",
+      pool: "long_biceps",
+      instructions: [
+        "Sit on an incline bench set to a 45-degree angle, holding a dumbbell in each hand with arms hanging straight down, palms facing forward.",
+        "Keep your elbows tucked close to your torso as you slowly curl the weights up toward your shoulders.",
+        "Squeeze your biceps at the peak of the contraction, keeping your shoulders static.",
+        "Slowly lower the dumbbells back to the starting position, maintaining control and a full stretch.",
+        "Avoid swinging your arms or lifting your elbows forward during the movement."
+      ]
+    }
+  ],
+  short_biceps: [
+    { 
       name: "Cable Bicep Curls", 
       icon: "ArrowUpCircle", 
-      pool: "biceps",
+      pool: "short_biceps",
       instructions: [
         "Attach a bar or handle to the low pulley of a cable machine.",
         "Stand tall and curl the weight toward your shoulders.",
@@ -853,7 +947,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Concentration Curls", 
       icon: "ArrowUpCircle", 
-      pool: "biceps",
+      pool: "short_biceps",
       instructions: [
         "Sit on a bench with your legs spread and lean forward.",
         "Hold a dumbbell in one hand and rest your elbow against your inner thigh.",
@@ -863,33 +957,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Dumbbell Bicep Curls", 
-      icon: "ArrowUpCircle", 
-      pool: "biceps",
-      instructions: [
-        "Stand with a dumbbell in each hand, arms fully extended at your sides.",
-        "Keep your elbows tucked close to your torso and palms facing forward.",
-        "Curl the weights toward your shoulders while contracting your biceps.",
-        "Hold the contraction shortly at the top.",
-        "Lower the dumbbells back to the starting position with a controlled tempo."
-      ]
-    },
-    { 
-      name: "Hammer Curls", 
-      icon: "ArrowUpCircle", 
-      pool: "biceps",
-      instructions: [
-        "Stand with a dumbbell in each hand, palms facing your torso.",
-        "Curl the weights toward your shoulders while maintaining the neutral grip.",
-        "Squeeze your biceps and brachialis at the top.",
-        "Lower the dumbbells slowly to the starting position.",
-        "Excellent for building thickness in the arms."
-      ]
-    },
-    { 
       name: "Preacher Curls", 
       icon: "ArrowUpCircle", 
-      pool: "biceps",
+      pool: "short_biceps",
       instructions: [
         "Sit at a preacher bench and rest your upper arms on the pad.",
         "Hold a barbell or EZ bar with an underhand grip.",
@@ -901,7 +971,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Spider Curls", 
       icon: "ArrowUpCircle", 
-      pool: "biceps",
+      pool: "short_biceps",
       instructions: [
         "Lie face down on an incline bench set at 45 degrees.",
         "Hold dumbbells or a barbell with arms hanging straight down.",
@@ -913,7 +983,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Machine Bicep Curl", 
       icon: "ArrowUpCircle", 
-      pool: "biceps",
+      pool: "short_biceps",
       instructions: [
         "Sit in the machine and adjust the seat so your elbows align with the pivot point.",
         "Grip the handles and curl them toward your shoulders.",
@@ -921,23 +991,25 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Maintain a steady tempo throughout the exercise.",
         "Provides constant tension and stability for bicep isolation."
       ]
-    },
-    {
-      name: "Incline Dumbbell Curls",
-      icon: "Dumbbell",
-      pool: "biceps",
+    }
+  ],
+  brachialis: [
+    { 
+      name: "Hammer Curls", 
+      icon: "ArrowUpCircle", 
+      pool: "brachialis",
       instructions: [
-        "Sit on an incline bench set to a 45-degree angle, holding a dumbbell in each hand with arms hanging straight down, palms facing forward.",
-        "Keep your elbows tucked close to your torso as you slowly curl the weights up toward your shoulders.",
-        "Squeeze your biceps at the peak of the contraction, keeping your shoulders static.",
-        "Slowly lower the dumbbells back to the starting position, maintaining control and a full stretch.",
-        "Avoid swinging your arms or lifting your elbows forward during the movement."
+        "Stand with a dumbbell in each hand, palms facing your torso.",
+        "Curl the weights toward your shoulders while maintaining the neutral grip.",
+        "Squeeze your biceps and brachialis at the top.",
+        "Lower the dumbbells slowly to the starting position.",
+        "Excellent for building thickness in the arms."
       ]
     },
     {
       name: "Crossbody Hammer Curls",
       icon: "Dumbbell",
-      pool: "biceps",
+      pool: "brachialis",
       instructions: [
         "Stand with a dumbbell in each hand, palms facing each other in a neutral grip.",
         "Keeping your upper arm stationary, curl one dumbbell across your torso towards your opposite shoulder.",
@@ -946,47 +1018,11 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     }
   ],
-  triceps: [
-    { 
-      name: "Close Grip Bench Press", 
-      icon: "Dumbbell", 
-      pool: "triceps",
-      instructions: [
-        "Lie on a flat bench and grip the barbell with hands about 8-12 inches apart.",
-        "Lower the bar to your mid-chest while keeping your elbows tucked to your sides.",
-        "Press the bar back up explosively using your triceps.",
-        "Keep your feet flat on the floor and core engaged.",
-        "This version shifts the emphasis from the chest to the triceps."
-      ]
-    },
-    { 
-      name: "Dumbbell Floor Fly", 
-      icon: "ArrowLeftRight", 
-      pool: "triceps",
-      instructions: [
-        "Lie on the floor with your knees bent and feet flat.",
-        "Hold dumbbells above your chest with a slight bend in the elbows.",
-        "Lower the weights out to the sides until your upper arms touch the floor.",
-        "Squeeze your chest and triceps to bring the weights back together.",
-        "The floor limits the range of motion, protecting the shoulders."
-      ]
-    },
-    { 
-      name: "Machine Triceps Extension", 
-      icon: "ArrowDown", 
-      pool: "triceps",
-      instructions: [
-        "Sit in the machine and place your elbows on the pads.",
-        "Grip the handles and extend your arms fully.",
-        "Squeeze the triceps at the peak of the extension.",
-        "Slowly return to the starting position under control.",
-        "Adjust the seat so your elbows are in a comfortable position."
-      ]
-    },
+  long_triceps: [
     { 
       name: "Overhead Tricep Extension", 
       icon: "ArrowUpCircle", 
-      pool: "triceps",
+      pool: "long_triceps",
       instructions: [
         "Hold a dumbbell with both hands or use a cable with a rope attachment.",
         "Extend your arms overhead and lower the weight behind your head.",
@@ -998,7 +1034,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Skull Crushers", 
       icon: "ArrowDown", 
-      pool: "triceps",
+      pool: "long_triceps",
       instructions: [
         "Lie on a flat bench holding an EZ bar or dumbbells with arms extended straight up.",
         "Keeping your upper arms stationary, bend your elbows to lower the weight toward your forehead.",
@@ -1007,10 +1043,73 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Maintain a slow and controlled tempo throughout."
       ]
     },
+    {
+      name: "EZ Bar Skull Crushers",
+      icon: "ArrowDown",
+      pool: "long_triceps",
+      instructions: [
+        "Lie flat on a bench while holding an EZ bar over your chest with a shoulder-width overhand grip.",
+        "Flex at your elbows to lower the bar in an arc towards your forehead, keeping your upper arms stationary.",
+        "Stop just above your forehead, then contract your triceps to return to the starting position.",
+        "Keep your elbows tucked and avoid flaring them outward during the contraction."
+      ]
+    }
+  ],
+  lateral_triceps: [
+    { 
+      name: "Tricep Pushdowns", 
+      icon: "ArrowDown", 
+      pool: "lateral_triceps",
+      instructions: [
+        "Stand facing the cable machine with a straight bar or rope attachment at chest height.",
+        "Grip the attachment with an overhand grip, elbows tucked into your sides.",
+        "Push the bar down until your arms are fully extended at your sides.",
+        "Focus on using only your triceps to move the weight; keep your shoulders still.",
+        "Slowly bring the bar back up to the starting position."
+      ]
+    }
+  ],
+  medial_triceps: [
+    { 
+      name: "Close Grip Bench Press", 
+      icon: "Dumbbell", 
+      pool: "medial_triceps",
+      instructions: [
+        "Lie on a flat bench and grip the barbell with hands about 8-12 inches apart.",
+        "Lower the bar to your mid-chest while keeping your elbows tucked to your sides.",
+        "Press the bar back up explosively using your triceps.",
+        "Keep your feet flat on the floor and core engaged.",
+        "This version shifts the emphasis from the chest to the triceps."
+      ]
+    },
+    { 
+      name: "Dumbbell Floor Fly", 
+      icon: "ArrowLeftRight", 
+      pool: "medial_triceps",
+      instructions: [
+        "Lie on the floor with your knees bent and feet flat.",
+        "Hold dumbbells above your chest with a slight bend in the elbows.",
+        "Lower the weights out to the sides until your upper arms touch the floor.",
+        "Squeeze your chest and triceps to bring the weights back together.",
+        "The floor limits the range of motion, protecting the shoulders."
+      ]
+    },
+    { 
+      name: "Machine Triceps Extension", 
+      icon: "ArrowDown", 
+      pool: "medial_triceps",
+      instructions: [
+        "Sit in the machine and place your elbows on the pads.",
+        "Grip the handles and extend your arms fully.",
+        "Squeeze the triceps at the peak of the extension.",
+        "Slowly return to the starting position under control.",
+        "Adjust the seat so your elbows are in a comfortable position."
+      ]
+    },
     { 
       name: "Tricep Dips", 
       icon: "ArrowDown", 
-      pool: "triceps",
+      pool: "medial_triceps",
       instructions: [
         "Grip the parallel bars and lift yourself up with locked elbows.",
         "Lower your body by bending your elbows until they are at 90 degrees.",
@@ -1020,21 +1119,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Tricep Pushdowns", 
-      icon: "ArrowDown", 
-      pool: "triceps",
-      instructions: [
-        "Stand facing the cable machine with a straight bar or rope attachment at chest height.",
-        "Grip the attachment with an overhand grip, elbows tucked into your sides.",
-        "Push the bar down until your arms are fully extended at your sides.",
-        "Focus on using only your triceps to move the weight; keep your shoulders still.",
-        "Slowly bring the bar back up to the starting position."
-      ]
-    },
-    { 
       name: "Tricep Push Ups", 
       icon: "Activity", 
-      pool: "triceps",
+      pool: "medial_triceps",
       instructions: [
         "Start in a plank position with hands directly under your shoulders.",
         "Keep your elbows tucked in close to your ribs as you lower your body.",
@@ -1042,25 +1129,14 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Maintain a straight line from head to heels.",
         "This variant focuses heavily on the triceps compared to a standard push-up."
       ]
-    },
-    {
-      name: "EZ Bar Skull Crushers",
-      icon: "ArrowDown",
-      pool: "triceps",
-      instructions: [
-        "Lie flat on a bench while holding an EZ bar over your chest with a shoulder-width overhand grip.",
-        "Flex at your elbows to lower the bar in an arc towards your forehead, keeping your upper arms stationary.",
-        "Stop just above your forehead, then contract your triceps to return to the starting position.",
-        "Keep your elbows tucked and avoid flaring them outward during the contraction."
-      ]
     }
   ],
-  core: [
+  upper_core: [
     { 
       name: "Ab Crunches", 
       icon: "Activity", 
-      pool: "core",
-      muscleGroup: "core",
+      pool: "upper_core",
+      muscleGroup: "upper_core",
       instructions: [
         "Lie on your back with knees bent and feet flat on the floor.",
         "Place your hands behind your head or across your chest.",
@@ -1072,8 +1148,8 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Ab Machine", 
       icon: "Activity", 
-      pool: "core",
-      muscleGroup: "core",
+      pool: "upper_core",
+      muscleGroup: "upper_core",
       instructions: [
         "Sit in the machine and adjust the seat so your waist aligns with the pivot point.",
         "Secure your feet behind the pads and grip the handles.",
@@ -1085,8 +1161,8 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Ab Wheel Rollouts", 
       icon: "RotateCw", 
-      pool: "core",
-      muscleGroup: "core",
+      pool: "upper_core",
+      muscleGroup: "upper_core",
       instructions: [
         "Kneel on the floor and hold the ab wheel handles.",
         "Roll the wheel forward as far as you can while maintaining a flat back.",
@@ -1096,23 +1172,10 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Bicycle Crunches", 
-      icon: "Activity", 
-      pool: "core",
-      muscleGroup: "core",
-      instructions: [
-        "Lie on your back and bring your knees to a 90-degree angle.",
-        "Perform a crunch motion while alternating bringing opposite elbows to knees.",
-        "Straighten the other leg out as you twist.",
-        "Maintain a steady rhythm and keep your core engaged.",
-        "Excellent for targeting the obliques and overall core stability."
-      ]
-    },
-    { 
       name: "Cable Crunches", 
       icon: "ArrowDown", 
-      pool: "core",
-      muscleGroup: "core",
+      pool: "upper_core",
+      muscleGroup: "upper_core",
       instructions: [
         "Kneel in front of a cable machine with a rope attachment set high.",
         "Grasp the rope and pull it down until your hands are next to your head.",
@@ -1122,23 +1185,10 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Hanging Leg Raises", 
-      icon: "ArrowUp", 
-      pool: "core",
-      muscleGroup: "core",
-      instructions: [
-        "Hang from a pull-up bar with an overhand grip and arms fully extended.",
-        "Keeping your legs straight or slightly bent, lift them until they are parallel to the floor.",
-        "Focus on using your lower abs to pull your legs up, avoiding excessive swinging.",
-        "Slowly lower your legs back to the starting position with control.",
-        "To increase difficulty, bring your toes all the way to the bar."
-      ]
-    },
-    { 
       name: "Plank", 
       icon: "Activity", 
-      pool: "core",
-      muscleGroup: "core",
+      pool: "upper_core",
+      muscleGroup: "upper_core",
       instructions: [
         "Place your forearms on the floor with elbows directly under your shoulders.",
         "Extend your legs behind you, resting on your toes.",
@@ -1148,23 +1198,10 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Russian Twists", 
-      icon: "RotateCw", 
-      pool: "core",
-      muscleGroup: "core",
-      instructions: [
-        "Sit on the floor with your knees bent and feet slightly elevated.",
-        "Lean back slightly and hold your hands together in front of you.",
-        "Rotate your torso from side to side, touching the floor on each side.",
-        "Keep your back straight and core braced.",
-        "Can be performed with a weight for added difficulty."
-      ]
-    },
-    { 
       name: "Sit Ups", 
       icon: "Activity", 
-      pool: "core",
-      muscleGroup: "core",
+      pool: "upper_core",
+      muscleGroup: "upper_core",
       instructions: [
         "Lie on your back with knees bent and feet anchored or flat on the floor.",
         "Curl your torso all the way up until your chest is near your knees.",
@@ -1174,10 +1211,37 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     {
+      name: "Bird Dog",
+      icon: "Activity",
+      pool: "upper_core",
+      muscleGroup: "upper_core",
+      instructions: [
+        "Start on all fours with your hands directly under your shoulders and knees under your hips.",
+        "Slowly extend one arm straight forward while kicking the opposite leg straight back.",
+        "Maintain a completely flat back and square hips to ensure core engagement.",
+        "Slowly return to the starting position and repeat on the alternate side."
+      ]
+    }
+  ],
+  lower_core: [
+    { 
+      name: "Hanging Leg Raises", 
+      icon: "ArrowUp", 
+      pool: "lower_core",
+      muscleGroup: "lower_core",
+      instructions: [
+        "Hang from a pull-up bar with an overhand grip and arms fully extended.",
+        "Keeping your legs straight or slightly bent, lift them until they are parallel to the floor.",
+        "Focus on using your lower abs to pull your legs up, avoiding excessive swinging.",
+        "Slowly lower your legs back to the starting position with control.",
+        "To increase difficulty, bring your toes all the way to the bar."
+      ]
+    },
+    {
       name: "Lying Leg Raises",
       icon: "ArrowUp",
-      pool: "core",
-      muscleGroup: "core",
+      pool: "lower_core",
+      muscleGroup: "lower_core",
       instructions: [
         "Lie flat on your back with your legs straight and hands either under your hips or at your sides.",
         "Keeping your legs as straight as possible, lift them until they are vertical.",
@@ -1188,8 +1252,8 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     {
       name: "Reverse Crunches",
       icon: "Activity",
-      pool: "core",
-      muscleGroup: "core",
+      pool: "lower_core",
+      muscleGroup: "lower_core",
       instructions: [
         "Lie on your back with your knees bent at 90-degrees and hands flat on the floor.",
         "Contract your abs to pull your knees toward your chest, lifting your hips off the floor.",
@@ -1200,8 +1264,8 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     {
       name: "Deadbug",
       icon: "Activity",
-      pool: "core",
-      muscleGroup: "core",
+      pool: "lower_core",
+      muscleGroup: "lower_core",
       instructions: [
         "Lie flat on your back, arms extended straight over your shoulders, knees bent at 90-degrees over your hips.",
         "Slowly lower one arm behind your head while simultaneously extending the opposite leg forward.",
@@ -1210,46 +1274,10 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     {
-      name: "Bird Dog",
-      icon: "Activity",
-      pool: "core",
-      muscleGroup: "core",
-      instructions: [
-        "Start on all fours with your hands directly under your shoulders and knees under your hips.",
-        "Slowly extend one arm straight forward while kicking the opposite leg straight back.",
-        "Maintain a completely flat back and square hips to ensure core engagement.",
-        "Slowly return to the starting position and repeat on the alternate side."
-      ]
-    },
-    {
-      name: "Side Plank",
-      icon: "Activity",
-      pool: "core",
-      muscleGroup: "core",
-      instructions: [
-        "Lie on your side with your elbow directly under your shoulder, feet stacked or staggered.",
-        "Lift your hips until your body forms a straight diagonal line from head to heels.",
-        "Engage your obliques, keep your core braced, and hold the position without dipping.",
-        "Repeat on the opposite side to balance lateral core strength."
-      ]
-    },
-    {
-      name: "Alternate Heel Taps",
-      icon: "Activity",
-      pool: "core",
-      muscleGroup: "core",
-      instructions: [
-        "Lie flat on your back with your knees bent and feet flat on the floor, about hip-width apart.",
-        "Crunch your head and shoulders slightly off the ground to engage your upper abs.",
-        "Engage your obliques to reach your right hand to tap your right heel, then left hand to left heel.",
-        "Maintain a continuous, controlled lateral twisting rhythm."
-      ]
-    },
-    {
       name: "Flutter Kicks",
       icon: "Activity",
-      pool: "core",
-      muscleGroup: "core",
+      pool: "lower_core",
+      muscleGroup: "lower_core",
       instructions: [
         "Lie on your back with legs straight, hands underneath your lower back or glutes for support.",
         "Lift your legs about 15cm off the ground.",
@@ -1260,13 +1288,65 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     {
       name: "V Sit-Ups",
       icon: "Activity",
-      pool: "core",
-      muscleGroup: "core",
+      pool: "lower_core",
+      muscleGroup: "lower_core",
       instructions: [
         "Lie flat on your back with your legs straight and arms extended fully behind your head.",
         "In one synchronized motion, contract your brace core to lift both your legs and your upper body up off the floor.",
         "Reach your hands forward to touch your toes or shins, forming a 'V' shape with your body.",
         "Slowly lower your arms and legs back to the starting resting position, maintaining core stability and control throughout."
+      ]
+    }
+  ],
+  obliques: [
+    { 
+      name: "Bicycle Crunches", 
+      icon: "Activity", 
+      pool: "obliques",
+      muscleGroup: "obliques",
+      instructions: [
+        "Lie on your back and bring your knees to a 90-degree angle.",
+        "Perform a crunch motion while alternating bringing opposite elbows to knees.",
+        "Straighten the other leg out as you twist.",
+        "Maintain a steady rhythm and keep your core engaged.",
+        "Excellent for targeting the obliques and overall core stability."
+      ]
+    },
+    { 
+      name: "Russian Twists", 
+      icon: "RotateCw", 
+      pool: "obliques",
+      muscleGroup: "obliques",
+      instructions: [
+        "Sit on the floor with your knees bent and feet slightly elevated.",
+        "Lean back slightly and hold your hands together in front of you.",
+        "Rotate your torso from side to side, touching the floor on each side.",
+        "Keep your back straight and core braced.",
+        "Can be performed with a weight for added difficulty."
+      ]
+    },
+    {
+      name: "Side Plank",
+      icon: "Activity",
+      pool: "obliques",
+      muscleGroup: "obliques",
+      instructions: [
+        "Lie on your side with your elbow directly under your shoulder, feet stacked or staggered.",
+        "Lift your hips until your body forms a straight diagonal line from head to heels.",
+        "Engage your obliques, keep your core braced, and hold the position without dipping.",
+        "Repeat on the opposite side to balance lateral core strength."
+      ]
+    },
+    {
+      name: "Alternate Heel Taps",
+      icon: "Activity",
+      pool: "obliques",
+      muscleGroup: "obliques",
+      instructions: [
+        "Lie flat on your back with your knees bent and feet flat on the floor, about hip-width apart.",
+        "Crunch your head and shoulders slightly off the ground to engage your upper abs.",
+        "Engage your obliques to reach your right hand to tap your right heel, then left hand to left heel.",
+        "Maintain a continuous, controlled lateral twisting rhythm."
       ]
     }
   ],
@@ -1857,21 +1937,21 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
 export function getExerciseCategory(name: string, pool: string): 'compound' | 'isolation' {
   const n = name.toLowerCase();
   
-  if (pool === 'chest') {
+  if (pool === 'chest' || pool === 'upper_chest' || pool === 'middle_chest' || pool === 'lower_chest') {
     if (n.includes('press') || n.includes('push up') || n.includes('pushup') || n.includes('dip')) {
       return 'compound';
     }
     return 'isolation';
   }
   
-  if (pool === 'back') {
-    if (n.includes('straight arm')) {
+  if (pool === 'back' || pool === 'upper_back' || pool === 'lower_back') {
+    if (n.includes('straight arm') || n.includes('hyperexten') || n.includes('extension')) {
       return 'isolation';
     }
     return 'compound'; 
   }
   
-  if (pool === 'shoulders') {
+  if (pool === 'shoulders' || pool === 'front_delts' || pool === 'side_delts' || pool === 'rear_delts') {
     if (n.includes('press') || n.includes('military')) {
       return 'compound';
     }
@@ -1885,18 +1965,18 @@ export function getExerciseCategory(name: string, pool: string): 'compound' | 'i
     return 'isolation';
   }
   
-  if (pool === 'biceps') {
+  if (pool === 'biceps' || pool === 'long_biceps' || pool === 'short_biceps' || pool === 'brachialis') {
     return 'isolation';
   }
   
-  if (pool === 'triceps') {
+  if (pool === 'triceps' || pool === 'long_triceps' || pool === 'lateral_triceps' || pool === 'medial_triceps') {
     if (n.includes('bench press') || n.includes('dip') || n.includes('push up') || n.includes('pushup')) {
       return 'compound';
     }
     return 'isolation';
   }
   
-  if (pool === 'core') {
+  if (pool === 'core' || pool === 'upper_core' || pool === 'lower_core' || pool === 'obliques') {
     if (
       n.includes('plank') || 
       n.includes('wheel') || 
@@ -1969,6 +2049,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Archer Push Ups": "MxVbNel13Ek",
   "Arnold Press": "jeJttN2EWCo",
   "Assisted Pull Ups": "wFj808u2HWU",
+  "Back Hyperextensions": "8rXdAAwm8Rs",
   "Band Bicep Curls": "20xtfGZ37nw",
   "Band Chest Press": "T0UJ0W-_yIE",
   "Band Glute Kickbacks": "CZvQm1vNzD0",
@@ -2020,6 +2101,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Farmer's Hand Walk Carry": "8OtwXwrJizk",
   "Flutter Kicks": "aZvT-UCo5lg",
   "Goblet Squat": "zBV3ceGyAxw",
+  "Good Mornings": "7cpldMZjLOs",
   "Hack Squat": "scs5XcsZuc8",
   "Hammer Curls": "B4RznoFvTl4",
   "Hanging Leg Raises": "Yrtvs-nEnk0",
@@ -2030,6 +2112,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Incline Push Ups": "cfns5VDVVvk",
   "Incline Row (Chest Supported)": "Nx0TzjgsI-0",
   "Inverted Row": "0AsxBmXeOIo",
+  "Jefferson Curls": "1dGnvWcwnR8",
   "Kettlebell Clean & Press": "eaQPi0LDoE0",
   "Kettlebell Goblet Squat": "zBV3ceGyAxw",
   "Kettlebell Swing": "6A0yJetx7hg",
@@ -2065,6 +2148,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Push Ups": "Env8gAr_QnE",
   "Rack Pulls": "9vYBWV5OeKg",
   "Rear Delt Flyes": "nlkF7_2O_Lw",
+  "Reverse Hyperextensions": "NAPMNd9RRxM",
   "Romanian Deadlift": "zU-f6DMCdAI",
   "Russian Twists": "99T1EfpMwPA",
   "Seated Cable Fly": "x4JX_T5QAMM",
@@ -2090,6 +2174,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Step-Ups": "DxUNi119Qzs",
   "Straight Arm Lat Pulldowns": "ey9Fv3FGrRg",
   "Sumo Deadlift": "JbY72Him34Q",
+  "Supermans": "kTMBsUwEGPM",
   "T Bar Row": "hYo72r8Ivso",
   "Towel Grip Pull-ups": "5e_ZbBDu-G8",
   "TRX Chest Fly": "1_NPa2gd28w",

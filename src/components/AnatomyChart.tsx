@@ -38,14 +38,23 @@ const BIOMECHANICS: Record<string, BiomechanicsInfo> = {
     tip: "Keep scapulae retracted (pin shoulders down and back) to shield front deltoids and load chest fibers.",
     setup: "Elbow path flare should stay between 45° and 60° relative to torso. Squeeze forcefully at lockout."
   },
-  back: {
-    title: "Latissimus Dorsi & Rhomboids",
+  upper_back: {
+    title: "Latissimus Dorsi & Rhomboids (Upper Back)",
     focus: "Vertical Pulls & Horizontal Shoulder Extension",
     reps: "8-12 Reps (Time Under Tension)",
     rest: "90-120 Secs (Metabolic Balance)",
     mechanics: "Compound-focused",
-    tip: "Drive directly down with your elbows instead of pulling with hands. Do not allow wrists to dominate.",
+    tip: "Drive directly down with your elbows instead of pulling with hands. Retract your rhomboids and traps to squeeze the shoulder blades together.",
     setup: "Initiate lat engagements with a shoulder blade pull-down (depression) before arm lines begin flex."
+  },
+  lower_back: {
+    title: "Erector Spinae & Lumbar (Lower Back)",
+    focus: "Hip Hinge, Extension & Spinal Stabilization",
+    reps: "6-12 Reps (Posterior Chain Strength)",
+    rest: "120-150 Secs (CNS Heavy Recovery)",
+    mechanics: "Compound-focused",
+    tip: "Keep the lower back locked in flat neutral. Focus on articulating from the hips rather than rounding the spine.",
+    setup: "Keep the weight close to your center of gravity. Plant your heels firmly and engage your legs and glutes to pull safely."
   },
   shoulders: {
     title: "Deltoids (Anterior, Lateral, Posterior)",
@@ -170,7 +179,23 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
         if (Array.isArray(parsed)) {
           const found = parsed.find(e => e.name?.trim().toLowerCase() === cleanName);
           if (found) {
-            return found.muscleGroup || found.pool;
+            const rawGroup = found.muscleGroup || found.pool;
+            if (['front_delts', 'side_delts', 'rear_delts'].includes(rawGroup)) {
+              return 'shoulders';
+            }
+            if (['upper_core', 'lower_core', 'obliques'].includes(rawGroup)) {
+              return 'core';
+            }
+            if (['upper_chest', 'middle_chest', 'lower_chest'].includes(rawGroup)) {
+              return 'chest';
+            }
+            if (['long_biceps', 'short_biceps', 'brachialis'].includes(rawGroup)) {
+              return 'biceps';
+            }
+            if (['long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rawGroup)) {
+              return 'triceps';
+            }
+            return rawGroup;
           }
         }
       }
@@ -180,7 +205,23 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
     for (const [poolKey, exercises] of Object.entries(POOLS)) {
       const ex = exercises.find(e => e.name.trim().toLowerCase() === cleanName);
       if (ex) {
-        return ex.muscleGroup || ex.pool || poolKey;
+        const rawGroup = ex.muscleGroup || ex.pool || poolKey;
+        if (['front_delts', 'side_delts', 'rear_delts'].includes(rawGroup)) {
+          return 'shoulders';
+        }
+        if (['upper_core', 'lower_core', 'obliques'].includes(rawGroup)) {
+          return 'core';
+        }
+        if (['upper_chest', 'middle_chest', 'lower_chest'].includes(rawGroup)) {
+          return 'chest';
+        }
+        if (['long_biceps', 'short_biceps', 'brachialis'].includes(rawGroup)) {
+          return 'biceps';
+        }
+        if (['long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rawGroup)) {
+          return 'triceps';
+        }
+        return rawGroup;
       }
     }
     return null;
@@ -202,7 +243,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
 
   // Calculate the 5-day recovery status for each muscle group
   const getMuscleStatuses = () => {
-    const groupsToShow = ['chest', 'back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
+    const groupsToShow = ['chest', 'upper_back', 'lower_back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
     const statuses: Record<string, { daysDiff: number; dates: string[]; text: string; fill: string; filterUrl: string }> = {};
 
     groupsToShow.forEach(group => {
@@ -379,7 +420,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
   // Stylized Body Outline (Blocky style from reference image) - extended to cover biceps and forearms
   const bodyOutlinePath = "M100,40 Q110,40 115,50 L115,70 Q130,75 140,90 Q145,110 142,130 Q138,150 134,165 L127,160 Q130,145 130,110 Q125,180 120,250 L130,350 L110,350 L105,260 L95,260 L90,350 L70,350 L80,250 Q75,180 70,110 Q70,145 73,160 L66,165 Q62,150 58,130 Q55,110 60,90 Q70,75 85,70 L85,50 Q90,40 100,40 Z";
 
-  const groupsToShow = ['chest', 'back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
+  const groupsToShow = ['chest', 'upper_back', 'lower_back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
 
   return (
     <div className="w-full space-y-4">
@@ -527,12 +568,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
             {/* Upper/Mid Back */}
             <path 
               d="M85,85 Q100,75 115,85 L120,135 Q100,145 80,135 Z" 
-              {...getMuscleProps('back')}
+              {...getMuscleProps('upper_back')}
             />
             {/* Middle/Lower Back */}
             <path 
               d="M90,140 Q100,145 110,140 L115,180 Q100,185 85,180 Z" 
-              {...getMuscleProps('back')}
+              {...getMuscleProps('lower_back')}
             />
             {/* Shoulders */}
             <path 
@@ -791,7 +832,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
                 <div key={group} className="bg-zinc-950/70 border border-white/10 p-4 rounded-sm flex flex-col justify-between backdrop-blur-sm">
                   <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
                     <span className="text-[10px] text-white font-black uppercase tracking-widest font-mono">
-                      {group === 'core' ? 'abs/core' : group}
+                      {group === 'core' ? 'abs/core' : group === 'upper_back' ? 'upper back' : group === 'lower_back' ? 'lower back' : group}
                     </span>
                     <span className="text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider text-[10px]" style={{ color: info.fill, backgroundColor: `${info.fill}10` }}>
                       {info.daysDiff === 0 ? "Today" : isUntouched ? "Fully Rested" : `${info.daysDiff}d Ago`}

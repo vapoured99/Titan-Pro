@@ -62,7 +62,23 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
         if (Array.isArray(parsed)) {
           const found = parsed.find(e => e.name?.trim().toLowerCase() === cleanName);
           if (found) {
-            return found.muscleGroup || found.pool;
+            const rawGroup = found.muscleGroup || found.pool;
+            if (['front_delts', 'side_delts', 'rear_delts'].includes(rawGroup)) {
+              return 'shoulders';
+            }
+            if (['upper_core', 'lower_core', 'obliques'].includes(rawGroup)) {
+              return 'core';
+            }
+            if (['upper_chest', 'middle_chest', 'lower_chest'].includes(rawGroup)) {
+              return 'chest';
+            }
+            if (['long_biceps', 'short_biceps', 'brachialis'].includes(rawGroup)) {
+              return 'biceps';
+            }
+            if (['long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rawGroup)) {
+              return 'triceps';
+            }
+            return rawGroup;
           }
         }
       }
@@ -72,7 +88,23 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
     for (const [poolKey, exercises] of Object.entries(POOLS)) {
       const ex = exercises.find(e => e.name.trim().toLowerCase() === cleanName);
       if (ex) {
-        return ex.muscleGroup || ex.pool || poolKey;
+        const rawGroup = ex.muscleGroup || ex.pool || poolKey;
+        if (['front_delts', 'side_delts', 'rear_delts'].includes(rawGroup)) {
+          return 'shoulders';
+        }
+        if (['upper_core', 'lower_core', 'obliques'].includes(rawGroup)) {
+          return 'core';
+        }
+        if (['upper_chest', 'middle_chest', 'lower_chest'].includes(rawGroup)) {
+          return 'chest';
+        }
+        if (['long_biceps', 'short_biceps', 'brachialis'].includes(rawGroup)) {
+          return 'biceps';
+        }
+        if (['long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rawGroup)) {
+          return 'triceps';
+        }
+        return rawGroup;
       }
     }
     return null;
@@ -93,7 +125,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
   };
 
   const getMuscleStatuses = () => {
-    const groupsToShow = ['chest', 'back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
+    const groupsToShow = ['chest', 'upper_back', 'lower_back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
     const statuses: Record<string, { daysDiff: number; label: string }> = {};
 
     groupsToShow.forEach(group => {

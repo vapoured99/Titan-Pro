@@ -67,22 +67,22 @@ export default function RadarChart({
       const rawGroup = findMuscleGroup(exName);
       if (!rawGroup) return;
 
-      if (rawGroup === 'chest') {
+      if (['chest', 'upper_chest', 'middle_chest', 'lower_chest'].includes(rawGroup)) {
         categories.chest.count += 1;
         categories.chest.exercises.add(exName);
-      } else if (rawGroup === 'back') {
+      } else if (rawGroup === 'back' || rawGroup === 'upper_back' || rawGroup === 'lower_back') {
         categories.back.count += 1;
         categories.back.exercises.add(exName);
-      } else if (rawGroup === 'shoulders') {
+      } else if (['shoulders', 'front_delts', 'side_delts', 'rear_delts'].includes(rawGroup)) {
         categories.shoulders.count += 1;
         categories.shoulders.exercises.add(exName);
       } else if (['quads', 'hamstrings', 'glutes', 'calves', 'legs'].includes(rawGroup)) {
         categories.legs.count += 1;
         categories.legs.exercises.add(exName);
-      } else if (['biceps', 'triceps', 'forearms', 'arms'].includes(rawGroup)) {
+      } else if (['biceps', 'triceps', 'forearms', 'arms', 'long_biceps', 'short_biceps', 'brachialis', 'long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rawGroup)) {
         categories.arms.count += 1;
         categories.arms.exercises.add(exName);
-      } else if (rawGroup === 'core') {
+      } else if (['core', 'upper_core', 'lower_core', 'obliques'].includes(rawGroup)) {
         categories.core.count += 1;
         categories.core.exercises.add(exName);
       }
