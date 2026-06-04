@@ -41,7 +41,10 @@ import {
   Coins,
   Youtube,
   Compass,
-  FlaskConical
+  FlaskConical,
+  Zap,
+  Target,
+  Sliders
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -619,7 +622,24 @@ const calculateCaloriesBurned = (sets: SessionSet[], userProfile: UserProfile | 
 };
 
 const iconMap: Record<string, any> = {
-  Dumbbell, ArrowLeftRight, ArrowDown, Activity, ArrowUp, ArrowUpCircle, RotateCw, RefreshCw, Plus, Flame
+  Dumbbell, 
+  ArrowLeftRight, 
+  ArrowDown, 
+  Activity, 
+  ArrowUp, 
+  ArrowUpCircle, 
+  ArrowUpDown,
+  RotateCw, 
+  RefreshCw, 
+  Plus, 
+  Flame,
+  Shield,
+  Crown,
+  Target,
+  Zap,
+  Sliders,
+  TrendingUp,
+  Trophy
 };
 
 // --- Helpers ---
@@ -3016,16 +3036,16 @@ export default function App() {
               {libraryViewMode === 'deck' && !searchQuery && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8 text-left">
                   {[
-                    { key: 'chest', label: 'Chest', icon: Flame, desc: 'Pecs & Pressing', borderActive: 'border-red-500/40', bgActive: 'from-red-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(239,68,68,0.15)]' },
-                    { key: 'back', label: 'Back', icon: Shield, desc: 'Lats & Spine pulling', borderActive: 'border-sky-500/40', bgActive: 'from-sky-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(14,165,233,0.15)]' },
-                    { key: 'shoulders', label: 'Shoulders', icon: Compass, desc: 'Delts & Overhead', borderActive: 'border-teal-500/40', bgActive: 'from-teal-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(20,184,166,0.15)]' },
-                    { key: 'legs', label: 'Legs', icon: Activity, desc: 'Quads & Glutes', borderActive: 'border-emerald-500/40', bgActive: 'from-emerald-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]' },
-                    { key: 'biceps', label: 'Biceps', icon: Dumbbell, desc: 'Arm pulls & Flexion', borderActive: 'border-pink-500/40', bgActive: 'from-pink-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(236,72,153,0.15)]' },
-                    { key: 'triceps', label: 'Triceps', icon: TrendingUp, desc: 'Elbow extension', borderActive: 'border-purple-500/40', bgActive: 'from-purple-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(168,85,247,0.15)]' },
-                    { key: 'forearms', label: 'Forearms', icon: Award, desc: 'Wrist & Grip stability', borderActive: 'border-amber-500/40', bgActive: 'from-amber-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(245,158,11,0.15)]' },
-                    { key: 'core', label: 'Core', icon: Shield, desc: 'Abs & Stabilizers', borderActive: 'border-indigo-500/40', bgActive: 'from-indigo-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(99,102,241,0.15)]' },
-                    { key: 'cardio', label: 'Cardio', icon: Flame, desc: 'System Conditioning', borderActive: 'border-rose-500/40', bgActive: 'from-rose-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(244,63,94,0.15)]' },
-                    { key: 'equipment', label: 'Equipment', icon: BookOpen, desc: 'Machines & Configs', borderActive: 'border-slate-500/40', bgActive: 'from-slate-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(100,116,139,0.15)]' }
+                    { key: 'chest', label: 'Chest', icon: Crown, desc: 'Chest Compound Lifts', borderActive: 'border-red-500/40', bgActive: 'from-red-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(239,68,68,0.15)]' },
+                    { key: 'back', label: 'Back', icon: ArrowUpDown, desc: 'Lats, Rows & Pulls', borderActive: 'border-sky-500/40', bgActive: 'from-sky-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(14,165,233,0.15)]' },
+                    { key: 'shoulders', label: 'Shoulders', icon: Target, desc: 'Delts & Broad Support', borderActive: 'border-teal-500/40', bgActive: 'from-teal-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(20,184,166,0.15)]' },
+                    { key: 'legs', label: 'Legs', icon: ArrowDown, desc: 'Quads, Calves & Glutes', borderActive: 'border-emerald-500/40', bgActive: 'from-emerald-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]' },
+                    { key: 'biceps', label: 'Biceps', icon: Dumbbell, desc: 'Arm Flexion & Pulldowns', borderActive: 'border-pink-500/40', bgActive: 'from-pink-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(236,72,153,0.15)]' },
+                    { key: 'triceps', label: 'Triceps', icon: RotateCw, desc: 'Elbow Pushdowns & Extensions', borderActive: 'border-purple-500/40', bgActive: 'from-purple-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(168,85,247,0.15)]' },
+                    { key: 'forearms', label: 'Forearms', icon: Activity, desc: 'Grip & Wrist Strength', borderActive: 'border-amber-500/40', bgActive: 'from-amber-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(245,158,11,0.15)]' },
+                    { key: 'core', label: 'Core', icon: Shield, desc: 'Abs & Rigid Bracing', borderActive: 'border-indigo-500/40', bgActive: 'from-indigo-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(99,102,241,0.15)]' },
+                    { key: 'cardio', label: 'Cardio', icon: Flame, desc: 'Heart Rate & Conditioning', borderActive: 'border-rose-500/40', bgActive: 'from-rose-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(244,63,94,0.15)]' },
+                    { key: 'equipment', label: 'Equipment', icon: Sliders, desc: 'Cables, Bands & Setups', borderActive: 'border-slate-500/40', bgActive: 'from-slate-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(100,116,139,0.15)]' }
                   ].map(sec => {
                     const MetaIcon = sec.icon;
                     const isActive = selectedLibraryCategory === sec.key;
@@ -3598,6 +3618,97 @@ export default function App() {
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                           {medialLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+                                </div>
+                              );
+                            }
+
+                            if (section.key === 'legs') {
+                              return (
+                                <div className="space-y-8 w-full">
+                                  {/* Quads Subsegment */}
+                                  {(() => {
+                                    const quadsLines = section.list.filter(e => e.muscleGroup === 'quads');
+                                    if (quadsLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-emerald-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Quadriceps (Quads)</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {quadsLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Hamstrings Subsegment */}
+                                  {(() => {
+                                    const hamstringsLines = section.list.filter(e => e.muscleGroup === 'hamstrings');
+                                    if (hamstringsLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-red-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Hamstrings (Ischiocrural)</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {hamstringsLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Glutes & Hips Subsegment */}
+                                  {(() => {
+                                    const glutesLines = section.list.filter(e => e.muscleGroup === 'glutes');
+                                    if (glutesLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-blue-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Glutes & Posterior Chain</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {glutesLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Calves Subsegment */}
+                                  {(() => {
+                                    const calvesLines = section.list.filter(e => e.muscleGroup === 'calves');
+                                    if ( calvesLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-amber-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Calves (Lower Leg)</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {calvesLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* General/Other leg exercises */}
+                                  {(() => {
+                                    const otherLegLines = section.list.filter(e => e.muscleGroup !== 'quads' && e.muscleGroup !== 'hamstrings' && e.muscleGroup !== 'glutes' && e.muscleGroup !== 'calves');
+                                    if (otherLegLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-teal-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Other Leg Exercises</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {otherLegLines.map(renderCard)}
                                         </div>
                                       </div>
                                     );
