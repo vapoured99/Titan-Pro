@@ -36,6 +36,8 @@ import {
   Repeat,
   Edit2,
   LayoutDashboard,
+  LayoutGrid,
+  List,
   Coins,
   Youtube,
   Compass,
@@ -977,6 +979,8 @@ export default function App() {
   });
   const [volumeTimeframe, setVolumeTimeframe] = useState<'day' | 'week' | 'month'>('day');
   const [expandedLibrarySections, setExpandedLibrarySections] = useState<Record<string, boolean>>({});
+  const [libraryViewMode, setLibraryViewMode] = useState<'deck' | 'list'>('deck');
+  const [selectedLibraryCategory, setSelectedLibraryCategory] = useState<string>('chest');
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [reportCardScale, setReportCardScale] = useState(1);
   const [reportCardHeight, setReportCardHeight] = useState<number | null>(null);
@@ -2944,14 +2948,33 @@ export default function App() {
               exit={{ opacity: 0, y: -10 }}
               className="pb-12"
             >
-              <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
+              <div className="mb-8 flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-white/5 pb-8 text-left">
                 <div>
                   <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
                     Exercise Archive
                   </h3>
-                  <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Comprehensive Exercise Library</p>
+                  <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold font-mono">Tactical Fitness & Drill Hub</p>
                 </div>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 self-stretch md:self-auto">
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 self-stretch xl:self-auto">
+                  {/* View Mode Switcher */}
+                  <div className="flex bg-black/60 border border-white/10 rounded-sm p-1 inline-flex self-start sm:self-auto">
+                    <button 
+                      onClick={() => setLibraryViewMode('deck')}
+                      className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer ${libraryViewMode === 'deck' ? 'bg-gym-accent text-black font-black' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                      Visual Deck
+                    </button>
+                    <button 
+                      onClick={() => setLibraryViewMode('list')}
+                      className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer ${libraryViewMode === 'list' ? 'bg-gym-accent text-black font-black' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
+                    >
+                      <List className="w-3.5 h-3.5" />
+                      Classic List
+                    </button>
+                  </div>
+
                   <button
                     onClick={() => {
                       setCustomExName("");
@@ -2959,19 +2982,20 @@ export default function App() {
                       setCustomExCategory("compound");
                       setShowAddCustomModal(true);
                     }}
-                    className="flex items-center justify-center gap-2 px-5 py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black text-gym-accent rounded-sm text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
+                    className="flex items-center justify-center gap-2 px-5 py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black text-gym-accent rounded-[1px] text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
-                    Add Custom Exercise
+                    Add Custom
                   </button>
-                  <div className="relative">
+
+                  <div className="relative flex-1 sm:flex-initial">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <input 
                       type="text"
-                      placeholder="Search by name or category..."
+                      placeholder="Search archive..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="bg-black/60 border border-white/20 rounded-sm pl-11 pr-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-full md:w-72 text-white"
+                      className="bg-black/60 border border-white/20 rounded-sm pl-11 pr-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-full sm:w-64 text-white font-mono"
                     />
                     <div className="absolute top-full right-0 mt-2">
                       <a 
@@ -2988,11 +3012,84 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Visual Category Deck Selectors for Deck Mode */}
+              {libraryViewMode === 'deck' && !searchQuery && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8 text-left">
+                  {[
+                    { key: 'chest', label: 'Chest', icon: Flame, desc: 'Pecs & Pressing', borderActive: 'border-red-500/40', bgActive: 'from-red-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(239,68,68,0.15)]' },
+                    { key: 'back', label: 'Back', icon: Shield, desc: 'Lats & Spine pulling', borderActive: 'border-sky-500/40', bgActive: 'from-sky-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(14,165,233,0.15)]' },
+                    { key: 'shoulders', label: 'Shoulders', icon: Compass, desc: 'Delts & Overhead', borderActive: 'border-teal-500/40', bgActive: 'from-teal-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(20,184,166,0.15)]' },
+                    { key: 'legs', label: 'Legs', icon: Activity, desc: 'Quads & Glutes', borderActive: 'border-emerald-500/40', bgActive: 'from-emerald-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(16,185,129,0.15)]' },
+                    { key: 'biceps', label: 'Biceps', icon: Dumbbell, desc: 'Arm pulls & Flexion', borderActive: 'border-pink-500/40', bgActive: 'from-pink-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(236,72,153,0.15)]' },
+                    { key: 'triceps', label: 'Triceps', icon: TrendingUp, desc: 'Elbow extension', borderActive: 'border-purple-500/40', bgActive: 'from-purple-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(168,85,247,0.15)]' },
+                    { key: 'forearms', label: 'Forearms', icon: Award, desc: 'Wrist & Grip stability', borderActive: 'border-amber-500/40', bgActive: 'from-amber-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(245,158,11,0.15)]' },
+                    { key: 'core', label: 'Core', icon: Shield, desc: 'Abs & Stabilizers', borderActive: 'border-indigo-500/40', bgActive: 'from-indigo-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(99,102,241,0.15)]' },
+                    { key: 'cardio', label: 'Cardio', icon: Flame, desc: 'System Conditioning', borderActive: 'border-rose-500/40', bgActive: 'from-rose-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(244,63,94,0.15)]' },
+                    { key: 'equipment', label: 'Equipment', icon: BookOpen, desc: 'Machines & Configs', borderActive: 'border-slate-500/40', bgActive: 'from-slate-500/10 to-transparent', accentGlow: 'shadow-[0_0_15px_rgba(100,116,139,0.15)]' }
+                  ].map(sec => {
+                    const MetaIcon = sec.icon;
+                    const isActive = selectedLibraryCategory === sec.key;
+                    let listCount = 0;
+                    if (sec.key === 'chest') {
+                      listCount = (combinedPools['upper_chest']?.length || 0) + (combinedPools['middle_chest']?.length || 0) + (combinedPools['lower_chest']?.length || 0);
+                    } else if (sec.key === 'back') {
+                      listCount = (combinedPools['upper_back']?.length || 0) + (combinedPools['lower_back']?.length || 0);
+                    } else if (sec.key === 'shoulders') {
+                      listCount = (combinedPools['front_delts']?.length || 0) + (combinedPools['side_delts']?.length || 0) + (combinedPools['rear_delts']?.length || 0);
+                    } else if (sec.key === 'biceps') {
+                      listCount = (combinedPools['long_biceps']?.length || 0) + (combinedPools['short_biceps']?.length || 0) + (combinedPools['brachialis']?.length || 0);
+                    } else if (sec.key === 'triceps') {
+                      listCount = (combinedPools['long_triceps']?.length || 0) + (combinedPools['lateral_triceps']?.length || 0) + (combinedPools['medial_triceps']?.length || 0);
+                    } else if (sec.key === 'core') {
+                      listCount = (combinedPools['upper_core']?.length || 0) + (combinedPools['lower_core']?.length || 0) + (combinedPools['obliques']?.length || 0);
+                    } else {
+                      listCount = combinedPools[sec.key]?.length || 0;
+                    }
+
+                    return (
+                      <button
+                        key={sec.key}
+                        onClick={() => setSelectedLibraryCategory(sec.key)}
+                        className={`text-left p-4 rounded-sm border cursor-pointer transition-all duration-300 relative overflow-hidden group flex flex-col justify-between h-28 ${
+                          isActive 
+                            ? `bg-gradient-to-br ${sec.bgActive} border bg-black/90 ${sec.borderActive} ${sec.accentGlow}` 
+                            : 'bg-black/40 border-white/10 hover:border-white/30 hover:bg-black/60'
+                        }`}
+                      >
+                        <div className="absolute right-0 bottom-0 top-0 w-1/3 bg-gradient-to-l from-white/[0.015] to-transparent pointer-events-none" />
+                        
+                        <div className="flex items-start justify-between">
+                          <div className={`w-8 h-8 rounded-sm flex items-center justify-center border border-white/10 transition-all ${
+                            isActive ? 'bg-gym-accent/10 border-gym-accent/30 text-gym-accent' : 'bg-white/5 text-white/45 group-hover:text-white'
+                          }`}>
+                            <MetaIcon className="w-4 h-4" />
+                          </div>
+                          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                            isActive ? 'bg-gym-accent/20 text-gym-accent font-black' : 'bg-white/10 text-white/50 font-bold'
+                          }`}>
+                            {listCount}
+                          </span>
+                        </div>
+
+                        <div className="mt-auto">
+                          <h4 className={`text-xs font-bold uppercase tracking-wider ${isActive ? 'text-white' : 'text-white/70 group-hover:text-white'}`}>
+                            {sec.label}
+                          </h4>
+                          <p className="text-[8px] text-white/40 tracking-wider font-light mt-0.5 truncate leading-none font-mono">
+                            {sec.desc}
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
               <div className="h-6" /> 
 
               {(() => {
                 const categoryOrder = ['chest', 'back', 'shoulders', 'legs', 'biceps', 'triceps', 'forearms', 'core', 'cardio', 'equipment'];
-                return categoryOrder.map(catKey => {
+                const sectionsList = categoryOrder.map(catKey => {
                   let list: Exercise[] = [];
                   if (catKey === 'chest') {
                      list = [
@@ -3042,24 +3139,42 @@ export default function App() {
                       (ex.category && ex.category.toLowerCase().includes(searchQuery.toLowerCase()))
                     )
                   };
-                }).filter(s => s.list.length > 0);
+                });
+
+                if (searchQuery.trim().length > 0 || libraryViewMode === 'list') {
+                  return sectionsList.filter(s => s.list.length > 0);
+                } else {
+                  return sectionsList.filter(s => s.key === selectedLibraryCategory);
+                }
               })().map(section => (
-                <div key={section.title} className="mb-6 border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
-                  <button 
-                    onClick={() => setExpandedLibrarySections(prev => ({ ...prev, [section.title]: !prev[section.title] }))}
-                    className="w-full text-left px-6 py-5 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <h3 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.4em]">
-                        {section.title}
-                      </h3>
-                      <span className="text-[10px] text-white/60 font-bold bg-white/15 px-2 py-0.5 rounded-full uppercase tracking-widest">{section.list.length} Exercises</span>
+                <div key={section.title} className={`mb-6 border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md ${libraryViewMode === 'deck' && !searchQuery ? 'p-2' : ''}`}>
+                  {libraryViewMode === 'deck' && !searchQuery ? (
+                    <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-white/5 mb-4 text-left">
+                      <div className="flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full bg-gym-accent animate-pulse" />
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/80 font-mono">
+                          {section.title} Registry (Showing {section.list.length} Exercises)
+                        </h3>
+                      </div>
+                      <span className="text-[9px] text-white/30 tracking-widest uppercase font-bold font-mono">Archive Deck v2.5</span>
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-all ${expandedLibrarySections[section.title] ? 'rotate-180' : ''}`} />
-                  </button>
+                  ) : (
+                    <button 
+                      onClick={() => setExpandedLibrarySections(prev => ({ ...prev, [section.title]: !prev[section.title] }))}
+                      className="w-full text-left px-6 py-5 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-4">
+                        <h3 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.4em]">
+                          {section.title}
+                        </h3>
+                        <span className="text-[10px] text-white/60 font-bold bg-white/15 px-2 py-0.5 rounded-full uppercase tracking-widest">{section.list.length} Exercises</span>
+                      </div>
+                      <ChevronDown className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-all ${expandedLibrarySections[section.title] ? 'rotate-180' : ''}`} />
+                    </button>
+                  )}
                   
                   <AnimatePresence>
-                    {expandedLibrarySections[section.title] && (
+                    {(expandedLibrarySections[section.title] || (libraryViewMode === 'deck' && !searchQuery)) && (
                       <motion.div 
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
