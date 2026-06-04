@@ -1043,6 +1043,72 @@ export default function App() {
     return null;
   };
 
+  const handleResetProfile = async () => {
+    if (!currentUser) return;
+    const path = `users/${currentUser.uid}/profile/settings`;
+    try {
+      const resetData: UserProfile = {
+        startDate: profile?.startDate || new Date().toISOString(),
+        streakCount: profile?.streakCount || 0,
+        activeView: 'console',
+        displayName: profile?.displayName || currentUser.displayName || "Athlete Specimen",
+        photoURL: profile?.photoURL || currentUser.photoURL || "",
+        avatarLevel: 3,
+        avatarXp: 0,
+        avatarCredits: 5000,
+        unassignedPoints: 16,
+        gridNodesUnlocked: ['p0'],
+        unlockedOutfits: ['vanguard_cadet'],
+        equippedOutfit: 'vanguard_cadet',
+        equippedAura: 'none',
+        equippedBackItem: 'none',
+        equippedEmote: 'none',
+        equippedTitle: 'lifter',
+        equippedBorder: 'none',
+        bodyweight: 75,
+        height: 175,
+        age: 28,
+        bodyFatPercent: 15,
+        sex: 'male',
+        avatarPower: 10,
+        avatarKinetic: 10,
+        avatarSymmetry: 10,
+        avatarVelocity: 10,
+        avatarRecovery: 10,
+      } as any; // Cast as any because database has extended properties like avatarPower
+      await setDoc(doc(db, path), {
+        ...resetData,
+        updatedAt: serverTimestamp()
+      });
+      
+      // Clear local pet states
+      localStorage.removeItem(`gym_pet_levels_${currentUser.uid}`);
+      localStorage.removeItem(`gym_pet_xps_${currentUser.uid}`);
+      localStorage.removeItem(`gym_pet_names_${currentUser.uid}`);
+      
+      setProfile(resetData);
+      
+      setToast({
+        message: "🧬 Profile and RPG character stats reset to Level 3 successfully!",
+        type: "success"
+      });
+      setTimeout(() => setToast(null), 4000);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, path);
+    }
+  };
+
+  // Trigger automatic profile leveling reset to Level 3 on first load for the logged-in user
+  useEffect(() => {
+    if (!currentUser) return;
+    const hasBeenReset = localStorage.getItem(`gym_profile_reset_v4_${currentUser.uid}`) === 'true';
+    if (!hasBeenReset) {
+      handleResetProfile().then(() => {
+        localStorage.setItem(`gym_profile_reset_v4_${currentUser.uid}`, 'true');
+      });
+    }
+  }, [currentUser]);
+
   // Auth Listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -5165,6 +5231,26 @@ export default function App() {
                         </select>
                       </div>
                     </div>
+
+                    {/* Manual reset trigger inside Settings Panel */}
+                    <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
+                      <div>
+                        <span className="text-[10px] text-rose-500 font-black uppercase tracking-wider block font-mono">RPG Sandbox Controls</span>
+                        <p className="text-xs text-white/40 mt-0.5">Reset leveling, companion pets, and premium customisations back to a Level 3 starting slate.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm("Are you sure you want to completely reset your avatar character to Level 3, lock premium options, and reset biometrics to base? This is irreversible.")) {
+                            handleResetProfile();
+                          }
+                        }}
+                        className="bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border border-rose-500/20 hover:border-rose-500/40 px-4 py-2 rounded text-xs font-black uppercase font-mono transition-all cursor-pointer min-w-[120px]"
+                      >
+                        Reset Avatar Stats
+                      </button>
+                    </div>
+
                   </div>
                 </div>
 

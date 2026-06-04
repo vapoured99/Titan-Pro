@@ -1691,7 +1691,6 @@ export const BORDERS = [
 
 export default function AvatarPanel({ profile, setProfile, saveSettings, setToast, archivedWorkouts, currentUser }: AvatarPanelProps) {
   const [activeTab, setActiveTab] = useState<'operatives' | 'auras' | 'emotes' | 'titles' | 'operativeBorders'>('operatives');
-  const [isClaimingBonus, setIsClaimingBonus] = useState(false);
 
   // Tab scroll & swipe controls for mobile availability
   const tabContainerRef = useRef<HTMLDivElement>(null);
@@ -1750,9 +1749,9 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   };
 
   // Safely grab user values with defaults
-  const level = profile?.avatarLevel ?? 1;
+  const level = profile?.avatarLevel ?? 3;
   const xp = profile?.avatarXp ?? 0;
-  const credits = profile?.avatarCredits ?? 100000; // Start with 100,000 for effortless testing!
+  const credits = profile?.avatarCredits ?? 5000;
   const unlockedOutfits = profile?.unlockedOutfits ?? ['vanguard_cadet'];
   const equippedOutfit = profile?.equippedOutfit ?? 'vanguard_cadet';
   const equippedAura = profile?.equippedAura ?? 'none';
@@ -1823,7 +1822,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   };
 
   // Shared attributes
-  const unassignedPoints = profile?.unassignedPoints ?? 10; // Generous 10 default points
+  const unassignedPoints = profile?.unassignedPoints ?? 16;
   const basePower = profile?.avatarPower ?? 10;
   const baseKinetic = profile?.avatarKinetic ?? 10;
   const baseSymmetry = profile?.avatarSymmetry ?? 10;
@@ -2107,41 +2106,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   const rankName = getRankName(level);
   const rankMeta = getRankMilestone(level);
 
-  // Handle Free Claim of Bonus (to easily evaluate and enjoy the cosmetics system)
-  const handleClaimDailyCredits = () => {
-    setIsClaimingBonus(true);
-    setTimeout(() => {
-      const bonusCredits = 100000;
-      const bonusXp = 800;
-      const bonusTalentPoints = 50;
-      
-      let nextXp = xp + bonusXp;
-      let nextLevel = level;
-      let nextPoints = unassignedPoints + bonusTalentPoints;
-      
-      while (nextXp >= getXpNeededForLevel(nextLevel)) {
-        nextXp -= getXpNeededForLevel(nextLevel);
-        nextLevel += 1;
-        nextPoints += 3; // Give extra +3 talent points per level up
-      }
-
-      const updatedSettings = {
-        avatarCredits: credits + bonusCredits,
-        avatarXp: nextXp,
-        avatarLevel: nextLevel,
-        unassignedPoints: nextPoints
-      };
-
-      setProfile(prev => prev ? { ...prev, ...updatedSettings } : null);
-      saveSettings(updatedSettings);
-
-      setToast({
-        message: `🎁 Claimed Testing Pack! +100,000 Coins, +800 XP, +${bonusTalentPoints} Talent Points!`,
-        type: 'success'
-      });
-      setIsClaimingBonus(false);
-    }, 800);
-  };
+  // Handle Free Claim of Bonus removed for testing production locks
 
   // Helper inside click handlers to buy and equip cosmetics
   const buyOrEquipItem = async (category: typeof activeTab, itemId: string, price: number) => {
@@ -2491,19 +2456,6 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               <span className="text-sm font-black text-purple-400 font-mono tracking-tight">{xp.toLocaleString()} XP</span>
             </div>
           </div>
-
-          <button
-            onClick={handleClaimDailyCredits}
-            disabled={isClaimingBonus}
-            className="ml-2 bg-gym-accent text-black hover:bg-gym-accent-light p-2 rounded-sm transition-all active:scale-90 flex items-center justify-center cursor-pointer disabled:opacity-50"
-            title="Claim Daily Training Coins Box!"
-          >
-            {isClaimingBonus ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Plus className="w-3.5 h-3.5" />
-            )}
-          </button>
         </div>
       </div>
 
