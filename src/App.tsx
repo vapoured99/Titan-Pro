@@ -517,12 +517,12 @@ interface WeightEntry {
 }
 
 const DAY_CONFIG = [
-  { label: "1", name: "Chest & Triceps", pools: ['upper_chest', 'middle_chest', 'lower_chest', 'long_triceps', 'lateral_triceps', 'medial_triceps'], icon: <Dumbbell className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "2", name: "Back & Biceps", pools: ['upper_back', 'lower_back', 'long_biceps', 'short_biceps', 'brachialis'], icon: <ArrowUp className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "3", name: "Shoulders & Forearms", pools: ['front_delts', 'side_delts', 'rear_delts', 'forearms'], icon: <ArrowUpCircle className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "4", name: "Legs & Core", pools: ['legs', 'upper_core', 'lower_core', 'obliques'], icon: <Flame className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "5", name: "Cardio", pools: ['cardio'], icon: <Activity className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
-  { label: "6", name: "Equipment", pools: ['equipment'], icon: <Dumbbell className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "1", name: "Chest & Triceps", pools: ['upper_chest', 'middle_chest', 'lower_chest', 'long_triceps', 'lateral_triceps', 'medial_triceps'], icon: <Crown className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "2", name: "Back & Biceps", pools: ['upper_back', 'lower_back', 'long_biceps', 'short_biceps', 'brachialis'], icon: <ArrowUpDown className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "3", name: "Shoulders & Forearms", pools: ['front_delts', 'side_delts', 'rear_delts', 'forearms'], icon: <Target className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "4", name: "Legs & Core", pools: ['legs', 'upper_core', 'lower_core', 'obliques'], icon: <ArrowDown className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "5", name: "Cardio", pools: ['cardio'], icon: <Flame className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
+  { label: "6", name: "Equipment", pools: ['equipment'], icon: <Sliders className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
 ];
 
 const calculateCaloriesBurned = (sets: SessionSet[], userProfile: UserProfile | null) => {
@@ -5337,7 +5337,9 @@ export default function App() {
                     className="w-full flex items-center justify-between p-6 rounded-sm bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-bold text-gym-accent uppercase tracking-[0.2em]">{day.label}</span>
+                      <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
+                        {day.icon}
+                      </div>
                       <div className="flex items-center gap-3">
                         <h3 className="text-lg font-light italic font-serif text-white/90">{day.name}</h3>
                         <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
@@ -5810,9 +5812,9 @@ export default function App() {
                       className="w-full text-left p-4 rounded-sm border border-white/10 bg-white/[0.02] hover:bg-gym-accent hover:border-gym-accent hover:text-black transition-all cursor-pointer flex items-center justify-between group"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-[9px] font-bold text-white/40 group-hover:text-black/60 uppercase tracking-widest">
-                          {day.label}
-                        </span>
+                        <div className="w-7 h-7 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 group-hover:bg-black/10 group-hover:border-black/20">
+                          {day.icon}
+                        </div>
                         <span className="text-sm font-medium font-serif italic text-white/90 group-hover:text-black">
                           {day.name}
                         </span>
