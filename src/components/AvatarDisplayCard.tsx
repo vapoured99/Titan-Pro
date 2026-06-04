@@ -340,12 +340,16 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
         )}
 
         {/* Floating Pet Companion inside main frame */}
-        <div className="absolute bottom-3 right-3 z-30 flex flex-col items-center select-none pointer-events-none">
+        <div 
+          className="absolute bottom-3 right-3 z-30 flex flex-col items-center select-none pointer-events-none group/petdisplay cursor-pointer"
+          title={`LV.${currentPetLevel} ${currentPetName}: +${currentPetLevel * 2}% DMG & -${currentPetLevel * 2}% DMG Received`}
+        >
           <div className="p-1 bg-black/85 rounded-md border border-white/20 shadow-lg">
             {activePetInfo.sprite}
           </div>
-          <div className="mt-1.5 bg-black/95 text-[7px] font-mono tracking-widest text-white px-1.5 py-0.5 rounded border border-white/5 uppercase select-none font-bold">
-            LV.{currentPetLevel} {currentPetName}
+          <div className="mt-1.5 bg-black/95 text-[7px] font-mono tracking-widest text-white px-1.5 py-0.5 rounded border border-white/5 uppercase select-none font-bold flex flex-col items-center">
+            <span>LV.{currentPetLevel} {currentPetName}</span>
+            <span className="text-[6px] text-emerald-400 font-bold tracking-normal mt-0.5 text-center leading-none">+{currentPetLevel * 2}% ATK / -{currentPetLevel * 2}% DMG</span>
           </div>
         </div>
       </div>

@@ -38,7 +38,8 @@ import {
   LayoutDashboard,
   Coins,
   Youtube,
-  Compass
+  Compass,
+  FlaskConical
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -777,6 +778,7 @@ interface UserProfile {
   avatarLevel?: number;
   avatarXp?: number;
   avatarCredits?: number;
+  unassignedPoints?: number;
 }
 
 interface ProfileDisplayNameEditorProps {
@@ -1806,13 +1808,29 @@ export default function App() {
         streakUpdate = { streakCount: newStreak, lastWorkoutDate: today };
       }
 
-      // Gamification Reward logic for completing a set
-      const xpEarned = isNewPB ? 120 : 15;
+      // Gamification Reward logic for completing a set.
+      // Fetch current pet level to apply dynamic XP multiplier (+0.1 per pet level above Level 1)
+      let activePetLevel = 1;
+      try {
+        const equippedOutfit = profile?.equippedOutfit ?? 'vanguard_cadet';
+        const petLevelsKey = `gym_pet_levels_${currentUser.uid}`;
+        const savedLevels = localStorage.getItem(petLevelsKey);
+        if (savedLevels) {
+          const parsed = JSON.parse(savedLevels);
+          activePetLevel = parsed[equippedOutfit] || 1;
+        }
+      } catch (e) {
+        console.error("Error reading pet levels:", e);
+      }
+
+      const petMultiplier = 1.45 + (activePetLevel - 1) * 0.1;
+      const xpEarned = Math.round((isNewPB ? 120 : 15) * petMultiplier);
       const creditsEarned = isNewPB ? 80 : 10;
 
       let nextLevel = profile?.avatarLevel ?? 1;
       let nextXp = (profile?.avatarXp ?? 0) + xpEarned;
       const nextCredits = (profile?.avatarCredits ?? 5000) + creditsEarned;
+      let nextPoints = profile?.unassignedPoints ?? 10;
 
       const getXpNeeded = (lvl: number) => lvl * 500 + 2000;
       let leveledUp = false;
@@ -1820,13 +1838,15 @@ export default function App() {
       while (nextXp >= getXpNeeded(nextLevel)) {
         nextXp -= getXpNeeded(nextLevel);
         nextLevel += 1;
+        nextPoints += 3;
         leveledUp = true;
       }
 
       const avatarUpdate = {
         avatarLevel: nextLevel,
         avatarXp: nextXp,
-        avatarCredits: nextCredits
+        avatarCredits: nextCredits,
+        unassignedPoints: nextPoints
       };
 
       setProfile(prev => prev ? { ...prev, ...streakUpdate, ...avatarUpdate } : null);
@@ -1932,6 +1952,7 @@ export default function App() {
       let nextLevel = profile?.avatarLevel ?? 1;
       let nextXp = (profile?.avatarXp ?? 0) + finalXpEarned;
       const nextCredits = (profile?.avatarCredits ?? 5000) + finalCreditsEarned;
+      let nextPoints = profile?.unassignedPoints ?? 10;
 
       const getXpNeeded = (lvl: number) => lvl * 500 + 2000;
       let leveledUp = false;
@@ -1939,13 +1960,15 @@ export default function App() {
       while (nextXp >= getXpNeeded(nextLevel)) {
         nextXp -= getXpNeeded(nextLevel);
         nextLevel += 1;
+        nextPoints += 3;
         leveledUp = true;
       }
 
       const avatarUpdate = {
         avatarLevel: nextLevel,
         avatarXp: nextXp,
-        avatarCredits: nextCredits
+        avatarCredits: nextCredits,
+        unassignedPoints: nextPoints
       };
 
       setProfile(prev => prev ? { ...prev, ...avatarUpdate } : null);

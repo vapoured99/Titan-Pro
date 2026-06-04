@@ -1070,6 +1070,30 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     }
   ],
   medial_triceps: [
+    {
+      name: "Single Arm - Tricep Pulldown",
+      icon: "ArrowDown",
+      pool: "medial_triceps",
+      instructions: [
+        "Attach a single D-handle to a high cable pulley machine connection.",
+        "Stand facing or slightly offset from the machine, holding the handle with a neutral or underhand grip.",
+        "Tuck your active elbow tightly into the side of your body and keep it completely stationary.",
+        "Engage your tricep to push the handle straight down until your arm is fully locked out at the bottom.",
+        "Squeeze your tricep firmly for a split second, then slowly guide the handle back up to chest height."
+      ]
+    },
+    {
+      name: "Tricep Pulldown",
+      icon: "ArrowDown",
+      pool: "medial_triceps",
+      instructions: [
+        "Attach a straight bar or EZ-bar to a high cable pulley machine connection.",
+        "Hold the attachment using an underhand (palms facing upward) reverse grip slightly narrower than shoulder-width.",
+        "Pin your elbows tightly close to your ribs while leaning your upper torso forward slightly.",
+        "Fully extend your arms straight down toward your upper thighs by contracting your triceps.",
+        "Hold the maximum squeeze at the bottom of the range, then slowly return the bar back to the starting position."
+      ]
+    },
     { 
       name: "Close Grip Bench Press", 
       icon: "Dumbbell", 
@@ -2184,6 +2208,8 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Tricep Dips": "9llvBAV4RHI",
   "Tricep Push Ups": "kZi0j-7rDe8",
   "Tricep Pushdowns": "LXkCrxn3caQ",
+  "Single Arm - Tricep Pulldown": "9qupVR7pKtk",
+  "Tricep Pulldown": "8_5YkuU38s4",
   "V Sit-Ups": "cSCyyfBti7U",
   "Weighted Chest Dips": "ZDOrGNvRdM0",
   "Weighted Sled Pull": "BSJIKV7h5po",

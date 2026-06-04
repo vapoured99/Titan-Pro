@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { TransparentCharacter } from './TransparentCharacter';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -19,10 +19,16 @@ import {
   RefreshCw,
   TrendingUp,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Skull,
+  Sparkle,
+  Info
 } from 'lucide-react';
 
 // Vanguard Imports
+import { SphereGrid } from './avatar/SphereGrid';
+import { AuraSynthesizer } from './avatar/AuraSynthesizer';
+import { ChallengePortal } from './avatar/ChallengePortal';
 import imgVanguardDefault from '../assets/images/vanguard_default_1779362283869.png';
 import imgVanguardFlex from '../assets/images/vanguard_flex_1779362302716.png';
 import imgVanguardCharge from '../assets/images/vanguard_charge_1779362323371.png';
@@ -109,6 +115,14 @@ interface UserProfile {
   equippedTitle?: string;
   equippedBanner?: string;
   equippedBorder?: string;
+  unassignedPoints?: number;
+  avatarPower?: number;
+  avatarKinetic?: number;
+  avatarSymmetry?: number;
+  avatarVelocity?: number;
+  gridNodesUnlocked?: string[];
+  completedRaidsCount?: number;
+  [key: string]: any;
 }
 
 interface AvatarPanelProps {
@@ -264,17 +278,167 @@ export const OUTFIT_TO_BANNER: Record<string, string> = {
   lumen_sentinel: 'lumen_sentinel'
 };
 
+// Sphere Grid Nodes configuration for visual and interactive talent mapping
+export interface SphereNode {
+  id: string;
+  name: string;
+  category: 'power' | 'kinetic' | 'symmetry' | 'velocity' | 'recovery';
+  bonusText: string;
+  cost: number;
+  statBonus: { stat: 'power' | 'kinetic' | 'symmetry' | 'velocity' | 'recovery'; amount: number };
+  x: number; // Percent coordinates in map grid overlay
+  y: number;
+  connections: string[]; // ids of connected nodes
+}
+
+export const SPHERE_NODES: Record<string, SphereNode> = {
+  p0: { id: 'p0', name: 'Altar of Ascent', category: 'power', bonusText: 'Base potential awakened.', cost: 0, statBonus: { stat: 'power', amount: 0 }, x: 50, y: 50, connections: ['po1', 'ki1', 'sy1', 've1', 're1'] },
+  
+  // Power Branch (Top Left)
+  po1: { id: 'po1', name: 'Iron Forged Tendons', category: 'power', bonusText: '+2 Muscular Power rating', cost: 1, statBonus: { stat: 'power', amount: 2 }, x: 41, y: 41, connections: ['p0', 'po2', 're1'] },
+  po2: { id: 'po2', name: 'Gravity Mastery', category: 'power', bonusText: '+4 Muscular Power rating', cost: 2, statBonus: { stat: 'power', amount: 4 }, x: 31, y: 32, connections: ['po1', 'po3', 're2'] },
+  po3: { id: 'po3', name: 'Sovereign Sledge', category: 'power', bonusText: '+8 Max Power (Hypertrophic Burst)', cost: 3, statBonus: { stat: 'power', amount: 8 }, x: 21, y: 23, connections: ['po2', 'po4'] },
+  po4: { id: 'po4', name: 'Sovereign Catalyst', category: 'power', bonusText: '+12 Absolute Combat Power Boost', cost: 4, statBonus: { stat: 'power', amount: 12 }, x: 12, y: 14, connections: ['po3'] },
+
+  // Kinetic Branch (Top Right)
+  ki1: { id: 'ki1', name: 'Cardio-Vascular Ignition', category: 'kinetic', bonusText: '+2 Stamina Recovery', cost: 1, statBonus: { stat: 'kinetic', amount: 2 }, x: 59, y: 41, connections: ['p0', 'ki2', 're1'] },
+  ki2: { id: 'ki2', name: 'Anaerobic Buffering', category: 'kinetic', bonusText: '+4 Oxygen Utilization', cost: 2, statBonus: { stat: 'kinetic', amount: 4 }, x: 69, y: 32, connections: ['ki1', 'ki3', 're2'] },
+  ki3: { id: 'ki3', name: 'Vortex Inversion', category: 'kinetic', bonusText: '+8 Absolute Kinetic Endurance', cost: 3, statBonus: { stat: 'kinetic', amount: 8 }, x: 79, y: 23, connections: ['ki2', 'ki4'] },
+  ki4: { id: 'ki4', name: 'Vortex Overdrive', category: 'kinetic', bonusText: '+12 Hyper-Stamina Kinetics', cost: 4, statBonus: { stat: 'kinetic', amount: 12 }, x: 88, y: 14, connections: ['ki3'] },
+
+  // Recovery Branch (Straight Up Center)
+  re1: { id: 're1', name: 'Metabolic Recalibration', category: 'recovery', bonusText: '+2 Adaptive Recovery rating', cost: 1, statBonus: { stat: 'recovery', amount: 2 }, x: 50, y: 38, connections: ['p0', 'po1', 'ki1', 're2'] },
+  re2: { id: 're2', name: 'Myofascial Release', category: 'recovery', bonusText: '+4 Myofascial Equilibrium', cost: 2, statBonus: { stat: 'recovery', amount: 4 }, x: 50, y: 27, connections: ['re1', 'po2', 'ki2', 're3'] },
+  re3: { id: 're3', name: 'Somatotropic Surge', category: 'recovery', bonusText: '+8 Max Recovery (Super Rest)', cost: 3, statBonus: { stat: 'recovery', amount: 8 }, x: 50, y: 17, connections: ['re2', 're4'] },
+  re4: { id: 're4', name: 'Infinite Restoration', category: 'recovery', bonusText: '+12 Absolute Vitality Restoratives', cost: 4, statBonus: { stat: 'recovery', amount: 12 }, x: 50, y: 8, connections: ['re3'] },
+
+  // Symmetry Branch (Bottom Left)
+  sy1: { id: 'sy1', name: 'Core Integration', category: 'symmetry', bonusText: '+2 Postural Stabilization', cost: 1, statBonus: { stat: 'symmetry', amount: 2 }, x: 41, y: 59, connections: ['p0', 'sy2'] },
+  sy2: { id: 'sy2', name: 'Biomechanical Symmetry', category: 'symmetry', bonusText: '+4 Flexor Equilibrium', cost: 2, statBonus: { stat: 'symmetry', amount: 4 }, x: 31, y: 68, connections: ['sy1', 'sy3'] },
+  sy3: { id: 'sy3', name: 'Absolute Alignment', category: 'symmetry', bonusText: '+8 Stabilizer Reflexes', cost: 3, statBonus: { stat: 'symmetry', amount: 8 }, x: 21, y: 77, connections: ['sy2', 'sy4'] },
+  sy4: { id: 'sy4', name: 'Zenith Axis Alignment', category: 'symmetry', bonusText: '+12 Postural Defensive Symmetry', cost: 4, statBonus: { stat: 'symmetry', amount: 12 }, x: 12, y: 86, connections: ['sy3'] },
+
+  // Velocity Branch (Bottom Right)
+  ve1: { id: 've1', name: 'Fast-Twitch Awakening', category: 'velocity', bonusText: '+2 Muscular Acceleration', cost: 1, statBonus: { stat: 'velocity', amount: 2 }, x: 59, y: 59, connections: ['p0', 've2'] },
+  ve2: { id: 've2', name: 'High-Velocity Reciprocal', category: 'velocity', bonusText: '+4 Plyometric Elasticity', cost: 2, statBonus: { stat: 'velocity', amount: 4 }, x: 69, y: 68, connections: ['ve1', 've3'] },
+  ve3: { id: 've3', name: 'Temporal Flash', category: 'velocity', bonusText: '+8 Dynamic Striking Speed', cost: 3, statBonus: { stat: 'velocity', amount: 8 }, x: 79, y: 77, connections: ['ve2', 've4'] },
+  ve4: { id: 've4', name: 'Relativistic Reflex', category: 'velocity', bonusText: '+12 Quantum Action Speed', cost: 4, statBonus: { stat: 'velocity', amount: 12 }, x: 88, y: 86, connections: ['ve3'] },
+};
+
+// Boss list for simulation
+export interface RaidBoss {
+  id: string;
+  name: string;
+  subtitle: string;
+  level: number;
+  hp: number;
+  maxHp: number;
+  attackPower: number;
+  defense: number;
+  rewards: { xp: number; credits: number; aura?: string };
+  difficulty: 'normal' | 'hard' | 'mythic' | 'nightmare' | 'apocalypse';
+  description: string;
+  themeColor: string;
+}
+
+export const RAID_BOSSES: RaidBoss[] = [
+  {
+    id: 'iron_leviathan',
+    name: 'The Iron Leviathan',
+    subtitle: 'Mechanical Gravity Overlord',
+    level: 3,
+    hp: 450,
+    maxHp: 450,
+    attackPower: 18,
+    defense: 8,
+    difficulty: 'normal',
+    description: 'A colossal biomechanical system designed to compress carbon under 1000 atmospheres of gravity.',
+    themeColor: 'from-amber-600/20 to-orange-500/10 border-orange-500/30',
+    rewards: { xp: 400, credits: 1500 }
+  },
+  {
+    id: 'plasma_phoenix',
+    name: 'Ashen Plasma Phoenix',
+    subtitle: 'Kinetic Entropy Burner',
+    level: 8,
+    hp: 900,
+    maxHp: 900,
+    attackPower: 32,
+    defense: 12,
+    difficulty: 'hard',
+    description: 'A superheated construct that consumes stamina. It thrives on fast, continuous kinetic exertion.',
+    themeColor: 'from-red-600/20 to-rose-500/10 border-red-500/30',
+    rewards: { xp: 950, credits: 3500, aura: 'void_core' }
+  },
+  {
+    id: 'cyber_beast_reaper',
+    name: 'Cybernetic Dread Reaper',
+    subtitle: 'Nerve-Synapse Disruptor',
+    level: 15,
+    hp: 2200,
+    maxHp: 2200,
+    attackPower: 58,
+    defense: 25,
+    difficulty: 'mythic',
+    description: 'A terrifying dark-mesh system designed to probe the absolute limits of physical and neural fatigue.',
+    themeColor: 'from-purple-600/20 to-indigo-500/10 border-indigo-500/35',
+    rewards: { xp: 2400, credits: 8000, aura: 'shadow_smoke' }
+  },
+  {
+    id: 'lumen_singularity_gate',
+    name: 'Stellar Gate Singularity',
+    subtitle: 'Perfect Celestial Synthesis',
+    level: 25,
+    hp: 4500,
+    maxHp: 4500,
+    attackPower: 95,
+    defense: 45,
+    difficulty: 'nightmare',
+    description: 'The final barrier of testing. A continuous reality-warping network simulating multi-faceted overload.',
+    themeColor: 'from-cyan-600/20 to-teal-500/10 border-cyan-500/40',
+    rewards: { xp: 6000, credits: 20000, aura: 'aether_light' }
+  },
+  {
+    id: 'chrono_apocalypse_archon',
+    name: 'The Chrono Apocalypse Archon',
+    subtitle: 'Ultimate Extinction-Level Entity',
+    level: 35,
+    hp: 9500,
+    maxHp: 9500,
+    attackPower: 160,
+    defense: 70,
+    difficulty: 'apocalypse',
+    description: 'A reality-warping temporal singularity. Bends time, gravity, and incoming energy blocks. Requires perfect maximum ratings of somatic strength, velocity, and post-session restorative recoverability to down.',
+    themeColor: 'from-red-950/45 via-purple-950/30 to-black/90 border-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.25)]',
+    rewards: { xp: 15000, credits: 50000, aura: 'golden_halo' }
+  },
+  {
+    id: 'primeval_god_specimen',
+    name: 'Primeval God-Specimen 00',
+    subtitle: 'Absolute Sovereign of Somatic Might',
+    level: 50,
+    hp: 24000,
+    maxHp: 24000,
+    attackPower: 320,
+    defense: 120,
+    difficulty: 'apocalypse',
+    description: 'The pinnacle of evolution and sandbox military strength. Imbued with infinitely self-regenerating micro-muscle synapses. Only those with optimized high-level companions and highly advanced multi-path talent structures can survive the primeval shockwaves.',
+    themeColor: 'from-yellow-950/50 via-zinc-950/30 to-black/95 border-yellow-500/70 shadow-[0_0_30px_rgba(234,179,8,0.3)] animate-pulse',
+    rewards: { xp: 35000, credits: 120000, aura: 'aether_light' }
+  }
+];
+
 // Auras with premium, outer glow and custom blended overlay effects
-const AURAS = [
-  { id: 'none', name: 'No Aura', price: 0, desc: 'Clean focus.' },
-  { id: 'void_core', name: 'Void Core', price: 3000, desc: 'Rotating neon purple bio-energy rays.', color: '#a855f7', glow: 'shadow-[0_0_110px_rgba(168,85,247,0.95),_0_0_55px_rgba(168,85,247,0.6),inset_0_0_25px_rgba(168,85,247,0.4)]' },
-  { id: 'emerald_overdrive', name: 'Emerald Overdrive', price: 5000, desc: 'High-density pulsing green techno-organic bio-fields.', color: '#10b981', glow: 'shadow-[0_0_110px_rgba(16,185,129,0.95),_0_0_55px_rgba(16,185,129,0.6),inset_0_0_25px_rgba(16,185,129,0.4)]' },
-  { id: 'crimson_flare', name: 'Crimson Flare', price: 4500, desc: 'Continuous explosive fire red flares.', color: '#ef4444', glow: 'shadow-[0_0_110px_rgba(239,68,68,0.95),_0_0_55px_rgba(239,68,68,0.6),inset_0_0_25px_rgba(239,68,68,0.4)]' },
-  { id: 'hyper_blue_plasma', name: 'Hyper Blue Plasma', price: 5500, desc: 'High-frequency blue thermonuclear electrical fields.', color: '#3b82f6', glow: 'shadow-[0_0_110px_rgba(59,130,246,0.95),_0_0_55px_rgba(59,130,246,0.6),inset_0_0_25px_rgba(59,130,246,0.4)]' },
-  { id: 'cyber_shard', name: 'Cyber Shard', price: 6000, desc: 'Rotating neon teal digital shields.', color: '#06b6d4', glow: 'shadow-[0_0_110px_rgba(6,182,212,0.95),_0_0_55px_rgba(6,182,212,0.6),inset_0_0_25px_rgba(6,182,212,0.4)]' },
-  { id: 'golden_halo', name: 'Golden Crown', price: 8000, desc: 'Brilliant golden high-rank celestial crown.', color: '#eab308', glow: 'shadow-[0_0_120px_rgba(234,179,8,1),_0_0_60px_rgba(234,179,8,0.7),inset_0_0_30px_rgba(234,179,8,0.45)]' },
-  { id: 'shadow_smoke', name: 'Shadow Smoke', price: 9000, desc: 'Deep, dense whispering kinetic shadow mists.', color: '#0c0a0f', glow: 'shadow-[0_0_120px_rgba(0,0,0,1),_0_0_60px_rgba(24,24,35,0.9),inset_0_0_25px_rgba(0,0,0,0.5)]' },
-  { id: 'aether_light', name: 'Aetheric Light', price: 8000, desc: 'Pure solar-white electromagnetic light radiating sacred beams.', color: '#ffffff', glow: 'shadow-[0_0_120px_rgba(255,255,255,0.85),_0_0_60px_rgba(244,244,245,0.75),inset_0_0_25px_rgba(255,255,255,0.4)]' }
+export const AURAS = [
+  { id: 'none', name: 'No Aura', price: 0, desc: 'Clean focus.', statMultiplier: { power: 1.0, kinetic: 1.0, symmetry: 1.0, velocity: 1.0 } },
+  { id: 'void_core', name: 'Void Core', price: 3000, desc: 'Rotating neon purple bio-energy rays.', color: '#a855f7', glow: 'shadow-[0_0_110px_rgba(168,85,247,0.95),_0_0_55px_rgba(168,85,247,0.6),inset_0_0_25px_rgba(168,85,247,0.4)]', statMultiplier: { power: 1.15, kinetic: 1.05, symmetry: 1.10, velocity: 1.10 } },
+  { id: 'emerald_overdrive', name: 'Emerald Overdrive', price: 5000, desc: 'High-density pulsing green techno-organic bio-fields.', color: '#10b981', glow: 'shadow-[0_0_110px_rgba(16,185,129,0.95),_0_0_55px_rgba(16,185,129,0.6),inset_0_0_25px_rgba(16,185,129,0.4)]', statMultiplier: { power: 1.10, kinetic: 1.25, symmetry: 1.15, velocity: 1.10 } },
+  { id: 'crimson_flare', name: 'Crimson Flare', price: 4500, desc: 'Continuous explosive fire red flares.', color: '#ef4444', glow: 'shadow-[0_0_110px_rgba(239,68,68,0.95),_0_0_55px_rgba(239,68,68,0.6),inset_0_0_25px_rgba(239,68,68,0.4)]', statMultiplier: { power: 1.25, kinetic: 1.10, symmetry: 1.05, velocity: 1.20 } },
+  { id: 'hyper_blue_plasma', name: 'Hyper Blue Plasma', price: 5500, desc: 'High-frequency blue thermonuclear electrical fields.', color: '#3b82f6', glow: 'shadow-[0_0_110px_rgba(59,130,246,0.95),_0_0_55px_rgba(59,130,246,0.6),inset_0_0_25px_rgba(59,130,246,0.4)]', statMultiplier: { power: 1.20, kinetic: 1.15, symmetry: 1.10, velocity: 1.25 } },
+  { id: 'cyber_shard', name: 'Cyber Shard', price: 6000, desc: 'Rotating neon teal digital shields.', color: '#06b6d4', glow: 'shadow-[0_0_110px_rgba(6,182,212,0.95),_0_0_55px_rgba(6,182,212,0.6),inset_0_0_25px_rgba(6,182,212,0.4)]', statMultiplier: { power: 1.10, kinetic: 1.15, symmetry: 1.30, velocity: 1.15 } },
+  { id: 'golden_halo', name: 'Golden Crown', price: 8000, desc: 'Brilliant golden high-rank celestial crown.', color: '#eab308', glow: 'shadow-[0_0_120px_rgba(234,179,8,1),_0_0_60px_rgba(234,179,8,0.7),inset_0_0_30px_rgba(234,179,8,0.45)]', statMultiplier: { power: 1.25, kinetic: 1.25, symmetry: 1.25, velocity: 1.25 } },
+  { id: 'shadow_smoke', name: 'Shadow Smoke', price: 9000, desc: 'Deep, dense whispering kinetic shadow mists.', color: '#0c0a0f', glow: 'shadow-[0_0_120px_rgba(0,0,0,1),_0_0_60px_rgba(24,24,35,0.9),inset_0_0_25px_rgba(0,0,0,0.5)]', statMultiplier: { power: 1.30, kinetic: 1.20, symmetry: 1.15, velocity: 1.30 } },
+  { id: 'aether_light', name: 'Aetheric Light', price: 8000, desc: 'Pure solar-white electromagnetic light radiating sacred beams.', color: '#ffffff', glow: 'shadow-[0_0_120px_rgba(255,255,255,0.85),_0_0_60px_rgba(244,244,245,0.75),inset_0_0_25px_rgba(255,255,255,0.4)]', statMultiplier: { power: 1.35, kinetic: 1.35, symmetry: 1.35, velocity: 1.35 } }
 ];
 
 // Premium styled overlay elements for the character canvas matching the chosen aura
@@ -1614,6 +1778,184 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   const petLevelsKey = `gym_pet_levels_${userId}`;
   const petXpsKey = `gym_pet_xps_${userId}`;
 
+  // --- New 4-Tab Navigation & RPG state fields ---
+  const [innerTab, setInnerTab] = useState<'customization' | 'sphere_grid' | 'auras' | 'raid_portal'>('customization');
+
+  // Draggable Swipeable Biometric Carousel States & Controls
+  const bioScrollRef = useRef<HTMLDivElement>(null);
+  const [bioIsDragging, setBioIsDragging] = useState(false);
+  const [bioStartX, setBioStartX] = useState(0);
+  const [bioScrollLeft, setBioScrollLeft] = useState(0);
+
+  const handleBioMouseDown = (e: React.MouseEvent) => {
+    if (!bioScrollRef.current) return;
+    setBioIsDragging(true);
+    setBioStartX(e.pageX - bioScrollRef.current.offsetLeft);
+    setBioScrollLeft(bioScrollRef.current.scrollLeft);
+  };
+
+  const handleBioMouseLeave = () => {
+    setBioIsDragging(false);
+  };
+
+  const handleBioMouseUp = () => {
+    setBioIsDragging(false);
+  };
+
+  const handleBioMouseMove = (e: React.MouseEvent) => {
+    if (!bioIsDragging || !bioScrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - bioScrollRef.current.offsetLeft;
+    const walk = (x - bioStartX) * 1.5; // Drag speed sensitivity multiplier
+    bioScrollRef.current.scrollLeft = bioScrollLeft - walk;
+  };
+
+  const scrollBioLeft = () => {
+    if (bioScrollRef.current) {
+      bioScrollRef.current.scrollBy({ left: -290, behavior: 'smooth' });
+    }
+  };
+
+  const scrollBioRight = () => {
+    if (bioScrollRef.current) {
+      bioScrollRef.current.scrollBy({ left: 290, behavior: 'smooth' });
+    }
+  };
+
+  // Shared attributes
+  const unassignedPoints = profile?.unassignedPoints ?? 10; // Generous 10 default points
+  const basePower = profile?.avatarPower ?? 10;
+  const baseKinetic = profile?.avatarKinetic ?? 10;
+  const baseSymmetry = profile?.avatarSymmetry ?? 10;
+  const baseVelocity = profile?.avatarVelocity ?? 10;
+  const baseRecoveryAttr = profile?.avatarRecovery ?? 10;
+  const gridNodesUnlocked = profile?.gridNodesUnlocked ?? ['p0'];
+  const completedRaidsCount = profile?.completedRaidsCount ?? 0;
+
+  // Derived bonuses from sphere grid nodes
+  const sphereGridBonus = useMemo(() => {
+    let p = 0; let k = 0; let s = 0; let v = 0; let r = 0;
+    gridNodesUnlocked.forEach(nodeId => {
+      const node = SPHERE_NODES[nodeId];
+      if (node && node.statBonus) {
+        if (node.statBonus.stat === 'power') p += node.statBonus.amount;
+        else if (node.statBonus.stat === 'kinetic') k += node.statBonus.amount;
+        else if (node.statBonus.stat === 'symmetry') s += node.statBonus.amount;
+        else if (node.statBonus.stat === 'velocity') v += node.statBonus.amount;
+        else if (node.statBonus.stat === 'recovery') r += node.statBonus.amount;
+      }
+    });
+    return { power: p, kinetic: k, symmetry: s, velocity: v, recovery: r };
+  }, [gridNodesUnlocked]);
+
+  // Derived stats with Aura multiplier applied
+  const currentAuraId = profile?.equippedAura ?? 'none';
+  const currentAura = AURAS.find(a => a.id === currentAuraId) || AURAS[0];
+  const auraMult = currentAura.statMultiplier || { power: 1.0, kinetic: 1.0, symmetry: 1.0, velocity: 1.0 };
+  const auraRecoveryMult = (currentAura.statMultiplier as any)?.recovery || 1.10;
+
+  const finalPower = Math.round((basePower + sphereGridBonus.power) * auraMult.power);
+  const finalKinetic = Math.round((baseKinetic + sphereGridBonus.kinetic) * auraMult.kinetic);
+  const finalSymmetry = Math.round((baseSymmetry + sphereGridBonus.symmetry) * auraMult.symmetry);
+  const finalVelocity = Math.round((baseVelocity + sphereGridBonus.velocity) * auraMult.velocity);
+  const finalRecoveryAttr = Math.round((baseRecoveryAttr + sphereGridBonus.recovery) * auraRecoveryMult);
+
+  // Stats bundle for battle simulator
+  const derivedStats = useMemo(() => {
+    const maxHp = 100 + (finalSymmetry * 8) + (finalKinetic * 5) + (finalRecoveryAttr * 4);
+    const attack = 10 + (finalPower * 2);
+    const defense = 5 + Math.round(finalSymmetry * 1.5) + Math.round(finalRecoveryAttr * 0.5);
+    const criticalChance = 5 + Math.round(finalVelocity * 0.5);
+    const dodgeChance = 2 + Math.round(finalRecoveryAttr * 0.4);
+    
+    return { maxHp, attack, defense, criticalChance, dodgeChance };
+  }, [finalPower, finalKinetic, finalSymmetry, finalVelocity, finalRecoveryAttr]);
+
+  // RPG Raid victory reward processor
+  const handleGainRaidRewards = async (xpGained: number, creditsGained: number, bossAura?: string) => {
+    let nextLevel = level;
+    const petMultiplier = 1.45 + ((petLevels[equippedOutfit] || 1) - 1) * 0.1;
+    const multipliedXp = Math.round(xpGained * petMultiplier);
+    let nextXp = xp + multipliedXp;
+    const nextCredits = credits + creditsGained;
+    let letPoints = unassignedPoints;
+    
+    const getXpNeeded = (lvl: number) => lvl * 500 + 2000;
+    let leveledUp = false;
+
+    while (nextXp >= getXpNeeded(nextLevel)) {
+      nextXp -= getXpNeeded(nextLevel);
+      nextLevel += 1;
+      letPoints += 3; // Grant 3 points per level up
+      leveledUp = true;
+    }
+
+    const updated: any = {
+      avatarLevel: nextLevel,
+      avatarXp: nextXp,
+      avatarCredits: nextCredits,
+      unassignedPoints: letPoints,
+      completedRaidsCount: completedRaidsCount + 1
+    };
+
+    if (bossAura) {
+      updated[`unlocked_aura_${bossAura}`] = true;
+    }
+
+    setProfile(prev => prev ? { ...prev, ...updated } : null);
+    await saveSettings(updated);
+    
+    if (leveledUp) {
+      setToast({ message: `🎉 LEVELED UP to Level ${nextLevel}! +3 Talent Points!`, type: 'success' });
+    } else {
+      setToast({ message: `✓ Raid Complete! Gained +${multipliedXp} XP & +${creditsGained} Coins.`, type: 'success' });
+    }
+  };
+
+  // Upgrade direct attribute with +1 spend
+  const handleUpgradeAttribute = async (key: string, currentValue: number) => {
+    if (unassignedPoints <= 0) return;
+    const nextPoints = unassignedPoints - 1;
+    const nextValue = currentValue + 1;
+    
+    const updated = {
+      unassignedPoints: nextPoints,
+      [key]: nextValue
+    };
+    
+    setProfile(prev => prev ? { ...prev, ...updated } : null);
+    await saveSettings(updated);
+    setToast({ message: `Attribute upgraded successfully!`, type: 'success' });
+  };
+
+  // Synaptic mapping nodes activation
+  const handleUnlockNode = async (nodeId: string, node: SphereNode) => {
+    if (gridNodesUnlocked.includes(nodeId)) return;
+    
+    // Check points
+    if (unassignedPoints < node.cost) {
+      setToast({ message: `Insufficient Talent Points! (Requires ${node.cost} point(s))`, type: 'info' });
+      return;
+    }
+
+    // Check connectivity
+    const hasConnection = node.connections.some(conn => gridNodesUnlocked.includes(conn));
+    if (!hasConnection) {
+      setToast({ message: "Path locked! You must unlock adjacent nodes in the grid first.", type: 'info' });
+      return;
+    }
+
+    // Spend cost & unlock synaptic node
+    const updated = {
+      unassignedPoints: unassignedPoints - node.cost,
+      gridNodesUnlocked: [...gridNodesUnlocked, nodeId]
+    };
+    
+    setProfile(prev => prev ? { ...prev, ...updated } : null);
+    await saveSettings(updated);
+    setToast({ message: `✓ Activated Node: ${node.name}!`, type: 'success' });
+  };
+
   // Unique interactive Companion Pet Storage with LocalStorage Persistence
   const [petNames, setPetNames] = useState<Record<string, string>>({});
   const [petLevels, setPetLevels] = useState<Record<string, number>>({});
@@ -1771,25 +2113,30 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
     setTimeout(() => {
       const bonusCredits = 100000;
       const bonusXp = 800;
+      const bonusTalentPoints = 50;
       
       let nextXp = xp + bonusXp;
       let nextLevel = level;
+      let nextPoints = unassignedPoints + bonusTalentPoints;
+      
       while (nextXp >= getXpNeededForLevel(nextLevel)) {
         nextXp -= getXpNeededForLevel(nextLevel);
         nextLevel += 1;
+        nextPoints += 3; // Give extra +3 talent points per level up
       }
 
       const updatedSettings = {
         avatarCredits: credits + bonusCredits,
         avatarXp: nextXp,
-        avatarLevel: nextLevel
+        avatarLevel: nextLevel,
+        unassignedPoints: nextPoints
       };
 
       setProfile(prev => prev ? { ...prev, ...updatedSettings } : null);
       saveSettings(updatedSettings);
 
       setToast({
-        message: `🎁 Claimed Testing Pack! +100,000 Coins, +800 XP!`,
+        message: `🎁 Claimed Testing Pack! +100,000 Coins, +800 XP, +${bonusTalentPoints} Talent Points!`,
         type: 'success'
       });
       setIsClaimingBonus(false);
@@ -2160,11 +2507,41 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         </div>
       </div>
 
+
+      {/* 4-Tab Navigation Ribbon for Avatar Panel */}
+      <div className="flex items-center gap-2 border-b border-white/10 pb-4 mb-6 overflow-x-auto no-scrollbar">
+        {[
+          { id: 'customization', label: 'PRESTIGE DESIGNER', icon: Shield, color: 'text-amber-400' },
+          { id: 'sphere_grid', label: 'TALENT SPHERE GRID', icon: Trophy, color: 'text-gym-accent' },
+          { id: 'auras', label: 'AURA SYNTHESIZER', icon: Sparkles, color: 'text-fuchsia-400' },
+          { id: 'raid_portal', label: 'CHALLENGE PORTAL', icon: Skull, color: 'text-rose-500' },
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isSelected = innerTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setInnerTab(tab.id as any);
+              }}
+              className={`flex items-center gap-2 py-2 px-4 rounded-sm text-xs font-bold tracking-wider uppercase transition-all select-none border border-transparent shrink-0 cursor-pointer ${
+                isSelected 
+                  ? 'bg-white/5 border-white/10 text-white shadow-xl shadow-black/40' 
+                  : 'text-white/40 hover:text-white/85 hover:bg-white/[0.01]'
+              }`}
+            >
+              <Icon className={`w-3.5 h-3.5 ${tab.color}`} />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
       {/* COMBINED HERO SPLIT-GRID: Avatar Showcase Card on the Left, Biometric progression cards stacked on the Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
         {/* Left Side: Majestic Avatar Showcase Card (col-span-5) */}
-        <div className="lg:col-span-12 xl:col-span-5 flex flex-col gap-6 items-center">
+        <div className="lg:col-span-12 xl:col-span-5 flex flex-col justify-start gap-6 h-full w-full">
           <div className={`relative w-full max-w-[440px] lg:max-w-none aspect-[3/4.2] bg-black/50 ${getActiveBorder().id === 'none' ? 'border border-white/10' : getActiveBorder().cardBorderClass} rounded-lg overflow-hidden flex flex-col justify-between p-7 group transition-all duration-700 shadow-3xl ${activeAuraStyling.outerGlow}`}>
             
             {/* Theme Border Corner Elements */}
@@ -2365,12 +2742,176 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
 
           </div>
+
+          {/* Active Companion Pet Card (Injected under the Showcase card, constantly displayed on the left column) */}
+          <div className="w-full max-w-[440px] xl:max-w-none bg-black/85 border border-white/20 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
+            {/* Background cyan/pink/amber gradient particle glow */}
+            <div 
+              className="absolute -right-12 -top-12 w-32 h-32 rounded-full filter blur-3xl opacity-20 pointer-events-none transition-all duration-700" 
+              style={{ backgroundColor: activePetInfo.color }} 
+            />
+            
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: activePetInfo.color }} />
+                <div>
+                  <div className="text-[8px] uppercase tracking-[0.25em] text-white/45 font-mono">Active Companion</div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {isRenamingPet ? (
+                      <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5">
+                        <input
+                          type="text"
+                          value={renameInput}
+                          onChange={(e) => setRenameInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleRenamePet(renameInput);
+                            if (e.key === 'Escape') setIsRenamingPet(false);
+                          }}
+                          className="bg-transparent text-[11px] font-sans text-white max-w-[120px] focus:outline-none"
+                          placeholder="Name of pet..."
+                          autoFocus
+                        />
+                        <button 
+                          onClick={() => handleRenamePet(renameInput)} 
+                          className="text-gym-accent font-black text-[9px] px-1 hover:text-white transition-colors uppercase font-mono"
+                        >
+                          Save
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 select-none font-sans">
+                        <span className="text-xs font-black text-white tracking-wide">{currentPetName}</span>
+                        <button 
+                          onClick={() => {
+                            setRenameInput(currentPetName);
+                            setIsRenamingPet(true);
+                          }}
+                          className="text-white/30 hover:text-gym-accent hover:scale-105 transition-all p-0.5 pointer-events-auto"
+                          title="Rename Companion"
+                        >
+                          <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2-2v-7" />
+                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                    <span className="text-[7.5px] px-1.5 py-0.5 rounded bg-white/[0.03] text-white/50 border border-white/5 font-mono uppercase tracking-wider">{activePetInfo.type}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white/[0.02] border border-white/10 px-2.5 py-1 rounded flex flex-col items-center">
+                <span className="text-[7px] text-white/30 tracking-widest uppercase leading-none font-black font-mono">Synergy</span>
+                <span className="text-xs font-black text-white font-mono leading-tight">Lv.{currentPetLevel}</span>
+              </div>
+            </div>
+
+            {/* Pet Core Display: Center stage */}
+            <div className="flex gap-4 bg-black/30 border border-white/15 p-3.5 rounded-lg relative overflow-hidden">
+              <div className={`w-16 h-16 rounded flex items-center justify-center border bg-black/70 flex-shrink-0 relative overflow-hidden transition-all duration-300 ${
+                petFeedEffect === 'feed' ? 'scale-105 bg-emerald-950/25 border-emerald-500/50' : 
+                petFeedEffect === 'train' ? 'scale-105 bg-amber-950/25 border-amber-500/50' : 
+                petFeedEffect === 'peteffect' ? 'scale-105 bg-fuchsia-950/25 border-fuchsia-500/50' : 
+                'border-white/15'
+              }`}>
+                {/* Embedded action ripple overlays */}
+                {petFeedEffect === 'feed' && (
+                  <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center z-10 animate-pulse" />
+                )}
+                {petFeedEffect === 'train' && (
+                  <div className="absolute inset-0 bg-amber-500/10 flex items-center justify-center z-10 animate-pulse" />
+                )}
+                {petFeedEffect === 'peteffect' && (
+                  <div className="absolute inset-0 bg-fuchsia-500/10 flex items-center justify-center z-10 animate-pulse" />
+                )}
+                <div style={{ filter: `drop-shadow(0 0 8px ${activePetInfo.color})` }}>
+                  {activePetInfo.sprite}
+                </div>
+              </div>
+
+              <div className="flex-1 flex flex-col justify-between min-w-0">
+                <div>
+                  <span className="text-[7.5px] tracking-[0.2em] font-mono uppercase text-white/30 block leading-none mb-1">Companion Bio</span>
+                  <p className="text-[10px] text-white/60 leading-normal font-sans tracking-wide">
+                    {activePetInfo.desc}
+                  </p>
+                </div>
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center gap-1.5 text-[8.5px] font-mono text-gym-accent font-black tracking-wider uppercase truncate">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                    Buff: {activePetInfo.buff}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[8.5px] font-mono text-emerald-400 font-extrabold tracking-wider uppercase truncate">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    Combat Boost: +{currentPetLevel * 2}% DMG | -{currentPetLevel * 2}% DMG Recv
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bonding synergy progress gauge */}
+            <div className="flex flex-col gap-1.5 bg-black/20 border border-white/15 p-2.5 rounded">
+              <div className="flex items-center justify-between text-[7.5px] font-mono select-none">
+                <span className="text-white/40 uppercase tracking-widest font-black">Bond Progression</span>
+                <span className="text-white/80 font-bold">{currentPetXp} / 100 XP</span>
+              </div>
+              <div className="w-full h-1.5 bg-white/5 border border-white/5 rounded-full overflow-hidden relative">
+                <div 
+                  className="h-full rounded-full transition-all duration-700" 
+                  style={{ 
+                    width: `${currentPetXp}%`,
+                    backgroundColor: activePetInfo.color,
+                    boxShadow: `0 0 10px ${activePetInfo.color}`
+                  }} 
+                />
+              </div>
+            </div>
+
+            {/* Feeding and training interactive action panel */}
+            <div className="grid grid-cols-3 gap-2">
+              <button 
+                onClick={() => handleInteractPet('feed')}
+                className="bg-emerald-500/[0.03] hover:bg-emerald-500/10 active:scale-95 text-emerald-400 border border-emerald-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
+              >
+                <div className="text-[9px] font-black uppercase tracking-wider">Feed Shake</div>
+                <div className="text-[6.5px] font-mono text-emerald-400/80 font-bold">25 COINS // +15XP</div>
+              </button>
+
+              <button 
+                onClick={() => handleInteractPet('train')}
+                className="bg-amber-500/[0.03] hover:bg-amber-500/10 active:scale-95 text-amber-400 border border-amber-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
+              >
+                <div className="text-[9px] font-black uppercase tracking-wider">Lifting Logs</div>
+                <div className="text-[6.5px] font-mono text-amber-400/80 font-bold">50 COINS // +35XP</div>
+              </button>
+
+              <button 
+                onClick={() => handleInteractPet('pet')}
+                className="bg-fuchsia-500/[0.03] hover:bg-fuchsia-500/10 active:scale-95 text-fuchsia-400 border border-fuchsia-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
+              >
+                <div className="text-[9px] font-black uppercase tracking-wider">Interact</div>
+                <div className="text-[6.5px] font-mono text-fuchsia-400/80 font-bold">FREE // SPARKS!</div>
+              </button>
+            </div>
+          </div>
+
         </div>
 
-        {/* Right Side: Dense, High-Fidelity Bento Grid Unified Command Console */}
-        <div className="lg:col-span-12 xl:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-4 content-start">
-          
-          {/* Card 1: Integrated Profile & Combat Readiness (Span col-span-2) */}
+        {/* Right Side Column (Column 2) */}
+        <div className="lg:col-span-12 xl:col-span-7 flex flex-col h-full xl:max-h-[975px]">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={innerTab}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="flex-1 flex flex-col h-full"
+            >
+              {innerTab === 'customization' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 grid-rows-[auto_auto_1fr] flex-1">
+                  
+                  {/* Card 1: Integrated Profile & Combat Readiness (Span col-span-2) */}
           <div className="md:col-span-2 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/40 group shadow-md">
             {/* Decal background grid patterns */}
             <div className="absolute inset-0 opacity-[0.03] bg-grid-pattern pointer-events-none" />
@@ -2405,14 +2946,14 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               </div>
  
               {/* Level XP summary block */}
-              <div className="w-full sm:w-2/5 flex flex-col gap-1.5">
-                <div className="flex items-center justify-between text-[10px] font-extrabold font-mono text-white/55 tracking-wider">
-                  <div className="flex items-center gap-1.5">
+              <div className="w-full sm:w-auto sm:min-w-[280px] flex-shrink-0 flex flex-col gap-1.5">
+                <div className="flex items-center justify-between gap-4 text-[10px] font-extrabold font-mono text-white/55 tracking-wider">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <span className="bg-gym-accent/15 border border-gym-accent/30 text-gym-accent px-1.5 py-0.5 rounded text-[8.5px] font-black tracking-widest uppercase">
                       RANK LEVEL {level}
                     </span>
                   </div>
-                  <span className="text-[9px] text-white/40 font-black">{xp.toLocaleString()} / {xpNeeded.toLocaleString()} XP</span>
+                  <span className="text-[9px] text-white/40 font-black shrink-0 whitespace-nowrap">{xp.toLocaleString()} / {xpNeeded.toLocaleString()} XP</span>
                 </div>
  
                 {/* Visual Segmented Progress Bar */}
@@ -2499,7 +3040,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               </div>
               <div className="flex justify-between">
                 <span>SYS MULTIPLIER:</span>
-                <span className="text-emerald-400">1.45X EXP RATE</span>
+                <span className="text-emerald-400">{(1.45 + (currentPetLevel - 1) * 0.1).toFixed(2)}X EXP RATE</span>
               </div>
             </div>
  
@@ -2524,565 +3065,579 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
           </div>
  
-          {/* Card 4: Physiological Core & Biometrics Detailed Hud (Span col-span-2) */}
-          <div className="md:col-span-2 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/40 group shadow-md">
-            <div className="flex items-center justify-between mb-4 relative z-10">
+          {/* Card 4: Physiological Core & Biometrics Unified Calibration Matrix (Span col-span-2) */}
+          <div className="md:col-span-2 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/40 group shadow-md w-full flex flex-col justify-between h-full">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gym-accent/10 to-transparent pointer-events-none" />
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-3 mb-5 relative z-10 gap-3">
               <div>
-                <h4 className="text-[8.5px] text-white/30 uppercase tracking-[0.3em] font-black">PHYSIOLOGICAL CORE</h4>
-                <p className="text-base font-light font-serif italic text-white leading-tight">Biometric Evolution Metrics</p>
+                <h4 className="text-[9px] text-gym-accent font-mono font-black tracking-[0.3em] uppercase">SYSTEM CORE</h4>
+                <p className="text-base font-light font-serif italic text-white leading-tight">Biometric Evolution & Calibration Matrix</p>
+                <p className="text-[9.5px] text-white/40 tracking-wider font-sans mt-0.5">Optimize physical parameters by analyzing combat telemetry ranges and allocating talent points</p>
               </div>
-              <span className="text-[8px] text-gym-accent font-mono font-bold uppercase tracking-widest bg-gym-accent/5 border border-gym-accent/10 px-2 py-0.5 rounded-sm">
-                Active Biometrics
-              </span>
+
+              <div className="flex items-center gap-2.5 shrink-0">
+                <div className="bg-gym-accent/10 border border-gym-accent/30 rounded px-2.5 py-1 flex items-center gap-1.5 animate-pulse shrink-0">
+                  <span className="w-1 h-1 rounded-full bg-gym-accent" />
+                  <span className="text-[10px] font-black text-gym-accent font-mono uppercase tracking-wider">
+                    {unassignedPoints} TALENT POINTS
+                  </span>
+                </div>
+              </div>
             </div>
- 
-            {/* Highly customized individual cards with linear layout sliders */}
-            <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 relative z-10">
-              {[
-                { label: 'STR', val: calcStrength, icon: Flame, color: 'text-rose-500', bg: 'hover:border-rose-500/30', barColor: 'from-rose-500 to-red-400', desc: 'Strength', trigger: 'Volume' },
-                { label: 'END', val: calcEndurance, icon: Activity, color: 'text-cyan-400', bg: 'hover:border-cyan-500/30', barColor: 'from-cyan-400 to-blue-500', desc: 'Endurance', trigger: 'Sessions' },
-                { label: 'DIS', val: calcDiscipline, icon: Trophy, color: 'text-amber-400', bg: 'hover:border-amber-500/30', barColor: 'from-amber-400 to-yellow-500', desc: 'Discipline', trigger: 'Streak' },
-                { label: 'REC', val: calcRecovery, icon: Shield, color: 'text-purple-400', bg: 'hover:border-purple-500/30', barColor: 'from-purple-400 to-fuchsia-500', desc: 'Recovery', trigger: 'Sets' },
-                { label: 'CON', val: calcConsistency, icon: Award, color: 'text-emerald-400', bg: 'hover:border-emerald-500/30', barColor: 'from-emerald-400 to-teal-500', desc: 'Consistency', trigger: 'Logs' }
-              ].map((stat, idx) => {
-                const IconComp = stat.icon;
+
+            {/* UNMERGED DUAL PANELS */}
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 relative z-10 flex-1">
+              
+              {/* Left Side: Biometric Telemetry & Core Combat Ratings (Col-span-5) */}
+              <div className="xl:col-span-5 flex flex-col justify-between min-h-[350px]">
+                <div>
+                  <div className="border-b border-white/5 pb-2">
+                    <span className="text-[9px] text-gym-accent font-mono font-black tracking-widest uppercase">COMBAT TELEMETRY</span>
+                    <span className="text-[8px] text-white/30 uppercase tracking-widest block font-mono mt-0.5">derived stats feed</span>
+                  </div>
+                </div>
+                
+                <div className="flex-1 flex flex-col justify-between gap-2.5 mt-3">
+                  {[
+                    {
+                      label: 'MAX HEALTH (HP)',
+                      value: `${derivedStats.maxHp} HP`,
+                      percent: Math.min(100, Math.round((derivedStats.maxHp / 550) * 100)),
+                      icon: Activity,
+                      color: 'text-blue-400',
+                      barColor: 'from-blue-500 to-cyan-400'
+                    },
+                    {
+                      label: 'ATTACK RATING',
+                      value: `${derivedStats.attack} ATK`,
+                      percent: Math.min(100, Math.round((derivedStats.attack / 250) * 100)),
+                      icon: Sword,
+                      color: 'text-red-500',
+                      barColor: 'from-red-500 to-rose-400'
+                    },
+                    {
+                      label: 'ACTIVE DEFENSE',
+                      value: `${derivedStats.defense} DEF`,
+                      percent: Math.min(100, Math.round((derivedStats.defense / 150) * 100)),
+                      icon: Shield,
+                      color: 'text-emerald-400',
+                      barColor: 'from-emerald-500 to-teal-400'
+                    },
+                    {
+                      label: 'CRITICAL VALUE',
+                      value: `${derivedStats.criticalChance}% CRT`,
+                      percent: Math.min(100, Math.round((derivedStats.criticalChance / 45) * 100)),
+                      icon: Zap,
+                      color: 'text-amber-400',
+                      barColor: 'from-amber-400 to-yellow-500'
+                    },
+                    {
+                      label: 'EVASION DODGE',
+                      value: `${derivedStats.dodgeChance}% DDG`,
+                      percent: Math.min(100, Math.round((derivedStats.dodgeChance / 35) * 100)),
+                      icon: Sparkles,
+                      color: 'text-purple-400',
+                      barColor: 'from-purple-500 to-fuchsia-400'
+                    }
+                  ].map((comb, index) => {
+                    const CombIcon = comb.icon;
+                    return (
+                      <div key={index} className="flex flex-col gap-1.5 p-2.5 rounded bg-zinc-950/60 border border-white/5 hover:border-white/10 transition-all duration-300">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <CombIcon className={`w-3.5 h-3.5 ${comb.color} shrink-0`} />
+                            <span className="text-[9.5px] font-mono font-bold uppercase text-white/70 tracking-widest truncate">{comb.label}</span>
+                          </div>
+                          <span className="text-xs font-mono font-black text-white shrink-0 pl-1">{comb.value}</span>
+                        </div>
+                        <div className="relative w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                          <div className={`absolute top-0 left-0 h-full bg-gradient-to-r ${comb.barColor} rounded-full`} style={{ width: `${comb.percent}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Side: Talent Attributes Protocols (Col-span-7) */}
+              <div className="xl:col-span-7 flex flex-col justify-between animate-[slideUp_0.3s_ease-out] min-h-[350px]">
+                <div>
+                  <div className="border-b border-white/5 pb-2">
+                    <span className="text-[9px] text-gym-accent font-mono font-black tracking-widest uppercase">TALENT CALIBRATION MATRIX</span>
+                    <span className="text-[8px] text-white/30 uppercase tracking-widest block font-mono mt-0.5">allocate talent points directly</span>
+                  </div>
+                </div>
+
+                <div className="flex-1 flex flex-col justify-between gap-2.5 mt-3">
+                  {/* Slider substitute start */}
+                  <div className="hidden">
+                    <div ref={bioScrollRef} />
+                  </div>
+                  {[
+                {
+                  key: 'avatarPower',
+                  label: 'Muscular Power & Strength',
+                  short: 'STR',
+                  evolutionVal: calcStrength,
+                  evolutionDesc: 'Volume-based',
+                  evolutionTrigger: 'Lifting Volume',
+                  base: basePower,
+                  final: finalPower,
+                  desc: 'Increases challenge attack rating',
+                  icon: Flame,
+                  color: 'text-red-500',
+                  barColor: 'from-red-500 to-rose-400',
+                  borderColor: 'border-red-500/25',
+                  activeGlow: 'hover:border-red-500/30 hover:bg-red-950/[0.03]',
+                },
+                {
+                  key: 'avatarKinetic',
+                  label: 'Kinetic Stamina & Endurance',
+                  short: 'END',
+                  evolutionVal: calcEndurance,
+                  evolutionDesc: 'Session-based',
+                  evolutionTrigger: 'Completed Sessions',
+                  base: baseKinetic,
+                  final: finalKinetic,
+                  desc: 'Increases maximum combat life-pool',
+                  icon: Activity,
+                  color: 'text-blue-400',
+                  barColor: 'from-blue-500 to-cyan-400',
+                  borderColor: 'border-blue-400/25',
+                  activeGlow: 'hover:border-blue-400/30 hover:bg-blue-950/[0.03]',
+                },
+                {
+                  key: 'avatarSymmetry',
+                  label: 'Symmetry & Discipline',
+                  short: 'DIS',
+                  evolutionVal: calcDiscipline,
+                  evolutionDesc: 'Streak-based',
+                  evolutionTrigger: 'Consistency Streak',
+                  base: baseSymmetry,
+                  final: finalSymmetry,
+                  desc: 'Supports posture & defensive defense',
+                  icon: Trophy,
+                  color: 'text-emerald-400',
+                  barColor: 'from-emerald-500 to-teal-400',
+                  borderColor: 'border-emerald-500/25',
+                  activeGlow: 'hover:border-emerald-400/30 hover:bg-emerald-950/[0.03]',
+                },
+                {
+                  key: 'avatarVelocity',
+                  label: 'Velocity & Consistency',
+                  short: 'CON',
+                  evolutionVal: calcConsistency,
+                  evolutionDesc: 'Log-based',
+                  evolutionTrigger: 'Continuous Logs',
+                  base: baseVelocity,
+                  final: finalVelocity,
+                  desc: 'Directly boosts critical value likelihood',
+                  icon: Award,
+                  color: 'text-amber-400',
+                  barColor: 'from-amber-400 to-yellow-500',
+                  borderColor: 'border-amber-400/25',
+                  activeGlow: 'hover:border-amber-400/30 hover:bg-amber-950/[0.03]',
+                },
+                {
+                  key: 'avatarRecovery',
+                  label: 'Adaptive Recovery & Rest',
+                  short: 'REC',
+                  evolutionVal: calcRecovery,
+                  evolutionDesc: 'Sets-based',
+                  evolutionTrigger: 'Completed Sets',
+                  base: baseRecoveryAttr,
+                  final: finalRecoveryAttr,
+                  desc: 'Shield regenerator, HP & Evasion Dodge buff',
+                  icon: Shield,
+                  color: 'text-purple-400',
+                  barColor: 'from-purple-500 to-fuchsia-400',
+                  borderColor: 'border-purple-500/25',
+                  activeGlow: 'hover:border-purple-500/30 hover:bg-purple-950/[0.03]',
+                }
+              ].map((stat) => {
+                const StatIconComp = stat.icon;
                 return (
-                  <div key={idx} className={`bg-zinc-950 border border-white/10 p-3 rounded flex flex-col justify-between text-left group/stat hover:bg-zinc-900 transition-all ${stat.bg}`}>
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="p-1 rounded bg-white/[0.02] border border-white/5">
-                        <IconComp className={`w-3.5 h-3.5 ${stat.color} group-hover/stat:scale-110 transition-transform`} />
+                  <div 
+                    key={stat.key} 
+                    className="flex flex-col sm:flex-row items-center justify-between gap-4 p-2 px-3 bg-zinc-950/70 border border-white/10 rounded-md hover:border-white/20 transition-all duration-300 relative overflow-hidden pb-3"
+                  >
+                    {/* Attribute label tag */}
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="p-1 rounded bg-white/[0.02] border border-white/5 shrink-0">
+                        <StatIconComp className={`w-3.5 h-3.5 ${stat.color}`} />
                       </div>
-                      <span className="text-[14px] font-black font-mono text-white leading-none">{stat.val}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[11px] font-black text-white font-mono leading-none">{stat.short}</span>
+                          <span className="text-[9.5px] text-white/50 font-mono tracking-wider font-extrabold block leading-none">LV {stat.final}</span>
+                        </div>
+                        <span className="text-[8.5px] tracking-wide text-white/30 truncate block mt-1 font-sans" title={stat.label}>{stat.label}</span>
+                      </div>
                     </div>
- 
-                    <div className="mt-2.5">
-                      <span className="text-[9.5px] text-white/70 uppercase tracking-widest font-extrabold block leading-none">{stat.label}</span>
-                      <span className="text-[7.5px] text-white/30 uppercase tracking-tight block leading-tight mt-[2px]">{stat.desc}</span>
+
+                    {/* Attribute Upgrade Buttons */}
+                    <div className="flex items-center justify-between gap-1.5 bg-black/40 border border-white/5 p-1 rounded font-mono md:w-[130px] shrink-0">
+                      <div className="flex flex-col font-mono pl-1">
+                        <span className="text-[7.5px] font-extrabold uppercase font-mono tracking-widest text-[#ffffff]/40 leading-none">Base</span>
+                        <span className="text-[9.5px] font-black font-mono text-[#ffffff]/85 leading-tight mt-0.5">{stat.base}</span>
+                      </div>
+
+                      <button
+                        onClick={() => handleUpgradeAttribute(stat.key, stat.base)}
+                        disabled={unassignedPoints <= 0}
+                        className="w-5 h-5 rounded-sm bg-gym-accent hover:bg-gym-accent-light text-black disabled:opacity-20 transition-all active:scale-95 flex items-center justify-center cursor-pointer shrink-0 disabled:pointer-events-none"
+                        title={`Calibrate ${stat.short}`}
+                      >
+                        <Plus className="w-3.5 h-3.5 stroke-[3.5]" />
+                      </button>
+
+                      <div className="flex flex-col items-end pr-1">
+                        <span className="text-[7.5px] font-extrabold uppercase font-mono tracking-widest text-[#ffffff]/40 leading-none">Final</span>
+                        <span className={`text-[9.5px] font-mono font-black leading-tight mt-0.5 px-1 rounded bg-zinc-900 border ${stat.borderColor} ${stat.color}`}>
+                          {stat.final}
+                        </span>
+                      </div>
                     </div>
- 
-                    {/* Compact layout gauge tracker */}
-                    <div className="mt-2.5 space-y-1">
-                      <div className="relative w-full h-1 bg-zinc-900 rounded-full overflow-hidden">
-                        <div className={`absolute top-0 left-0 h-full bg-gradient-to-r ${stat.barColor} rounded-full`} style={{ width: `${stat.val}%` }} />
-                      </div>
-                      <div className="flex justify-between items-center text-[6.5px] text-white/20 font-bold font-mono">
-                        <span>LOW</span>
-                        <span>{stat.trigger}</span>
-                        <span>MAX</span>
-                      </div>
+
+                    {/* Dynamic bottom edge energy bar indicator */}
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-zinc-900/50">
+                      <div className={`h-full bg-gradient-to-r ${stat.barColor}`} style={{ width: `${stat.evolutionVal}%` }} />
                     </div>
                   </div>
                 );
               })}
             </div>
           </div>
- 
         </div>
-
       </div>
 
-      {/* SECOND ROW COMPANION & STORAGE GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-8">
-        
-        {/* Left Row 2: Interactive Companion Pet */}
-        <div className="lg:col-span-12 xl:col-span-5 flex flex-col items-center w-full">
-          <div className="w-full max-w-[440px] xl:max-w-none bg-black/85 border border-white/20 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
-            {/* Background cyan/pink/amber gradient particle glow */}
-            <div 
-              className="absolute -right-12 -top-12 w-32 h-32 rounded-full filter blur-3xl opacity-20 pointer-events-none transition-all duration-700" 
-              style={{ backgroundColor: activePetInfo.color }} 
-            />
-            
-            <div className="flex items-center justify-between border-b border-white/5 pb-3">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: activePetInfo.color }} />
-                <div>
-                  <div className="text-[8px] uppercase tracking-[0.25em] text-white/45 font-mono">Active Companion</div>
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {isRenamingPet ? (
-                      <div className="flex items-center gap-1 bg-white/[0.04] border border-white/10 rounded px-1.5 py-0.5">
-                        <input
-                          type="text"
-                          value={renameInput}
-                          onChange={(e) => setRenameInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleRenamePet(renameInput);
-                            if (e.key === 'Escape') setIsRenamingPet(false);
-                          }}
-                          className="bg-transparent text-[11px] font-sans text-white max-w-[120px] focus:outline-none"
-                          placeholder="Name of pet..."
-                          autoFocus
-                        />
-                        <button 
-                          onClick={() => handleRenamePet(renameInput)} 
-                          className="text-gym-accent font-black text-[9px] px-1 hover:text-white transition-colors uppercase font-mono"
-                        >
-                          Save
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-1.5 select-none font-sans">
-                        <span className="text-xs font-black text-white tracking-wide">{currentPetName}</span>
-                        <button 
-                          onClick={() => {
-                            setRenameInput(currentPetName);
-                            setIsRenamingPet(true);
-                          }}
-                          className="text-white/30 hover:text-gym-accent hover:scale-105 transition-all p-0.5"
-                          title="Rename Companion"
-                        >
-                          <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                            <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                          </svg>
-                        </button>
-                      </div>
-                    )}
-                    <span className="text-[7.5px] px-1.5 py-0.5 rounded bg-white/[0.03] text-white/50 border border-white/5 font-mono uppercase tracking-wider">{activePetInfo.type}</span>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-white/[0.02] border border-white/10 px-2.5 py-1 rounded flex flex-col items-center">
-                <span className="text-[7px] text-white/30 tracking-widest uppercase leading-none font-black font-mono">Synergy</span>
-                <span className="text-xs font-black text-white font-mono leading-tight">Lv.{currentPetLevel}</span>
-              </div>
-            </div>
-
-            {/* Pet Core Display: Center stage */}
-            <div className="flex gap-4 bg-black/30 border border-white/15 p-3.5 rounded-lg relative overflow-hidden">
-              <div className={`w-16 h-16 rounded flex items-center justify-center border bg-black/70 flex-shrink-0 relative overflow-hidden transition-all duration-300 ${
-                petFeedEffect === 'feed' ? 'scale-105 bg-emerald-950/25 border-emerald-500/50' : 
-                petFeedEffect === 'train' ? 'scale-105 bg-amber-950/25 border-amber-500/50' : 
-                petFeedEffect === 'peteffect' ? 'scale-105 bg-fuchsia-950/25 border-fuchsia-500/50' : 
-                'border-white/15'
-              }`}>
-                {/* Embedded action ripple overlays */}
-                {petFeedEffect === 'feed' && (
-                  <div className="absolute inset-0 bg-emerald-500/10 flex items-center justify-center z-10 animate-pulse" />
-                )}
-                {petFeedEffect === 'train' && (
-                  <div className="absolute inset-0 bg-amber-500/10 flex items-center justify-center z-10 animate-pulse" />
-                )}
-                {petFeedEffect === 'peteffect' && (
-                  <div className="absolute inset-0 bg-fuchsia-500/10 flex items-center justify-center z-10 animate-pulse" />
-                )}
-                <div style={{ filter: `drop-shadow(0 0 8px ${activePetInfo.color})` }}>
-                  {activePetInfo.sprite}
-                </div>
-              </div>
-
-              <div className="flex-1 flex flex-col justify-between min-w-0">
-                <div>
-                  <span className="text-[7.5px] tracking-[0.2em] font-mono uppercase text-white/30 block leading-none mb-1">Companion Bio</span>
-                  <p className="text-[10px] text-white/60 leading-normal font-sans tracking-wide">
-                    {activePetInfo.desc}
-                  </p>
-                </div>
-                <div className="mt-2 flex items-center gap-1.5 text-[8px] font-mono text-gym-accent font-black tracking-wider uppercase truncate">
-                  <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
-                  Buff: {activePetInfo.buff}
-                </div>
-              </div>
-            </div>
-
-            {/* Bonding synergy progress gauge */}
-            <div className="flex flex-col gap-1.5 bg-black/20 border border-white/15 p-2.5 rounded">
-              <div className="flex items-center justify-between text-[7.5px] font-mono select-none">
-                <span className="text-white/40 uppercase tracking-widest font-black">Bond Progression</span>
-                <span className="text-white/80 font-bold">{currentPetXp} / 100 XP</span>
-              </div>
-              <div className="w-full h-1.5 bg-white/5 border border-white/5 rounded-full overflow-hidden relative">
-                <div 
-                  className="h-full rounded-full transition-all duration-700" 
-                  style={{ 
-                    width: `${currentPetXp}%`,
-                    backgroundColor: activePetInfo.color,
-                    boxShadow: `0 0 10px ${activePetInfo.color}`
-                  }} 
+      </div>
+    ) : innerTab === 'sphere_grid' ? (
+                <SphereGrid 
+                  unassignedPoints={unassignedPoints}
+                  gridNodesUnlocked={gridNodesUnlocked}
+                  onUnlockNode={handleUnlockNode}
                 />
-              </div>
-            </div>
-
-            {/* Feeding and training interactive action panel */}
-            <div className="grid grid-cols-3 gap-2">
-              <button 
-                onClick={() => handleInteractPet('feed')}
-                className="bg-emerald-500/[0.03] hover:bg-emerald-500/10 active:scale-95 text-emerald-400 border border-emerald-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
-              >
-                <div className="text-[9px] font-black uppercase tracking-wider">Feed Shake</div>
-                <div className="text-[6.5px] font-mono text-emerald-400/80 font-bold">25 COINS // +15XP</div>
-              </button>
-
-              <button 
-                onClick={() => handleInteractPet('train')}
-                className="bg-amber-500/[0.03] hover:bg-amber-500/10 active:scale-95 text-amber-400 border border-amber-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
-              >
-                <div className="text-[9px] font-black uppercase tracking-wider">Lifting Logs</div>
-                <div className="text-[6.5px] font-mono text-amber-400/80 font-bold">50 COINS // +35XP</div>
-              </button>
-
-              <button 
-                onClick={() => handleInteractPet('pet')}
-                className="bg-fuchsia-500/[0.03] hover:bg-fuchsia-500/10 active:scale-95 text-fuchsia-400 border border-fuchsia-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
-              >
-                <div className="text-[9px] font-black uppercase tracking-wider">Interact</div>
-                <div className="text-[6.5px] font-mono text-fuchsia-400/80 font-bold">FREE // SPARKS!</div>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Row 2: Customization Shop Tabs & Slider */}
-        <div className="lg:col-span-12 xl:col-span-7 flex flex-col gap-4">
-          
-          {/* Navigation Categories inside Shop */}
-          <div className="relative border border-white/20 bg-black/85 rounded-lg flex items-center overflow-hidden">
-            {/* Scroll Left indicator/button */}
-            {showLeftArrow && (
-              <button 
-                onClick={() => scrollTabsNext('left')}
-                className="absolute left-0 inset-y-0 px-2 bg-gradient-to-r from-black/90 via-black/80 to-transparent text-white/60 hover:text-white z-40 flex items-center transition-all cursor-pointer"
-                title="Scroll Left"
-              >
-                <div className="bg-zinc-900/90 hover:bg-zinc-800 border border-white/10 rounded-full p-2.5 shadow-xl active:scale-90 transition-all">
-                  <ChevronLeft className="w-4 h-4 text-gym-accent" />
-                </div>
-              </button>
-            )}
-
-            {/* Tab lists */}
-            <div 
-              ref={tabContainerRef}
-              className="flex flex-1 overflow-x-auto no-scrollbar scroll-smooth relative"
-            >
-              {[
-                { id: 'operatives', label: 'Operatives' },
-                { id: 'auras', label: 'Auras' },
-                { id: 'emotes', label: 'Emotes' },
-                { id: 'titles', label: 'Titles' },
-                { id: 'operativeBorders', label: 'Borders' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  data-active={activeTab === tab.id ? "true" : "false"}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-6 py-4.5 text-xs font-black uppercase tracking-[0.2em] relative cursor-pointer font-sans transition-all flex-shrink-0 ${
-                    activeTab === tab.id ? 'text-gym-accent bg-white/[0.01]' : 'text-white/40 hover:text-white/80'
-                  }`}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <motion.div 
-                      layoutId="avatar-shop-active-line"
-                      className="absolute bottom-0 inset-x-0 h-0.5 bg-gym-accent" 
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* Scroll Right indicator/button */}
-            {showRightArrow && (
-              <button 
-                onClick={() => scrollTabsNext('right')}
-                className="absolute right-0 inset-y-0 px-2 bg-gradient-to-l from-black/90 via-black/80 to-transparent text-white/60 hover:text-white z-40 flex items-center transition-all cursor-pointer"
-                title="Scroll Right"
-              >
-                <div className="bg-zinc-900/90 hover:bg-zinc-800 border border-white/10 rounded-full p-2.5 shadow-xl active:scale-90 transition-all">
-                  <ChevronRight className="w-4 h-4 text-gym-accent" />
-                </div>
-              </button>
-            )}
-          </div>
-
-          {/* Categories rendering grids */}
-          <div className="py-2">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4"
-              >
-              {/* Tab 1: Operatives Outfits */}
-              {activeTab === 'operatives' && OUTFITS.map((outfit) => {
-                const isUnlocked = unlockedOutfits.includes(outfit.id);
-                const isEquipped = equippedOutfit === outfit.id;
-                
-                return (
-                  <div 
-                    key={outfit.id} 
-                    onClick={() => buyOrEquipItem('operatives', outfit.id, outfit.price)}
-                    className={`group/card relative rounded-lg border p-4 bg-black/85 cursor-pointer flex flex-col justify-between h-48 transition-all overflow-hidden ${
-                      isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
-                        : isUnlocked 
-                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
-                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 hover:border-white/20'
-                    }`}
-                  >
-                    {/* Shadow overlay glow */}
-                    <div className={`absolute -bottom-24 -right-24 w-44 h-44 rounded-full bg-gradient-to-r filter blur-3xl opacity-10 transition-opacity group-hover/card:opacity-20 ${outfit.accentColor}`} />
-
-                    <div className="flex gap-4 items-start relative z-10">
-                      {/* Item Avatar preview */}
-                      <div className="w-20 h-24 rounded-md border border-white/5 overflow-hidden flex-shrink-0 bg-transparent relative">
-                        <TransparentCharacter 
-                          src={outfit.image} 
-                          alt={outfit.name} 
-                          className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" 
-                          toleranceMultiplier={outfit.id === 'golden_disciple' ? 0.85 : 1.0}
-                        />
-                        {!isUnlocked && (
-                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                            <Lock className="w-4 h-4 text-white/40" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-1">
-                        <h5 className="text-white font-black font-sans uppercase tracking-widest text-sm text-theme-text group-hover/card:text-gym-accent transition-colors">{outfit.name}</h5>
-                        <p className="text-[10px] text-white/40 line-clamp-3 leading-tight font-light">{outfit.description}</p>
-                      </div>
-                    </div>
-
-                    {/* Bottom strip inside card */}
-                    <div className="border-t border-white/5 pt-3 flex items-center justify-between relative z-10 mt-2">
-                      <span className="text-[8px] font-mono text-white/20 uppercase tracking-widest">Construct</span>
-                      
-                      <div className="flex items-center gap-2">
-                        {isEquipped ? (
-                          <div className="bg-gym-accent text-black font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-sm flex items-center gap-1 select-none">
-                            <Check className="w-3 h-3 stroke-[3]" /> Equipped
-                          </div>
-                        ) : isUnlocked ? (
-                          <span className="text-[9px] uppercase font-bold text-white/50 tracking-widest group-hover/card:text-white transition-colors">Apply</span>
-                        ) : (
-                          <div className="bg-white/5 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 group-hover/card:bg-gym-accent group-hover/card:text-black hover:border-none transition-all">
-                            <Coins className="w-3.5 h-3.5" /> {outfit.price.toLocaleString()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-                );
-              })}
-
-              {/* Tab 2: Auras */}
-              {activeTab === 'auras' && AURAS.map((aura) => {
-                const dbKey = `unlocked_aura_${aura.id}`;
-                const isUnlocked = aura.id === 'none' || (profile as any)?.[dbKey];
-                const isEquipped = equippedAura === aura.id;
-
-                return (
-                  <div 
-                    key={aura.id}
-                    onClick={() => buyOrEquipItem('auras', aura.id, aura.price)}
-                    className={`relative rounded-lg border p-5 bg-black/85 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
-                      isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
-                        : isUnlocked 
-                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
-                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 hover:border-white/20'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-gym-accent animate-pulse" />
-                          <h5 className="text-white font-black font-sans uppercase tracking-widest text-sm">{aura.name}</h5>
-                        </div>
-                        {!isUnlocked && <Lock className="w-3.5 h-3.5 text-white/20" />}
-                      </div>
-                      <p className="text-[10px] text-white/40 leading-tight font-light mt-1">{aura.desc}</p>
-                    </div>
-
-                    <div className="border-t border-white/5 pt-3 flex items-center justify-between mt-auto">
-                      <span className="text-[8px] font-mono text-white/25 uppercase tracking-widest">Visual Matrix</span>
-                      
-                      <div className="flex items-center gap-2">
-                        {isEquipped ? (
-                          <div className="bg-gym-accent text-black font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-sm flex items-center gap-1 select-none">
-                            <Check className="w-3 h-3 stroke-[3]" /> Equipped
-                          </div>
-                        ) : isUnlocked ? (
-                          <span className="text-[9px] uppercase font-bold text-white/50 tracking-widest hover:text-white transition-colors">Equip</span>
-                        ) : (
-                          <div className="bg-white/5 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 transition-all">
-                            <Coins className="w-3.5 h-3.5" /> {aura.price.toLocaleString()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-                );
-              })}
-
-              {/* Tab 3: Emotes */}
-              {activeTab === 'emotes' && EMOTES.map((emote) => {
-                const dbKey = `unlocked_emote_${emote.id}`;
-                const isUnlocked = emote.id === 'none' || emote.id === 'flex_mode' || (profile as any)?.[dbKey];
-                const isEquipped = equippedEmote === emote.id;
-
-                return (
-                  <div 
-                    key={emote.id}
-                    onClick={() => buyOrEquipItem('emotes', emote.id, emote.price)}
-                    className={`relative rounded-lg border p-5 bg-black/85 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
-                      isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
-                        : isUnlocked 
-                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
-                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 border-white/15'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-gym-accent animate-pulse" />
-                          <h5 className="text-white font-black font-sans uppercase tracking-widest text-sm">{emote.name}</h5>
-                        </div>
-                        {!isUnlocked && <Lock className="w-3.5 h-3.5 text-white/20" />}
-                      </div>
-                      <p className="text-[10px] text-white/40 leading-tight font-light mt-1">{emote.desc}</p>
-                    </div>
-
-                    <div className="border-t border-white/5 pt-3 flex items-center justify-between mt-auto">
-                      <span className="text-[8px] font-mono text-white/25 uppercase tracking-widest">Active Pose</span>
-                      
-                      <div className="flex items-center gap-2">
-                        {isEquipped ? (
-                          <div className="bg-gym-accent text-black font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-sm flex items-center gap-1 select-none">
-                            <Check className="w-3 h-3 stroke-[3]" /> Active
-                          </div>
-                        ) : isUnlocked ? (
-                          <span className="text-[9px] uppercase font-bold text-white/50 tracking-widest hover:text-white transition-colors">Equip</span>
-                        ) : (
-                          <div className="bg-white/5 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 transition-all">
-                            <Coins className="w-3.5 h-3.5" /> {emote.price.toLocaleString()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-                );
-              })}
-
-              {/* Tab 4: Titles */}
-              {activeTab === 'titles' && TITLES.map((title) => {
-                const dbKey = `unlocked_title_${title.id}`;
-                const isUnlocked = title.id === 'lifter' || (profile as any)?.[dbKey];
-                const isEquipped = equippedTitle === title.id;
-
-                return (
-                  <div 
-                    key={title.id}
-                    onClick={() => buyOrEquipItem('titles', title.id, title.price)}
-                    className={`relative rounded-lg border p-5 bg-black/85 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
-                      isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
-                        : isUnlocked 
-                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
-                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 border-white/15'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Award className="w-4 h-4 text-gym-accent" />
-                          <h5 className="text-white font-black font-sans uppercase tracking-widest text-sm">{title.name}</h5>
-                        </div>
-                        {!isUnlocked && <Lock className="w-3.5 h-3.5 text-white/20" />}
-                      </div>
-                      <p className="text-xs text-white/95 leading-normal font-normal mt-1.5">{title.desc}</p>
-                    </div>
-
-                    <div className="border-t border-white/5 pt-3 flex items-center justify-between mt-auto">
-                      <span className="text-[8px] font-mono text-white/25 uppercase tracking-widest">Hologram Label</span>
-                      
-                      <div className="flex items-center gap-2">
-                        {isEquipped ? (
-                          <div className="bg-gym-accent text-black font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-sm flex items-center gap-1 select-none">
-                            <Check className="w-3 h-3 stroke-[3]" /> Equipped
-                          </div>
-                        ) : isUnlocked ? (
-                          <span className="text-[9px] uppercase font-bold text-white/50 tracking-widest hover:text-white transition-colors">Equip</span>
-                        ) : (
-                          <div className="bg-white/5 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 transition-all">
-                            <Coins className="w-3.5 h-3.5" /> {title.price.toLocaleString()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-                );
-              })}
-
-              {/* Tab 5: Operative Borders */}
-              {activeTab === 'operativeBorders' && BORDERS.map((borderItem) => {
-                const dbKey = `unlocked_border_${borderItem.id}`;
-                const isUnlocked = borderItem.id === 'none' || (profile as any)?.[dbKey];
-                const isEquipped = equippedBorder === borderItem.id;
-
-                return (
-                  <div 
-                    key={borderItem.id}
-                    onClick={() => buyOrEquipItem('operativeBorders', borderItem.id, borderItem.price)}
-                    className={`relative rounded-lg border p-5 bg-black/85 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
-                      isEquipped 
-                        ? 'border-gym-accent bg-gym-accent/[0.15]' 
-                        : isUnlocked 
-                          ? 'border-white/20 hover:border-white/40 hover:bg-white/[0.12]' 
-                          : 'border-white/15 bg-black/95 opacity-85 hover:opacity-100 font-light border-white/15'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Shield className="w-4 h-4 text-gym-accent" />
-                          <h5 className="text-white font-black font-sans uppercase tracking-widest text-sm">{borderItem.name}</h5>
-                        </div>
-                        {!isUnlocked && <Lock className="w-3.5 h-3.5 text-white/20" />}
-                      </div>
-                      <p className="text-[10px] text-white/40 leading-tight font-light mt-1">{borderItem.desc}</p>
-                    </div>
-
-                    <div className="border-t border-white/5 pt-3 flex items-center justify-between mt-auto">
-                      <span className="text-[8px] font-mono text-white/25 uppercase tracking-widest">Frame border</span>
-                      
-                      <div className="flex items-center gap-2">
-                        {isEquipped ? (
-                          <div className="bg-gym-accent text-black font-black text-[9px] uppercase tracking-widest px-3 py-1 rounded-sm flex items-center gap-1 select-none">
-                            <Check className="w-3 h-3 stroke-[3]" /> Equipped
-                          </div>
-                        ) : isUnlocked ? (
-                          <span className="text-[9px] uppercase font-bold text-white/50 tracking-widest hover:text-white transition-colors">Equip</span>
-                        ) : (
-                          <div className="bg-white/5 border border-white/10 text-amber-400 font-extrabold text-[10px] font-mono px-3 py-1 rounded-sm flex items-center gap-1 transition-all">
-                            <Coins className="w-3.5 h-3.5" /> {borderItem.price.toLocaleString()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                  </div>
-                );
-              })}
-
+              ) : innerTab === 'auras' ? (
+                <AuraSynthesizer 
+                  profile={profile}
+                  equippedAura={currentAuraId}
+                  onBuyOrEquip={(auraId, price) => buyOrEquipItem('auras', auraId, price)}
+                />
+              ) : (
+                <ChallengePortal 
+                  displayName={profile?.displayName || "Athlete Specimen"}
+                  level={level}
+                  derivedStats={derivedStats}
+                  onGainRewards={handleGainRaidRewards}
+                  activePetLevel={currentPetLevel}
+                  activePetName={currentPetName}
+                />
+              )}
             </motion.div>
           </AnimatePresence>
         </div>
 
       </div>
 
-    </div>
+      {/* Relocated Widescreen Avatar Store Section at bottom */}
+      {innerTab === 'customization' && (
+        <div className="w-full mt-8 animate-[fadeIn_0.5s_ease-out]">
+          <div className="bg-black/90 border border-white/15 rounded-lg p-6 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/30 group shadow-2xl w-full">
+            <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-gym-accent/5 to-transparent pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-gradient-to-tr from-purple-500/5 to-transparent pointer-events-none" />
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-4 mb-5 relative z-10 gap-3">
+              <div>
+                <h4 className="text-[10px] text-gym-accent font-mono font-black tracking-[0.3em] uppercase">STYLING SELECTION LAB</h4>
+                <p className="text-lg font-light font-serif italic text-white leading-tight">Athletes & Holographics Customizer</p>
+                <p className="text-[11px] text-white/50 tracking-wider font-sans mt-0.5">Use active coins to obtain custom skins, dynamic action postures, status titles, and avatar borders</p>
+              </div>
+            </div>
 
-  </div>
-);
+            {/* Customizer Sub-Tab Ribbon with Horizontal Smooth Scrolling */}
+            <div className="relative border border-white/10 bg-zinc-950/80 rounded px-1 flex items-center overflow-hidden mb-6">
+              {showLeftArrow && (
+                <button 
+                  onClick={() => scrollTabsNext('left')}
+                  className="absolute left-0 inset-y-0 px-2 bg-gradient-to-r from-black/90 via-black/40 to-transparent text-white/60 hover:text-white z-40 flex items-center cursor-pointer transition-all"
+                  title="Scroll Left"
+                >
+                  <ChevronLeft className="w-4 h-4 text-gym-accent" />
+                </button>
+              )}
+
+              <div 
+                ref={tabContainerRef}
+                className="flex flex-1 overflow-x-auto no-scrollbar scroll-smooth relative"
+              >
+                {[
+                  { id: 'operatives', label: 'Operatives' },
+                  { id: 'emotes', label: 'Emotes' },
+                  { id: 'titles', label: 'Titles' },
+                  { id: 'operativeBorders', label: 'Borders' }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    data-active={activeTab === tab.id ? "true" : "false"}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.2em] relative cursor-pointer font-mono transition-all flex-shrink-0 ${
+                      activeTab === tab.id ? 'text-gym-accent bg-white/[0.02]' : 'text-white/40 hover:text-white/80'
+                    }`}
+                  >
+                    {tab.label}
+                    {activeTab === tab.id && (
+                      <motion.div 
+                        layoutId="avatar-shop-active-line-moved"
+                        className="absolute bottom-0 inset-x-0 h-[2px] bg-gym-accent" 
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {showRightArrow && (
+                <button 
+                  onClick={() => scrollTabsNext('right')}
+                  className="absolute right-0 inset-y-0 px-2 bg-gradient-to-l from-black/90 via-black/40 to-transparent text-white/60 hover:text-white z-40 flex items-center cursor-pointer transition-all"
+                  title="Scroll Right"
+                >
+                  <ChevronRight className="w-4 h-4 text-gym-accent" />
+                </button>
+              )}
+            </div>
+
+            {/* Customizer Selection Cards Listing inside shop wrapper */}
+            <div className="relative z-10">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.2 }}
+                  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4"
+                >
+                  {/* Category 1: Operative skins */}
+                  {activeTab === 'operatives' && OUTFITS.map((outfit) => {
+                    const isUnlocked = unlockedOutfits.includes(outfit.id);
+                    const isEquipped = equippedOutfit === outfit.id;
+                    
+                    return (
+                      <div 
+                        key={outfit.id} 
+                        onClick={() => buyOrEquipItem('operatives', outfit.id, outfit.price)}
+                        className={`group/card relative rounded-lg border p-3.5 bg-zinc-950/95 cursor-pointer flex flex-col justify-between h-44 transition-all overflow-hidden ${
+                          isEquipped 
+                            ? 'border-gym-accent bg-gym-accent/[0.04] shadow-inner' 
+                            : isUnlocked 
+                              ? 'border-white/10 hover:border-white/30 hover:bg-zinc-900/40' 
+                              : 'border-white/5 opacity-80 hover:opacity-100 hover:border-white/15'
+                        }`}
+                      >
+                        <div className={`absolute -bottom-16 -right-16 w-32 h-32 rounded-full bg-gradient-to-r filter blur-3xl opacity-10 transition-opacity group-hover/card:opacity-20 ${outfit.accentColor}`} />
+
+                        <div className="flex gap-3.5 items-start relative z-10 min-w-0">
+                          {/* Char body thumbnail */}
+                          <div className="w-16 h-20 rounded border border-white/5 overflow-hidden flex-shrink-0 bg-black/45 relative shadow-inner">
+                            <TransparentCharacter 
+                              src={outfit.image} 
+                              alt={outfit.name} 
+                              className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" 
+                              toleranceMultiplier={outfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                            />
+                            {!isUnlocked && (
+                              <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
+                                <Lock className="w-3.5 h-3.5 text-white/35" />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="space-y-1 min-w-0 flex-1">
+                            <h5 className="text-white font-bold leading-none font-mono uppercase tracking-wide text-[12px] group-hover/card:text-gym-accent transition-colors truncate">{outfit.name}</h5>
+                            <p className="text-[9.5px] text-white/40 leading-normal font-sans line-clamp-3 font-light mt-1.5">{outfit.description}</p>
+                          </div>
+                        </div>
+
+                        {/* Apply or Buy button footer strip */}
+                        <div className="border-t border-white/5 pt-2.5 flex items-center justify-between relative z-10 mt-2">
+                          <span className="text-[7.5px] font-mono text-white/20 uppercase tracking-widest font-bold">Construct Specimen</span>
+                          
+                          <div className="flex items-center gap-2">
+                            {isEquipped ? (
+                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-sm flex items-center gap-1 select-none font-mono">
+                                <Check className="w-2.5 h-2.5 stroke-[3.5]" /> Active
+                              </div>
+                            ) : isUnlocked ? (
+                              <span className="text-[8.5px] font-mono uppercase font-black text-white/40 tracking-wider group-hover/card:text-white transition-colors">Apply</span>
+                            ) : (
+                              <div className="bg-white/[0.02] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-sm flex items-center gap-1 group-hover/card:bg-gym-accent group-hover/card:text-black hover:border-transparent transition-all">
+                                <Coins className="w-3" /> {outfit.price.toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Category 2: Emotes / Poses */}
+                  {activeTab === 'emotes' && EMOTES.map((emote) => {
+                    const dbKey = `unlocked_emote_${emote.id}`;
+                    const isUnlocked = emote.id === 'none' || emote.id === 'flex_mode' || (profile as any)?.[dbKey];
+                    const isEquipped = equippedEmote === emote.id;
+
+                    return (
+                      <div 
+                        key={emote.id}
+                        onClick={() => buyOrEquipItem('emotes', emote.id, emote.price)}
+                        className={`relative rounded-lg border p-3.5 bg-zinc-950/95 cursor-pointer flex flex-col justify-between h-40 transition-all overflow-hidden ${
+                          isEquipped 
+                            ? 'border-gym-accent bg-gym-accent/[0.04] shadow-inner' 
+                            : isUnlocked 
+                              ? 'border-white/10 hover:border-white/30 hover:bg-zinc-900/40' 
+                              : 'border-white/5 opacity-80 hover:opacity-100'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5 border-b border-white/5 pb-1.5 font-sans">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Activity className="w-3.5 h-3.5 text-gym-accent shrink-0 animate-pulse" />
+                              <h5 className="text-white font-bold leading-none font-mono uppercase tracking-wide text-[12px] truncate">{emote.name}</h5>
+                            </div>
+                            {!isUnlocked && <Lock className="w-3 h-3 text-white/30 shrink-0" />}
+                          </div>
+                          <p className="text-[9.5px] text-white/40 leading-normal font-sans line-clamp-2 mt-1">{emote.desc}</p>
+                        </div>
+
+                        <div className="border-t border-white/5 pt-2.5 flex items-center justify-between mt-auto relative z-10">
+                          <span className="text-[7.5px] font-mono text-white/20 uppercase tracking-widest font-bold">Dynamic Act Pose</span>
+                          
+                          <div className="flex items-center gap-2">
+                            {isEquipped ? (
+                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-sm flex items-center gap-1 select-none font-mono">
+                                <Check className="w-2.5 h-2.5 stroke-[3.5]" /> Equipped
+                              </div>
+                            ) : isUnlocked ? (
+                              <span className="text-[8.5px] font-mono uppercase font-black text-white/40 tracking-wider hover:text-white transition-colors">Equip</span>
+                            ) : (
+                              <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-sm flex items-center gap-1 transition-all">
+                                <Coins className="w-3" /> {emote.price.toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Category 3: Titles */}
+                  {activeTab === 'titles' && TITLES.map((title) => {
+                    const dbKey = `unlocked_title_${title.id}`;
+                    const isUnlocked = title.id === 'lifter' || (profile as any)?.[dbKey];
+                    const isEquipped = equippedTitle === title.id;
+
+                    return (
+                      <div 
+                        key={title.id}
+                        onClick={() => buyOrEquipItem('titles', title.id, title.price)}
+                        className={`relative rounded-lg border p-3.5 bg-zinc-950/95 cursor-pointer flex flex-col justify-between h-40 transition-all overflow-hidden ${
+                          isEquipped 
+                            ? 'border-gym-accent bg-gym-accent/[0.04] shadow-inner' 
+                            : isUnlocked 
+                              ? 'border-white/10 hover:border-white/30 hover:bg-zinc-900/40' 
+                              : 'border-white/5 opacity-80 hover:opacity-100'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5 border-b border-white/5 pb-1.5">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Award className="w-3.5 h-3.5 text-gym-accent shrink-0" />
+                              <h5 className="text-white font-bold leading-none font-mono uppercase tracking-wide text-[12px] truncate">{title.name}</h5>
+                            </div>
+                            {!isUnlocked && <Lock className="w-3 h-3 text-white/30 shrink-0" />}
+                          </div>
+                          <p className="text-[9.5px] text-white/40 leading-normal font-sans line-clamp-2 mt-1">{title.desc}</p>
+                        </div>
+
+                        <div className="border-t border-white/5 pt-2.5 flex items-center justify-between mt-auto relative z-10">
+                          <span className="text-[7.5px] font-mono text-white/20 uppercase tracking-widest font-bold">Showcase Label</span>
+                          
+                          <div className="flex items-center gap-2">
+                            {isEquipped ? (
+                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-sm flex items-center gap-1 select-none font-mono">
+                                <Check className="w-2.5 h-2.5 stroke-[3.5]" /> Equipped
+                              </div>
+                            ) : isUnlocked ? (
+                              <span className="text-[8.5px] font-mono uppercase font-black text-white/40 tracking-wider hover:text-white transition-colors">Equip</span>
+                            ) : (
+                              <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-sm flex items-center gap-1 transition-all">
+                                <Coins className="w-3" /> {title.price.toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Category 4: operativeBorders */}
+                  {activeTab === 'operativeBorders' && BORDERS.map((borderItem) => {
+                    const dbKey = `unlocked_border_${borderItem.id}`;
+                    const isUnlocked = borderItem.id === 'none' || (profile as any)?.[dbKey];
+                    const isEquipped = equippedBorder === borderItem.id;
+
+                    return (
+                      <div 
+                        key={borderItem.id}
+                        onClick={() => buyOrEquipItem('operativeBorders', borderItem.id, borderItem.price)}
+                        className={`relative rounded-lg border p-3.5 bg-zinc-950/95 cursor-pointer flex flex-col justify-between h-40 transition-all overflow-hidden ${
+                          isEquipped 
+                            ? 'border-gym-accent bg-gym-accent/[0.04] shadow-inner' 
+                            : isUnlocked 
+                              ? 'border-white/10 hover:border-white/30 hover:bg-zinc-900/40' 
+                              : 'border-white/5 opacity-80 hover:opacity-100'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-1.5 border-b border-white/5 pb-1.5">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Shield className="w-3.5 h-3.5 text-gym-accent shrink-0" />
+                              <h5 className="text-white font-bold leading-none font-mono uppercase tracking-wide text-[12px] truncate">{borderItem.name}</h5>
+                            </div>
+                            {!isUnlocked && <Lock className="w-3 h-3 text-white/30 shrink-0" />}
+                          </div>
+                          <p className="text-[9.5px] text-white/40 leading-normal font-sans line-clamp-2 mt-1">{borderItem.desc}</p>
+                        </div>
+
+                        <div className="border-t border-white/5 pt-2.5 flex items-center justify-between mt-auto relative z-10">
+                          <span className="text-[7.5px] font-mono text-white/20 uppercase tracking-widest font-bold">Profile Border</span>
+                          
+                          <div className="flex items-center gap-2">
+                            {isEquipped ? (
+                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-sm flex items-center gap-1 select-none font-mono">
+                                <Check className="w-2.5 h-2.5 stroke-[3.5]" /> Equipped
+                              </div>
+                            ) : isUnlocked ? (
+                              <span className="text-[8.5px] font-mono uppercase font-black text-white/40 tracking-wider hover:text-white transition-colors">Equip</span>
+                            ) : (
+                              <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-sm flex items-center gap-1 transition-all">
+                                <Coins className="w-3" /> {borderItem.price.toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
 }
