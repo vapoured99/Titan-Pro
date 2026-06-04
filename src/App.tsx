@@ -1325,14 +1325,8 @@ export default function App() {
   const handleGoogleLogin = async () => {
     setAuthError("");
     const provider = new GoogleAuthProvider();
-    provider.addScope('https://www.googleapis.com/auth/drive.file');
-    provider.addScope('https://www.googleapis.com/auth/drive.readonly');
     try {
-      const result = await signInWithPopup(auth, provider);
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      if (credential?.accessToken) {
-        setGoogleDriveToken(credential.accessToken);
-      }
+      await signInWithPopup(auth, provider);
     } catch (err: any) {
       setAuthError(err.message);
     }
