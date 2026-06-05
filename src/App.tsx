@@ -2925,7 +2925,7 @@ export default function App() {
 
                     {/* Biomechanical Balance Star Radar Chart */}
                     <div className="flex-1">
-                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={250} />
+                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={330} />
                     </div>
                   </div>
 

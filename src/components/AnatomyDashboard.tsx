@@ -391,9 +391,9 @@ export default function AnatomyDashboard({
   // Helper for rendering glowing radar axes
   const radarChartSVG = useMemo(() => {
     const list = radarData.list;
-    const size = 260;
+    const size = 365;
     const center = size / 2;
-    const radius = 90;
+    const radius = 110;
 
     // Angles: vertical star starting upward at -90 degrees (-π/2)
     const vertices = list.map((item, i) => {
@@ -560,8 +560,8 @@ export default function AnatomyDashboard({
                   {/* Radar Chart SVG Viewport (Left 5 cols) */}
                   <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
                     
-                    <div className="w-[260px] h-[260px] flex items-center justify-center relative bg-gradient-to-b from-white/[0.01] to-transparent p-4 rounded-full border border-white/[0.02]">
-                      <svg viewBox="0 0 260 260" className="w-full h-full">
+                    <div className="w-[365px] h-[365px] flex items-center justify-center relative bg-gradient-to-b from-white/[0.01] to-transparent p-4 rounded-full border border-white/[0.02]">
+                      <svg viewBox="0 0 365 365" className="w-full h-full">
                         <defs>
                           <radialGradient id="radar-glow" cx="50%" cy="50%" r="50%">
                             <stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />

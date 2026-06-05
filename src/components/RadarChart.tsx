@@ -124,7 +124,7 @@ export default function RadarChart({
     const list = radarData.list;
     const center = size / 2;
     // Keep dynamic padding for outer labels
-    const radius = size * 0.32;
+    const radius = size * 0.26;
 
     // Angles: vertical star starting upward at -90 degrees (-π/2)
     const vertices = list.map((item, i) => {
@@ -138,7 +138,7 @@ export default function RadarChart({
       const valY = center + (radius * valMultiplier) * Math.sin(angle);
 
       // Label coords adjusted outward for margins
-      const labelOffset = 18;
+      const labelOffset = 16;
       const lblX = center + (radius + labelOffset) * Math.cos(angle);
       const lblY = center + (radius + labelOffset) * Math.sin(angle);
 
