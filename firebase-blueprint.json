@@ -43,6 +43,17 @@
       },
       "required": ["weight", "date"]
     },
+    "BodyFatEntry": {
+      "title": "Body Fat Entry",
+      "description": "Body fat percentage tracking entry.",
+      "type": "object",
+      "properties": {
+        "bodyFatPercent": { "type": "number" },
+        "date": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["bodyFatPercent", "date"]
+    },
     "SessionSet": {
       "title": "Session Set",
       "description": "A single set performed during a workout session.",
@@ -119,6 +130,10 @@
     "/users/{userId}/weightEntries/{entryId}": {
       "schema": "WeightEntry",
       "description": "Body weight history."
+    },
+    "/users/{userId}/bodyFatEntries/{entryId}": {
+      "schema": "BodyFatEntry",
+      "description": "Body fat percentage history."
     },
     "/users/{userId}/sets/{setId}": {
       "schema": "SessionSet",

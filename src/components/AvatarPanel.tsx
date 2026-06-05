@@ -1749,7 +1749,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   };
 
   // Safely grab user values with defaults
-  const level = profile?.avatarLevel ?? 3;
+  const level = profile?.avatarLevel ?? 1;
   const xp = profile?.avatarXp ?? 0;
   const credits = profile?.avatarCredits ?? 5000;
   const unlockedOutfits = profile?.unlockedOutfits ?? ['vanguard_cadet'];
@@ -1822,7 +1822,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   };
 
   // Shared attributes
-  const unassignedPoints = profile?.unassignedPoints ?? 16;
+  const unassignedPoints = profile?.unassignedPoints ?? 10;
   const basePower = profile?.avatarPower ?? 10;
   const baseKinetic = profile?.avatarKinetic ?? 10;
   const baseSymmetry = profile?.avatarSymmetry ?? 10;
@@ -2898,7 +2898,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               </div>
  
               {/* Level XP summary block */}
-              <div className="w-full sm:w-auto sm:min-w-[280px] flex-shrink-0 flex flex-col gap-1.5">
+              <div className="w-full sm:flex-1 sm:max-w-[280px] sm:min-w-[200px] flex flex-col gap-1.5">
                 <div className="flex items-center justify-between gap-4 text-[10px] font-extrabold font-mono text-white/55 tracking-wider">
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="bg-gym-accent/15 border border-gym-accent/30 text-gym-accent px-1.5 py-0.5 rounded text-[8.5px] font-black tracking-widest uppercase">

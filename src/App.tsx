@@ -22,6 +22,7 @@ import {
   Plus,
   Trash2,
   ExternalLink,
+  Percent,
   Save,
   Check,
   Layout,
@@ -68,6 +69,7 @@ import AvatarPanel, { OUTFITS, TITLES } from './components/AvatarPanel';
 import { AvatarDisplayCard } from './components/AvatarDisplayCard';
 import { TransparentCharacter } from './components/TransparentCharacter';
 import TacticalMap from './components/TacticalMap';
+import WorkoutCalendarHeatmap from './components/WorkoutCalendarHeatmap';
 import { 
   auth, 
   db, 
@@ -516,6 +518,13 @@ interface WeightEntry {
   timestamp: any;
 }
 
+interface BodyFatEntry {
+  id?: string;
+  bodyFatPercent: number;
+  date: string;
+  timestamp: any;
+}
+
 const DAY_CONFIG = [
   { label: "1", name: "Chest & Triceps", pools: ['upper_chest', 'middle_chest', 'lower_chest', 'long_triceps', 'lateral_triceps', 'medial_triceps'], icon: <Crown className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
   { label: "2", name: "Back & Biceps", pools: ['upper_back', 'lower_back', 'long_biceps', 'short_biceps', 'brachialis'], icon: <ArrowUpDown className="w-5 h-5 text-gym-accent" />, bg: "bg-white/[0.03]", border: "border-gym-accent/10", text: "text-white" },
@@ -910,6 +919,7 @@ export default function App() {
   const [currentDays, setCurrentDays] = useState<Exercise[][]>([[], [], [], [], [], []]);
   const [personalBests, setPersonalBests] = useState<Record<string, PB>>({});
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
+  const [bodyFatHistory, setBodyFatHistory] = useState<BodyFatEntry[]>([]);
   const [sessionSets, setSessionSets] = useState<SessionSet[]>([]);
   const [archivedWorkouts, setArchivedWorkouts] = useState<any[]>([]);
   // State for session view selection
@@ -979,6 +989,9 @@ export default function App() {
   const [newWeight, setNewWeight] = useState<string>("");
   const [newWeightDate, setNewWeightDate] = useState<string>("");
   const [showWeightHistoryList, setShowWeightHistoryList] = useState(false);
+  const [newBodyFat, setNewBodyFat] = useState<string>("");
+  const [newBodyFatDate, setNewBodyFatDate] = useState<string>("");
+  const [showBodyFatHistoryList, setShowBodyFatHistoryList] = useState(false);
   const [showCalorieHistoryList, setShowCalorieHistoryList] = useState(false);
   const [googleDriveToken, setGoogleDriveToken] = useState<string | null>(null);
   const [googleDriveBackups, setGoogleDriveBackups] = useState<any[]>([]);
@@ -995,6 +1008,8 @@ export default function App() {
   const [modalSearch, setModalSearch] = useState("");
   const [expandedProgressSections, setExpandedProgressSections] = useState<Record<string, boolean>>({
     weight: true,
+    bodyFat: true,
+    workoutCalendar: true,
     trending: false
   });
   const [volumeTimeframe, setVolumeTimeframe] = useState<'day' | 'week' | 'month'>('day');
@@ -1046,6 +1061,9 @@ export default function App() {
   const handleResetProfile = async () => {
     if (!currentUser) return;
     const path = `users/${currentUser.uid}/profile/settings`;
+    const isSpecialUser = currentUser.email === 'd.castle@outlook.com';
+    const startingLevel = isSpecialUser ? 3 : 1;
+    const startingPoints = isSpecialUser ? 16 : 10;
     try {
       const resetData: UserProfile = {
         startDate: profile?.startDate || new Date().toISOString(),
@@ -1053,10 +1071,10 @@ export default function App() {
         activeView: 'console',
         displayName: profile?.displayName || currentUser.displayName || "Athlete Specimen",
         photoURL: profile?.photoURL || currentUser.photoURL || "",
-        avatarLevel: 3,
+        avatarLevel: startingLevel,
         avatarXp: 0,
         avatarCredits: 5000,
-        unassignedPoints: 16,
+        unassignedPoints: startingPoints,
         gridNodesUnlocked: ['p0'],
         unlockedOutfits: ['vanguard_cadet'],
         equippedOutfit: 'vanguard_cadet',
@@ -1089,7 +1107,7 @@ export default function App() {
       setProfile(resetData);
       
       setToast({
-        message: "🧬 Profile and RPG character stats reset to Level 3 successfully!",
+        message: `🧬 Profile and RPG character stats reset to Level ${startingLevel} successfully!`,
         type: "success"
       });
       setTimeout(() => setToast(null), 4000);
@@ -1123,6 +1141,7 @@ export default function App() {
     setCurrentDays([[], [], [], [], [], []]);
     setPersonalBests({});
     setWeightHistory([]);
+    setBodyFatHistory([]);
     setSessionSets([]);
     setArchivedWorkouts([]);
     setRoutines([]);
@@ -1150,6 +1169,7 @@ export default function App() {
     const setsPath = `users/${currentUser.uid}/sets`;
     const pbsPath = `users/${currentUser.uid}/pbs`;
     const weightPath = `users/${currentUser.uid}/weightEntries`;
+    const bodyFatPath = `users/${currentUser.uid}/bodyFatEntries`;
 
     // Real-time listener for Workout & Settings
     const unsubscribeWorkout = onSnapshot(doc(db, workoutPath), (wDoc) => {
@@ -1256,6 +1276,40 @@ export default function App() {
       handleFirestoreError(err, OperationType.LIST, weightPath);
     });
 
+    const unsubscribeBodyFat = onSnapshot(collection(db, bodyFatPath), (snapshot) => {
+      const bfs: BodyFatEntry[] = [];
+      snapshot.forEach(d => {
+        const data = d.data();
+        if (data && typeof data.bodyFatPercent === 'number') {
+          bfs.push({ 
+            id: d.id, 
+            bodyFatPercent: data.bodyFatPercent,
+            date: data.date || new Date().toISOString().split('T')[0],
+            timestamp: data.timestamp
+          });
+        }
+      });
+      
+      const sorted = bfs.sort((a, b) => {
+        const dateA = new Date(a.date).getTime() || 0;
+        const dateB = new Date(b.date).getTime() || 0;
+        if (dateA !== dateB) return dateA - dateB;
+        
+        const getTs = (ts: any) => {
+          if (!ts) return 0;
+          if (typeof ts.toMillis === 'function') return ts.toMillis();
+          if (ts.seconds) return ts.seconds * 1000;
+          return Date.now();
+        };
+        return getTs(a.timestamp) - getTs(b.timestamp);
+      });
+      
+      console.log("Body Fat History Updated:", sorted);
+      setBodyFatHistory([...sorted]);
+    }, (err) => {
+      handleFirestoreError(err, OperationType.LIST, bodyFatPath);
+    });
+
     const unsubscribeRoutines = onSnapshot(collection(db, `users/${currentUser.uid}/routines`), (snapshot) => {
       const routineList: any[] = [];
       snapshot.forEach(d => {
@@ -1280,6 +1334,7 @@ export default function App() {
       unsubscribeWorkouts();
       unsubscribePbs();
       unsubscribeWeight();
+      unsubscribeBodyFat();
       unsubscribeRoutines();
       unsubscribeCustomExercises();
     };
@@ -1471,6 +1526,7 @@ export default function App() {
         currentDays: currentDays,
         personalBests: personalBests,
         weightHistory: weightHistory,
+        bodyFatHistory: bodyFatHistory,
         sessionSets: sessionSets,
         archivedWorkouts: archivedWorkouts,
         profile: profile
@@ -1569,6 +1625,20 @@ export default function App() {
             const ref = doc(db, `users/${currentUser.uid}/weightEntries/${entry.id}`);
             batch.set(ref, {
               weight: entry.weight ?? "",
+              date: entry.date ?? "",
+              timestamp: entry.timestamp ?? serverTimestamp()
+            });
+          }
+        }
+      }
+
+      // 3b. Body Fat History
+      if (Array.isArray(backupData.bodyFatHistory)) {
+        for (const entry of backupData.bodyFatHistory) {
+          if (entry.id) {
+            const ref = doc(db, `users/${currentUser.uid}/bodyFatEntries/${entry.id}`);
+            batch.set(ref, {
+              bodyFatPercent: entry.bodyFatPercent ?? "",
               date: entry.date ?? "",
               timestamp: entry.timestamp ?? serverTimestamp()
             });
@@ -2313,6 +2383,61 @@ export default function App() {
       setTimeout(() => setWeightFlash(""), 3000);
     } finally {
       setIsSavingWeight(false);
+    }
+  };
+
+  const [isSavingBodyFat, setIsSavingBodyFat] = useState(false);
+  const [bodyFatFlash, setBodyFatFlash] = useState("");
+
+  const handleSaveBodyFat = async () => {
+    if (!newBodyFat || !newBodyFatDate || !currentUser || isSavingBodyFat) {
+      if (!newBodyFatDate) {
+        setBodyFatFlash("Enter date");
+        setTimeout(() => setBodyFatFlash(""), 2000);
+      }
+      return;
+    }
+    
+    const bf = parseFloat(newBodyFat);
+    if (isNaN(bf) || bf <= 0 || bf > 100) {
+      setBodyFatFlash("Invalid percent");
+      setTimeout(() => setBodyFatFlash(""), 2000);
+      return;
+    }
+
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(newBodyFatDate)) {
+      setBodyFatFlash("Invalid date");
+      setTimeout(() => setBodyFatFlash(""), 2000);
+      return;
+    }
+
+    setIsSavingBodyFat(true);
+    const date = newBodyFatDate;
+    
+    const entry: Omit<BodyFatEntry, 'id'> = { 
+      bodyFatPercent: bf, 
+      date, 
+      timestamp: serverTimestamp() 
+    };
+    
+    try {
+      const bfColPath = `users/${currentUser.uid}/bodyFatEntries`;
+      const docId = `bf-${Date.now()}`;
+      
+      await setDoc(doc(db, bfColPath, docId), entry);
+      
+      setNewBodyFat("");
+      setNewBodyFatDate("");
+      setBodyFatFlash("✓ SAVED");
+      
+      setTimeout(() => setBodyFatFlash(""), 2000);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `users/${currentUser.uid}/bodyFatEntries`);
+      setBodyFatFlash("Error saving");
+      setTimeout(() => setBodyFatFlash(""), 3000);
+    } finally {
+      setIsSavingBodyFat(false);
     }
   };
 
@@ -4045,6 +4170,284 @@ export default function App() {
                             )}
                           </AnimatePresence>
                         </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Body Fat Tracking Section */}
+              <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <button 
+                  onClick={() => setExpandedProgressSections(prev => ({ ...prev, bodyFat: !prev.bodyFat }))}
+                  className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                >
+                  <div>
+                    <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                      Body Fat Tracking
+                    </h3>
+                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Body fat percentage progression</p>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.bodyFat ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {expandedProgressSections.bodyFat && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="px-8 pb-10 pt-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-10 pb-8 border-b border-white/5">
+                          <div className="flex flex-wrap items-center gap-4">
+                            <div className="relative">
+                              <input 
+                                type="number"
+                                inputMode="decimal"
+                                placeholder="Body Fat (%)"
+                                value={newBodyFat}
+                                onChange={(e) => setNewBodyFat(e.target.value)}
+                                disabled={isSavingBodyFat}
+                                className="bg-black/55 border border-white/20 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-32 disabled:opacity-50 text-white"
+                              />
+                            </div>
+                            <div className="relative">
+                              <input 
+                                type="date"
+                                value={newBodyFatDate}
+                                onChange={(e) => setNewBodyFatDate(e.target.value)}
+                                disabled={isSavingBodyFat}
+                                className="bg-black/55 border border-white/20 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-44 disabled:opacity-50 text-white [color-scheme:dark]"
+                              />
+                              <AnimatePresence>
+                                {bodyFatFlash && (
+                                  <motion.div 
+                                    initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                                    className={`absolute -bottom-8 left-0 right-0 text-center text-[9px] font-bold uppercase tracking-widest ${bodyFatFlash.includes('Error') || bodyFatFlash.includes('Invalid') || bodyFatFlash.includes('Enter') ? 'text-red-500' : 'text-gym-accent'}`}
+                                  >
+                                    {bodyFatFlash}
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                            <button 
+                              onClick={handleSaveBodyFat}
+                              disabled={isSavingBodyFat || !newBodyFat || !newBodyFatDate}
+                              className="bg-gym-accent text-black px-6 py-3 rounded-sm font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed accent-shadow-btn"
+                            >
+                              {isSavingBodyFat ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <Plus className="w-3 h-3" />
+                              )}
+                              Record
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="h-[350px] w-full mb-10">
+                          {bodyFatHistory.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-sm border border-white/5 border-dashed">
+                              <Percent className="w-12 h-12 text-white/10 mb-2 animate-pulse" />
+                              <p className="text-white/20 font-bold text-sm">Add your body fat % to see your progress data</p>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart 
+                                data={(() => {
+                                   const grouped = bodyFatHistory.reduce((acc, entry) => {
+                                     acc[entry.date] = entry; 
+                                     return acc;
+                                   }, {} as Record<string, BodyFatEntry>);
+                                   return (Object.values(grouped) as BodyFatEntry[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                                })()} 
+                                margin={{ top: 20, right: 30, left: 10, bottom: 20 }}
+                              >
+                                <defs>
+                                  <linearGradient id="colorBodyFat" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                  </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                                <XAxis 
+                                  dataKey="date" 
+                                  stroke="#ffffff33" 
+                                  fontSize={10} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                  dy={15}
+                                  minTickGap={20}
+                                  tickFormatter={(str) => {
+                                    if (!str) return '';
+                                    try {
+                                      const [y, m, d] = str.split('-').map(Number);
+                                      const date = new Date(y, m - 1, d);
+                                      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                    } catch (e) {
+                                      return str;
+                                    }
+                                  }}
+                                />
+                                <YAxis 
+                                  domain={[(dataMin: number) => Math.max(0, Math.floor(dataMin - 2)), (dataMax: number) => Math.ceil(dataMax + 2)]} 
+                                  stroke="#ffffff33" 
+                                  fontSize={10} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                  width={40}
+                                  tickFormatter={(val) => `${val}%`}
+                                />
+                                <Tooltip 
+                                  cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
+                                  contentStyle={{ 
+                                    backgroundColor: '#0d0d0d', 
+                                    borderColor: '#ffffff10', 
+                                    borderRadius: '4px',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                                    padding: '12px'
+                                  }}
+                                  itemStyle={{ color: activeTheme.accent, fontWeight: 'bold' }}
+                                  labelStyle={{ color: '#ffffff50', fontSize: '10px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '4px', letterSpacing: '0.1em' }}
+                                  labelFormatter={(str) => {
+                                    if (!str) return 'Date';
+                                    try {
+                                      const [y, m, d] = str.split('-').map(Number);
+                                      const date = new Date(y, m - 1, d);
+                                      return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+                                    } catch (e) {
+                                      return str;
+                                    }
+                                  }}
+                                  formatter={(value: any) => [`${value}%`, 'Body Fat']}
+                                />
+                                <Area 
+                                  type="basis" 
+                                  dataKey="bodyFatPercent" 
+                                  stroke={activeTheme.accent} 
+                                  strokeWidth={3}
+                                  fillOpacity={1} 
+                                  fill="url(#colorBodyFat)" 
+                                  animationDuration={2500}
+                                />
+                                <Area 
+                                  type="basis" 
+                                  dataKey="bodyFatPercent" 
+                                  stroke="none" 
+                                  fill={activeTheme.accent} 
+                                  fillOpacity={0.05} 
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          )}
+                        </div>
+
+                        <div className="mt-6">
+                          <button
+                            onClick={() => setShowBodyFatHistoryList(!showBodyFatHistoryList)}
+                            type="button"
+                            className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-sm text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
+                          >
+                            <span className="flex items-center gap-2">
+                              <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
+                              {showBodyFatHistoryList ? "Hide Body Fat Logs" : `View Body Fat Logs (${bodyFatHistory.length})`}
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showBodyFatHistoryList ? "rotate-180" : ""}`} />
+                          </button>
+
+                          <AnimatePresence>
+                            {showBodyFatHistoryList && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25 }}
+                                className="overflow-hidden"
+                              >
+                                {bodyFatHistory.length === 0 ? (
+                                  <div className="py-8 text-center text-xs text-white/20 italic bg-white/[0.01] border border-white/5 border-t-0 rounded-b-sm">
+                                    No logged body fat entries yet
+                                  </div>
+                                ) : (
+                                  <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/15 rounded-sm bg-black">
+                                    {[...bodyFatHistory].reverse().map((entry, i) => (
+                                      <div key={entry.id || i} className="flex items-center justify-between px-6 py-3.5 hover:bg-white/[0.02] transition-colors group">
+                                        <div className="flex flex-col gap-0.5">
+                                          <div className="flex items-baseline gap-1.5">
+                                            <span className="text-base font-medium text-white">
+                                              {entry.bodyFatPercent}
+                                            </span>
+                                            <span className="text-[10px] text-white/40">%</span>
+                                          </div>
+                                          <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest">
+                                            {(() => {
+                                              if (!entry.date) return 'Unknown Date';
+                                              const parts = entry.date.split('-').map(Number);
+                                              if (parts.length !== 3) return entry.date;
+                                              const date = new Date(parts[0], parts[1] - 1, parts[2]);
+                                              return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                                            })()}
+                                          </span>
+                                        </div>
+                                        {entry.id && (
+                                          <button 
+                                            onClick={async () => {
+                                              if (!currentUser) return;
+                                              try {
+                                                await deleteDoc(doc(db, `users/${currentUser.uid}/bodyFatEntries/${entry.id}`));
+                                              } catch (err) {
+                                                handleFirestoreError(err, OperationType.DELETE, `bodyFatEntries/${entry.id}`);
+                                              }
+                                            }}
+                                            className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all cursor-pointer"
+                                            title="Delete entry"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                          </button>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Workout Frequency Heatmap Section */}
+              <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <button 
+                  onClick={() => setExpandedProgressSections(prev => ({ ...prev, workoutCalendar: !prev.workoutCalendar }))}
+                  className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                >
+                  <div>
+                    <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                      Workout Frequency
+                    </h3>
+                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Past 3 months activity heatmap</p>
+                  </div>
+                  <ChevronDown className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.workoutCalendar ? 'rotate-180' : ''}`} />
+                </button>
+
+                <AnimatePresence>
+                  {expandedProgressSections.workoutCalendar && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="px-8 pb-10 pt-4">
+                        <WorkoutCalendarHeatmap archivedWorkouts={archivedWorkouts} activeTheme={activeTheme} />
                       </div>
                     </motion.div>
                   )}
@@ -6693,6 +7096,79 @@ export default function App() {
                                   strokeWidth={1.5}
                                   fillOpacity={1} 
                                   fill="url(#reportCalGrad)" 
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Chart Section 4: Body Fat Progression Timeline Area Chart */}
+                      <div className="bg-white/[0.015] border border-white/10 rounded-sm p-5 relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-4 relative z-10">
+                          <div>
+                            <span className="text-[10px] font-mono font-bold tracking-widest text-gym-accent uppercase block">TIMELINE DATA _04</span>
+                            <span className="text-xs font-mono font-black text-white uppercase tracking-widest">Body Fat Percentage Trend (%)</span>
+                          </div>
+                          <span className="text-[10px] font-mono font-semibold text-white bg-white/10 px-2 py-0.5 border border-white/10 rounded-sm">
+                            HISTORICAL ENTRIES: {bodyFatHistory.length}
+                          </span>
+                        </div>
+                        <div className="h-32 w-full">
+                          {bodyFatHistory.length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-sm bg-black/40">
+                              <Percent className="w-5 h-5 text-white/10 mb-1 animate-pulse" />
+                              <span className="text-[10px] text-white/55 uppercase tracking-widest">No body fat logs archived</span>
+                            </div>
+                          ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart 
+                                data={(() => {
+                                   const grouped = bodyFatHistory.reduce((acc, entry) => {
+                                     acc[entry.date] = entry; 
+                                     return acc;
+                                   }, {} as Record<string, BodyFatEntry>);
+                                   return (Object.values(grouped) as BodyFatEntry[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                                })()} 
+                                margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                              >
+                                <defs>
+                                  <linearGradient id="reportBodyFatGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
+                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                  </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                <XAxis 
+                                  dataKey="date" 
+                                  stroke="#ffffff60" 
+                                  fontSize={10} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                  tickFormatter={(str) => {
+                                    if (!str) return '';
+                                    try {
+                                      const [y, m, d] = str.split('-').map(Number);
+                                      return new Date(y, m-1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                    } catch (e) { return str }
+                                  }}
+                                />
+                                <YAxis 
+                                  domain={[(dataMin: number) => Math.max(0, Math.floor(dataMin - 2)), (dataMax: number) => Math.ceil(dataMax + 2)]} 
+                                  stroke="#ffffff60" 
+                                  fontSize={10} 
+                                  tickLine={false}
+                                  axisLine={false}
+                                  width={25}
+                                  tickFormatter={(val) => `${val}%`}
+                                />
+                                <Area 
+                                  type="monotone" 
+                                  dataKey="bodyFatPercent" 
+                                  stroke={activeTheme.accent} 
+                                  strokeWidth={1.5}
+                                  fillOpacity={1} 
+                                  fill="url(#reportBodyFatGrad)" 
                                 />
                               </AreaChart>
                             </ResponsiveContainer>
