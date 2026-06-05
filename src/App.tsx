@@ -4198,93 +4198,100 @@ export default function App() {
                               <p className="text-white/20 font-bold text-sm">Add your weight to see your progress data</p>
                             </div>
                           ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart 
-                                data={(() => {
-                                   const grouped = weightHistory.reduce((acc, entry) => {
-                                     acc[entry.date] = entry; 
-                                     return acc;
-                                   }, {} as Record<string, WeightEntry>);
-                                   return (Object.values(grouped) as WeightEntry[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-                                })()} 
-                                margin={{ top: 20, right: 30, left: 10, bottom: 20 }}
-                              >
-                                <defs>
-                                  <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
-                                  </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                                <XAxis 
-                                  dataKey="date" 
-                                  stroke="#ffffff33" 
-                                  fontSize={10} 
-                                  tickLine={false}
-                                  axisLine={false}
-                                  dy={15}
-                                  minTickGap={20}
-                                  tickFormatter={(str) => {
-                                    if (!str) return '';
-                                    try {
-                                      const [y, m, d] = str.split('-').map(Number);
-                                      const date = new Date(y, m - 1, d);
-                                      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-                                    } catch (e) {
-                                      return str;
-                                    }
-                                  }}
-                                />
-                                <YAxis 
-                                  domain={[(dataMin: number) => Math.max(0, Math.floor(dataMin - 5)), (dataMax: number) => Math.ceil(dataMax + 5)]} 
-                                  stroke="#ffffff33" 
-                                  fontSize={10} 
-                                  tickLine={false}
-                                  axisLine={false}
-                                  width={40}
-                                  tickFormatter={(val) => `${val}kg`}
-                                />
-                                <Tooltip 
-                                  cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
-                                  contentStyle={{ 
-                                    backgroundColor: '#0d0d0d', 
-                                    borderColor: '#ffffff10', 
-                                    borderRadius: '4px',
-                                    boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-                                    padding: '12px'
-                                  }}
-                                  itemStyle={{ color: activeTheme.accent, fontWeight: 'bold' }}
-                                  labelStyle={{ color: '#ffffff50', fontSize: '10px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '4px', letterSpacing: '0.1em' }}
-                                  labelFormatter={(str) => {
-                                    if (!str) return 'Date';
-                                    try {
-                                      const [y, m, d] = str.split('-').map(Number);
-                                      const date = new Date(y, m - 1, d);
-                                      return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-                                    } catch (e) {
-                                      return str;
-                                    }
-                                  }}
-                                  formatter={(value: any) => [`${value} kg`, 'Weight']}
-                                />
-                                <Area 
-                                  type="basis" 
-                                  dataKey="weight" 
-                                  stroke={activeTheme.accent} 
-                                  strokeWidth={3}
-                                  fillOpacity={1} 
-                                  fill="url(#colorWeight)" 
-                                  animationDuration={2500}
-                                />
-                                <Area 
-                                  type="basis" 
-                                  dataKey="weight" 
-                                  stroke="none" 
-                                  fill={activeTheme.accent} 
-                                  fillOpacity={0.05} 
-                                />
-                              </AreaChart>
-                            </ResponsiveContainer>
+                            <motion.div 
+                              className="h-full w-full"
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                            >
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart 
+                                  data={(() => {
+                                     const grouped = weightHistory.reduce((acc, entry) => {
+                                       acc[entry.date] = entry; 
+                                       return acc;
+                                     }, {} as Record<string, WeightEntry>);
+                                     return (Object.values(grouped) as WeightEntry[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                                  })()} 
+                                  margin={{ top: 20, right: 30, left: 10, bottom: 20 }}
+                                >
+                                  <defs>
+                                    <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                                  <XAxis 
+                                    dataKey="date" 
+                                    stroke="#ffffff33" 
+                                    fontSize={10} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    dy={15}
+                                    minTickGap={20}
+                                    tickFormatter={(str) => {
+                                      if (!str) return '';
+                                      try {
+                                        const [y, m, d] = str.split('-').map(Number);
+                                        const date = new Date(y, m - 1, d);
+                                        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                      } catch (e) {
+                                        return str;
+                                      }
+                                    }}
+                                  />
+                                  <YAxis 
+                                    domain={[(dataMin: number) => Math.max(0, Math.floor(dataMin - 5)), (dataMax: number) => Math.ceil(dataMax + 5)]} 
+                                    stroke="#ffffff33" 
+                                    fontSize={10} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    width={40}
+                                    tickFormatter={(val) => `${val}kg`}
+                                  />
+                                  <Tooltip 
+                                    cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
+                                    contentStyle={{ 
+                                      backgroundColor: '#0d0d0d', 
+                                      borderColor: '#ffffff10', 
+                                      borderRadius: '4px',
+                                      boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                                      padding: '12px'
+                                    }}
+                                    itemStyle={{ color: activeTheme.accent, fontWeight: 'bold' }}
+                                    labelStyle={{ color: '#ffffff50', fontSize: '10px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '4px', letterSpacing: '0.1em' }}
+                                    labelFormatter={(str) => {
+                                      if (!str) return 'Date';
+                                      try {
+                                        const [y, m, d] = str.split('-').map(Number);
+                                        const date = new Date(y, m - 1, d);
+                                        return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+                                      } catch (e) {
+                                        return str;
+                                      }
+                                    }}
+                                    formatter={(value: any) => [`${value} kg`, 'Weight']}
+                                  />
+                                  <Area 
+                                    type="basis" 
+                                    dataKey="weight" 
+                                    stroke={activeTheme.accent} 
+                                    strokeWidth={3}
+                                    fillOpacity={1} 
+                                    fill="url(#colorWeight)" 
+                                    animationDuration={2500}
+                                  />
+                                  <Area 
+                                    type="basis" 
+                                    dataKey="weight" 
+                                    stroke="none" 
+                                    fill={activeTheme.accent} 
+                                    fillOpacity={0.05} 
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </motion.div>
                           )}
                         </div>
 
@@ -4450,93 +4457,100 @@ export default function App() {
                               <p className="text-white/20 font-bold text-sm">Add your body fat % to see your progress data</p>
                             </div>
                           ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart 
-                                data={(() => {
-                                   const grouped = bodyFatHistory.reduce((acc, entry) => {
-                                     acc[entry.date] = entry; 
-                                     return acc;
-                                   }, {} as Record<string, BodyFatEntry>);
-                                   return (Object.values(grouped) as BodyFatEntry[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-                                })()} 
-                                margin={{ top: 20, right: 30, left: 10, bottom: 20 }}
-                              >
-                                <defs>
-                                  <linearGradient id="colorBodyFat" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
-                                  </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                                <XAxis 
-                                  dataKey="date" 
-                                  stroke="#ffffff33" 
-                                  fontSize={10} 
-                                  tickLine={false}
-                                  axisLine={false}
-                                  dy={15}
-                                  minTickGap={20}
-                                  tickFormatter={(str) => {
-                                    if (!str) return '';
-                                    try {
-                                      const [y, m, d] = str.split('-').map(Number);
-                                      const date = new Date(y, m - 1, d);
-                                      return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-                                    } catch (e) {
-                                      return str;
-                                    }
-                                  }}
-                                />
-                                <YAxis 
-                                  domain={[(dataMin: number) => Math.max(0, Math.floor(dataMin - 2)), (dataMax: number) => Math.ceil(dataMax + 2)]} 
-                                  stroke="#ffffff33" 
-                                  fontSize={10} 
-                                  tickLine={false}
-                                  axisLine={false}
-                                  width={40}
-                                  tickFormatter={(val) => `${val}%`}
-                                />
-                                <Tooltip 
-                                  cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
-                                  contentStyle={{ 
-                                    backgroundColor: '#0d0d0d', 
-                                    borderColor: '#ffffff10', 
-                                    borderRadius: '4px',
-                                    boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-                                    padding: '12px'
-                                  }}
-                                  itemStyle={{ color: activeTheme.accent, fontWeight: 'bold' }}
-                                  labelStyle={{ color: '#ffffff50', fontSize: '10px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '4px', letterSpacing: '0.1em' }}
-                                  labelFormatter={(str) => {
-                                    if (!str) return 'Date';
-                                    try {
-                                      const [y, m, d] = str.split('-').map(Number);
-                                      const date = new Date(y, m - 1, d);
-                                      return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-                                    } catch (e) {
-                                      return str;
-                                    }
-                                  }}
-                                  formatter={(value: any) => [`${value}%`, 'Body Fat']}
-                                />
-                                <Area 
-                                  type="basis" 
-                                  dataKey="bodyFatPercent" 
-                                  stroke={activeTheme.accent} 
-                                  strokeWidth={3}
-                                  fillOpacity={1} 
-                                  fill="url(#colorBodyFat)" 
-                                  animationDuration={2500}
-                                />
-                                <Area 
-                                  type="basis" 
-                                  dataKey="bodyFatPercent" 
-                                  stroke="none" 
-                                  fill={activeTheme.accent} 
-                                  fillOpacity={0.05} 
-                                />
-                              </AreaChart>
-                            </ResponsiveContainer>
+                            <motion.div 
+                              className="h-full w-full"
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                            >
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart 
+                                  data={(() => {
+                                     const grouped = bodyFatHistory.reduce((acc, entry) => {
+                                       acc[entry.date] = entry; 
+                                       return acc;
+                                     }, {} as Record<string, BodyFatEntry>);
+                                     return (Object.values(grouped) as BodyFatEntry[]).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                                  })()} 
+                                  margin={{ top: 20, right: 30, left: 10, bottom: 20 }}
+                                >
+                                  <defs>
+                                    <linearGradient id="colorBodyFat" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                                  <XAxis 
+                                    dataKey="date" 
+                                    stroke="#ffffff33" 
+                                    fontSize={10} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    dy={15}
+                                    minTickGap={20}
+                                    tickFormatter={(str) => {
+                                      if (!str) return '';
+                                      try {
+                                        const [y, m, d] = str.split('-').map(Number);
+                                        const date = new Date(y, m - 1, d);
+                                        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                      } catch (e) {
+                                        return str;
+                                      }
+                                    }}
+                                  />
+                                  <YAxis 
+                                    domain={[(dataMin: number) => Math.max(0, Math.floor(dataMin - 2)), (dataMax: number) => Math.ceil(dataMax + 2)]} 
+                                    stroke="#ffffff33" 
+                                    fontSize={10} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    width={40}
+                                    tickFormatter={(val) => `${val}%`}
+                                  />
+                                  <Tooltip 
+                                    cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
+                                    contentStyle={{ 
+                                      backgroundColor: '#0d0d0d', 
+                                      borderColor: '#ffffff10', 
+                                      borderRadius: '4px',
+                                      boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                                      padding: '12px'
+                                    }}
+                                    itemStyle={{ color: activeTheme.accent, fontWeight: 'bold' }}
+                                    labelStyle={{ color: '#ffffff50', fontSize: '10px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '4px', letterSpacing: '0.1em' }}
+                                    labelFormatter={(str) => {
+                                      if (!str) return 'Date';
+                                      try {
+                                        const [y, m, d] = str.split('-').map(Number);
+                                        const date = new Date(y, m - 1, d);
+                                        return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+                                      } catch (e) {
+                                        return str;
+                                      }
+                                    }}
+                                    formatter={(value: any) => [`${value}%`, 'Body Fat']}
+                                  />
+                                  <Area 
+                                    type="basis" 
+                                    dataKey="bodyFatPercent" 
+                                    stroke={activeTheme.accent} 
+                                    strokeWidth={3}
+                                    fillOpacity={1} 
+                                    fill="url(#colorBodyFat)" 
+                                    animationDuration={2500}
+                                  />
+                                  <Area 
+                                    type="basis" 
+                                    dataKey="bodyFatPercent" 
+                                    stroke="none" 
+                                    fill={activeTheme.accent} 
+                                    fillOpacity={0.05} 
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </motion.div>
                           )}
                         </div>
 
@@ -4709,78 +4723,85 @@ export default function App() {
                               <p className="text-white/20 font-bold text-sm">Capture workouts to see your volume trending</p>
                             </div>
                           ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart 
-                                data={getVolumeData()} 
-                                margin={{ top: 20, right: 30, left: 10, bottom: 20 }}
-                              >
-                                <defs>
-                                  <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
-                                  </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                                <XAxis 
-                                  dataKey="date" 
-                                  stroke="#ffffff33" 
-                                  fontSize={10} 
-                                  tickLine={false}
-                                  axisLine={false}
-                                  dy={15}
-                                  tickFormatter={(str) => {
-                                    if (!str) return '';
-                                    try {
-                                       if (volumeTimeframe === 'month') {
-                                         const [y, m] = str.split('-');
-                                         const date = new Date(Number(y), Number(m) - 1, 1);
-                                         return date.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
-                                       }
-                                       if (volumeTimeframe === 'week') return `W/C ${str.split('-').slice(1).reverse().join('/')}`;
-                                       const [y, m, d] = str.split('-').map(Number);
-                                       return new Date(y, m-1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-                                    } catch (e) { return str }
-                                  }}
-                                />
-                                <YAxis 
-                                  stroke="#ffffff33" 
-                                  fontSize={10} 
-                                  tickLine={false}
-                                  axisLine={false}
-                                  width={45}
-                                  tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(1)}t` : `${val}kg`}
-                                />
-                                <Tooltip 
-                                  cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
-                                  contentStyle={{ 
-                                    backgroundColor: '#0d0d0d', 
-                                    borderColor: '#ffffff10', 
-                                    borderRadius: '4px',
-                                    boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-                                    padding: '12px'
-                                  }}
-                                  itemStyle={{ color: activeTheme.accent, fontWeight: 'bold' }}
-                                  labelStyle={{ color: '#ffffff50', fontSize: '10px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '4px', letterSpacing: '0.1em' }}
-                                  formatter={(value: any) => [`${Number(value).toLocaleString()} kg`, 'Volume']}
-                                />
-                                <Area 
-                                  type="basis" 
-                                  dataKey="volume" 
-                                  stroke={activeTheme.accent} 
-                                  strokeWidth={3}
-                                  fillOpacity={1} 
-                                  fill="url(#colorVol)" 
-                                  animationDuration={2500}
-                                />
-                                <Area 
-                                  type="basis" 
-                                  dataKey="volume" 
-                                  stroke="none" 
-                                  fill={activeTheme.accent} 
-                                  fillOpacity={0.05} 
-                                />
-                              </AreaChart>
-                            </ResponsiveContainer>
+                            <motion.div 
+                              className="h-full w-full"
+                              initial={{ opacity: 0, y: 30 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.8, ease: "easeOut" }}
+                            >
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart 
+                                  data={getVolumeData()} 
+                                  margin={{ top: 20, right: 30, left: 10, bottom: 20 }}
+                                >
+                                  <defs>
+                                    <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                                  <XAxis 
+                                    dataKey="date" 
+                                    stroke="#ffffff33" 
+                                    fontSize={10} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    dy={15}
+                                    tickFormatter={(str) => {
+                                      if (!str) return '';
+                                      try {
+                                         if (volumeTimeframe === 'month') {
+                                           const [y, m] = str.split('-');
+                                           const date = new Date(Number(y), Number(m) - 1, 1);
+                                           return date.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' });
+                                         }
+                                         if (volumeTimeframe === 'week') return `W/C ${str.split('-').slice(1).reverse().join('/')}`;
+                                         const [y, m, d] = str.split('-').map(Number);
+                                         return new Date(y, m-1, d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                      } catch (e) { return str }
+                                    }}
+                                  />
+                                  <YAxis 
+                                    stroke="#ffffff33" 
+                                    fontSize={10} 
+                                    tickLine={false}
+                                    axisLine={false}
+                                    width={45}
+                                    tickFormatter={(val) => val >= 1000 ? `${(val/1000).toFixed(1)}t` : `${val}kg`}
+                                  />
+                                  <Tooltip 
+                                    cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '4 4' }}
+                                    contentStyle={{ 
+                                      backgroundColor: '#0d0d0d', 
+                                      borderColor: '#ffffff10', 
+                                      borderRadius: '4px',
+                                      boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                                      padding: '12px'
+                                    }}
+                                    itemStyle={{ color: activeTheme.accent, fontWeight: 'bold' }}
+                                    labelStyle={{ color: '#ffffff50', fontSize: '10px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '4px', letterSpacing: '0.1em' }}
+                                    formatter={(value: any) => [`${Number(value).toLocaleString()} kg`, 'Volume']}
+                                  />
+                                  <Area 
+                                    type="basis" 
+                                    dataKey="volume" 
+                                    stroke={activeTheme.accent} 
+                                    strokeWidth={3}
+                                    fillOpacity={1} 
+                                    fill="url(#colorVol)" 
+                                    animationDuration={2500}
+                                  />
+                                  <Area 
+                                    type="basis" 
+                                    dataKey="volume" 
+                                    stroke="none" 
+                                    fill={activeTheme.accent} 
+                                    fillOpacity={0.05} 
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </motion.div>
                           )}
                         </div>
                       </div>
@@ -4871,79 +4892,86 @@ export default function App() {
                                       <p className="text-white/20 text-xs">No active caloric progression logged yet</p>
                                     </div>
                                   ) : (
-                                    <ResponsiveContainer width="100%" height="100%">
-                                      <AreaChart 
-                                        data={chronologicalDays} 
-                                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                                      >
-                                        <defs>
-                                          <linearGradient id="colorCalorieTracker" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
-                                            <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
-                                          </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                                        <XAxis 
-                                          dataKey="date" 
-                                          stroke="#ffffff20" 
-                                          fontSize={9} 
-                                          tickLine={false}
-                                          axisLine={false}
-                                          dy={10}
-                                          minTickGap={20}
-                                          tickFormatter={(str) => {
-                                            if (!str) return '';
-                                            try {
-                                              const [y, m, d] = str.split('-').map(Number);
-                                              const date = new Date(y, m - 1, d);
-                                              return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-                                            } catch (e) {
-                                              return str;
-                                            }
-                                          }}
-                                        />
-                                        <YAxis 
-                                          stroke="#ffffff20" 
-                                          fontSize={9} 
-                                          tickLine={false}
-                                          axisLine={false}
-                                          width={40}
-                                          tickFormatter={(val) => `${val}`}
-                                        />
-                                        <Tooltip 
-                                          cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '3 3' }}
-                                          contentStyle={{ 
-                                            backgroundColor: '#0a0a0a', 
-                                            borderColor: '#ffffff10', 
-                                            borderRadius: '2px',
-                                            boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
-                                            padding: '10px'
-                                          }}
-                                          itemStyle={{ color: activeTheme.accent, fontWeight: 'bold', fontSize: '11px' }}
-                                          labelStyle={{ color: '#ffffff40', fontSize: '9px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '2px' }}
-                                          labelFormatter={(str) => {
-                                            if (!str) return 'Date';
-                                            try {
-                                              const [y, m, d] = str.split('-').map(Number);
-                                              const date = new Date(y, m - 1, d);
-                                              return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-                                            } catch (e) {
-                                              return str;
-                                            }
-                                          }}
-                                          formatter={(value: any) => [`${value} kcal`, 'Calories']}
-                                        />
-                                        <Area 
-                                          type="monotone" 
-                                          dataKey="calories" 
-                                          stroke={activeTheme.accent} 
-                                          strokeWidth={2}
-                                          fillOpacity={1} 
-                                          fill="url(#colorCalorieTracker)" 
-                                          animationDuration={1500}
-                                        />
-                                      </AreaChart>
-                                    </ResponsiveContainer>
+                                    <motion.div 
+                                      className="h-full w-full"
+                                      initial={{ opacity: 0, y: 30 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{ duration: 0.8, ease: "easeOut" }}
+                                    >
+                                      <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart 
+                                          data={chronologicalDays} 
+                                          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                                        >
+                                          <defs>
+                                            <linearGradient id="colorCalorieTracker" x1="0" y1="0" x2="0" y2="1">
+                                              <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.25}/>
+                                              <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0}/>
+                                            </linearGradient>
+                                          </defs>
+                                          <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                          <XAxis 
+                                            dataKey="date" 
+                                            stroke="#ffffff20" 
+                                            fontSize={9} 
+                                            tickLine={false}
+                                            axisLine={false}
+                                            dy={10}
+                                            minTickGap={20}
+                                            tickFormatter={(str) => {
+                                              if (!str) return '';
+                                              try {
+                                                const [y, m, d] = str.split('-').map(Number);
+                                                const date = new Date(y, m - 1, d);
+                                                return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                                              } catch (e) {
+                                                return str;
+                                              }
+                                            }}
+                                          />
+                                          <YAxis 
+                                            stroke="#ffffff20" 
+                                            fontSize={9} 
+                                            tickLine={false}
+                                            axisLine={false}
+                                            width={40}
+                                            tickFormatter={(val) => `${val}`}
+                                          />
+                                          <Tooltip 
+                                            cursor={{ stroke: activeTheme.accent, strokeWidth: 1, strokeDasharray: '3 3' }}
+                                            contentStyle={{ 
+                                              backgroundColor: '#0a0a0a', 
+                                              borderColor: '#ffffff10', 
+                                              borderRadius: '2px',
+                                              boxShadow: '0 10px 30px rgba(0,0,0,0.8)',
+                                              padding: '10px'
+                                            }}
+                                            itemStyle={{ color: activeTheme.accent, fontWeight: 'bold', fontSize: '11px' }}
+                                            labelStyle={{ color: '#ffffff40', fontSize: '9px', textTransform: 'uppercase', fontWeight: '900', marginBottom: '2px' }}
+                                            labelFormatter={(str) => {
+                                              if (!str) return 'Date';
+                                              try {
+                                                const [y, m, d] = str.split('-').map(Number);
+                                                const date = new Date(y, m - 1, d);
+                                                return date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+                                              } catch (e) {
+                                                return str;
+                                              }
+                                            }}
+                                            formatter={(value: any) => [`${value} kcal`, 'Calories']}
+                                          />
+                                          <Area 
+                                            type="monotone" 
+                                            dataKey="calories" 
+                                            stroke={activeTheme.accent} 
+                                            strokeWidth={2}
+                                            fillOpacity={1} 
+                                            fill="url(#colorCalorieTracker)" 
+                                            animationDuration={1500}
+                                          />
+                                        </AreaChart>
+                                      </ResponsiveContainer>
+                                    </motion.div>
                                   )}
                                 </div>
                               </div>
