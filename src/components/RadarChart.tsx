@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { motion } from 'motion/react';
 import { POOLS } from '../data/exercises';
 
 interface SessionSet {
@@ -168,7 +169,13 @@ export default function RadarChart({
   const hasData = radarData.maxCount > 1 || radarData.list.some(l => l.count > 0);
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 bg-black/60 border border-white/10 rounded-sm backdrop-blur-md relative h-full">
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -4, scale: 1.015, borderColor: 'rgba(34, 197, 110, 0.35)', boxShadow: '0 12px 30px -10px rgba(34, 197, 110, 0.16)' }}
+      transition={{ type: "spring", stiffness: 350, damping: 25 }}
+      className="flex flex-col items-center justify-center p-4 bg-black/60 border border-white/10 rounded-sm backdrop-blur-md relative h-full"
+    >
       {/* Decorative corners */}
       <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20" />
       <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20" />
@@ -328,6 +335,6 @@ export default function RadarChart({
         <span>ZONES: 6 ACTIVE</span>
         <span className="text-gym-accent font-bold">100% SCALE PROPORTIONAL</span>
       </div>
-    </div>
+    </motion.div>
   );
 }

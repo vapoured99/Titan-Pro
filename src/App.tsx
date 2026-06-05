@@ -951,6 +951,9 @@ export default function App() {
   const [customExName, setCustomExName] = useState("");
   const [customExPool, setCustomExPool] = useState<'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps'>("middle_chest");
   const [customExCategory, setCustomExCategory] = useState<'compound' | 'isolation'>("compound");
+  const [customExVideoUrl, setCustomExVideoUrl] = useState("");
+  const [customGuidanceSteps, setCustomGuidanceSteps] = useState<string[]>([]);
+  const [guidanceStepInput, setGuidanceStepInput] = useState("");
   const [creatingCustomForDay, setCreatingCustomForDay] = useState<number | null>(null);
 
   const combinedPools: Record<string, Exercise[]> = useMemo(() => {
@@ -1798,6 +1801,13 @@ export default function App() {
     }, 2000);
   };
 
+  const extractYoutubeId = (url: string): string | undefined => {
+    if (!url) return undefined;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : undefined;
+  };
+
   const handleAddCustomExerciseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customExName.trim()) return;
@@ -1816,12 +1826,15 @@ export default function App() {
       return;
     }
 
+    const videoId = extractYoutubeId(customExVideoUrl);
     const newEx: Exercise = {
       name,
       pool: customExPool,
       icon: "Dumbbell",
       category: customExCategory,
-      instructions: [' awaiting guidance steps']
+      instructions: customGuidanceSteps.length > 0 ? customGuidanceSteps : ['Awaiting guidance steps'],
+      ...(videoId ? { youtubeId: videoId } : {}),
+      ...(customExVideoUrl.trim() ? { youtubeUrl: customExVideoUrl.trim() } : {})
     };
 
     // Save to local hooks state and localstorage
@@ -1846,6 +1859,9 @@ export default function App() {
       setToast({ message: `"${name}" added to Exercise Library`, type: "success" });
     }
     setCustomExName("");
+    setCustomExVideoUrl("");
+    setCustomGuidanceSteps([]);
+    setGuidanceStepInput("");
     setShowAddCustomModal(false);
   };
 
@@ -1861,6 +1877,30 @@ export default function App() {
     saveWorkout(nextDays);
     setAddingToDay(null);
     setModalSearch("");
+  };
+
+  const handlePermanentlyDeleteCustomExercise = async (exName: string) => {
+    if (!window.confirm(`Are you sure you want to permanently delete "${exName}" from your archive? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      // 1. Update state
+      const updated = customExercises.filter(e => e.name.toLowerCase() !== exName.toLowerCase());
+      setCustomExercises(updated);
+      localStorage.setItem('gym_custom_exercises', JSON.stringify(updated));
+
+      // 2. Sync deletion to firestore
+      if (currentUser) {
+        const idSafe = exName.replace(/\//g, '-');
+        await deleteDoc(doc(db, `users/${currentUser.uid}/custom_exercises`, idSafe));
+      }
+
+      setToast({ message: `"${exName}" has been permanently deleted.`, type: "success" });
+    } catch (err) {
+      console.error("Failed to delete exercise:", err);
+      setToast({ message: "Error deleting exercise from cloud database", type: "error" });
+    }
   };
 
   const handleRemoveExerciseFromPlan = (dayIndex: number, exIndex: number) => {
@@ -2866,6 +2906,19 @@ export default function App() {
             const sortedDaysConsole = Object.values(dailyMapConsole).sort((a, b) => b.date.localeCompare(a.date));
             const chronologicalDaysConsole = [...sortedDaysConsole].sort((a, b) => a.date.localeCompare(b.date));
 
+            const cardVariants = {
+              hidden: { opacity: 0, y: 15 },
+              show: { 
+                opacity: 1, 
+                y: 0,
+                transition: {
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 24
+                }
+              }
+            };
+
             return (
               <motion.div
                 key="console-view"
@@ -2904,11 +2957,32 @@ export default function App() {
                 </div>
 
                 {/* Bento Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <motion.div 
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: "-50px" }}
+                  variants={{
+                    hidden: { opacity: 0 },
+                    show: {
+                      opacity: 1,
+                      transition: {
+                        staggerChildren: 0.08
+                      }
+                    }
+                  }}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                >
                   {/* Card 1: Radar Chart */}
-                  <div className="flex flex-col gap-4 h-full">
+                  <motion.div 
+                    variants={cardVariants}
+                    className="flex flex-col gap-4 h-full"
+                  >
                     {/* Level & XP Progression Info */}
-                    <div className="bg-black/70 border border-white/10 rounded-sm p-4 backdrop-blur-md">
+                    <motion.div 
+                      whileHover={{ y: -3, scale: 1.01, borderColor: activeTheme.accent + '35', boxShadow: `0 8px 24px -10px ${activeTheme.accent}15` }}
+                      transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                      className="bg-black/70 border border-white/10 rounded-sm p-4 backdrop-blur-md cursor-pointer"
+                    >
                       <div className="flex justify-between items-baseline mb-1">
                         <span className="text-xs font-bold text-white tracking-widest font-mono uppercase">LVL. {level}</span>
                         <span className="text-[9px] text-white/40 font-mono font-bold">{xp} / {xpNeeded} XP</span>
@@ -2921,16 +2995,21 @@ export default function App() {
                            transition={{ duration: 1 }}
                         />
                       </div>
-                    </div>
+                    </motion.div>
 
                     {/* Biomechanical Balance Star Radar Chart */}
                     <div className="flex-1">
                       <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={330} />
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* Card 2: Anatomy */}
-                  <div className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md">
+                  <motion.div 
+                    variants={cardVariants}
+                    whileHover={{ y: -5, scale: 1.015, borderColor: activeTheme.accent + '35', boxShadow: `0 12px 30px -10px ${activeTheme.accent}20` }}
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md cursor-pointer"
+                  >
                     <div>
                       <h4 className="text-[10px] text-white uppercase font-black tracking-widest mb-1 font-mono">Physiological Evolution</h4>
                       <p className="text-sm text-white/90 font-light leading-snug">Real-time dynamic muscle density simulation. Dark sectors denote untapped muscle pools.</p>
@@ -2952,10 +3031,15 @@ export default function App() {
                         ANATOMY_REPORT &rarr;
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* Card 3: Next Exercises */}
-                  <div className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md">
+                  <motion.div 
+                    variants={cardVariants}
+                    whileHover={{ y: -5, scale: 1.015, borderColor: activeTheme.accent + '35', boxShadow: `0 12px 30px -10px ${activeTheme.accent}20` }}
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md cursor-pointer"
+                  >
                     <div>
                       <h4 className="text-[10px] text-white uppercase font-black tracking-widest mb-1 font-mono">Next Active Exercises</h4>
                       <p className="text-sm text-white/90 font-light leading-snug">Mapped from training programming active modules.</p>
@@ -3015,13 +3099,32 @@ export default function App() {
                         EDIT_PROGRAM &rarr;
                       </button>
                     </div>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
                 {/* Third Row: Micro Progress Graphs */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <motion.div 
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: "-50px" }}
+                  variants={{
+                    hidden: { opacity: 0 },
+                    show: {
+                      opacity: 1,
+                      transition: {
+                        staggerChildren: 0.08
+                      }
+                    }
+                  }}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                >
                   {/* Graph 1: Weight Trend */}
-                  <div className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md">
+                  <motion.div 
+                    variants={cardVariants}
+                    whileHover={{ y: -5, scale: 1.015, borderColor: activeTheme.accent + '35', boxShadow: `0 12px 30px -10px ${activeTheme.accent}20` }}
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
+                  >
                     <div className="mb-4">
                       <div className="flex justify-between items-baseline">
                         <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">Weight Density</h4>
@@ -3062,10 +3165,15 @@ export default function App() {
                         </ResponsiveContainer>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* Graph 2: Volume Trend */}
-                  <div className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md">
+                  <motion.div 
+                    variants={cardVariants}
+                    whileHover={{ y: -5, scale: 1.015, borderColor: activeTheme.accent + '35', boxShadow: `0 12px 30px -10px ${activeTheme.accent}20` }}
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
+                  >
                     <div className="mb-4">
                       <div className="flex justify-between items-baseline">
                         <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">Volume Progression</h4>
@@ -3102,10 +3210,15 @@ export default function App() {
                         </ResponsiveContainer>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
 
                   {/* Graph 3: Calorie Outflow Trend */}
-                  <div className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md">
+                  <motion.div 
+                    variants={cardVariants}
+                    whileHover={{ y: -5, scale: 1.015, borderColor: activeTheme.accent + '35', boxShadow: `0 12px 30px -10px ${activeTheme.accent}20` }}
+                    transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                    className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
+                  >
                     <div className="mb-4">
                       <div className="flex justify-between items-baseline">
                         <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">Caloric Expenditure</h4>
@@ -3142,13 +3255,18 @@ export default function App() {
                         </ResponsiveContainer>
                       )}
                     </div>
-                  </div>
-                </div>
+                  </motion.div>
+                </motion.div>
 
                 {/* AI Tactical Operative Coach (extended to full width) */}
-                <div className="mt-8">
+                <motion.div 
+                  variants={cardVariants}
+                  whileHover={{ y: -3, borderColor: activeTheme.accent + '35', boxShadow: `0 8px 24px -10px ${activeTheme.accent}12` }}
+                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                  className="mt-8 cursor-pointer"
+                >
                   <AICoach sets={sessionSets} archivedWorkouts={archivedWorkouts} userId={profile?.id || 'anonymous'} />
-                </div>
+                </motion.div>
               </motion.div>
             );
           })() : activeView === 'library' ? (
@@ -3189,7 +3307,10 @@ export default function App() {
                   <button
                     onClick={() => {
                       setCustomExName("");
-                      setCustomExPool("chest");
+                      setCustomExVideoUrl("");
+                      setCustomGuidanceSteps([]);
+                      setGuidanceStepInput("");
+                      setCustomExPool("upper_chest");
                       setCustomExCategory("compound");
                       setShowAddCustomModal(true);
                     }}
@@ -3418,6 +3539,15 @@ export default function App() {
                                           )}
                                        </div>
                                        <div className="flex items-center gap-2.5">
+                                         {customExercises.some(ce => ce.name.toLowerCase() === ex.name.toLowerCase()) && (
+                                           <button
+                                             onClick={() => handlePermanentlyDeleteCustomExercise(ex.name)}
+                                             className="px-2 py-1 rounded-[1px] border border-red-500/35 bg-red-950/15 hover:bg-red-600 hover:text-white text-red-400 text-[8px] font-extrabold uppercase tracking-widest transition-all cursor-pointer mr-1"
+                                             title="Permanently Delete Movement"
+                                           >
+                                             Delete
+                                           </button>
+                                         )}
                                          <Sparkline 
                                            exName={ex.name}
                                            sessionSets={sessionSets}
@@ -3908,6 +4038,60 @@ export default function App() {
                               );
                             }
 
+                            if (section.key === 'equipment') {
+                              const eqCategories = [
+                                "Kettlebells",
+                                "TRX",
+                                "Battle Ropes",
+                                "Resistance Bands",
+                                "Weight Plates",
+                                "Slam Balls",
+                                "Plyo Boxes",
+                                "Bosu Balls",
+                                "Sleds",
+                                "Other"
+                              ];
+                              const colors = [
+                                "bg-red-500",
+                                "bg-blue-500",
+                                "bg-teal-500",
+                                "bg-amber-500",
+                                "bg-emerald-500",
+                                "bg-pink-500",
+                                "bg-purple-500",
+                                "bg-violet-500",
+                                "bg-sky-500",
+                                "bg-white/30"
+                              ];
+
+                              return (
+                                <div className="space-y-8 w-full">
+                                  {eqCategories.map((cat, idx) => {
+                                    const catExercises = section.list.filter(e => {
+                                      if (cat === "Other") {
+                                        return !e.equipmentCategory || (!eqCategories.includes(e.equipmentCategory) && e.equipmentCategory !== "Other");
+                                      }
+                                      return e.equipmentCategory === cat;
+                                    });
+
+                                    if (catExercises.length === 0) return null;
+
+                                    return (
+                                      <div key={cat} className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className={`w-1.5 h-3 ${colors[idx % colors.length]} rounded-[1px]`} />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">{cat} Equipment</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {catExercises.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            }
+
                             return (
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {section.list.map(renderCard)}
@@ -3935,11 +4119,16 @@ export default function App() {
                   onClick={() => setExpandedProgressSections(prev => ({ ...prev, weight: !prev.weight }))}
                   className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
                 >
-                  <div>
-                    <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                      Weight Tracking
-                    </h3>
-                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Physical progression tracking</p>
+                  <div className="flex items-center gap-4">
+                    <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <Scale className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                        Weight Tracking
+                      </h3>
+                      <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Physical progression tracking</p>
+                    </div>
                   </div>
                   <ChevronDown className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.weight ? 'rotate-180' : ''}`} />
                 </button>
@@ -4182,11 +4371,16 @@ export default function App() {
                   onClick={() => setExpandedProgressSections(prev => ({ ...prev, bodyFat: !prev.bodyFat }))}
                   className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
                 >
-                  <div>
-                    <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                      Body Fat Tracking
-                    </h3>
-                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Body fat percentage progression</p>
+                  <div className="flex items-center gap-4">
+                    <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <Percent className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                        Body Fat Tracking
+                      </h3>
+                      <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Body fat percentage progression</p>
+                    </div>
                   </div>
                   <ChevronDown className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.bodyFat ? 'rotate-180' : ''}`} />
                 </button>
@@ -4429,11 +4623,16 @@ export default function App() {
                   onClick={() => setExpandedProgressSections(prev => ({ ...prev, workoutCalendar: !prev.workoutCalendar }))}
                   className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
                 >
-                  <div>
-                    <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                      Workout Frequency
-                    </h3>
-                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Past 3 months activity heatmap</p>
+                  <div className="flex items-center gap-4">
+                    <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <Activity className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                        Workout Frequency
+                      </h3>
+                      <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Past 3 months activity heatmap</p>
+                    </div>
                   </div>
                   <ChevronDown className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.workoutCalendar ? 'rotate-180' : ''}`} />
                 </button>
@@ -4460,11 +4659,16 @@ export default function App() {
                   onClick={() => setExpandedProgressSections(prev => ({ ...prev, trending: !prev.trending }))}
                   className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-[#0c0c0c]/80 transition-colors cursor-pointer group"
                 >
-                  <div>
-                    <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                      Trending
-                    </h3>
-                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Volume & Output Analysis</p>
+                  <div className="flex items-center gap-4">
+                    <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <TrendingUp className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                        Trending
+                      </h3>
+                      <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">Volume & Output Analysis</p>
+                    </div>
                   </div>
                   <ChevronDown className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.trending ? 'rotate-180' : ''}`} />
                 </button>
@@ -6080,6 +6284,9 @@ export default function App() {
                     <button
                       onClick={() => {
                         setCustomExName("");
+                        setCustomExVideoUrl("");
+                        setCustomGuidanceSteps([]);
+                        setGuidanceStepInput("");
                         setCustomExPool(DAY_CONFIG[addingToDay].pools[0] as any);
                         setCustomExCategory("compound");
                         setCreatingCustomForDay(addingToDay);
@@ -6342,7 +6549,7 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl p-8"
+              className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-sm flex flex-col max-h-[90vh] overflow-y-auto shadow-2xl p-8"
             >
               <div className="flex items-center justify-between mb-6">
                 <div>
@@ -6456,6 +6663,70 @@ export default function App() {
                       Isolation
                     </button>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">Video Demonstration URL (Optional)</label>
+                  <input 
+                    type="url"
+                    placeholder="e.g., https://www.youtube.com/watch?v=..."
+                    value={customExVideoUrl}
+                    onChange={(e) => setCustomExVideoUrl(e.target.value)}
+                    className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white font-light"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">Custom Guidance Steps</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text"
+                      placeholder="Add step (e.g., Keep back flat)"
+                      value={guidanceStepInput}
+                      onChange={(e) => setGuidanceStepInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (guidanceStepInput.trim()) {
+                            setCustomGuidanceSteps([...customGuidanceSteps, guidanceStepInput.trim()]);
+                            setGuidanceStepInput("");
+                          }
+                        }
+                      }}
+                      className="flex-1 bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white font-light text-ellipsis overflow-hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (guidanceStepInput.trim()) {
+                          setCustomGuidanceSteps([...customGuidanceSteps, guidanceStepInput.trim()]);
+                          setGuidanceStepInput("");
+                        }
+                      }}
+                      className="px-4 bg-white/5 hover:bg-gym-accent hover:text-black border border-white/10 text-white/80 rounded-sm text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {customGuidanceSteps.length > 0 && (
+                    <div className="mt-3 space-y-2 max-h-40 overflow-y-auto bg-black/45 border border-white/5 p-3 rounded-sm">
+                      {customGuidanceSteps.map((step, idx) => (
+                        <div key={idx} className="flex items-start justify-between gap-3 text-xs font-light text-white/80">
+                          <span className="leading-tight text-left"><span className="text-gym-accent font-mono mr-1.5">{idx + 1}.</span>{step}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCustomGuidanceSteps(customGuidanceSteps.filter((_, i) => i !== idx));
+                            }}
+                            className="p-1 text-white/30 hover:text-red-500 transition-all cursor-pointer text-xs"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-4">
