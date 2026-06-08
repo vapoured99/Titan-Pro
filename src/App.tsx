@@ -1232,6 +1232,7 @@ export default function App() {
     return localStorage.getItem("gym-theme-id") || "default";
   });
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({});
+  const [lastLoadedDayIndex, setLastLoadedDayIndex] = useState<number | null>(null);
   const [flashMessage, setFlashMessage] = useState<Record<string, string>>({});
   const [newWeight, setNewWeight] = useState<string>("");
   const [newWeightDate, setNewWeightDate] = useState<string>("");
@@ -2999,6 +3000,10 @@ export default function App() {
       await saveWorkout(nextCurrentDays);
 
       setExpandedDays((prev) => ({ ...prev, [categoryIndex]: true }));
+      setLastLoadedDayIndex(categoryIndex);
+      setTimeout(() => {
+        setLastLoadedDayIndex(null);
+      }, 5000);
 
       setActiveView("workout");
       await saveSettings({ activeView: "workout" });
@@ -8758,7 +8763,11 @@ export default function App() {
                           [di]: !prev[di],
                         }))
                       }
-                      className="w-full flex items-center justify-between p-6 rounded-sm bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
+                      className={`w-full flex items-center justify-between p-6 rounded-sm border transition-all cursor-pointer group backdrop-blur-md ${
+                        lastLoadedDayIndex === di
+                          ? "bg-gym-accent/[0.04] border-gym-accent shadow-md shadow-gym-accent/10"
+                          : "bg-black/65 border-white/15 hover:bg-black/80 hover:border-white/25"
+                      }`}
                     >
                       <div className="flex items-center gap-4">
                         <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
@@ -8797,7 +8806,13 @@ export default function App() {
                           exit={{ height: 0, opacity: 0, marginTop: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
+                          <motion.div
+                            key={lastLoadedDayIndex === di ? `grid-loaded-active-${di}` : `grid-loaded-idle-${di}`}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, ease: "easeOut" }}
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6"
+                          >
                             {currentDays[di]?.map((ex, ei) => {
                               const Icon = iconMap[ex.icon] || Dumbbell;
                               return (
@@ -9077,7 +9092,7 @@ export default function App() {
                                 Add Exercise
                               </span>
                             </button>
-                          </div>
+                          </motion.div>
                         </motion.div>
                       )}
                     </AnimatePresence>
