@@ -45,6 +45,7 @@ interface AnatomyDashboardProps {
   saveSettings: (settings: any) => Promise<void>;
   setToast: (toast: { message: string; type: 'success' | 'pb' | 'info' } | null) => void;
   setActiveView: (view: string) => void;
+  routines?: any[];
 }
 
 // 1-Rep Max Epley Calculation
@@ -60,8 +61,40 @@ export default function AnatomyDashboard({
   profile,
   saveSettings,
   setToast,
-  setActiveView
+  setActiveView,
+  routines = []
 }: AnatomyDashboardProps) {
+  // Add a local state for Anatomy Dashboard Mode
+  const [anatomyMode, setAnatomyMode] = useState<'logged' | 'routine'>('logged');
+  // Local state for selected routine in Anatomy Panel
+  const [selectedDashboardRoutineId, setSelectedDashboardRoutineId] = useState<string | null>(null);
+
+  // Derive selected routine
+  const selectedDashboardRoutine = useMemo(() => {
+    if (!routines || routines.length === 0) return null;
+    return routines.find((r) => r.id === selectedDashboardRoutineId) || routines[0] || null;
+  }, [routines, selectedDashboardRoutineId]);
+
+  // Sync selected dashboard routine id when routines load
+  useEffect(() => {
+    if (routines && routines.length > 0 && !selectedDashboardRoutineId) {
+      setSelectedDashboardRoutineId(routines[0].id || null);
+    }
+  }, [routines, selectedDashboardRoutineId]);
+
+  const mapRawGroupToMainMuscleGroup = (rawGroup: string | null): string => {
+    if (!rawGroup) return 'Other';
+    const rg = rawGroup.toLowerCase();
+    if (['chest', 'upper_chest', 'middle_chest', 'lower_chest'].includes(rg)) return 'Chest';
+    if (['back', 'upper_back', 'lower_back', 'lats'].includes(rg)) return 'Back';
+    if (['shoulders', 'front_delts', 'side_delts', 'rear_delts'].includes(rg)) return 'Shoulders';
+    if (['quads', 'hamstrings', 'glutes', 'calves', 'legs'].includes(rg)) return 'Legs';
+    if (['biceps', 'long_biceps', 'short_biceps', 'brachialis'].includes(rg)) return 'Biceps';
+    if (['triceps', 'long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rg)) return 'Triceps';
+    if (['core', 'upper_core', 'lower_core', 'obliques'].includes(rg)) return 'Core';
+    if (['forearms'].includes(rg)) return 'Forearms';
+    return 'Other';
+  };
   // Theme styling helpers matching Titan Gym CLI theme
   const accentColor = "#22c55e"; // gym-accent green
 
@@ -133,6 +166,36 @@ export default function AnatomyDashboard({
     }
     return null;
   };
+
+  // Calculate routine muscular target breakdown
+  const routineMuscleGroups = useMemo(() => {
+    if (!selectedDashboardRoutine || !selectedDashboardRoutine.sets) return [];
+    
+    // Get unique exercises
+    const uniqueExs = Array.from(
+      new Set(selectedDashboardRoutine.sets.map((s: any) => s.exerciseName))
+    ) as string[];
+    
+    const counts: Record<string, number> = {};
+    let total = 0;
+    
+    uniqueExs.forEach((name) => {
+      const rawG = findMuscleGroup(name);
+      const group = mapRawGroupToMainMuscleGroup(rawG);
+      counts[group] = (counts[group] || 0) + 1;
+      total++;
+    });
+    
+    if (total === 0) return [];
+    
+    return Object.entries(counts)
+      .map(([group, count]) => ({
+        group,
+        count,
+        percentage: Math.round((count / total) * 100),
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [selectedDashboardRoutine, findMuscleGroup]);
 
   // --- 2. Dynamic Muscular Radar Calculation ---
   const radarData = useMemo(() => {
@@ -485,9 +548,103 @@ export default function AnatomyDashboard({
               className="overflow-hidden"
             >
               <div className="p-6 space-y-6">
-                <AnatomyChart sets={sessionSets} archivedWorkouts={archivedWorkouts} />
+                {/* Visual Interactivity & Sync Controller */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-sm bg-black/40 border border-white/5">
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setAnatomyMode('logged')}
+                      className={`px-3.5 py-1.5 text-[10px] uppercase tracking-wider font-extrabold cursor-pointer rounded-sm border transition-all ${
+                        anatomyMode === 'logged'
+                          ? 'bg-gym-accent border-gym-accent text-black shadow-lg shadow-gym-accent/10'
+                          : 'bg-transparent border-white/10 text-white/60 hover:text-white hover:border-white/20'
+                      }`}
+                    >
+                      Logged Sessions Mode
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setAnatomyMode('routine')}
+                      className={`px-3.5 py-1.5 text-[10px] uppercase tracking-wider font-extrabold cursor-pointer rounded-sm border transition-all ${
+                        anatomyMode === 'routine'
+                          ? 'bg-gym-accent border-gym-accent text-black shadow-lg shadow-gym-accent/10'
+                          : 'bg-transparent border-white/10 text-white/60 hover:text-white hover:border-white/20'
+                      }`}
+                    >
+                      Saved Routines Mode
+                    </button>
+                  </div>
 
-                {sessionSets.length === 0 && (
+                  {anatomyMode === 'routine' && (
+                    <div className="flex items-center gap-3.5 w-full sm:w-auto min-w-0 sm:justify-end">
+                      <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold whitespace-nowrap">
+                        Select Routine Heatmap:
+                      </label>
+                      {(!routines || routines.length === 0) ? (
+                        <span className="text-[10px] text-white/30 italic">No custom routines saved</span>
+                      ) : (
+                        <select
+                          value={selectedDashboardRoutineId || ""}
+                          onChange={(e) => setSelectedDashboardRoutineId(e.target.value)}
+                          className="bg-black/90 border border-white/10 hover:border-white/25 focus:border-gym-accent text-white text-[10px] font-bold uppercase tracking-wider rounded-sm px-3 py-1.5 focus:outline-none transition-all cursor-pointer min-w-[140px] max-w-[220px]"
+                        >
+                          {routines.map((r: any, idx: number) => (
+                            <option key={r.id || idx} value={r.id}>
+                              {r.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {anatomyMode === 'routine' && selectedDashboardRoutine && (
+                  <div className="p-4 bg-gym-accent/[0.02] border border-gym-accent/10 rounded-sm space-y-3 animate-fade-in">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-white/5">
+                      <div>
+                        <h5 className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                          {selectedDashboardRoutine.name}
+                        </h5>
+                        <p className="text-[9px] text-white/40 uppercase tracking-widest mt-0.5">
+                          Routine-based simulation heatmap visualization (Amber glow matches emphasis)
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3 text-[10px] text-white/60 font-mono">
+                        <span>Exercises: <strong className="text-white">{new Set(selectedDashboardRoutine.sets.map((s: any) => s.exerciseName)).size}</strong></span>
+                        <span>•</span>
+                        <span>Sets: <strong className="text-white">{selectedDashboardRoutine.sets.length}</strong></span>
+                      </div>
+                    </div>
+
+                    {routineMuscleGroups.length === 0 ? (
+                      <p className="text-[10px] text-white/40 italic">This routine doesn't have any mapped exercises to compute.</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-x-6 gap-y-2">
+                        {routineMuscleGroups.slice(0, 3).map((item, idx) => (
+                          <div key={item.group} className="flex items-center gap-1.5">
+                            <span className="text-[9px] text-white/40 font-bold uppercase">
+                              {idx === 0 ? "Primary Target:" : idx === 1 ? "Secondary:" : "Supporting:"}
+                            </span>
+                            <span className="text-[10px] text-gym-accent uppercase font-black tracking-wider">
+                              {item.group} ({item.percentage}%)
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <AnatomyChart 
+                  sets={sessionSets} 
+                  archivedWorkouts={archivedWorkouts} 
+                  viewMode={anatomyMode}
+                  routineMuscleGroups={routineMuscleGroups}
+                />
+
+                {anatomyMode === 'logged' && sessionSets.length === 0 && (
                   <div className="py-5 px-7 bg-white/[0.01] border border-white/5 border-dashed rounded-sm text-center flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3 text-left">
                       <Flame className="w-4 h-4 text-white/20 flex-shrink-0 animate-pulse" />

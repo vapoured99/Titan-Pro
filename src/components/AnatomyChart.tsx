@@ -153,9 +153,17 @@ interface AnatomyChartProps {
   sets: SessionSet[];
   archivedWorkouts?: any[];
   compact?: boolean;
+  viewMode?: 'logged' | 'routine';
+  routineMuscleGroups?: { group: string; percentage: number; count: number }[];
 }
 
-const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts = [], compact = false }) => {
+const AnatomyChart: React.FC<AnatomyChartProps> = ({ 
+  sets = [], 
+  archivedWorkouts = [], 
+  compact = false,
+  viewMode = 'logged',
+  routineMuscleGroups = []
+}) => {
   const [today, setToday] = React.useState(() => new Date().toISOString().split('T')[0]);
 
   React.useEffect(() => {
@@ -242,10 +250,10 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
     }
   };
 
-  // Calculate the 5-day recovery status for each muscle group
+  // Calculate the 5-day recovery status/routine focus for each muscle group
   const getMuscleStatuses = () => {
     const groupsToShow = ['chest', 'upper_back', 'lower_back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
-    const statuses: Record<string, { daysDiff: number; dates: string[]; text: string; fill: string; filterUrl: string }> = {};
+    const statuses: Record<string, { daysDiff: number; dates: string[]; text: string; fill: string; filterUrl: string; percentage?: number }> = {};
 
     groupsToShow.forEach(group => {
       statuses[group] = {
@@ -256,6 +264,49 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
         filterUrl: 'none'
       };
     });
+
+    if (viewMode === 'routine' && routineMuscleGroups && routineMuscleGroups.length > 0) {
+      const matchGroup = (anatomyGroup: string, routineGroup: string) => {
+        const ag = anatomyGroup.toLowerCase();
+        const rg = routineGroup.toLowerCase();
+        if (rg === 'chest' && ag === 'chest') return true;
+        if (rg === 'triceps' && ag === 'triceps') return true;
+        if (rg === 'biceps' && ag === 'biceps') return true;
+        if (rg === 'shoulders' && ag === 'shoulders') return true;
+        if (rg === 'back' && (ag === 'upper_back' || ag === 'lower_back')) return true;
+        if (rg === 'legs' && (ag === 'quads' || ag === 'hamstrings' || ag === 'glutes' || ag === 'calves')) return true;
+        if (rg === 'core' && ag === 'core') return true;
+        if (rg === 'forearms' && ag === 'forearms') return true;
+        return false;
+      };
+
+      groupsToShow.forEach(group => {
+        const matched = routineMuscleGroups.find(r => matchGroup(group, r.group));
+        if (matched && matched.percentage > 0) {
+          const state = statuses[group];
+          state.percentage = matched.percentage;
+          
+          if (matched.percentage >= 35) {
+            state.daysDiff = 0; // map to strong pulse
+            state.text = `Primary Focus: ${matched.percentage}% Intensity`;
+            state.fill = '#fbbf24'; // Neon Amber / Yellow-400
+            state.filterUrl = 'url(#glow-amber)';
+          } else if (matched.percentage >= 15) {
+            state.daysDiff = 1; // map to medium pulse
+            state.text = `Secondary Focus: ${matched.percentage}% Intensity`;
+            state.fill = '#f59e0b'; // Medium Amber / Yellow-500
+            state.filterUrl = 'url(#glow-amber)';
+          } else {
+            state.daysDiff = 3; // map to minor pulse
+            state.text = `Supporting Focus: ${matched.percentage}% Intensity`;
+            state.fill = '#b45309'; // Dark Copper Amber / Yellow-700
+            state.filterUrl = 'none';
+          }
+        }
+      });
+
+      return statuses;
+    }
 
     // 1. Process active session sets (Today / Day 0)
     if (sets && sets.length > 0) {
@@ -342,11 +393,11 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
     const state = statuses[group];
     if (!state) return '';
     if (state.daysDiff === 0) {
-      return 'pulse-strong';
+      return viewMode === 'routine' ? 'pulse-strong-amber' : 'pulse-strong';
     } else if (state.daysDiff === 1 || state.daysDiff === 2) {
-      return 'pulse-medium';
+      return viewMode === 'routine' ? 'pulse-medium-amber' : 'pulse-medium';
     } else if (state.daysDiff === 3) {
-      return 'pulse-minor';
+      return viewMode === 'routine' ? 'pulse-minor-amber' : 'pulse-minor';
     }
     return '';
   };
@@ -440,6 +491,18 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
             0%, 100% { opacity: 0.35; }
             50% { opacity: 1; }
           }
+          @keyframes minor-pulse-amber {
+            0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 1px rgba(251, 191, 36, 0.3)); }
+            50% { opacity: 1; filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.6)); }
+          }
+          @keyframes medium-pulse-amber {
+            0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 2px rgba(245, 158, 11, 0.4)); }
+            50% { opacity: 1; filter: drop-shadow(0 0 7px rgba(245, 158, 11, 0.75)); }
+          }
+          @keyframes strong-pulse-amber {
+            0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.5)); }
+            50% { opacity: 1; filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.95)); }
+          }
           .pulse-minor {
             animation: minor-pulse 2.2s infinite ease-in-out;
           }
@@ -448,6 +511,15 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
           }
           .pulse-strong {
             animation: strong-pulse 0.75s infinite ease-in-out;
+          }
+          .pulse-minor-amber {
+            animation: minor-pulse-amber 2.2s infinite ease-in-out;
+          }
+          .pulse-medium-amber {
+            animation: medium-pulse-amber 1.3s infinite ease-in-out;
+          }
+          .pulse-strong-amber {
+            animation: strong-pulse-amber 0.85s infinite ease-in-out;
           }
           .hover-target-muscle {
             cursor: pointer;
@@ -492,6 +564,16 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({ sets = [], archivedWorkouts
                 <feGaussianBlur stdDeviation="2.5" result="blur" />
                 <feComponentTransfer in="blur" result="glow">
                   <feFuncA type="linear" slope="0.5" />
+                </feComponentTransfer>
+                <feMerge>
+                  <feMergeNode in="glow" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="glow-amber" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
+                <feComponentTransfer in="blur" result="glow">
+                  <feFuncA type="linear" slope="0.85" />
                 </feComponentTransfer>
                 <feMerge>
                   <feMergeNode in="glow" />

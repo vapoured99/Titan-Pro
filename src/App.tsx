@@ -7080,6 +7080,7 @@ export default function App() {
                   saveSettings={saveSettings}
                   setToast={setToast}
                   setActiveView={setActiveView}
+                  routines={routines}
                 />
               </motion.div>
             ) : activeView === "session" ? (
