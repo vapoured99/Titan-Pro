@@ -4433,10 +4433,22 @@ export default function App() {
                         desc: "Chest Compound Lifts",
                       },
                       {
+                        key: "triceps",
+                        label: "Triceps",
+                        icon: Crown,
+                        desc: "Elbow Pushdowns & Extensions",
+                      },
+                      {
                         key: "back",
                         label: "Back",
                         icon: ArrowUpDown,
                         desc: "Lats, Rows & Pulls",
+                      },
+                      {
+                        key: "biceps",
+                        label: "Biceps",
+                        icon: ArrowUpDown,
+                        desc: "Arm Flexion & Pulldowns",
                       },
                       {
                         key: "shoulders",
@@ -4445,33 +4457,21 @@ export default function App() {
                         desc: "Delts & Broad Support",
                       },
                       {
+                        key: "forearms",
+                        label: "Forearms",
+                        icon: Target,
+                        desc: "Grip & Wrist Strength",
+                      },
+                      {
                         key: "legs",
                         label: "Legs",
                         icon: ArrowDown,
                         desc: "Quads, Calves & Glutes",
                       },
                       {
-                        key: "biceps",
-                        label: "Biceps",
-                        icon: Dumbbell,
-                        desc: "Arm Flexion & Pulldowns",
-                      },
-                      {
-                        key: "triceps",
-                        label: "Triceps",
-                        icon: RotateCw,
-                        desc: "Elbow Pushdowns & Extensions",
-                      },
-                      {
-                        key: "forearms",
-                        label: "Forearms",
-                        icon: Activity,
-                        desc: "Grip & Wrist Strength",
-                      },
-                      {
                         key: "core",
                         label: "Core",
-                        icon: Shield,
+                        icon: ArrowDown,
                         desc: "Abs & Rigid Bracing",
                       },
                       {
@@ -7901,19 +7901,22 @@ export default function App() {
                             className="w-full flex items-center justify-between p-6 rounded-sm bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
                           >
                             <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-lg font-light italic font-serif text-white/90">
-                              {day.name}
-                            </h3>
-                            <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
-                              {categoryRoutines.length} Saved
-                            </span>
-                          </div>
-                        </div>
-                        <ChevronDown
-                          className={`w-4 h-4 transition-transform duration-500 ${isOpen ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
-                        />
-                      </button>
+                              <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
+                                {day.icon}
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <h3 className="text-lg font-light italic font-serif text-white/90">
+                                  {day.name}
+                                </h3>
+                                <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
+                                  {categoryRoutines.length} Saved
+                                </span>
+                              </div>
+                            </div>
+                            <ChevronDown
+                              className={`w-4 h-4 transition-transform duration-500 ${isOpen ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
+                            />
+                          </button>
 
                       <AnimatePresence>
                         {isOpen && (
@@ -8057,12 +8060,12 @@ export default function App() {
                                             {},
                                           ),
                                         ).map(
-                                          ([exName, exSets]: [string, any]) => (
+                                          ([exName]: [string, any]) => (
                                             <div
                                               key={exName}
                                               className="flex justify-between items-center gap-4 pb-2 border-b border-white/5 last:border-0 last:pb-0"
                                             >
-                                              <div className="flex items-center gap-2 max-w-[50%] min-w-0">
+                                              <div className="flex items-center gap-2 w-full min-w-0">
                                                 <span
                                                   className="text-[10px] text-white/70 font-semibold uppercase tracking-wider truncate"
                                                   title={exName}
@@ -8079,19 +8082,7 @@ export default function App() {
                                                   height={12}
                                                 />
                                               </div>
-                                              <div className="flex flex-wrap gap-1.5 justify-end flex-1">
-                                                {exSets.map(
-                                                  (set: any, idx: number) => (
-                                                    <span
-                                                      key={idx}
-                                                      className="text-[9px] font-semibold text-white/90 bg-white/5 border border-white/10 px-1.5 py-0.5 rounded-sm tabular-nums"
-                                                    >
-                                                      {set.weight}kg ×{" "}
-                                                      {set.reps}
-                                                    </span>
-                                                  ),
-                                                )}
-                                              </div>
+                                              
                                             </div>
                                           ),
                                         )}
