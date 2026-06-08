@@ -1056,6 +1056,45 @@ function ProfileDisplayNameEditor({
   );
 }
 
+const mapPoolToMuscleGroup = (pool: string): string => {
+  if (!pool) return "Other";
+  const p = pool.toLowerCase().trim();
+  if (p.includes("chest")) return "Chest";
+  if (p.includes("triceps")) return "Triceps";
+  if (p.includes("back") || p === "lats" || p === "rhomboids_traps" || p === "erector_spinae") return "Back";
+  if (p.includes("biceps") || p === "brachialis") return "Biceps";
+  if (p.includes("delts") || p === "shoulders") return "Shoulders";
+  if (p === "forearms") return "Forearms";
+  if (p === "legs" || p.includes("quad") || p.includes("hamstring") || p.includes("calf") || p.includes("glute") || p.includes("squat") || p.includes("leg")) return "Legs";
+  if (p.includes("core") || p === "obliques" || p === "core" || p.includes("abs")) return "Core";
+  if (p === "cardio") return "Cardio";
+  if (p === "equipment") return "Equipment";
+  return "Other";
+};
+
+const getMuscleGroupIcon = (group: string) => {
+  switch (group.toLowerCase()) {
+    case "chest":
+    case "triceps":
+      return <Crown className="w-3.5 h-3.5" />;
+    case "back":
+    case "biceps":
+      return <ArrowUpDown className="w-3.5 h-3.5" />;
+    case "shoulders":
+    case "forearms":
+      return <Target className="w-3.5 h-3.5" />;
+    case "legs":
+    case "core":
+      return <ArrowDown className="w-3.5 h-3.5" />;
+    case "cardio":
+      return <Flame className="w-3.5 h-3.5" />;
+    case "equipment":
+      return <Sliders className="w-3.5 h-3.5" />;
+    default:
+      return <Dumbbell className="w-3.5 h-3.5" />;
+  }
+};
+
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -1233,6 +1272,7 @@ export default function App() {
   });
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({});
   const [lastLoadedDayIndex, setLastLoadedDayIndex] = useState<number | null>(null);
+  const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(null);
   const [flashMessage, setFlashMessage] = useState<Record<string, string>>({});
   const [newWeight, setNewWeight] = useState<string>("");
   const [newWeightDate, setNewWeightDate] = useState<string>("");
@@ -1315,6 +1355,51 @@ export default function App() {
     }
     return null;
   };
+
+  // Pre-select first routine or reset if current is deleted/empty
+  useEffect(() => {
+    if (routines.length > 0) {
+      const exists = routines.some(r => r.id === selectedRoutineId);
+      if (!exists) {
+        setSelectedRoutineId(routines[0].id || null);
+      }
+    } else {
+      setSelectedRoutineId(null);
+    }
+  }, [routines, selectedRoutineId]);
+
+  const selectedRoutine = useMemo(() => {
+    return routines.find((r) => r.id === selectedRoutineId) || routines[0] || null;
+  }, [routines, selectedRoutineId]);
+
+  const selectedRoutineMuscleGroups = useMemo(() => {
+    if (!selectedRoutine || !selectedRoutine.sets) return [];
+    
+    const uniqueExs = Array.from(
+      new Set(selectedRoutine.sets.map((s: any) => s.exerciseName))
+    ) as string[];
+    
+    const counts: Record<string, number> = {};
+    let total = 0;
+    
+    uniqueExs.forEach((name) => {
+      const ex = findExerciseByName(name);
+      const pool = ex?.pool || "";
+      const group = mapPoolToMuscleGroup(pool);
+      counts[group] = (counts[group] || 0) + 1;
+      total++;
+    });
+    
+    if (total === 0) return [];
+    
+    return Object.entries(counts)
+      .map(([group, count]) => ({
+        group,
+        count,
+        percentage: Math.round((count / total) * 100),
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [selectedRoutine, combinedPools]);
 
   const handleResetProfile = async () => {
     if (!currentUser) return;
@@ -7888,6 +7973,110 @@ export default function App() {
                       </button>
                     </div>
 
+                    {/* Routine Analytics Summary View */}
+                    {routines.length > 0 && selectedRoutine && (
+                      <div className="mb-8 p-6 rounded-sm bg-black/60 border border-white/10 backdrop-blur-md space-y-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/5">
+                          <div className="space-y-1">
+                            <span className="text-[9px] text-gym-accent font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                              Routine Muscle Target Summary
+                            </span>
+                            <h4 className="text-base font-light italic font-serif text-white flex items-center gap-2">
+                              Analyzing: <span className="font-semibold text-white/95 non-italic">{selectedRoutine.name}</span>
+                              <span className="text-[9px] px-2.5 py-0.5 rounded-full border border-white/10 bg-white/5 uppercase non-italic text-white/60 font-mono tracking-wider">
+                                {DAY_CONFIG[selectedRoutine.categoryIndex]?.name || "Custom"}
+                              </span>
+                            </h4>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold whitespace-nowrap">
+                              Select Routine:
+                            </label>
+                            <select
+                              value={selectedRoutineId || ""}
+                              onChange={(e) => setSelectedRoutineId(e.target.value)}
+                              className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-[11px] font-bold uppercase tracking-wider rounded-sm px-3.5 py-2 focus:outline-none transition-all cursor-pointer min-w-[180px] max-w-[280px]"
+                            >
+                              {routines.map((r, ri) => (
+                                <option key={r.id || ri} value={r.id}>
+                                  {r.name}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        {selectedRoutineMuscleGroups.length === 0 ? (
+                          <div className="text-center py-4">
+                            <p className="text-xs text-white/40 italic font-bold">
+                              This routine does not contain any exercises to analyze.
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-5">
+                            {/* Summary sentence */}
+                            <div className="text-[11px] text-white/50 uppercase tracking-wider font-semibold flex flex-wrap gap-x-4 gap-y-1">
+                              <span>Total Exercises: <strong className="text-white">{new Set(selectedRoutine.sets.map((s: any) => s.exerciseName)).size}</strong></span>
+                              <span className="text-white/25">|</span>
+                              <span>Total Sets: <strong className="text-white">{selectedRoutine.sets.length}</strong></span>
+                              <span className="text-white/25">|</span>
+                              <span>Primary Focus: <strong className="text-gym-accent">{selectedRoutineMuscleGroups[0]?.group} ({selectedRoutineMuscleGroups[0]?.percentage}%)</strong></span>
+                              {selectedRoutineMuscleGroups.length > 1 && (
+                                <>
+                                  <span className="text-white/25">|</span>
+                                  <span>Secondary Focus: <strong className="text-white/90">{selectedRoutineMuscleGroups[1]?.group} ({selectedRoutineMuscleGroups[1]?.percentage}%)</strong></span>
+                                </>
+                              )}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                              {selectedRoutineMuscleGroups.map((item) => (
+                                <div
+                                  key={item.group}
+                                  className="bg-white/[0.01] border border-white/5 rounded-sm p-4 flex flex-col justify-between hover:bg-white/[0.03] hover:border-white/10 transition-all group/item"
+                                >
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                      <span className="text-gym-accent group-hover/item:text-gym-accent/80 shrink-0">
+                                        {getMuscleGroupIcon(item.group)}
+                                      </span>
+                                      <span className="text-[10px] text-white/80 font-bold uppercase tracking-wider truncate">
+                                        {item.group}
+                                      </span>
+                                    </div>
+                                    <span className="text-[9px] text-white/40 font-mono font-bold">
+                                      x{item.count}
+                                    </span>
+                                  </div>
+
+                                  <div>
+                                    <div className="flex items-baseline justify-between mb-1.5">
+                                      <span className="text-[15px] font-black text-white group-hover/item:text-gym-accent transition-colors font-mono tracking-tight">
+                                        {item.percentage}%
+                                      </span>
+                                      <span className="text-[7px] text-white/20 uppercase tracking-widest font-bold">
+                                        Emphasis
+                                      </span>
+                                    </div>
+                                    <div className="w-full bg-white/5 h-1 rounded-sm overflow-hidden font-mono">
+                                      <motion.div
+                                        initial={{ width: 0 }}
+                                        animate={{ width: `${item.percentage}%` }}
+                                        transition={{ duration: 0.8, ease: "easeOut" }}
+                                        className="bg-gym-accent h-full rounded-sm shadow-[0_0_8px_rgba(255,231,101,0.35)]"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {DAY_CONFIG.map((day, di) => {
                       const categoryRoutines = routines.filter(
                         (r) => r.categoryIndex === di,
@@ -7952,7 +8141,12 @@ export default function App() {
                                   {categoryRoutines.map((routine, ri) => (
                                     <div
                                       key={routine.id || ri}
-                                      className="bg-black/55 border border-white/10 rounded-sm overflow-hidden flex flex-col justify-between"
+                                      onClick={() => setSelectedRoutineId(routine.id)}
+                                      className={`border rounded-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer ${
+                                        selectedRoutineId === routine.id
+                                          ? "bg-gym-accent/[0.04] border-gym-accent shadow-lg shadow-gym-accent/5 ring-1 ring-gym-accent/20"
+                                          : "bg-black/55 border-white/10 hover:border-white/20 hover:bg-black/65"
+                                      }`}
                                     >
                                       <div className="p-5 border-b border-white/5 bg-white/[0.02]">
                                         <div className="flex items-start justify-between gap-4">
@@ -7981,20 +8175,22 @@ export default function App() {
                                                 />
                                                 <div className="flex gap-2">
                                                   <button
-                                                    onClick={() =>
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
                                                       handleRenameRoutine(
                                                         routine.id,
                                                         editingRoutineName,
-                                                      )
-                                                    }
+                                                      );
+                                                    }}
                                                     className="px-2.5 py-1 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-bold uppercase tracking-wider rounded-sm cursor-pointer"
                                                   >
                                                     Save
                                                   </button>
                                                   <button
-                                                    onClick={() =>
-                                                      setEditingRoutineId(null)
-                                                    }
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setEditingRoutineId(null);
+                                                    }}
                                                     className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-white/70 text-[9px] font-bold uppercase tracking-wider rounded-sm cursor-pointer"
                                                   >
                                                     Cancel
@@ -8007,7 +8203,8 @@ export default function App() {
                                                   {routine.name}
                                                 </h4>
                                                 <button
-                                                  onClick={() => {
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
                                                     setEditingRoutineId(
                                                       routine.id,
                                                     );
@@ -8030,20 +8227,22 @@ export default function App() {
                                           </div>
                                           <div className="flex items-center gap-1.5">
                                             <button
-                                              onClick={() =>
+                                              onClick={(e) => {
+                                                e.stopPropagation();
                                                 handleLoadRoutineToActiveSession(
                                                   routine,
-                                                )
-                                              }
+                                                );
+                                              }}
                                               className="px-3 py-1.5 bg-gym-accent/10 border border-gym-accent/30 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] font-bold uppercase tracking-wider transition-all rounded-sm cursor-pointer"
                                               title="Load sets into today's active session"
                                             >
                                               Use Routine
                                             </button>
                                             <button
-                                              onClick={() =>
-                                                handleDeleteRoutine(routine.id!)
-                                              }
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleDeleteRoutine(routine.id!);
+                                              }}
                                               className="p-1.5 border border-red-500/10 hover:border-red-500/35 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 transition-colors rounded-sm cursor-pointer"
                                               title="Delete routine"
                                             >
