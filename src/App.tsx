@@ -98,6 +98,7 @@ import {
   onSnapshot,
 } from "./lib/firebase";
 import { Exercise, POOLS } from "./data/exercises";
+import { getProTipsForExercise } from "./data/proTips";
 
 // --- Background Images ---
 import ironTempleBg from "./assets/images/iron_temple_bg_1779282140548.png";
@@ -9376,6 +9377,58 @@ export default function App() {
                         )}
                       </div>
                     </div>
+
+                    {/* Pro Tips Section */}
+                    {(() => {
+                      const proTipsObj = getProTipsForExercise(resolvedEx.name, resolvedEx.pool, resolvedEx.muscleGroup);
+                      return (
+                        <div className="p-10 bg-[#070707] border-t border-b border-white/5 text-left">
+                          <h4 className="text-[9px] font-black text-gym-accent uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
+                            <div className="h-px flex-1 bg-gym-accent/20" />
+                            Elite Performance Guide
+                            <div className="h-px flex-1 bg-gym-accent/20" />
+                          </h4>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {/* Pro Tips (What to do) */}
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-emerald-500/10">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest font-mono">
+                                  Pro Tips (Max Effectiveness)
+                                </span>
+                              </div>
+                              <ul className="space-y-3">
+                                {proTipsObj.tips.map((tip, idx) => (
+                                  <li key={idx} className="flex gap-3 items-start text-xs font-light text-white/80 leading-relaxed">
+                                    <span className="text-emerald-500 select-none font-bold font-mono">✓</span>
+                                    <span>{tip}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* What to Avoid (Pitfalls) */}
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-rose-500/10">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
+                                <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest font-mono">
+                                  Mistakes to Avoid
+                                </span>
+                              </div>
+                              <ul className="space-y-3">
+                                {proTipsObj.avoid.map((dont, idx) => (
+                                  <li key={idx} className="flex gap-3 items-start text-xs font-light text-white/80 leading-relaxed">
+                                    <span className="text-rose-500 select-none font-bold font-mono">✕</span>
+                                    <span>{dont}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* Video Demonstration Section */}
                     <div className="p-10 pb-5 bg-white/[0.01] border-t border-b border-white/5">
