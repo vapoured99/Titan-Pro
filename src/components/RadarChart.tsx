@@ -8,6 +8,8 @@ interface SessionSet {
   weight: number;
   reps: number;
   date: string;
+  timestamp?: any;
+  notes?: string;
 }
 
 interface RadarChartProps {
