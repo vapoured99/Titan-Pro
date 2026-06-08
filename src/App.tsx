@@ -1110,6 +1110,17 @@ export default function App() {
   const [editingRoutineName, setEditingRoutineName] = useState<string>("");
   const [guidanceEx, setGuidanceEx] = useState<Exercise | null>(null);
 
+  // --- Custom Routine Builder States ---
+  const [isCreatingRoutine, setIsCreatingRoutine] = useState(false);
+  const [newRoutineName, setNewRoutineName] = useState("");
+  const [newRoutineCategory, setNewRoutineCategory] = useState(0);
+  const [newRoutineExercises, setNewRoutineExercises] = useState<{
+    id: string;
+    exerciseName: string;
+    sets: { weight: number; reps: number; notes: string }[];
+  }[]>([]);
+  const [builderSearch, setBuilderSearch] = useState("");
+
   const [customExercises, setCustomExercises] = useState<Exercise[]>(() => {
     const saved = localStorage.getItem("gym_custom_exercises");
     if (saved) {
@@ -1183,6 +1194,21 @@ export default function App() {
     });
     return merged;
   }, [customExercises]);
+
+  const getExercisesForDay = (categoryIdx: number): Exercise[] => {
+    const config = DAY_CONFIG[categoryIdx];
+    if (!config) return [];
+    const list: Exercise[] = [];
+    config.pools.forEach((poolKey) => {
+      const pool = combinedPools[poolKey] || [];
+      pool.forEach((ex) => {
+        if (!list.some((e) => e.name.toLowerCase() === ex.name.toLowerCase())) {
+          list.push(ex);
+        }
+      });
+    });
+    return list;
+  };
 
   const [toast, setToast] = useState<{
     message: string;
@@ -2803,6 +2829,124 @@ export default function App() {
     } finally {
       setDataLoading(false);
     }
+  };
+
+  const handleSaveCustomRoutine = async () => {
+    if (!currentUser) return;
+    if (!newRoutineName.trim()) {
+      setToast({ message: "Please enter a routine name.", type: "info" });
+      return;
+    }
+    if (newRoutineExercises.length === 0) {
+      setToast({ message: "Please add at least one exercise to the routine.", type: "info" });
+      return;
+    }
+
+    // Flatten exercises and sets to fit db format:
+    const flatSets: any[] = [];
+    newRoutineExercises.forEach((exItem) => {
+      exItem.sets.forEach((setItem) => {
+        flatSets.push({
+          exerciseName: exItem.exerciseName,
+          weight: Number(setItem.weight) || 0,
+          reps: Number(setItem.reps) || 0,
+          notes: setItem.notes || "",
+        });
+      });
+    });
+
+    try {
+      setDataLoading(true);
+      const categoryName = DAY_CONFIG[newRoutineCategory].name;
+      const formattedDate = new Date().toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+
+      const routineRef = doc(
+        collection(db, `users/${currentUser.uid}/routines`),
+      );
+      await setDoc(routineRef, {
+        name: newRoutineName.trim(),
+        date: formattedDate,
+        categoryIndex: newRoutineCategory,
+        sets: flatSets,
+        timestamp: serverTimestamp(),
+      });
+
+      setToast({
+        message: `Custom routine "${newRoutineName.trim()}" saved under ${categoryName}!`,
+        type: "success",
+      });
+      setIsCreatingRoutine(false);
+      setNewRoutineName("");
+      setNewRoutineCategory(0);
+      setNewRoutineExercises([]);
+    } catch (error) {
+      console.error("Error creating custom routine:", error);
+      setToast({ message: "Failed to save custom routine.", type: "info" });
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleAddExercise = (exerciseName: string) => {
+    if (!exerciseName.trim()) return;
+    if (
+      newRoutineExercises.some(
+        (e) => e.exerciseName.toLowerCase() === exerciseName.toLowerCase()
+      )
+    ) {
+      setToast({
+        message: `"${exerciseName}" is already added to this routine!`,
+        type: "info",
+      });
+      return;
+    }
+    setNewRoutineExercises((prev) => [
+      ...prev,
+      {
+        id: Math.random().toString(36).substring(2, 9),
+        exerciseName: exerciseName.trim(),
+        sets: [{ weight: 20, reps: 10, notes: "" }],
+      },
+    ]);
+  };
+
+  const handleRemoveExercise = (id: string) => {
+    setNewRoutineExercises((prev) => prev.filter((ex) => ex.id !== id));
+  };
+
+  const handleAddSet = (exId: string) => {
+    setNewRoutineExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id === exId) {
+          const lastSet = ex.sets[ex.sets.length - 1];
+          return {
+            ...ex,
+            sets: [
+              ...ex.sets,
+              {
+                weight: lastSet ? lastSet.weight : 20,
+                reps: lastSet ? lastSet.reps : 10,
+                notes: "",
+              },
+            ],
+          };
+        }
+        return ex;
+      })
+    );
+  };
+
+  const handleRemoveSet = (exId: string, setIdx: number) => {
+    setNewRoutineExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.id === exId) {
+          const nextSets = [...ex.sets];
+          nextSets.splice(setIdx, 1);
+          return { ...ex, sets: nextSets };
+        }
+        return ex;
+      })
+    );
   };
 
   const handleLoadRoutineToActiveSession = async (routine: any) => {
@@ -7362,35 +7506,405 @@ export default function App() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-3 pb-20"
               >
-                <div className="mb-6 pb-6 border-b border-white/5 flex items-center justify-between">
-                  <div>
-                    <h3 className="text-xl font-light italic font-serif">
-                      Saved Workout Routines
-                    </h3>
-                    <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">
-                      Instantly reload and execute your favorite workflows
-                    </p>
-                  </div>
-                </div>
+                {isCreatingRoutine ? (
+                  <div className="space-y-6">
+                    {/* Header */}
+                    <div className="pb-6 border-b border-white/5 flex items-center justify-between flex-wrap gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <button
+                            onClick={() => setIsCreatingRoutine(false)}
+                            className="text-xs text-gym-accent hover:text-gym-accent/80 flex items-center gap-1 transition-colors cursor-pointer font-semibold animate-none bg-transparent border-0 p-0"
+                          >
+                            ← Back to Routines
+                          </button>
+                        </div>
+                        <h3 className="text-xl font-light italic font-serif text-white">
+                          Build Custom Routine
+                        </h3>
+                        <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">
+                          Configure a tailored, structured guide for automatic session tracking
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setIsCreatingRoutine(false)}
+                          className="px-4 py-2 border border-white/10 text-white/60 hover:text-white hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest transition-all rounded-sm cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveCustomRoutine}
+                          className="px-5 py-2 bg-gym-accent hover:bg-gym-accent/90 text-black text-[10px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer shadow-[0_0_15px_rgba(255,231,101,0.2)] font-semibold"
+                        >
+                          Save Routine
+                        </button>
+                      </div>
+                    </div>
 
-                {DAY_CONFIG.map((day, di) => {
-                  const categoryRoutines = routines.filter(
-                    (r) => r.categoryIndex === di,
-                  );
-                  const isOpen = !!expandedRoutinesDays[di];
+                    {/* Routine Info Form */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white/[0.01] border border-white/5 p-6 rounded-sm">
+                      {/* Name input */}
+                      <div className="md:col-span-2 space-y-2">
+                        <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
+                          Routine Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Savage Chest & Arms, Powerhouse Legs..."
+                          value={newRoutineName}
+                          onChange={(e) => setNewRoutineName(e.target.value)}
+                          className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm font-light focus:outline-none transition-all text-white"
+                        />
+                      </div>
 
-                  return (
-                    <div key={di} className="group">
+                      {/* Day category selector */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
+                          Day / Focus Category
+                        </label>
+                        <select
+                          value={newRoutineCategory}
+                          onChange={(e) => {
+                            setNewRoutineCategory(Number(e.target.value));
+                          }}
+                          className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm font-medium focus:outline-none transition-all text-white cursor-pointer"
+                        >
+                          {DAY_CONFIG.map((day, idx) => (
+                            <option key={idx} value={idx} className="bg-black text-white">
+                              {day.name} (Day {idx + 1})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Exercises Selection Block */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                      {/* Selector/Finder on the left */}
+                      <div className="space-y-4 bg-white/[0.01] border border-white/5 p-6 rounded-sm">
+                        <div>
+                          <h4 className="text-sm font-semibold italic font-serif text-white/90">
+                            Add Exercises
+                          </h4>
+                          <p className="text-[10px] text-white/30 uppercase tracking-wider font-bold mt-0.5">
+                            Search or select exercises from standard lists
+                          </p>
+                        </div>
+
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                          <input
+                            type="text"
+                            placeholder="Type to filter exercises..."
+                            value={builderSearch}
+                            onChange={(e) => setBuilderSearch(e.target.value)}
+                            className="w-full bg-black/40 border border-white/10 rounded-sm pl-10 pr-4 py-2.5 text-xs font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                          />
+                        </div>
+
+                        {/* List exercises matching category pools or search */}
+                        <div className="max-h-[350px] overflow-y-auto space-y-1.5 pr-1.5 custom-scrollbar">
+                          {(() => {
+                            const availableExercises = getExercisesForDay(newRoutineCategory);
+                            const searchClean = builderSearch.trim().toLowerCase();
+                            
+                            // Filter by search text
+                            let filtered = availableExercises;
+                            if (searchClean) {
+                              filtered = availableExercises.filter(ex => 
+                                ex.name.toLowerCase().includes(searchClean)
+                              );
+                            }
+
+                            // If search does not match any existing exercise perfectly, offer option to add as a custom exercise name
+                            const exactMatch = availableExercises.some(ex => ex.name.toLowerCase() === searchClean);
+                            
+                            return (
+                              <>
+                                {searchClean && !exactMatch && (
+                                  <button
+                                    onClick={() => {
+                                      const trimmedName = builderSearch.trim();
+                                      if (trimmedName) {
+                                        handleAddExercise(trimmedName);
+                                        setBuilderSearch("");
+                                      }
+                                    }}
+                                    className="w-full text-left p-3 rounded-sm border border-gym-accent/20 bg-gym-accent/5 hover:bg-gym-accent hover:text-black transition-all cursor-pointer flex items-center justify-between"
+                                  >
+                                    <div className="min-w-0 flex-1">
+                                      <span className="text-xs font-bold text-gym-accent block truncate hover:text-inherit">
+                                        + Add Custom: "{builderSearch.trim()}"
+                                      </span>
+                                    </div>
+                                    <Plus className="w-3.5 h-3.5 animate-none text-gym-accent" />
+                                  </button>
+                                )}
+
+                                {filtered.length === 0 && !searchClean && (
+                                  <div className="text-center py-6 text-white/20 text-xs">
+                                    No default exercises in pools.
+                                  </div>
+                                )}
+
+                                {filtered.map((ex, idx) => {
+                                  const isAdded = newRoutineExercises.some(r => r.exerciseName.toLowerCase() === ex.name.toLowerCase());
+                                  return (
+                                    <button
+                                      key={idx}
+                                      onClick={() => handleAddExercise(ex.name)}
+                                      disabled={isAdded}
+                                      className={`w-full text-left p-2.5 rounded-sm border transition-all flex items-center justify-between gap-3 ${
+                                        isAdded 
+                                          ? "border-emerald-500/10 bg-emerald-500/5 text-emerald-400 opacity-60 cursor-not-allowed" 
+                                          : "border-white/5 bg-black/40 hover:bg-white/[0.04] hover:border-white/10 text-white/80 cursor-pointer"
+                                      }`}
+                                    >
+                                      <span className="text-xs font-medium truncate">{ex.name}</span>
+                                      {isAdded ? (
+                                        <span className="text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded-sm text-emerald-400">
+                                          Added
+                                        </span>
+                                      ) : (
+                                        <Plus className="w-3.5 h-3.5 text-white/30 animate-none" />
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Builder List and Sets Editor (Takes 2/3 space on large displays) */}
+                      <div className="lg:col-span-2 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-sm font-semibold italic font-serif text-white/90">
+                            Routine Structure ({newRoutineExercises.length} Exercises)
+                          </h4>
+                          {newRoutineExercises.length > 0 && (
+                            <button
+                              onClick={() => setNewRoutineExercises([])}
+                              className="text-[9px] text-rose-400 hover:text-rose-300 font-bold uppercase tracking-wider cursor-pointer bg-transparent border-0 p-0"
+                            >
+                              Clear All
+                            </button>
+                          )}
+                        </div>
+
+                        {newRoutineExercises.length === 0 ? (
+                          <div className="border border-dashed border-white/10 rounded-sm p-12 text-center bg-black/20">
+                            <Dumbbell className="w-8 h-8 text-white/10 mx-auto mb-3 animate-pulse" />
+                            <p className="text-xs font-bold text-white/40 uppercase tracking-widest">
+                              Routine is empty
+                            </p>
+                            <p className="text-[10px] text-white/20 uppercase tracking-wider mt-1.5 max-w-[280px] mx-auto leading-normal">
+                              Select from the available exercises list or type to add custom targets to kickstart your plan
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            {newRoutineExercises.map((exItem, exIdx) => (
+                              <div
+                                key={exItem.id}
+                                className="bg-black/55 border border-white/10 rounded-sm overflow-hidden"
+                              >
+                                {/* Header of block */}
+                                <div className="p-4 bg-white/[0.02] border-b border-white/5 flex items-center justify-between gap-4">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/20 px-2 py-0.5 rounded-sm">
+                                      {exIdx + 1}
+                                    </span>
+                                    <h5 className="text-sm font-semibold text-white/95 truncate max-w-[250px] sm:max-w-none">
+                                      {exItem.exerciseName}
+                                    </h5>
+                                  </div>
+                                  <button
+                                    onClick={() => handleRemoveExercise(exItem.id)}
+                                    className="p-1.5 text-white/30 hover:text-red-400 transition-colors cursor-pointer bg-transparent border-0"
+                                    title="Remove exercise"
+                                  >
+                                    <Trash2 className="w-4 h-4 text-white/30" />
+                                  </button>
+                                </div>
+
+                                {/* Sets of block */}
+                                <div className="p-4 space-y-2.5">
+                                  {exItem.sets.map((set, setIdx) => (
+                                    <div
+                                      key={setIdx}
+                                      className="flex flex-wrap items-center gap-3 bg-white/[0.01] p-2.5 rounded-sm border border-white/5"
+                                    >
+                                      {/* Set badge */}
+                                      <span className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-wider min-w-[45px]">
+                                        Set {setIdx + 1}
+                                      </span>
+
+                                      {/* Weight input */}
+                                      <div className="flex items-center gap-1.5 min-w-[100px] flex-1">
+                                        <input
+                                          type="number"
+                                          value={set.weight || ""}
+                                          onChange={(e) => {
+                                            const val = Number(e.target.value) || 0;
+                                            setNewRoutineExercises(prev => prev.map(ex => {
+                                              if (ex.id === exItem.id) {
+                                                const next = [...ex.sets];
+                                                next[setIdx] = { ...next[setIdx], weight: val };
+                                                return { ...ex, sets: next };
+                                              }
+                                              return ex;
+                                            }));
+                                          }}
+                                          placeholder="Weight"
+                                          className="w-16 bg-black/60 border border-white/15 focus:border-gym-accent rounded-sm px-2 py-1 text-xs text-center font-medium font-mono focus:outline-none transition-all text-white"
+                                        />
+                                        <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                                          {findExerciseByName(exItem.exerciseName)?.pool === "cardio" ? "m" : "kg"}
+                                        </span>
+                                      </div>
+
+                                      {/* Reps input */}
+                                      <div className="flex items-center gap-1.5 min-w-[100px] flex-1">
+                                        <input
+                                          type="number"
+                                          value={set.reps || ""}
+                                          onChange={(e) => {
+                                            const val = Number(e.target.value) || 0;
+                                            setNewRoutineExercises(prev => prev.map(ex => {
+                                              if (ex.id === exItem.id) {
+                                                const next = [...ex.sets];
+                                                next[setIdx] = { ...next[setIdx], reps: val };
+                                                return { ...ex, sets: next };
+                                              }
+                                              return ex;
+                                            }));
+                                          }}
+                                          placeholder="Reps"
+                                          className="w-16 bg-black/60 border border-white/15 focus:border-gym-accent rounded-sm px-2 py-1 text-xs text-center font-medium font-mono focus:outline-none transition-all text-white"
+                                        />
+                                        <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                                          {findExerciseByName(exItem.exerciseName)?.pool === "cardio" ? "speed" : "reps"}
+                                        </span>
+                                      </div>
+
+                                      {/* Notes input */}
+                                      <div className="flex-1 min-w-[180px]">
+                                        <input
+                                          type="text"
+                                          value={set.notes || ""}
+                                          onChange={(e) => {
+                                            const val = e.target.value;
+                                            setNewRoutineExercises(prev => prev.map(ex => {
+                                              if (ex.id === exItem.id) {
+                                                const next = [...ex.sets];
+                                                next[setIdx] = { ...next[setIdx], notes: val };
+                                                return { ...ex, sets: next };
+                                              }
+                                              return ex;
+                                            }));
+                                          }}
+                                          placeholder="Optional cue (e.g. drop set, stretch focus)"
+                                          className="w-full bg-black/60 border border-white/15 focus:border-gym-accent rounded-sm px-3 py-1 text-xs font-light focus:outline-none transition-all text-white placeholder-white/25"
+                                        />
+                                      </div>
+
+                                      {/* Delete set button */}
+                                      {exItem.sets.length > 1 && (
+                                        <button
+                                          onClick={() => handleRemoveSet(exItem.id, setIdx)}
+                                          className="p-1 text-white/20 hover:text-rose-400 transition-colors cursor-pointer bg-transparent border-0"
+                                          title="Remove set"
+                                        >
+                                          ✕
+                                        </button>
+                                      )}
+                                    </div>
+                                  ))}
+
+                                  {/* Add set trigger row */}
+                                  <div className="flex items-center justify-between pt-1 border-t border-white/5 mt-2">
+                                    <button
+                                      onClick={() => handleAddSet(exItem.id)}
+                                      className="flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-white/10 hover:text-white text-white/70 text-[9px] font-bold uppercase tracking-wider rounded-sm cursor-pointer transition-all border border-white/5"
+                                    >
+                                      <Plus className="w-3 h-3 text-gym-accent animate-none" />
+                                      Add Set
+                                    </button>
+                                    <span className="text-[8px] text-white/30 font-mono">
+                                      {exItem.sets.length} total set(s)
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bottom Action Footer bar */}
+                    <div className="pt-6 border-t border-white/5 flex justify-end gap-3">
                       <button
-                        onClick={() =>
-                          setExpandedRoutinesDays((prev) => ({
-                            ...prev,
-                            [di]: !isOpen,
-                          }))
-                        }
-                        className="w-full flex items-center justify-between p-6 rounded-sm bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
+                        onClick={() => setIsCreatingRoutine(false)}
+                        className="px-6 py-2.5 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-widest transition-all rounded-sm cursor-pointer"
                       >
-                        <div className="flex items-center gap-4">
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveCustomRoutine}
+                        className="px-8 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-xs font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer shadow-[0_0_20px_rgba(255,231,101,0.25)] font-semibold"
+                      >
+                        Create & Save Routine
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-6 pb-6 border-b border-white/5 flex items-center justify-between flex-wrap gap-4">
+                      <div>
+                        <h3 className="text-xl font-light italic font-serif">
+                          Saved Workout Routines
+                        </h3>
+                        <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">
+                          Instantly reload and execute your favorite workflows
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setNewRoutineName("");
+                          setNewRoutineCategory(0);
+                          setNewRoutineExercises([]);
+                          setIsCreatingRoutine(true);
+                          setBuilderSearch("");
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:border-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-sm cursor-pointer font-semibold"
+                      >
+                        <Plus className="w-3.5 h-3.5 animate-none" />
+                        Create Custom Routine
+                      </button>
+                    </div>
+
+                    {DAY_CONFIG.map((day, di) => {
+                      const categoryRoutines = routines.filter(
+                        (r) => r.categoryIndex === di,
+                      );
+                      const isOpen = !!expandedRoutinesDays[di];
+
+                      return (
+                        <div key={di} className="group">
+                          <button
+                            onClick={() =>
+                              setExpandedRoutinesDays((prev) => ({
+                                ...prev,
+                                [di]: !isOpen,
+                              }))
+                            }
+                            className="w-full flex items-center justify-between p-6 rounded-sm bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
+                          >
+                            <div className="flex items-center gap-4">
                           <div className="flex items-center gap-3">
                             <h3 className="text-lg font-light italic font-serif text-white/90">
                               {day.name}
@@ -7597,6 +8111,8 @@ export default function App() {
                     </div>
                   );
                 })}
+                  </>
+                )}
               </motion.div>
             ) : activeView === "map" ? (
               <motion.div
