@@ -216,20 +216,31 @@ export default function RadarChart({
             }).join(' ');
 
             return (
-              <polygon
+              <motion.polygon
                 key={idx}
                 points={points}
                 fill="none"
                 stroke="rgba(255, 255, 255, 0.04)"
                 strokeWidth="1"
                 strokeDasharray={idx < 4 ? "3,3" : "none"}
+                initial={{ scale: 0.96, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  delay: idx * 0.04,
+                  duration: 0.6,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                style={{
+                  originX: `${radarChartSVG.center}px`,
+                  originY: `${radarChartSVG.center}px`
+                }}
               />
             );
           })}
 
           {/* Axis Lines radiating out */}
           {radarChartSVG.vertices.map((v, i) => (
-            <line
+            <motion.line
               key={i}
               x1={radarChartSVG.center}
               y1={radarChartSVG.center}
@@ -237,6 +248,13 @@ export default function RadarChart({
               y2={v.y}
               stroke="rgba(255, 255, 255, 0.08)"
               strokeWidth="1"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{
+                delay: 0.1 + (i * 0.03),
+                duration: 0.8,
+                ease: [0.16, 1, 0.3, 1]
+              }}
             />
           ))}
 
@@ -244,34 +262,50 @@ export default function RadarChart({
           {[50, 100].map((perc, i) => {
             const r = radarChartSVG.radius * (perc / 100);
             return (
-              <text
+              <motion.text
                 key={i}
                 x={radarChartSVG.center + 4}
                 y={radarChartSVG.center - r - 2}
                 fill="white"
-                fillOpacity={0.2}
                 className="text-[6px] font-mono tracking-widest font-bold fill-white/20"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.2 }}
+                transition={{ delay: 0.4, duration: 0.4 }}
               >
                 {perc}%
-              </text>
+              </motion.text>
             );
           })}
 
-          {/* Dynamic User Volume Web Polygon */}
+          {/* Dynamic User Volume Web Polygon - sequential line tracing path with delayed fill */}
           {hasData && (
-            <polygon
-              points={radarChartSVG.vertices.map(v => `${v.valX},${v.valY}`).join(' ')}
+            <motion.path
+              d={radarChartSVG.vertices.map((v, i) => `${i === 0 ? 'M' : 'L'} ${v.valX} ${v.valY}`).join(' ') + ' Z'}
               fill="url(#console-radar-glow)"
               stroke={accentColor}
               strokeWidth="1.8"
               strokeLinejoin="round"
               filter="url(#console-radar-line-glow)"
+              initial={{ pathLength: 0, fillOpacity: 0 }}
+              animate={{ pathLength: 1, fillOpacity: 1 }}
+              transition={{
+                pathLength: {
+                  delay: 0.5,
+                  duration: 1.3,
+                  ease: "easeInOut"
+                },
+                fillOpacity: {
+                  delay: 1.6,
+                  duration: 0.6,
+                  ease: "easeOut"
+                }
+              }}
             />
           )}
 
-          {/* Vertex Plot Points */}
+          {/* Vertex Plot Points - bouncing spring animations */}
           {hasData && radarChartSVG.vertices.map((v, i) => (
-            <circle
+            <motion.circle
               key={i}
               cx={v.valX}
               cy={v.valY}
@@ -280,6 +314,18 @@ export default function RadarChart({
               stroke={accentColor}
               strokeWidth="1.5"
               className="cursor-pointer"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{
+                delay: i * 0.08,
+                type: "spring",
+                stiffness: 350,
+                damping: 11
+              }}
+              style={{
+                originX: `${v.valX}px`,
+                originY: `${v.valY}px`
+              }}
             />
           ))}
 
@@ -305,7 +351,7 @@ export default function RadarChart({
             const displayName = labelMap[v.key] || v.key.toUpperCase();
 
             return (
-              <text
+              <motion.text
                 key={i}
                 x={v.lblX}
                 y={v.lblY}
@@ -313,10 +359,21 @@ export default function RadarChart({
                 textAnchor={textAnchor}
                 fill="white"
                 className="text-[7.5px] font-mono font-bold tracking-wider uppercase fill-white"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{
+                  delay: 0.35 + (i * 0.03),
+                  duration: 0.4,
+                  ease: "easeOut"
+                }}
+                style={{
+                  originX: `${v.lblX}px`,
+                  originY: `${v.lblY}px`
+                }}
               >
                 {displayName}
                 <tspan className="text-[6px] fill-gym-accent/50 font-normal ml-0.5 font-sans"> ({v.count})</tspan>
-              </text>
+              </motion.text>
             );
           })}
         </svg>
