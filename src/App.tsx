@@ -3625,18 +3625,35 @@ export default function App() {
                              if (section.key === 'back') {
                               return (
                                 <div className="space-y-8 w-full">
-                                  {/* Upper Back Subsegment */}
+                                  {/* Lats Subsegment */}
                                   {(() => {
-                                    const upperBackLines = section.list.filter(e => e.pool === 'upper_back');
-                                    if (upperBackLines.length === 0) return null;
+                                    const latsLines = section.list.filter(e => e.muscleGroup === 'lats');
+                                    if (latsLines.length === 0) return null;
                                     return (
                                       <div className="space-y-4">
                                         <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
                                           <div className="w-1.5 h-3 bg-gym-accent rounded-[1px]" />
-                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Upper Back Isolation & Lats</span>
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Latissimus Dorsi (Lats)</span>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                          {upperBackLines.map(renderCard)}
+                                          {latsLines.map(renderCard)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Rhomboids & Traps Subsegment */}
+                                  {(() => {
+                                    const rhomboidsTrapsLines = section.list.filter(e => e.muscleGroup === 'rhomboids_traps');
+                                    if (rhomboidsTrapsLines.length === 0) return null;
+                                    return (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                          <div className="w-1.5 h-3 bg-sky-500 rounded-[1px]" />
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Rhomboids & Traps (Upper/Mid Back)</span>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                          {rhomboidsTrapsLines.map(renderCard)}
                                         </div>
                                       </div>
                                     );
@@ -3644,13 +3661,13 @@ export default function App() {
 
                                   {/* Lower Back Subsegment */}
                                   {(() => {
-                                    const lowerBackLines = section.list.filter(e => e.pool === 'lower_back');
+                                    const lowerBackLines = section.list.filter(e => e.muscleGroup === 'erector_spinae' || e.pool === 'lower_back');
                                     if (lowerBackLines.length === 0) return null;
                                     return (
                                       <div className="space-y-4">
                                         <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
                                           <div className="w-1.5 h-3 bg-red-500 rounded-[1px]" />
-                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Lower Back & Spinal Erectors</span>
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">Erector Spinae (Lower Back)</span>
                                         </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                           {lowerBackLines.map(renderCard)}
@@ -6386,6 +6403,48 @@ export default function App() {
                       </button>
                     </div>
                   );
+
+                   if (poolKey === 'upper_back') {
+                    const groups = [
+                      { key: 'lats', label: 'Latissimus Dorsi (Lats)' },
+                      { key: 'rhomboids_traps', label: 'Rhomboids & Traps' }
+                    ] as const;
+
+                    return (
+                      <div key={poolKey} className="mb-8">
+                        {groups.map(group => {
+                          const groupExercises = filtered.filter(e => e.muscleGroup === group.key || (group.key === 'rhomboids_traps' && !e.muscleGroup)); // Fallback row
+                          if (groupExercises.length === 0) return null;
+
+                          return (
+                            <div key={group.key} className="mb-6">
+                              <h4 className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-4 ml-2 border-l border-gym-accent/40 pl-3">
+                                {group.label} (Upper Back)
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {groupExercises.map(renderExercise)}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }
+
+                  if (poolKey === 'lower_back') {
+                    return (
+                      <div key={poolKey} className="mb-8">
+                        <div className="mb-6">
+                          <h4 className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em] mb-4 ml-2 border-l border-gym-accent/40 pl-3">
+                            Erector Spinae & Spinal Erectors (Lower Back)
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {filtered.map(renderExercise)}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
 
                   if (poolKey === 'legs') {
                     const groups = ['quads', 'hamstrings', 'glutes', 'calves'] as const;

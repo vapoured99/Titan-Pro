@@ -1,9 +1,9 @@
 export interface Exercise {
   name: string;
   icon: string;
-  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps';
+  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps' | 'lats' | 'rhomboids_traps' | 'erector_spinae';
   instructions?: string[];
-  muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps';
+  muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps' | 'lats' | 'rhomboids_traps' | 'erector_spinae';
   legRegion?: 'upper' | 'lower';
   category?: 'compound' | 'isolation';
   equipmentCategory?: string;
@@ -310,6 +310,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Barbell Bent Over Row", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Stand with feet shoulder-width apart and grip the barbell with an overhand grip.",
         "Hinge at your hips and lean forward until your torso is nearly parallel to the floor.",
@@ -322,6 +323,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Close Grip Lat Pulldown", 
       icon: "ArrowDown", 
       pool: "upper_back",
+      muscleGroup: "lats",
       instructions: [
         "Attach a V-bar or close-grip handle to the lat pulldown machine.",
         "Sit and secure your thighs under the knee pads.",
@@ -334,6 +336,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Dumbbell Bent Over Row", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Hold a dumbbell in each hand and hinge at the hips until your torso is nearly parallel to the floor.",
         "Let the weights hang with arms extended and palms facing each other.",
@@ -346,6 +349,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Incline Row (Chest Supported)", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Lie face down on an incline bench set at 30-45 degrees.",
         "Hold dumbbells with arms hanging straight down.",
@@ -358,6 +362,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Inverted Row", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Set a bar in a rack or use a TRX at waist height.",
         "Lie under the bar and grip it with hands wider than shoulders.",
@@ -370,6 +375,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Lat Pulldowns", 
       icon: "ArrowDown", 
       pool: "upper_back",
+      muscleGroup: "lats",
       instructions: [
         "Sit at the machine and adjust the knee pad so your thighs are secured.",
         "Grip the bar with a wide, overhand grip, hands wider than shoulder-width.",
@@ -382,6 +388,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Pendlay Row", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Stand over a barbell with feet shoulder-width apart.",
         "Hinge forward until your torso is parallel to the floor.",
@@ -394,6 +401,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Seated Cable Row", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Sit at the rowing machine with your feet on the platforms and a slight bend in your knees.",
         "Grip the handle and sit upright with a neutral spine and shoulders back.",
@@ -406,6 +414,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Low to High Cable Row", 
       icon: "ArrowUp", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Set the cable pulley at the lowest position and attach a D-handle or rope.",
         "Stand facing the machine, step back to create tension on the cable, and assume a stable split stance.",
@@ -418,6 +427,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Single Arm Bent Over Row", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Place one knee and hand on a flat bench for support.",
         "Hold a dumbbell in the other hand with the arm extended.",
@@ -430,6 +440,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Single Arm Lat Pulldowns", 
       icon: "ArrowDown", 
       pool: "upper_back",
+      muscleGroup: "lats",
       instructions: [
         "Attach a single handle to the lat pulldown machine.",
         "Sit and grip the handle with one hand.",
@@ -442,6 +453,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Straight Arm Lat Pulldowns", 
       icon: "ArrowDown", 
       pool: "upper_back",
+      muscleGroup: "lats",
       instructions: [
         "Stand facing the cable machine and grip a bar with arms fully extended.",
         "With a slight bend in your elbows, pull the bar down to your thighs using your lats.",
@@ -454,6 +466,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "T Bar Row", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Stand over the T-bar or landmine setup with a wide or narrow handle.",
         "Hinge forward and pull the handles toward your abdomen.",
@@ -466,6 +479,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Wide Grip Lat Pulldowns", 
       icon: "ArrowDown", 
       pool: "upper_back",
+      muscleGroup: "lats",
       instructions: [
         "Grip the long bar with hands well beyond shoulder-width.",
         "Pull the bar down toward your upper chest.",
@@ -478,6 +492,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Machine Row", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
       instructions: [
         "Sit in the machine and adjust the chest pad.",
         "Grip the handles and pull them toward your waist.",
@@ -490,6 +505,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Pull Ups",
       icon: "ArrowUp",
       pool: "upper_back",
+      muscleGroup: "lats",
       instructions: [
         "Grasp the pull-up bar with an overhand grip, hands slightly wider than shoulder-width apart.",
         "Hang with your arms fully extended and your feet off the floor, crossing your ankles if needed.",
@@ -502,6 +518,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Assisted Pull Ups",
       icon: "ArrowUpCircle",
       pool: "upper_back",
+      muscleGroup: "lats",
       instructions: [
         "Select an appropriate counterweight on the machine and step onto the platform or place your knees/feet on the padded bar.",
         "Grasp the overhead handles with an overhand grip, hands slightly wider than shoulder-width apart.",
@@ -516,6 +533,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Rack Pulls", 
       icon: "ArrowUp", 
       pool: "lower_back",
+      muscleGroup: "erector_spinae",
       instructions: [
         "Set a barbell on the safety pins of a power rack at or just below knee height.",
         "Grip the bar with hands shoulder-width apart and a flat back.",
@@ -528,6 +546,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Good Mornings",
       icon: "ArrowDown",
       pool: "lower_back",
+      muscleGroup: "erector_spinae",
       instructions: [
         "Rest a barbell on your upper back / traps with a tight shoulder blades retraction.",
         "Stand with feet shoulder-width apart, knees slightly unlocked.",
@@ -539,6 +558,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Back Hyperextensions",
       icon: "ArrowUp",
       pool: "lower_back",
+      muscleGroup: "erector_spinae",
       instructions: [
         "Position yourself on a back extension bench with your hips resting on the pad and ankles secured.",
         "With a flat back, bend forward at the waist as far as you can comfortably stretch.",
@@ -550,6 +570,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Reverse Hyperextensions",
       icon: "ArrowUp",
       pool: "lower_back",
+      muscleGroup: "erector_spinae",
       instructions: [
         "Lie face down on a reverse hyperextension machine table with your hips at the edge of the pad.",
         "Secure your feet in the strap or roller attachment, keeping your legs straight and hanging down.",
@@ -562,6 +583,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Jefferson Curls",
       icon: "ArrowDown",
       pool: "lower_back",
+      muscleGroup: "erector_spinae",
       instructions: [
         "Stand tall on an elevated box or flat bench holding a light barbell or kettlebell with both hands hanging straight down.",
         "Begin the movement by tucking your chin to your chest, then slowly curl your spine downward nose-to-toes, one vertebra at a time.",
@@ -574,6 +596,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       name: "Supermans",
       icon: "Zap",
       pool: "lower_back",
+      muscleGroup: "erector_spinae",
       instructions: [
         "Lie flat on your stomach on an exercise mat with your legs straight and arms fully extended overhead.",
         "Keep your neck neutral by looking down at the mat throughout the movement.",

@@ -17,6 +17,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import AnatomyChart from './AnatomyChart';
+import RadarChart from './RadarChart';
 import { POOLS } from '../data/exercises';
 
 interface SessionSet {
@@ -557,8 +558,14 @@ export default function AnatomyDashboard({
                 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
                   
-                  {/* Radar Chart SVG Viewport (Left 5 cols) */}
-                  <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
+                  {/* Radar Chart Component (Left 5 cols) */}
+                  <div className="lg:col-span-5 flex flex-col items-center justify-center relative w-full">
+                    <div className="w-full max-w-[365px]">
+                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={300} />
+                    </div>
+                  </div>
+                  
+                  <div className="hidden lg:col-span-5">
                     
                     <div className="w-[365px] h-[365px] flex items-center justify-center relative bg-gradient-to-b from-white/[0.01] to-transparent p-4 rounded-full border border-white/[0.02]">
                       <svg viewBox="0 0 365 365" className="w-full h-full">
