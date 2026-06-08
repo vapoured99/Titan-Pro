@@ -4431,90 +4431,60 @@ export default function App() {
                         label: "Chest",
                         icon: Crown,
                         desc: "Chest Compound Lifts",
-                        borderActive: "border-red-500/40",
-                        bgActive: "from-red-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(239,68,68,0.15)]",
                       },
                       {
                         key: "back",
                         label: "Back",
                         icon: ArrowUpDown,
                         desc: "Lats, Rows & Pulls",
-                        borderActive: "border-sky-500/40",
-                        bgActive: "from-sky-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(14,165,233,0.15)]",
                       },
                       {
                         key: "shoulders",
                         label: "Shoulders",
                         icon: Target,
                         desc: "Delts & Broad Support",
-                        borderActive: "border-teal-500/40",
-                        bgActive: "from-teal-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(20,184,166,0.15)]",
                       },
                       {
                         key: "legs",
                         label: "Legs",
                         icon: ArrowDown,
                         desc: "Quads, Calves & Glutes",
-                        borderActive: "border-emerald-500/40",
-                        bgActive: "from-emerald-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(16,185,129,0.15)]",
                       },
                       {
                         key: "biceps",
                         label: "Biceps",
                         icon: Dumbbell,
                         desc: "Arm Flexion & Pulldowns",
-                        borderActive: "border-pink-500/40",
-                        bgActive: "from-pink-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(236,72,153,0.15)]",
                       },
                       {
                         key: "triceps",
                         label: "Triceps",
                         icon: RotateCw,
                         desc: "Elbow Pushdowns & Extensions",
-                        borderActive: "border-purple-500/40",
-                        bgActive: "from-purple-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(168,85,247,0.15)]",
                       },
                       {
                         key: "forearms",
                         label: "Forearms",
                         icon: Activity,
                         desc: "Grip & Wrist Strength",
-                        borderActive: "border-amber-500/40",
-                        bgActive: "from-amber-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(245,158,11,0.15)]",
                       },
                       {
                         key: "core",
                         label: "Core",
                         icon: Shield,
                         desc: "Abs & Rigid Bracing",
-                        borderActive: "border-indigo-500/40",
-                        bgActive: "from-indigo-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(99,102,241,0.15)]",
                       },
                       {
                         key: "cardio",
                         label: "Cardio",
                         icon: Flame,
                         desc: "Heart Rate & Conditioning",
-                        borderActive: "border-rose-500/40",
-                        bgActive: "from-rose-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(244,63,94,0.15)]",
                       },
                       {
                         key: "equipment",
                         label: "Equipment",
                         icon: Sliders,
                         desc: "Cables, Bands & Setups",
-                        borderActive: "border-slate-500/40",
-                        bgActive: "from-slate-500/10 to-transparent",
-                        accentGlow: "shadow-[0_0_15px_rgba(100,116,139,0.15)]",
                       },
                     ].map((sec) => {
                       const MetaIcon = sec.icon;
@@ -4559,28 +4529,54 @@ export default function App() {
                           onClick={() => setSelectedLibraryCategory(sec.key)}
                           className={`text-left p-4 rounded-sm border cursor-pointer transition-all duration-300 relative overflow-hidden group flex flex-col justify-between h-28 ${
                             isActive
-                              ? `bg-gradient-to-br ${sec.bgActive} border bg-black/90 ${sec.borderActive} ${sec.accentGlow}`
+                              ? "bg-black/90"
                               : "bg-black/40 border-white/10 hover:border-white/30 hover:bg-black/60"
                           }`}
+                          style={
+                            isActive
+                              ? {
+                                  borderColor: `rgba(${activeTheme.accentRgb}, 0.4)`,
+                                  backgroundImage: `linear-gradient(to bottom right, rgba(${activeTheme.accentRgb}, 0.12), transparent)`,
+                                  boxShadow: `0 0 15px rgba(${activeTheme.accentRgb}, 0.18)`,
+                                }
+                              : undefined
+                          }
                         >
                           <div className="absolute right-0 bottom-0 top-0 w-1/3 bg-gradient-to-l from-white/[0.015] to-transparent pointer-events-none" />
 
                           <div className="flex items-start justify-between">
                             <div
-                              className={`w-8 h-8 rounded-sm flex items-center justify-center border border-white/10 transition-all ${
+                              className={`w-8 h-8 rounded-sm flex items-center justify-center border transition-all ${
                                 isActive
-                                  ? "bg-gym-accent/10 border-gym-accent/30 text-gym-accent"
-                                  : "bg-white/5 text-white/45 group-hover:text-white"
+                                  ? ""
+                                  : "bg-white/5 border-white/10 text-white/45 group-hover:text-white"
                               }`}
+                              style={
+                                isActive
+                                  ? {
+                                      backgroundColor: `rgba(${activeTheme.accentRgb}, 0.1)`,
+                                      borderColor: `rgba(${activeTheme.accentRgb}, 0.3)`,
+                                      color: activeTheme.accent,
+                                    }
+                                  : undefined
+                              }
                             >
                               <MetaIcon className="w-4 h-4" />
                             </div>
                             <span
-                              className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                              className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider transition-all ${
                                 isActive
-                                  ? "bg-gym-accent/20 text-gym-accent font-black"
+                                  ? "font-black"
                                   : "bg-white/10 text-white/50 font-bold"
                               }`}
+                              style={
+                                isActive
+                                  ? {
+                                      backgroundColor: `rgba(${activeTheme.accentRgb}, 0.2)`,
+                                      color: activeTheme.accent,
+                                    }
+                                  : undefined
+                              }
                             >
                               {listCount}
                             </span>
