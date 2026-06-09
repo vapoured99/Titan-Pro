@@ -907,12 +907,12 @@ export default function AnatomyDashboard({
               transition={{ duration: 0.25, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="p-6">
+              <div className="p-6 space-y-6">
                 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
                   
                   {/* Radar Chart Component (Left 5 cols) */}
-                  <div className="lg:col-span-5 flex flex-col items-center justify-center relative w-full">
+                  <div className="lg:col-span-5 flex flex-col items-center justify-center relative w-full pt-2">
                     <div className="w-full max-w-[390px]">
                       <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={350} />
                     </div>
@@ -973,7 +973,7 @@ export default function AnatomyDashboard({
 
                         {/* Axis Lines radiating out */}
                         {radarChartSVG.vertices.map((v, i) => (
-                          <motion.line
+                           <motion.line
                             key={i}
                             x1={radarChartSVG.center}
                             y1={radarChartSVG.center}
@@ -1159,11 +1159,11 @@ export default function AnatomyDashboard({
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {radarData.list.map((item) => (
                           <div key={item.key} className="p-3 bg-white/[0.01] border border-white/[0.03] hover:border-white/5 transition-all rounded-sm flex flex-col justify-between">
-                            <div className="flex justify-between items-center mb-1.5">
-                              <span className="text-[10px] uppercase font-bold text-white/85 font-mono">
+                            <div className="flex justify-between items-center mb-1.5 font-mono">
+                              <span className="text-[10px] uppercase font-bold text-white/85">
                                 {item.label}
                               </span>
-                              <span className="text-[10px] font-mono text-gym-accent">
+                              <span className="text-[10px] text-gym-accent">
                                 {item.count} sets
                               </span>
                             </div>
@@ -1176,33 +1176,33 @@ export default function AnatomyDashboard({
                               />
                             </div>
                             
-                            <div className="flex justify-between items-center mt-1 text-[8px] text-white/30 uppercase tracking-widest">
+                            <div className="flex justify-between items-center mt-1 text-[8px] text-white/30 uppercase tracking-widest font-mono">
                               <span>Symmetry Weight:</span>
-                              <span className="font-mono">{item.score}%</span>
+                              <span>{item.score}%</span>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    {/* Highly relevant actionable training suggestions */}
-                    <div className="p-4 bg-gym-accent/5 border border-gym-accent/15 rounded-sm">
-                      <h6 className="text-[9px] font-bold text-gym-accent uppercase tracking-widest font-mono flex items-center gap-1.5 mb-2">
-                        <Zap className="w-3.5 h-3.5" />
-                        Aesthetic & Symmetry Recommendations
-                      </h6>
-                      <ul className="space-y-2 text-xs text-white/70">
-                        {balanceAnalysis.tips.map((tip, i) => (
-                          <li key={i} className="flex items-start gap-2 bg-[#050505]/40 p-2.5 rounded-sm border border-white/[0.02]">
-                            <span className="text-gym-accent text-[11px] font-mono font-bold shrink-0 mt-0.5">&bull;</span>
-                            <span>{tip}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
                   </div>
 
+                </div>
+
+                {/* Highly relevant actionable training suggestions - MOVED HERE UNDER BOTH SECTIONS */}
+                <div className="p-4 bg-gym-accent/5 border border-gym-accent/15 rounded-sm">
+                  <h6 className="text-[9px] font-bold text-gym-accent uppercase tracking-widest font-mono flex items-center gap-1.5 mb-2.5">
+                    <Zap className="w-3.5 h-3.5" />
+                    Aesthetic & Symmetry Recommendations
+                  </h6>
+                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-white/70">
+                    {balanceAnalysis.tips.map((tip, i) => (
+                      <li key={i} className="flex items-start gap-2.5 bg-[#050505]/40 p-3 rounded-sm border border-white/[0.02]">
+                        <span className="text-gym-accent text-[11px] font-mono font-bold shrink-0 mt-0.5">&bull;</span>
+                        <span className="leading-relaxed">{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
               </div>
