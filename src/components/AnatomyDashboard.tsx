@@ -102,7 +102,8 @@ export default function AnatomyDashboard({
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     physiological: false,
     radar: true, // Default open Option 2: Muscular Radar Analysis
-    strength: false
+    strength: false,
+    biomechanical: true
   });
 
   const toggleSection = (section: string) => {
@@ -340,7 +341,201 @@ export default function AnatomyDashboard({
     };
   }, [radarData]);
 
-  // --- 3. Relative Strength Metrics Calculation ---
+  // --- Biomechanical Load Balance Calculations over Rolling 30-Day Window ---
+  const biomechanicalData = useMemo(() => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const isWithin30Days = (dateStr: string): boolean => {
+      if (!dateStr) return false;
+      try {
+        const date = new Date(dateStr + 'T00:00:00');
+        if (isNaN(date.getTime())) return false;
+        const diffTime = today.getTime() - date.getTime();
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= 30;
+      } catch {
+        return false;
+      }
+    };
+
+    const normalizeGroupTo30Day = (raw: string | null): string => {
+      if (!raw) return 'other';
+      const rg = raw.toLowerCase().trim();
+      if (['front_delts', 'side_delts', 'rear_delts'].includes(rg)) return 'shoulders';
+      if (['upper_core', 'lower_core', 'obliques', 'core'].includes(rg)) return 'core';
+      if (['upper_chest', 'middle_chest', 'lower_chest', 'chest'].includes(rg)) return 'chest';
+      if (['long_biceps', 'short_biceps', 'brachialis', 'biceps'].includes(rg)) return 'biceps';
+      if (['long_triceps', 'lateral_triceps', 'medial_triceps', 'triceps'].includes(rg)) return 'triceps';
+      if (['back', 'upper_back', 'lats'].includes(rg)) return 'upper_back';
+      if (['lower_back'].includes(rg)) return 'lower_back';
+      if (['quads'].includes(rg)) return 'quads';
+      if (['hamstrings'].includes(rg)) return 'hamstrings';
+      if (['glutes'].includes(rg)) return 'glutes';
+      if (['calves'].includes(rg)) return 'calves';
+      if (['forearms'].includes(rg)) return 'forearms';
+      return 'other';
+    };
+
+    const volumes: Record<string, number> = {
+      chest: 0,
+      upper_back: 0,
+      lower_back: 0,
+      shoulders: 0,
+      quads: 0,
+      hamstrings: 0,
+      glutes: 0,
+      calves: 0,
+      biceps: 0,
+      triceps: 0,
+      core: 0,
+      forearms: 0
+    };
+
+    // 1. Current active sets
+    sessionSets.forEach(s => {
+      const g = normalizeGroupTo30Day(findMuscleGroup(s.exerciseName));
+      if (g in volumes) {
+        volumes[g] += 1;
+      }
+    });
+
+    // 2. Archived workouts in last 30 days
+    archivedWorkouts.forEach(w => {
+      if (w && isWithin30Days(w.date) && w.sets && Array.isArray(w.sets)) {
+        w.sets.forEach((s: any) => {
+          const g = normalizeGroupTo30Day(findMuscleGroup(s.exerciseName));
+          if (g in volumes) {
+            volumes[g] += 1;
+          }
+        });
+      }
+    });
+
+    return volumes;
+  }, [sessionSets, archivedWorkouts, findMuscleGroup]);
+
+  const biomechanicalAnalysis = useMemo(() => {
+    const data = biomechanicalData;
+
+    // --- 1. Chest vs Upper Back ---
+    const chestVol = data.chest;
+    const backVol = data.upper_back;
+    const chestTotal = chestVol + backVol;
+    const chestPct = chestTotal > 0 ? Math.round((chestVol / chestTotal) * 100) : 50;
+    const backPct = chestTotal > 0 ? Math.round((backVol / chestTotal) * 100) : 50;
+    
+    let chestBackStatus: 'balanced' | 'moderate' | 'critical' = 'balanced';
+    let chestBackWarning = '';
+    let chestBackTip = '';
+    if (chestTotal > 0) {
+      if (chestVol >= backVol * 2 && chestVol > 2) {
+        chestBackStatus = 'critical';
+        chestBackWarning = 'Slouch & Posture Risk';
+        chestBackTip = 'Chest volume exceeds Upper Back volume by more than 2:1. Add more rowing movements (e.g. Barbell Rows, Cable Rows, Face Pulls) to solve intermediate rounded posture risk.';
+      } else if (chestVol > backVol * 1.35 && chestVol > 1) {
+        chestBackStatus = 'moderate';
+        chestBackWarning = 'Mild Chest Prepotency';
+        chestBackTip = 'Slightly increase your midback/rowing sets to pull the skeletal structure back into balance.';
+      } else {
+        chestBackStatus = 'balanced';
+      }
+    }
+
+    // --- 2. Quads vs Hamstrings ---
+    const quadVol = data.quads;
+    const hamVol = data.hamstrings;
+    const legTotal = quadVol + hamVol;
+    const quadPct = legTotal > 0 ? Math.round((quadVol / legTotal) * 100) : 50;
+    const hamPct = legTotal > 0 ? Math.round((hamVol / legTotal) * 100) : 50;
+
+    let quadHamStatus: 'balanced' | 'moderate' | 'critical' = 'balanced';
+    let quadHamWarning = '';
+    let quadHamTip = '';
+    if (legTotal > 0) {
+      if (quadVol >= hamVol * 2 && quadVol > 2) {
+        quadHamStatus = 'critical';
+        quadHamWarning = 'Knee Joint Shear Risk';
+        quadHamTip = 'Quads volume exceeds Hamstrings volume by more than 2:1. Incorporate Romanian Deadlifts (RDLs), lying leg curls, and glute-ham raises to secure anterior/posterior lower balance.';
+      } else if (quadVol > hamVol * 1.4 && quadVol > 1) {
+        quadHamStatus = 'moderate';
+        quadHamWarning = 'Mild Quadriceps Bias';
+        quadHamTip = 'Incorporate dedicated posterior knee flexion curls to offset pushing forces on knee caps.';
+      } else {
+        quadHamStatus = 'balanced';
+      }
+    }
+
+    // --- 3. Biceps vs Triceps ---
+    const bicVol = data.biceps;
+    const triVol = data.triceps;
+    const armTotal = bicVol + triVol;
+    const bicPct = armTotal > 0 ? Math.round((bicVol / armTotal) * 100) : 50;
+    const triPct = armTotal > 0 ? Math.round((triVol / armTotal) * 100) : 50;
+
+    let armStatus: 'balanced' | 'moderate' | 'critical' = 'balanced';
+    let armWarning = '';
+    let armTip = '';
+    if (armTotal > 0) {
+      if (bicVol >= triVol * 2.2 && bicVol > 2) {
+        armStatus = 'critical';
+        armWarning = 'Elbow Flexor Overstress';
+        armTip = 'Biceps volume is more than 2.2x higher than Triceps. Add skull crushers or cable pushdowns to protect tendons.';
+      } else if (triVol >= bicVol * 2.2 && triVol > 2) {
+        armStatus = 'critical';
+        armWarning = 'Elbow Extensor Bias';
+        armTip = 'Triceps volume is more than 2.2x higher than Biceps. Target incline dumbbell curls or standard curls to stabilize elbow complexes.';
+      } else if ((bicVol > triVol * 1.5 || triVol > bicVol * 1.5) && armTotal > 2) {
+        armStatus = 'moderate';
+        armWarning = 'Minor Arm Inequality';
+        armTip = 'Review arm distributions; aim to pair curls with similar sets of presses/extensions.';
+      } else {
+        armStatus = 'balanced';
+      }
+    }
+
+    // Dynamic Alert Count
+    let totalAlerts = 0;
+    if (chestBackStatus === 'critical') totalAlerts++;
+    if (quadHamStatus === 'critical') totalAlerts++;
+    if (armStatus === 'critical') totalAlerts++;
+
+    return {
+      chestBack: {
+        chestVol,
+        backVol,
+        total: chestTotal,
+        chestPct,
+        backPct,
+        status: chestBackStatus,
+        warning: chestBackWarning,
+        tip: chestBackTip
+      },
+      quadHam: {
+        quadVol,
+        hamVol,
+        total: legTotal,
+        quadPct,
+        hamPct,
+        status: quadHamStatus,
+        warning: quadHamWarning,
+        tip: quadHamTip
+      },
+      bicepsTriceps: {
+        bicVol,
+        triVol,
+        total: armTotal,
+        bicPct,
+        triPct,
+        status: armStatus,
+        warning: armWarning,
+        tip: armTip
+      },
+      totalAlerts
+    };
+  }, [biomechanicalData]);
+
+  // --- 4. Relative Strength Metrics Calculation ---
   // Look for historical maximums of 4 major movements
   const compoundMaxes = useMemo(() => {
     const movements = {
@@ -718,8 +913,8 @@ export default function AnatomyDashboard({
                   
                   {/* Radar Chart Component (Left 5 cols) */}
                   <div className="lg:col-span-5 flex flex-col items-center justify-center relative w-full">
-                    <div className="w-full max-w-[365px]">
-                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={300} />
+                    <div className="w-full max-w-[390px]">
+                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={350} />
                     </div>
                   </div>
                   
@@ -1016,7 +1211,356 @@ export default function AnatomyDashboard({
         </AnimatePresence>
       </div>
 
-      {/* ────────────────── DROP DOWN 3: RELATIVE STRENGTH METRICS ────────────────── */}
+      {/* ────────────────── DROP DOWN 3: BIOMECHANICAL STRUCTURAL LOAD ALERTER ────────────────── */}
+      <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
+        <button
+          onClick={() => toggleSection('biomechanical')}
+          className="w-full flex items-center justify-between p-5 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          id="toggle-biomechanical"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 flex items-center justify-center border border-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
+              <Scale className="w-4 h-4 text-gym-accent" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black uppercase tracking-wider text-white">
+                3 &mdash; Biomechanical Load Alerter
+              </h4>
+              <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
+                Rolling 30-Day Agonist/Antagonist Ratios & Postural Risk Tracker
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {!expanded.biomechanical && (
+              <span className={`text-[9px] px-2.5 py-1 uppercase tracking-widest font-mono border ${
+                biomechanicalAnalysis.totalAlerts > 0
+                  ? 'bg-red-950/40 border-red-500/20 text-red-400 font-bold animate-pulse'
+                  : 'bg-white/5 border-white/10 text-white/50'
+              }`}>
+                {biomechanicalAnalysis.totalAlerts > 0
+                  ? `❗ POSTURAL WARNINGS: ${biomechanicalAnalysis.totalAlerts}`
+                  : "● BIOMECHANICS: BALANCED"}
+              </span>
+            )}
+            {expanded.biomechanical ? (
+              <ChevronUp className="w-4 h-4 text-white/40 group-hover:text-white" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white" />
+            )}
+          </div>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {expanded.biomechanical && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="p-6 space-y-6">
+                
+                {/* Rolling Indicator Box */}
+                <div className="p-4 bg-zinc-950/60 border border-white/5 rounded-sm space-y-2">
+                  <div className="flex text-[10px] items-center gap-2 text-white/40 uppercase tracking-widest font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-ping" />
+                    <span>Real-Time Agonist-Antagonist Posture Evaluator</span>
+                  </div>
+                  <p className="text-xs text-white/60 leading-relaxed">
+                    This engine processes your active workout files over a <strong>rolling 30-day window</strong> to diagnose kinetic chain deviations. Overtraining an agonist muscle group while neglecting its antagonist leads to extreme tendon pull, rounded postures, joint shear, and increased safety risks.
+                  </p>
+                </div>
+
+                {/* The 3 Sliders layout */}
+                <div className="space-y-8">
+                  
+                  {/* SLIDER 1: CHEST VS UPPER BACK */}
+                  <div className="p-5 bg-white/[0.01] border border-white/5 rounded-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div>
+                        <h5 className="text-xs font-bold text-white uppercase tracking-wider">
+                          1. Shoulder Girdle Balance (Chest vs. Upper Back)
+                        </h5>
+                        <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
+                          Target Ratio &mdash; 1:1 or higher pulling focus (Prevents Rounded Shoulders)
+                        </p>
+                      </div>
+
+                      {/* Status badge */}
+                      <div>
+                        {biomechanicalAnalysis.chestBack.total === 0 ? (
+                          <span className="text-[8px] bg-zinc-800 border border-zinc-700 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-zinc-400">
+                            Awaiting Data
+                          </span>
+                        ) : biomechanicalAnalysis.chestBack.status === 'critical' ? (
+                          <span className="text-[8px] bg-red-950/50 border border-red-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-red-500/40 font-bold animate-pulse text-red-400">
+                            POSTURAL WARNING
+                          </span>
+                        ) : biomechanicalAnalysis.chestBack.status === 'moderate' ? (
+                          <span className="text-[8px] bg-amber-950/50 border border-amber-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-amber-500/50 font-bold text-amber-400">
+                            MILD IMBALANCE
+                          </span>
+                        ) : (
+                          <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-gym-accent font-bold">
+                            OPTIMAL SYMMETRY
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Sliding Track Graph */}
+                    <div className="space-y-1.5 select-none pt-4 pb-1">
+                      <div className="relative w-full h-2.5 bg-zinc-900 border border-white/5 rounded-full flex items-center">
+                        {/* Perfect Alignment 50% Marker */}
+                        <div className="absolute top-[-4px] bottom-[-4px] left-1/2 w-[2px] bg-white/20 z-10" />
+                        <span className="absolute top-[-16px] left-[48%] text-[7px] font-mono text-white/25 uppercase tracking-widest">
+                          Symmetric Match
+                        </span>
+
+                        {/* Drag/Slide Bubble Node Indicator */}
+                        <div 
+                          style={{ left: `calc(${biomechanicalAnalysis.chestBack.chestPct}% - 6px)` }}
+                          className={`absolute w-3.5 h-3.5 rounded-full transition-all duration-500 z-20 ${
+                            biomechanicalAnalysis.chestBack.total === 0
+                              ? 'bg-zinc-650 border border-zinc-500'
+                              : biomechanicalAnalysis.chestBack.status === 'critical'
+                              ? 'bg-red-500 border border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse'
+                              : biomechanicalAnalysis.chestBack.status === 'moderate'
+                              ? 'bg-amber-400 border border-amber-300 shadow-[0_0_8px_rgba(251,191,36,0.6)]'
+                              : 'bg-gym-accent border-emerald-400 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
+                          }`}
+                        />
+                      </div>
+                      
+                      {/* Left/Right Text Indicators */}
+                      <div className="flex justify-between text-[10px] font-mono font-black uppercase text-white/40 tracking-wider">
+                        <span className={biomechanicalAnalysis.chestBack.chestPct > 60 ? "text-amber-400" : "text-white/60"}>
+                          Chest ({biomechanicalAnalysis.chestBack.chestPct}%)
+                        </span>
+                        <span className={biomechanicalAnalysis.chestBack.backPct > 60 ? "text-emerald-400" : "text-white/60"}>
+                          Upper Back ({biomechanicalAnalysis.chestBack.backPct}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Tonnage breakdown details */}
+                    <div className="flex justify-between text-[10px] text-white/40 uppercase font-mono border-t border-white/5 pt-2">
+                      <span>Last 30D chest training load: <strong className="text-white">{biomechanicalAnalysis.chestBack.chestVol} Sets</strong></span>
+                      <span>Last 30D back pulling load: <strong className="text-white">{biomechanicalAnalysis.chestBack.backVol} Sets</strong></span>
+                    </div>
+
+                    {/* Alerter warning container if active */}
+                    {biomechanicalAnalysis.chestBack.total > 0 && biomechanicalAnalysis.chestBack.status !== 'balanced' && (
+                      <div className="p-3 bg-red-950/20 border border-red-500/15 rounded-sm flex items-start gap-3 mt-1 animate-fade-in">
+                        <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5 animate-bounce" />
+                        <div>
+                          <strong className="text-xs text-red-400 uppercase tracking-wide block">{biomechanicalAnalysis.chestBack.warning}</strong>
+                          <p className="text-[11px] text-white/70 leading-relaxed mt-1">{biomechanicalAnalysis.chestBack.tip}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+
+                  {/* SLIDER 2: QUADS VS HAMSTRINGS */}
+                  <div className="p-5 bg-white/[0.01] border border-white/5 rounded-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div>
+                        <h5 className="text-xs font-bold text-white uppercase tracking-wider">
+                          2. Knee Joint Health (Quadriceps vs. Hamstrings)
+                        </h5>
+                        <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
+                          Target Ratio &mdash; 3:2 (approx. 60% Quads vs. 40% Hamstrings for optimal ACL defense)
+                        </p>
+                      </div>
+
+                      {/* Status badge */}
+                      <div>
+                        {biomechanicalAnalysis.quadHam.total === 0 ? (
+                          <span className="text-[8px] bg-zinc-800 border border-zinc-700 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-zinc-400">
+                            Awaiting Data
+                          </span>
+                        ) : biomechanicalAnalysis.quadHam.status === 'critical' ? (
+                          <span className="text-[8px] bg-red-950/50 border border-red-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-red-500/40 font-bold animate-pulse text-red-400">
+                            POSTURAL WARNING
+                          </span>
+                        ) : biomechanicalAnalysis.quadHam.status === 'moderate' ? (
+                          <span className="text-[8px] bg-amber-950/50 border border-amber-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-amber-500/50 font-bold text-amber-400">
+                            MILD IMBALANCE
+                          </span>
+                        ) : (
+                          <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-gym-accent font-bold">
+                            OPTIMAL SYMMETRY
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Sliding Track Graph */}
+                    <div className="space-y-1.5 select-none pt-4 pb-1">
+                      <div className="relative w-full h-2.5 bg-zinc-900 border border-white/5 rounded-full flex items-center">
+                        {/* Perfect Alignment 60% Marker (approx ideal ratio) */}
+                        <div className="absolute top-[-4px] bottom-[-4px] left-[60%] w-[2px] bg-white/20 z-10" />
+                        <span className="absolute top-[-16px] left-[55%] text-[7px] font-mono text-white/25 uppercase tracking-widest">
+                          Ideal standard (3:2)
+                        </span>
+
+                        {/* Drag/Slide Bubble Node Indicator */}
+                        <div 
+                          style={{ left: `calc(${biomechanicalAnalysis.quadHam.quadPct}% - 6px)` }}
+                          className={`absolute w-3.5 h-3.5 rounded-full transition-all duration-500 z-20 ${
+                            biomechanicalAnalysis.quadHam.total === 0
+                              ? 'bg-zinc-650 border border-zinc-500'
+                              : biomechanicalAnalysis.quadHam.status === 'critical'
+                              ? 'bg-red-500 border border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse'
+                              : biomechanicalAnalysis.quadHam.status === 'moderate'
+                              ? 'bg-amber-400 border border-amber-300 shadow-[0_0_8px_rgba(251,191,36,0.6)]'
+                              : 'bg-gym-accent border-emerald-400 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
+                          }`}
+                        />
+                      </div>
+                      
+                      {/* Left/Right Text Indicators */}
+                      <div className="flex justify-between text-[10px] font-mono font-black uppercase text-white/40 tracking-wider">
+                        <span className={biomechanicalAnalysis.quadHam.quadPct > 65 ? "text-amber-400" : "text-white/60"}>
+                          Quads ({biomechanicalAnalysis.quadHam.quadPct}%)
+                        </span>
+                        <span className={biomechanicalAnalysis.quadHam.hamPct > 50 ? "text-emerald-400" : "text-white/60"}>
+                          Hamstrings ({biomechanicalAnalysis.quadHam.hamPct}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Tonnage breakdown details */}
+                    <div className="flex justify-between text-[10px] text-white/40 uppercase font-mono border-t border-white/5 pt-2">
+                      <span>Last 30D quad squats/presses: <strong className="text-white">{biomechanicalAnalysis.quadHam.quadVol} Sets</strong></span>
+                      <span>Last 30D hamstring deads/curls: <strong className="text-white">{biomechanicalAnalysis.quadHam.hamVol} Sets</strong></span>
+                    </div>
+
+                    {/* Alerter warning container if active */}
+                    {biomechanicalAnalysis.quadHam.total > 0 && biomechanicalAnalysis.quadHam.status !== 'balanced' && (
+                      <div className="p-3 bg-red-950/20 border border-red-500/15 rounded-sm flex items-start gap-3 mt-1 animate-fade-in">
+                        <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5 animate-bounce" />
+                        <div>
+                          <strong className="text-xs text-red-400 uppercase tracking-wide block">{biomechanicalAnalysis.quadHam.warning}</strong>
+                          <p className="text-[11px] text-white/70 leading-relaxed mt-1">{biomechanicalAnalysis.quadHam.tip}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+
+                  {/* SLIDER 3: BICEPS VS TRICEPS */}
+                  <div className="p-5 bg-white/[0.01] border border-white/5 rounded-sm space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div>
+                        <h5 className="text-xs font-bold text-white uppercase tracking-wider">
+                          3. Elbow Joint Integrity (Biceps vs. Triceps)
+                        </h5>
+                        <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
+                          Target Ratio &mdash; 1:1 (Balanced flexion-extension secures tendon insertion pathways)
+                        </p>
+                      </div>
+
+                      {/* Status badge */}
+                      <div>
+                        {biomechanicalAnalysis.bicepsTriceps.total === 0 ? (
+                          <span className="text-[8px] bg-zinc-800 border border-zinc-700 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-zinc-400">
+                            Awaiting Data
+                          </span>
+                        ) : biomechanicalAnalysis.bicepsTriceps.status === 'critical' ? (
+                          <span className="text-[8px] bg-red-950/50 border border-red-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-red-500/40 font-bold animate-pulse text-red-400">
+                            POSTURAL WARNING
+                          </span>
+                        ) : biomechanicalAnalysis.bicepsTriceps.status === 'moderate' ? (
+                          <span className="text-[8px] bg-amber-950/50 border border-amber-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-amber-500/50 font-bold text-amber-400">
+                            MILD IMBALANCE
+                          </span>
+                        ) : (
+                          <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-gym-accent font-bold">
+                            OPTIMAL SYMMETRY
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Sliding Track Graph */}
+                    <div className="space-y-1.5 select-none pt-4 pb-1">
+                      <div className="relative w-full h-2.5 bg-zinc-900 border border-white/5 rounded-full flex items-center">
+                        {/* Perfect Alignment 50% Marker */}
+                        <div className="absolute top-[-4px] bottom-[-4px] left-1/2 w-[2px] bg-white/20 z-10" />
+                        <span className="absolute top-[-16px] left-[48%] text-[7px] font-mono text-white/25 uppercase tracking-widest">
+                          Symmetric Match
+                        </span>
+
+                        {/* Drag/Slide Bubble Node Indicator */}
+                        <div 
+                          style={{ left: `calc(${biomechanicalAnalysis.bicepsTriceps.bicPct}% - 6px)` }}
+                          className={`absolute w-3.5 h-3.5 rounded-full transition-all duration-500 z-20 ${
+                            biomechanicalAnalysis.bicepsTriceps.total === 0
+                              ? 'bg-zinc-650 border border-zinc-500'
+                              : biomechanicalAnalysis.bicepsTriceps.status === 'critical'
+                              ? 'bg-red-500 border border-red-400 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse'
+                              : biomechanicalAnalysis.bicepsTriceps.status === 'moderate'
+                              ? 'bg-amber-400 border border-amber-300 shadow-[0_0_8px_rgba(251,191,36,0.6)]'
+                              : 'bg-gym-accent border-emerald-400 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
+                          }`}
+                        />
+                      </div>
+                      
+                      {/* Left/Right Text Indicators */}
+                      <div className="flex justify-between text-[10px] font-mono font-black uppercase text-white/40 tracking-wider">
+                        <span className={biomechanicalAnalysis.bicepsTriceps.bicPct > 60 ? "text-amber-400" : "text-white/60"}>
+                          Biceps ({biomechanicalAnalysis.bicepsTriceps.bicPct}%)
+                        </span>
+                        <span className={biomechanicalAnalysis.bicepsTriceps.triPct > 60 ? "text-emerald-400" : "text-white/60"}>
+                          Triceps ({biomechanicalAnalysis.bicepsTriceps.triPct}%)
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Tonnage breakdown details */}
+                    <div className="flex justify-between text-[10px] text-white/40 uppercase font-mono border-t border-white/5 pt-2">
+                      <span>Last 30D biceps flexion load: <strong className="text-white">{biomechanicalAnalysis.bicepsTriceps.bicVol} Sets</strong></span>
+                      <span>Last 30D triceps extension load: <strong className="text-white">{biomechanicalAnalysis.bicepsTriceps.triVol} Sets</strong></span>
+                    </div>
+
+                    {/* Alerter warning container if active */}
+                    {biomechanicalAnalysis.bicepsTriceps.total > 0 && biomechanicalAnalysis.bicepsTriceps.status !== 'balanced' && (
+                      <div className="p-3 bg-red-950/20 border border-red-500/15 rounded-sm flex items-start gap-3 mt-1 animate-fade-in">
+                        <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5 animate-bounce" />
+                        <div>
+                          <strong className="text-xs text-red-400 uppercase tracking-wide block">{biomechanicalAnalysis.bicepsTriceps.warning}</strong>
+                          <p className="text-[11px] text-white/70 leading-relaxed mt-1">{biomechanicalAnalysis.bicepsTriceps.tip}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+
+                {/* Highly relevant actionable posture recommendations bottom bar */}
+                {biomechanicalAnalysis.totalAlerts === 0 && (
+                  <div className="p-4 bg-gym-accent/[0.03] border border-gym-accent/15 rounded-sm flex items-center gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-gym-accent shrink-0 animate-pulse" />
+                    <div>
+                      <h6 className="text-xs font-bold text-gym-accent uppercase tracking-wide">Kinetic Chain Integrity Satisfied</h6>
+                      <p className="text-[10px] text-white/60 uppercase tracking-wider mt-0.5">
+                        Your agonist/antagonist volumes are within optimal limits. Keep rotating movements to maintain structural posture.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ────────────────── DROP DOWN 4: RELATIVE STRENGTH METRICS ────────────────── */}
       <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
         <button
           onClick={() => toggleSection('strength')}
@@ -1029,7 +1573,7 @@ export default function AnatomyDashboard({
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                3 &mdash; Relative Strength Metrics
+                4 &mdash; Relative Strength Metrics
               </h4>
               <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
                 Relative Compound Multipliers, 1RM Indexes & Strength Levels

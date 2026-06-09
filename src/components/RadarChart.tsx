@@ -172,32 +172,35 @@ export default function RadarChart({
   const radarChartSVG = useMemo(() => {
     const list = radarData.list;
     const center = size / 2;
-    const radius = size * 0.24; // slightly reduced to give room for tooltip and toggles
+    const radius = size * 0.28; // expanded to fill container space better
+    const stretchY = 1.70; // vertically stretched modifier to match grid layout
+    const radiusX = radius;
+    const radiusY = radius * stretchY;
 
     // Angles: vertical star starting upward at -90 degrees (-π/2)
     const vertices = list.map((item, i) => {
       const angle = -Math.PI / 2 + (i * Math.PI) / 3;
-      const x = center + radius * Math.cos(angle);
-      const y = center + radius * Math.sin(angle);
+      const x = center + radiusX * Math.cos(angle);
+      const y = center + radiusY * Math.sin(angle);
       
       // Plot combined coordinate
       const valMultiplier = item.score / 100;
-      const valX = center + (radius * valMultiplier) * Math.cos(angle);
-      const valY = center + (radius * valMultiplier) * Math.sin(angle);
+      const valX = center + (radiusX * valMultiplier) * Math.cos(angle);
+      const valY = center + (radiusY * valMultiplier) * Math.sin(angle);
 
       // Plot comparison coords
       const currentMultiplier = item.currentScore / 100;
-      const currentValX = center + (radius * currentMultiplier) * Math.cos(angle);
-      const currentValY = center + (radius * currentMultiplier) * Math.sin(angle);
+      const currentValX = center + (radiusX * currentMultiplier) * Math.cos(angle);
+      const currentValY = center + (radiusY * currentMultiplier) * Math.sin(angle);
 
       const histMultiplier = item.histScore / 100;
-      const histValX = center + (radius * histMultiplier) * Math.cos(angle);
-      const histValY = center + (radius * histMultiplier) * Math.sin(angle);
+      const histValX = center + (radiusX * histMultiplier) * Math.cos(angle);
+      const histValY = center + (radiusY * histMultiplier) * Math.sin(angle);
 
       // Label coords adjusted outward for margins
       const labelOffset = 18;
-      const lblX = center + (radius + labelOffset) * Math.cos(angle);
-      const lblY = center + (radius + labelOffset) * Math.sin(angle);
+      const lblX = center + (radiusX + labelOffset) * Math.cos(angle);
+      const lblY = center + (radiusY + labelOffset) * Math.sin(angle);
 
       return {
         ...item,
@@ -220,6 +223,8 @@ export default function RadarChart({
     return {
       center,
       radius,
+      radiusX,
+      radiusY,
       vertices,
       rings
     };
@@ -302,11 +307,12 @@ export default function RadarChart({
 
           {/* Concentric helper grid polygons */}
           {radarChartSVG.rings.map((ringMulti, idx) => {
-            const r = radarChartSVG.radius * ringMulti;
+            const rx = radarChartSVG.radiusX * ringMulti;
+            const ry = radarChartSVG.radiusY * ringMulti;
             const points = radarChartSVG.vertices.map((v, i) => {
               const angle = -Math.PI / 2 + (i * Math.PI) / 3;
-              const x = radarChartSVG.center + r * Math.cos(angle);
-              const y = radarChartSVG.center + r * Math.sin(angle);
+              const x = radarChartSVG.center + rx * Math.cos(angle);
+              const y = radarChartSVG.center + ry * Math.sin(angle);
               return `${x},${y}`;
             }).join(' ');
 
@@ -354,12 +360,12 @@ export default function RadarChart({
 
           {/* Ring Percentage Markers */}
           {[50, 100].map((perc, i) => {
-            const r = radarChartSVG.radius * (perc / 100);
+            const ry = radarChartSVG.radiusY * (perc / 100);
             return (
               <motion.text
                 key={i}
                 x={radarChartSVG.center + 4}
-                y={radarChartSVG.center - r - 2}
+                y={radarChartSVG.center - ry - 2}
                 fill="white"
                 className="text-[6px] font-mono tracking-widest font-bold fill-white/10"
                 initial={{ opacity: 0 }}
