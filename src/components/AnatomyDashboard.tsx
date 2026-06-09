@@ -103,8 +103,12 @@ export default function AnatomyDashboard({
     physiological: false,
     radar: true, // Default open Option 2: Muscular Radar Analysis
     strength: false,
-    biomechanical: true
+    biomechanical: true,
+    cnsFatigue: false
   });
+
+  const [barbellWeight, setBarbellWeight] = useState<number>(100);
+  const [selectedPercentageLift, setSelectedPercentageLift] = useState<'bench' | 'squat' | 'deadlift' | 'ohp'>('bench');
 
   const toggleSection = (section: string) => {
     setExpanded(prev => ({
@@ -582,6 +586,325 @@ export default function AnatomyDashboard({
     });
 
     return movements;
+  }, [sessionSets, archivedWorkouts]);
+
+  const cnsFatigueAnalysis = useMemo(() => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    const isWithin72Hours = (dateStr: string): boolean => {
+      if (!dateStr) return false;
+      try {
+        const date = new Date(dateStr + 'T00:00:00');
+        if (isNaN(date.getTime())) return false;
+        const diffTime = today.getTime() - date.getTime();
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= 3;
+      } catch {
+        return false;
+      }
+    };
+
+    const getDaysAgo = (dateStr: string): number => {
+      if (!dateStr) return 0;
+      try {
+        const date = new Date(dateStr + 'T00:00:00');
+        if (isNaN(date.getTime())) return 0;
+        
+        const tToday = new Date(today);
+        tToday.setHours(0, 0, 0, 0);
+        const tDate = new Date(date);
+        tDate.setHours(0, 0, 0, 0);
+        
+        const diffTime = tToday.getTime() - tDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        return Math.max(0, diffDays);
+      } catch {
+        return 0;
+      }
+    };
+
+    const getSpinalIntensity = (name: string): number => {
+      const n = name.toLowerCase().trim();
+      if (n.includes('deadlift') || n.includes('rack pull') || n.includes('good morning') || n.includes('deficit deadlift')) return 9.0;
+      if (n.includes('squat') && (n.includes('barbell') || n.includes('back') || n.includes('front') || n.includes('safety'))) return 7.5;
+      if (n.includes('row') && (n.includes('barbell') || n.includes('bent over') || n.includes('t-bar'))) return 5.0;
+      if (n.includes('press') && (n.includes('overhead') || n.includes('military') || n.includes('standing') || n.includes('shoulder')) || n.includes('clean') || n.includes('snatch') || n.includes('thruster')) return 5.0;
+      if (n.includes('squat') || n.includes('leg press') || n.includes('hack squat') || n.includes('lunges')) return 3.0;
+      if (n.includes('bench press') || n.includes('chest press') || n.includes('dip') || n.includes('pullup') || n.includes('chin up') || n.includes('lat pulldown') || n.includes('dumbbell row')) return 2.0;
+      if (n.includes('curl') || n.includes('extension') || n.includes('pushdown') || n.includes('fly') || n.includes('raise') || n.includes('shrug') || n.includes('crunch') || n.includes('plank')) return 0.4;
+      return 0.5;
+    };
+
+    // We will group sets by exercise name and daysAgo to correctly apply set-diminishing fatigue
+    const exerciseLoads: Record<string, Record<number, number>> = {};
+    const registerSetCount = (exerciseName: string, daysAgo: number) => {
+      const nameKey = exerciseName.toLowerCase().trim();
+      if (!exerciseLoads[nameKey]) {
+        exerciseLoads[nameKey] = {};
+      }
+      exerciseLoads[nameKey][daysAgo] = (exerciseLoads[nameKey][daysAgo] || 0) + 1;
+    };
+
+    // 1. Process active sets (today = 0 days ago)
+    sessionSets.forEach(s => {
+      registerSetCount(s.exerciseName, 0);
+    });
+
+    // 2. Process archived sets in last 72 hours
+    archivedWorkouts.forEach(w => {
+      if (w && isWithin72Hours(w.date) && w.sets && Array.isArray(w.sets)) {
+        const daysAgo = getDaysAgo(w.date);
+        if (daysAgo <= 3) {
+          w.sets.forEach((s: any) => {
+            registerSetCount(s.exerciseName, daysAgo);
+          });
+        }
+      }
+    });
+
+    let totalSpinalLoad = 0;
+    const contributors: { exercise: string; setsCount: number; loadingPerSet: number; totalContribution: number }[] = [];
+
+    // Map to get the display title of the exercise
+    const exerciseDisplayNames: Record<string, string> = {};
+    sessionSets.forEach(s => {
+      exerciseDisplayNames[s.exerciseName.toLowerCase().trim()] = s.exerciseName;
+    });
+    archivedWorkouts.forEach(w => {
+      if (w && w.sets && Array.isArray(w.sets)) {
+        w.sets.forEach((s: any) => {
+          exerciseDisplayNames[s.exerciseName.toLowerCase().trim()] = s.exerciseName;
+        });
+      }
+    });
+
+    Object.entries(exerciseLoads).forEach(([nameKey, daysAgoRecord]) => {
+      const baseIntensity = getSpinalIntensity(nameKey);
+      const displayName = exerciseDisplayNames[nameKey] || nameKey;
+      
+      let exerciseTotalContribution = 0;
+      let totalSetsCount = 0;
+
+      Object.entries(daysAgoRecord).forEach(([daysAgoStr, setsCount]) => {
+        const daysAgo = parseInt(daysAgoStr, 10);
+        
+        let timeDecay = 1.0;
+        if (daysAgo === 1) timeDecay = 0.50;
+        else if (daysAgo === 2) timeDecay = 0.25;
+        else if (daysAgo >= 3) timeDecay = 0.10;
+
+        let intervalContribution = 0;
+        for (let setIndex = 0; setIndex < setsCount; setIndex++) {
+          let setDecay = 1.0;
+          if (setIndex === 1) setDecay = 0.5;
+          else if (setIndex === 2) setDecay = 0.3;
+          else if (setIndex >= 3) setDecay = 0.2;
+          
+          intervalContribution += baseIntensity * setDecay * timeDecay;
+        }
+
+        exerciseTotalContribution += intervalContribution;
+        totalSetsCount += setsCount;
+      });
+
+      totalSpinalLoad += exerciseTotalContribution;
+
+      contributors.push({
+        exercise: displayName,
+        setsCount: totalSetsCount,
+        loadingPerSet: baseIntensity,
+        totalContribution: exerciseTotalContribution
+      });
+    });
+
+    contributors.sort((a, b) => b.totalContribution - a.totalContribution);
+
+    // Dynamic CNS fatigue index capped at 100%
+    // 30 load units represents heavy central fatigue safely and realistically with the diminishing loads model
+    const score = Math.min(100, Math.round((totalSpinalLoad / 30) * 100));
+
+    let label = 'FRESH & ENERGY CHARGED';
+    let sublabel = 'Optimal neural efficiency. Ready for high-force motor recruitment.';
+    let recommendations = 'CNS integrity is fully recovered. You are clear for high-load strength testing (3-5 rep max effort). Workouts targeting heavy compounds will be highly productive today.';
+    let levelColor = 'text-green-400 bg-green-500/10 border-green-500/20';
+    let barColor = 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]';
+    let hexColor = '#22c55e';
+
+    if (score > 85) {
+      label = 'CRITICAL CNS NEURAL FRY';
+      sublabel = 'Extremely high central fatigue detected. Joint shear risks elevated.';
+      recommendations = 'Take an active deload day or full active rest. If training today, perform strictly low-impact single-joint isolation machines (reps 15+). Do not touch the vertical barbell.';
+      levelColor = 'text-red-400 bg-red-950/40 border-red-500/20 animate-pulse';
+      barColor = 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]';
+      hexColor = '#ef4444';
+    } else if (score > 55) {
+      label = 'CNS TAXED & DAMPENED';
+      sublabel = 'Substantial central nervous wear. Spinal stabilizers are under load.';
+      recommendations = 'Rest highly advised or transition to mechanical tension / hypertrophy. Keep absolute load sub-maximal (<75% 1RM). Focus on unilateral dumbbell or machine work rather than heavy standing barbell lifts.';
+      levelColor = 'text-amber-500 bg-amber-950/40 border-amber-500/20';
+      barColor = 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.7)]';
+      hexColor = '#f59e0b';
+    } else if (score > 25) {
+      label = 'MODERATE SYSTEMIC WEAR';
+      sublabel = 'Accumulating spinal load. Productive hypertrophy zoning.';
+      recommendations = 'Standard capacity. Excellent window for mid-range hypertrophy loads (8-12 reps per set). Ensure correct structural patterns and core bracing prior to squats or rows.';
+      levelColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+      barColor = 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]';
+      hexColor = '#10b981';
+    }
+
+    return {
+      score,
+      totalSpinalLoad,
+      contributors,
+      label,
+      sublabel,
+      recommendations,
+      levelColor,
+      barColor,
+      hexColor
+    };
+  }, [sessionSets, archivedWorkouts]);
+
+  const spinalRegions = useMemo(() => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    const isWithin72Hours = (dateStr: string): boolean => {
+      if (!dateStr) return false;
+      try {
+        const date = new Date(dateStr + 'T00:00:00');
+        if (isNaN(date.getTime())) return false;
+        const diffTime = today.getTime() - date.getTime();
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= 3;
+      } catch {
+        return false;
+      }
+    };
+
+    const getDaysAgo = (dateStr: string): number => {
+      if (!dateStr) return 0;
+      try {
+        const date = new Date(dateStr + 'T00:00:00');
+        if (isNaN(date.getTime())) return 0;
+        const tToday = new Date(today);
+        tToday.setHours(0, 0, 0, 0);
+        const tDate = new Date(date);
+        tDate.setHours(0, 0, 0, 0);
+        const diffTime = tToday.getTime() - tDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        return Math.max(0, diffDays);
+      } catch {
+        return 0;
+      }
+    };
+
+    const exerciseLoads: Record<string, Record<number, number>> = {};
+    const registerSetCount = (exerciseName: string, daysAgo: number) => {
+      const nameKey = exerciseName.toLowerCase().trim();
+      if (!exerciseLoads[nameKey]) {
+        exerciseLoads[nameKey] = {};
+      }
+      exerciseLoads[nameKey][daysAgo] = (exerciseLoads[nameKey][daysAgo] || 0) + 1;
+    };
+
+    sessionSets.forEach(s => registerSetCount(s.exerciseName, 0));
+
+    archivedWorkouts.forEach(w => {
+      if (w && isWithin72Hours(w.date) && w.sets && Array.isArray(w.sets)) {
+        const daysAgo = getDaysAgo(w.date);
+        if (daysAgo <= 3) {
+          w.sets.forEach((s: any) => {
+            registerSetCount(s.exerciseName, daysAgo);
+          });
+        }
+      }
+    });
+
+    let lumbarUnits = 0;
+    let thoracicUnits = 0;
+    let cervicalUnits = 0;
+
+    Object.entries(exerciseLoads).forEach(([nameKey, daysAgoRecord]) => {
+      let lumbarBase = 0.1;
+      let thoracicBase = 0.1;
+      let cervicalBase = 0.1;
+      const n = nameKey;
+
+      if (n.includes('deadlift') || n.includes('rack pull') || n.includes('good morning') || n.includes('deficit')) {
+        lumbarBase = 9.0;
+        thoracicBase = 3.5;
+        cervicalBase = 1.0;
+      } else if (n.includes('squat') && (n.includes('barbell') || n.includes('back') || n.includes('front') || n.includes('safety') || n.includes('goblet'))) {
+        lumbarBase = 7.5;
+        thoracicBase = 2.5;
+        cervicalBase = 1.0;
+      } else if (n.includes('squat') || n.includes('leg press') || n.includes('hack squat') || n.includes('lunge')) {
+        lumbarBase = 3.0;
+        thoracicBase = 0.5;
+        cervicalBase = 0.2;
+      } else if (n.includes('row') || n.includes('pullup') || n.includes('chin up') || n.includes('pulldown') || n.includes('lat pull')) {
+        thoracicBase = 7.0;
+        lumbarBase = n.includes('bent over') || n.includes('barbell') ? 4.5 : 1.0;
+        cervicalBase = 1.0;
+      } else if (n.includes('bench') || n.includes('chest') || n.includes('fly') || n.includes('dip') || n.includes('pushup')) {
+        thoracicBase = 1.0; // Stabilizing retraction only
+        lumbarBase = 0.2;
+        cervicalBase = 0.2;
+      } else if (n.includes('overhead press') || n.includes('military') || n.includes('shoulder press')) {
+        cervicalBase = 6.0;
+        thoracicBase = 3.0;
+        lumbarBase = 1.5;
+      } else if (n.includes('shrug') || n.includes('upright row') || n.includes('clean') || n.includes('snatch')) {
+        cervicalBase = 5.0;
+        thoracicBase = 2.5;
+        lumbarBase = 1.5;
+      } else if (n.includes('raise') || n.includes('extension') || n.includes('curl') || n.includes('pushdown') || n.includes('crunch') || n.includes('plank')) {
+        cervicalBase = n.includes('raise') ? 0.8 : 0.1;
+        thoracicBase = 0.2;
+        lumbarBase = (n.includes('crunch') || n.includes('plank')) ? 0.8 : 0.1;
+      } else {
+        lumbarBase = 0.5;
+        thoracicBase = 0.5;
+        cervicalBase = 0.2;
+      }
+
+      Object.entries(daysAgoRecord).forEach(([daysAgoStr, setsCount]) => {
+        const daysAgo = parseInt(daysAgoStr, 10);
+        
+        let timeDecay = 1.0;
+        if (daysAgo === 1) timeDecay = 0.5;
+        else if (daysAgo === 2) timeDecay = 0.25;
+        else if (daysAgo >= 3) timeDecay = 0.1;
+
+        let lumbarInterval = 0;
+        let thoracicInterval = 0;
+        let cervicalInterval = 0;
+
+        for (let setIndex = 0; setIndex < setsCount; setIndex++) {
+          let setDecay = 1.0;
+          if (setIndex === 1) setDecay = 0.5;
+          else if (setIndex === 2) setDecay = 0.3;
+          else if (setIndex >= 3) setDecay = 0.2;
+          
+          lumbarInterval += lumbarBase * setDecay * timeDecay;
+          thoracicInterval += thoracicBase * setDecay * timeDecay;
+          cervicalInterval += cervicalBase * setDecay * timeDecay;
+        }
+
+        lumbarUnits += lumbarInterval;
+        thoracicUnits += thoracicInterval;
+        cervicalUnits += cervicalInterval;
+      });
+    });
+
+    return {
+      lumbar: Math.min(100, Math.round((lumbarUnits / 25) * 100)),
+      thoracic: Math.min(100, Math.round((thoracicUnits / 25) * 100)),
+      cervical: Math.min(100, Math.round((cervicalUnits / 15) * 100))
+    };
   }, [sessionSets, archivedWorkouts]);
 
   // Manual override values for 1RM inputs in case the user wants to test hypothetical weights
@@ -1926,6 +2249,482 @@ export default function AnatomyDashboard({
                           <span>Rotator force index</span>
                         </div>
                       </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* ────────────────── HIGH-CONTRAST INTERACTIVE WEIGHT-PLATE CALCULATOR ────────────────── */}
+                <div className="border-t border-white/5 pt-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                    <div>
+                      <h5 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                        <Dumbbell className="w-4 h-4 text-gym-accent" />
+                        🏋️ Barbell Loading & Plate Visualizer
+                      </h5>
+                      <p className="text-[10px] text-white/30 uppercase tracking-wider mt-0.5">
+                        Select a lift percentage or input weight to visually load on-the-bar sleeves
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-zinc-950 border border-white/10 rounded-sm overflow-hidden px-2 h-10 select-none">
+                      <span className="text-[9px] uppercase font-black text-white/30 tracking-widest font-mono">TARGET_LOAD:</span>
+                      <input 
+                        type="number"
+                        min="20"
+                        max="500"
+                        step="2.5"
+                        value={barbellWeight}
+                        onChange={(e) => setBarbellWeight(Math.max(20, Math.min(500, parseFloat(e.target.value) || 20)))}
+                        className="w-16 bg-transparent text-white text-xs text-center h-full focus:outline-none focus:ring-0 font-mono font-bold"
+                      />
+                      <span className="text-[9px] font-black uppercase text-gym-accent font-mono">KG</span>
+                    </div>
+                  </div>
+
+                  {/* Percentage Helper Bar linked to 1RM */}
+                  <div className="p-3.5 bg-white/[0.01] border border-white/5 rounded-sm flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono text-[10px]">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="text-white/40 uppercase tracking-widest font-bold">1RM Reference:</span>
+                      {(['bench', 'squat', 'deadlift', 'ohp'] as const).map((lift) => {
+                        const maxVal = lift === 'bench' ? actualBenchMax : lift === 'squat' ? actualSquatMax : lift === 'deadlift' ? actualDeadliftMax : actualOhpMax;
+                        return (
+                          <button
+                            key={lift}
+                            onClick={() => setSelectedPercentageLift(lift)}
+                            className={`px-2 py-1 uppercase text-[9px] font-bold border transition-all cursor-pointer ${
+                              selectedPercentageLift === lift
+                                ? 'bg-gym-accent/15 border-gym-accent text-gym-accent'
+                                : 'bg-black/40 border-white/5 text-white/60 hover:text-white hover:border-white/20'
+                            }`}
+                          >
+                            {lift} ({Math.round(maxVal)}k)
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-white/40 uppercase tracking-widest font-bold">Presets:</span>
+                      {[50, 60, 70, 80, 90, 100].map((perc) => {
+                        const refMax = selectedPercentageLift === 'bench' ? actualBenchMax : selectedPercentageLift === 'squat' ? actualSquatMax : selectedPercentageLift === 'deadlift' ? actualDeadliftMax : actualOhpMax;
+                        const targetPercWeight = refMax ? Math.round((refMax * (perc / 100)) / 2.5) * 2.5 : 0;
+                        const disabled = !refMax || targetPercWeight < 20;
+                        return (
+                          <button
+                            key={perc}
+                            onClick={() => {
+                              if (!disabled) {
+                                setBarbellWeight(targetPercWeight);
+                              }
+                            }}
+                            disabled={disabled}
+                            className="px-2 py-1 bg-white/5 border border-white/5 hover:bg-white/10 text-white/80 hover:text-white text-[9px] font-bold transition-all disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer"
+                          >
+                            {perc}% ({targetPercWeight > 0 ? `${targetPercWeight}k` : '—'})
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Render the Barbell and Plates! */}
+                  {(() => {
+                    let rem = (barbellWeight - 20) / 2;
+                    if (rem < 0) rem = 0;
+                    
+                    const specPlates = [
+                      { w: 25, color: '#ef4444', height: 115, width: 15, label: '25kg', textClass: 'text-[9px] fill-white font-bold font-mono' },
+                      { w: 20, color: '#3b82f6', height: 104, width: 15, label: '20kg', textClass: 'text-[9px] fill-white font-bold font-mono' },
+                      { w: 15, color: '#eab308', height: 95, width: 14, label: '15kg', textClass: 'text-[9px] fill-black font-bold font-mono' },
+                      { w: 10, color: '#22c55e', height: 84, width: 13, label: '10kg', textClass: 'text-[9px] fill-white font-bold font-mono' },
+                      { w: 5, color: '#e4e4e7', height: 64, width: 11, label: '5kg', textClass: 'text-[8px] fill-black font-bold font-mono' },
+                      { w: 2.5, color: '#52525b', height: 50, width: 9, label: '2.5', textClass: 'text-[7px] fill-white font-mono' },
+                      { w: 1.25, color: '#71717a', height: 42, width: 7, label: '1.25', textClass: 'text-[6px] fill-white font-mono' }
+                    ];
+
+                    const platesNeeded: { w: number; color: string; height: number; width: number; label: string; textClass: string }[] = [];
+                    specPlates.forEach(p => {
+                      while (rem >= p.w) {
+                        platesNeeded.push(p);
+                        rem -= p.w;
+                      }
+                    });
+
+                    let currentSleeveX = 115;
+                    const loadedPlatesRender = platesNeeded.map((p, i) => {
+                      const x = currentSleeveX;
+                      const y = 80 - p.height / 2;
+                      const width = p.width;
+                      const height = p.height;
+                      currentSleeveX += width + 2.5; 
+                      return (
+                        <g key={i}>
+                          <rect 
+                            x={x} 
+                            y={y} 
+                            width={width} 
+                            height={height} 
+                            fill={p.color} 
+                            rx={1.5}
+                            stroke="#050505"
+                            strokeWidth={0.5}
+                          />
+                          {p.height > 60 && (
+                            <text
+                              x={x + width / 2}
+                              y={80}
+                              textAnchor="middle"
+                              dominantBaseline="middle"
+                              className={p.textClass}
+                              transform={`rotate(-90 ${x + width / 2} 80)`}
+                            >
+                              {p.label}
+                            </text>
+                          )}
+                        </g>
+                      );
+                    });
+
+                    return (
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+                        <div className="lg:col-span-8 bg-[#030303]/75 p-5 border border-white/5 rounded-sm flex flex-col items-center justify-center relative overflow-hidden h-[180px]">
+                          <div className="absolute top-2.5 left-3.5 flex items-center gap-1.5 font-mono text-[8px] text-white/30 tracking-widest uppercase">
+                            <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                            Right Sleeve Visual Vector
+                          </div>
+
+                          <svg className="w-full max-w-[440px] h-[130px]" viewBox="0 0 350 160">
+                            <rect x="0" y="76" width="350" height="8" fill="#4B5563" rx="1.5" />
+                            <line x1="20" y1="76" x2="80" y2="84" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
+                            <line x1="40" y1="76" x2="100" y2="84" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
+                            <rect x="102" y="62" width="10" height="36" fill="#D1D5DB" rx="1" stroke="#374151" strokeWidth={0.75} />
+                            <rect x="112" y="66" width="5" height="28" fill="#9CA3AF" rx="0.5" />
+                            <rect x="117" y="70" width="220" height="20" fill="#E5E7EB" rx="1" stroke="#4B5563" strokeWidth={0.75} />
+                            {loadedPlatesRender}
+                            {platesNeeded.length > 0 && (
+                              <rect x={currentSleeveX} y={67} width="4" height="26" fill="#3B82F6" rx="0.5" stroke="#1D4ED8" strokeWidth={0.5} />
+                            )}
+                          </svg>
+
+                          <div className="mt-1 flex justify-between w-full max-w-[400px] text-[8.5px] text-white/35 font-mono select-none">
+                            <span>Sleeve Center (Collar)</span>
+                            <span>Remaining Space: {Math.max(0, 220 - (currentSleeveX - 117)).toFixed(0)}px</span>
+                            <span>End Cap</span>
+                          </div>
+                        </div>
+
+                        <div className="lg:col-span-4 p-4 bg-zinc-940 border border-white/5 rounded-sm h-[180px] flex flex-col justify-between">
+                          <div>
+                            <span className="text-[8px] tracking-widest font-bold uppercase text-gym-accent font-mono block mb-1">
+                              Plate Loading Instruction
+                            </span>
+                            <h6 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                              Required Per Side:
+                            </h6>
+                          </div>
+
+                          {platesNeeded.length === 0 ? (
+                            <div className="text-center py-6 text-white/20 text-[10px] font-mono leading-relaxed">
+                              Bar is empty (20 kg).<br />Add weight load above to slide plates!
+                            </div>
+                          ) : (
+                            <div className="overflow-y-auto max-h-[85px] space-y-1.5 pr-2 custom-scrollbar my-2">
+                              {(() => {
+                                const counts: Record<number, number> = {};
+                                platesNeeded.forEach(p => {
+                                  counts[p.w] = (counts[p.w] || 0) + 1;
+                                });
+                                return Object.entries(counts).sort((a, b) => parseFloat(b[0]) - parseFloat(a[0])).map(([wt, c]) => {
+                                  const spec = specPlates.find(sp => sp.w === parseFloat(wt));
+                                  return (
+                                    <div key={wt} className="flex justify-between items-center text-[10.5px] font-mono border-b border-white/[0.02] pb-1">
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: spec?.color }} />
+                                        <span className="text-white font-semibold">{wt} kg plate</span>
+                                      </div>
+                                      <span className="text-gym-accent font-bold">
+                                        &times; {c} {c > 1 ? 'plates' : 'plate'}
+                                      </span>
+                                    </div>
+                                  );
+                                });
+                              })()}
+                            </div>
+                          )}
+
+                          <div className="flex justify-between items-center bg-[#070707] p-2 rounded-sm border border-white/[0.04]">
+                            <span className="text-[8px] font-mono text-white/30 uppercase">Sleeve Weight:</span>
+                            <span className="text-xs font-bold text-white font-mono shrink-0">
+                              {((barbellWeight - 20) / 2).toFixed(2)} kg
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* ────────────────── DROP DOWN 5: DYNAMIC CNS FATIGUE INDEX ────────────────── */}
+      <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md mt-4">
+        <button
+          onClick={() => toggleSection('cnsFatigue')}
+          className="w-full flex items-center justify-between p-5 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          id="toggle-cns-fatigue"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 flex items-center justify-center border border-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
+              <Brain className="w-4 h-4 text-gym-accent" />
+            </div>
+            <div>
+              <h4 className="text-xs font-black uppercase tracking-wider text-white">
+                5 &mdash; Central Nervous System (CNS) Fatigue Index
+              </h4>
+              <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
+                Dynamic fatigue index & joint-shear risk based on 72h compound spinal loading
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {!expanded.cnsFatigue && (
+              <span className={`text-[8.5px] font-mono uppercase px-2 py-0.5 border font-semibold ${
+                cnsFatigueAnalysis.score > 85 ? 'text-red-400 bg-red-950/20 border-red-500/20 animate-pulse' :
+                cnsFatigueAnalysis.score > 55 ? 'text-amber-400 bg-amber-950/20 border-amber-500/20' :
+                'text-green-400 bg-green-950/20 border-green-500/20'
+              }`}>
+                Fatigue: {cnsFatigueAnalysis.score}%
+              </span>
+            )}
+            {expanded.cnsFatigue ? (
+              <ChevronUp className="w-4 h-4 text-white/40 group-hover:text-white" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white" />
+            )}
+          </div>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {expanded.cnsFatigue && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="p-6 space-y-6">
+
+                {/* Status Announcement Banner */}
+                <div className={`p-4 rounded-sm border ${cnsFatigueAnalysis.levelColor} flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300`}>
+                  <div className="space-y-1">
+                    <span className="text-[8px] font-black tracking-widest uppercase font-mono bg-white/5 px-2 py-0.5 rounded-sm border border-white/5">
+                      CNS NEURAL STATUS FEEDBACK
+                    </span>
+                    <h5 className="text-sm font-black uppercase tracking-wider font-mono">
+                      {cnsFatigueAnalysis.label}
+                    </h5>
+                    <p className="text-xs text-white/60 leading-relaxed font-mono">
+                      {cnsFatigueAnalysis.sublabel}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end whitespace-nowrap">
+                    <span className="text-3xl font-black text-white font-mono">
+                      {cnsFatigueAnalysis.score}%
+                    </span>
+                    <span className="text-[8.5px] uppercase font-mono tracking-widest text-white/45">
+                      Fatigue Index
+                    </span>
+                  </div>
+                </div>
+
+                {/* Progress bar representing spinal loading */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[8px] text-white/30 uppercase tracking-widest font-mono">
+                    <span>Central Nervous System Wear & Tear Gauge</span>
+                    <span className="text-white/60">{cnsFatigueAnalysis.totalSpinalLoad.toFixed(1)} Spinal Load Units</span>
+                  </div>
+                  <div className="w-full h-2.5 bg-white/5 rounded-sm overflow-hidden p-0.5 border border-white/10">
+                    <div 
+                      style={{ width: `${cnsFatigueAnalysis.score}%` }}
+                      className={`h-full rounded-sm transition-all duration-700 ${cnsFatigueAnalysis.barColor}`}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[7px] text-white/20 font-mono">
+                    <span>FRESH ZONE (0% - 25%)</span>
+                    <span>HYPERTROPHY ZONE (25% - 55%)</span>
+                    <span>TAXED ZONE (55% - 85%)</span>
+                    <span>FRY RISK (&gt;85%)</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                  
+                  {/* Left Column: Spinal Section Visualizer */}
+                  <div className="md:col-span-5 bg-[#030303]/75 p-5 border border-white/5 rounded-sm flex flex-col items-center justify-center relative overflow-hidden h-[330px]">
+                    <div className="absolute top-2.5 left-3.5 flex items-center gap-1.5 font-mono text-[8px] text-white/30 tracking-widest uppercase">
+                      <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                      Dynamic Vertebrae Loading Model
+                    </div>
+
+                    <div className="flex items-center gap-5 w-full max-w-[220px]">
+                      {/* Spine Illustration SVG */}
+                      <svg className="w-[85px] h-[250px]" viewBox="0 0 100 300">
+                        {/* Spinal canal guideline */}
+                        <line x1="50" y1="10" x2="50" y2="290" stroke="rgba(255,255,255,0.05)" strokeWidth={3} strokeDasharray="3,3" />
+
+                        {/* Cervical Vertebrae section shapes C1-C7 */}
+                        <g>
+                          <rect x="35" y="15" width="30" height="8" rx="2" 
+                            fill={spinalRegions.cervical > 75 ? '#ef4444' : spinalRegions.cervical > 45 ? '#f59e0b' : spinalRegions.cervical > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="30" y="27" width="40" height="9" rx="2" 
+                            fill={spinalRegions.cervical > 75 ? '#ef4444' : spinalRegions.cervical > 45 ? '#f59e0b' : spinalRegions.cervical > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="32" y="40" width="36" height="9" rx="2" 
+                            fill={spinalRegions.cervical > 75 ? '#ef4444' : spinalRegions.cervical > 45 ? '#f59e0b' : spinalRegions.cervical > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                        </g>
+
+                        {/* Thoracic Vertebrae section shapes T1-T12 */}
+                        <g>
+                          <rect x="26" y="58" width="48" height="11" rx="2.5" 
+                            fill={spinalRegions.thoracic > 75 ? '#ef4444' : spinalRegions.thoracic > 45 ? '#f59e0b' : spinalRegions.thoracic > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="24" y="73" width="52" height="11" rx="2.5" 
+                            fill={spinalRegions.thoracic > 75 ? '#ef4444' : spinalRegions.thoracic > 45 ? '#f59e0b' : spinalRegions.thoracic > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="23" y="88" width="54" height="12" rx="2.5" 
+                            fill={spinalRegions.thoracic > 75 ? '#ef4444' : spinalRegions.thoracic > 45 ? '#f59e0b' : spinalRegions.thoracic > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="21" y="104" width="58" height="12" rx="2.5" 
+                            fill={spinalRegions.thoracic > 75 ? '#ef4444' : spinalRegions.thoracic > 45 ? '#f59e0b' : spinalRegions.thoracic > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="20" y="120" width="60" height="13" rx="2.5" 
+                            fill={spinalRegions.thoracic > 75 ? '#ef4444' : spinalRegions.thoracic > 45 ? '#f59e0b' : spinalRegions.thoracic > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="22" y="137" width="56" height="13" rx="2.5" 
+                            fill={spinalRegions.thoracic > 75 ? '#ef4444' : spinalRegions.thoracic > 45 ? '#f59e0b' : spinalRegions.thoracic > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="24" y="154" width="52" height="13" rx="2.5" 
+                            fill={spinalRegions.thoracic > 75 ? '#ef4444' : spinalRegions.thoracic > 45 ? '#f59e0b' : spinalRegions.thoracic > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                        </g>
+
+                        {/* Lumbar Vertebrae section shapes L1-L5 */}
+                        <g>
+                          <rect x="18" y="177" width="64" height="16" rx="3" 
+                            fill={spinalRegions.lumbar > 75 ? '#ef4444' : spinalRegions.lumbar > 45 ? '#f59e0b' : spinalRegions.lumbar > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="16" y="197" width="68" height="16" rx="3" 
+                            fill={spinalRegions.lumbar > 75 ? '#ef4444' : spinalRegions.lumbar > 45 ? '#f59e0b' : spinalRegions.lumbar > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="15" y="217" width="70" height="17" rx="3" 
+                            fill={spinalRegions.lumbar > 75 ? '#ef4444' : spinalRegions.lumbar > 45 ? '#f59e0b' : spinalRegions.lumbar > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                          <rect x="14" y="238" width="72" height="17" rx="3" 
+                            fill={spinalRegions.lumbar > 75 ? '#ef4444' : spinalRegions.lumbar > 45 ? '#f59e0b' : spinalRegions.lumbar > 15 ? '#10b981' : '#334155'} 
+                            className="transition-colors duration-500"
+                          />
+                        </g>
+
+                        {/* Sacrum & Coccyx base anchor */}
+                        <polygon points="20,260 80,260 50,295" 
+                          fill={spinalRegions.lumbar > 75 ? '#b91c1c' : '#475569'} 
+                        />
+                      </svg>
+
+                      {/* Region Stats Labels on Right */}
+                      <div className="flex-1 space-y-4 font-mono text-[9px]">
+                        <div className="border-l-2 border-white/5 pl-2.5">
+                          <p className="text-white/40 uppercase tracking-widest">Cervical (C1-C7)</p>
+                          <p className="font-extrabold text-white text-xs">{spinalRegions.cervical}% loaded</p>
+                          <p className="text-[7.5px] uppercase text-white/30 mt-0.5">Trap overhead loads</p>
+                        </div>
+                        <div className="border-l-2 border-white/5 pl-2.5">
+                          <p className="text-white/40 uppercase tracking-widest">Thoracic (T1-T12)</p>
+                          <p className="font-extrabold text-white text-xs">{spinalRegions.thoracic}% loaded</p>
+                          <p className="text-[7.5px] uppercase text-white/30 mt-0.5">Upper Back & Bench rows</p>
+                        </div>
+                        <div className="border-l-2 border-white/5 pl-2.5">
+                          <p className="text-white/40 uppercase tracking-widest">Lumbar (L1-L5)</p>
+                          <p className="font-extrabold text-amber-500 text-xs">{spinalRegions.lumbar}% loaded</p>
+                          <p className="text-[7.5px] uppercase text-white/30 mt-0.5">Heavy deadlift/squat</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Calculations & contributors logs */}
+                  <div className="md:col-span-7 space-y-4">
+                    <div className="p-4 bg-zinc-945 border border-white/5 rounded-sm space-y-3.5">
+                      <span className="text-[8px] font-black tracking-widest text-gym-accent uppercase font-mono block">
+                        ANATOMICAL WEAR & TEAR RECOMMENDATIONS
+                      </span>
+                      <p className="text-xs text-white/80 leading-relaxed font-sans">
+                        {cnsFatigueAnalysis.recommendations}
+                      </p>
+                    </div>
+
+                    <div className="p-4 bg-zinc-950 border border-white/5 rounded-sm space-y-3">
+                      <span className="text-[8px] font-black tracking-widest text-white/40 uppercase font-mono block border-b border-white/5 pb-2">
+                        COMPONENTS CONTRIBUTING TO SPINAL DEPLETION (PAST 72H)
+                      </span>
+
+                      {cnsFatigueAnalysis.contributors.length === 0 ? (
+                        <p className="text-[10px] text-white/20 font-mono py-4 text-center">
+                          No spinal-loading compounds identified in historical 3-day history. Central nervous efficiency is optimal.
+                        </p>
+                      ) : (
+                        <div className="max-h-[140px] overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                          {cnsFatigueAnalysis.contributors.map((contrib, i) => {
+                            let barColor = 'bg-emerald-500';
+                            if (contrib.loadingPerSet >= 8) barColor = 'bg-red-500';
+                            else if (contrib.loadingPerSet >= 6) barColor = 'bg-amber-500';
+                            
+                            return (
+                              <div key={i} className="flex justify-between items-center text-[10px] border-b border-white/[0.02] pb-1.5 font-mono">
+                                <div className="space-y-0.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-white font-bold">{contrib.exercise}</span>
+                                    <span className="text-[8px] uppercase text-white/40">
+                                      {contrib.setsCount} {contrib.setsCount > 1 ? 'sets' : 'set'}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[7.5px] text-white/30 uppercase">Shear Load Factor:</span>
+                                    <span className="text-[7.5px] font-bold text-white/60">{contrib.loadingPerSet} / set</span>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                  <span className="font-bold text-white">+{contrib.totalContribution.toFixed(1)} units</span>
+                                  <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden mt-1">
+                                    <div className={`h-full ${barColor}`} style={{ width: `${(contrib.totalContribution / 40) * 100}%` }} />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
 

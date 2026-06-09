@@ -1159,6 +1159,7 @@ export default function App() {
     sets: { weight: number; reps: number; notes: string }[];
   }[]>([]);
   const [builderSearch, setBuilderSearch] = useState("");
+  const [newRoutinePeriodization, setNewRoutinePeriodization] = useState<"hypertrophy" | "strength" | "deload">("hypertrophy");
 
   const [customExercises, setCustomExercises] = useState<Exercise[]>(() => {
     const saved = localStorage.getItem("gym_custom_exercises");
@@ -2954,6 +2955,7 @@ export default function App() {
         date: formattedDate,
         categoryIndex: newRoutineCategory,
         sets: flatSets,
+        periodization: newRoutinePeriodization || "hypertrophy",
         timestamp: serverTimestamp(),
       });
 
@@ -2986,12 +2988,26 @@ export default function App() {
       });
       return;
     }
+
+    let defaultReps = 10;
+    let defaultNotes = "";
+    if (newRoutinePeriodization === "strength") {
+      defaultReps = 5;
+      defaultNotes = "[RPE 9 - Strength Block]";
+    } else if (newRoutinePeriodization === "deload") {
+      defaultReps = 12;
+      defaultNotes = "[RPE 5 - Deload Block]";
+    } else {
+      defaultReps = 10;
+      defaultNotes = "[RPE 8 - Hypertrophy Block]";
+    }
+
     setNewRoutineExercises((prev) => [
       ...prev,
       {
         id: Math.random().toString(36).substring(2, 9),
         exerciseName: exerciseName.trim(),
-        sets: [{ weight: 20, reps: 10, notes: "" }],
+        sets: [{ weight: 20, reps: defaultReps, notes: defaultNotes }],
       },
     ]);
   };
@@ -7630,7 +7646,7 @@ export default function App() {
                     </div>
 
                     {/* Routine Info Form */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white/[0.01] border border-white/5 p-6 rounded-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-white/[0.01] border border-white/5 p-6 rounded-sm">
                       {/* Name input */}
                       <div className="md:col-span-2 space-y-2">
                         <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
@@ -7662,6 +7678,53 @@ export default function App() {
                               {day.name} (Day {idx + 1})
                             </option>
                           ))}
+                        </select>
+                      </div>
+
+                      {/* Micro-Periodization Block */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-gym-accent uppercase tracking-widest font-bold block">
+                          Micro-Periodization Phase
+                        </label>
+                        <select
+                          value={newRoutinePeriodization}
+                          onChange={(e) => {
+                            const val = e.target.value as "hypertrophy" | "strength" | "deload";
+                            setNewRoutinePeriodization(val);
+                            
+                            // Auto adjust reps/notes for and exercises currently loaded in builder
+                            setNewRoutineExercises(prev => {
+                              return prev.map(exItem => {
+                                return {
+                                  ...exItem,
+                                  sets: exItem.sets.map(setItem => {
+                                    let r = 10;
+                                    let note = setItem.notes || "";
+                                    if (val === "strength") {
+                                      r = 5;
+                                      note = "[RPE 9 - Strength Block]";
+                                    } else if (val === "deload") {
+                                      r = 12;
+                                      note = "[RPE 5 - Deload Block]";
+                                    } else {
+                                      r = 10;
+                                      note = "[RPE 8 - Hypertrophy Block]";
+                                    }
+                                    return {
+                                      ...setItem,
+                                      reps: r,
+                                      notes: note
+                                    };
+                                  })
+                                };
+                              });
+                            });
+                          }}
+                          className="w-full bg-black/60 border border-gym-accent/25 hover:border-gym-accent/50 focus:border-gym-accent rounded-sm px-4 py-3 text-sm font-semibold focus:outline-none transition-all text-gym-accent cursor-pointer fill-gym-accent"
+                        >
+                          <option value="hypertrophy" className="bg-black text-white">Hypertrophy (8-12 reps)</option>
+                          <option value="strength" className="bg-black text-white">Strength Phase (1-5 reps)</option>
+                          <option value="deload" className="bg-black text-white">Active Deload (12-15 reps)</option>
                         </select>
                       </div>
                     </div>
