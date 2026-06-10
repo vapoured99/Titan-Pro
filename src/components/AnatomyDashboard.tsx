@@ -20,6 +20,7 @@ import AnatomyChart from './AnatomyChart';
 import RadarChart from './RadarChart';
 import { CyberneticClassPanel } from './CyberneticClassPanel';
 import { SynapticReplenishmentPlanner } from './SynapticReplenishmentPlanner';
+import { HypertrophicAdaptationPredictor } from './HypertrophicAdaptationPredictor';
 import { POOLS } from '../data/exercises';
 
 interface SessionSet {
@@ -2747,6 +2748,12 @@ export default function AnatomyDashboard({
                   cnsScore={cnsFatigueAnalysis.score}
                   sessionSetsCount={sessionSets.length}
                   compoundSetsCount={cnsFatigueAnalysis.contributors.reduce((acc, contrib) => contrib.loadingPerSet >= 5 ? acc + contrib.setsCount : acc, 0)}
+                />
+
+                {/* 📊 Hypertrophic Adaptation & Stimulus Desensitization Predictor Section */}
+                <HypertrophicAdaptationPredictor
+                  sessionSets={sessionSets}
+                  archivedWorkouts={archivedWorkouts}
                 />
 
               </div>
