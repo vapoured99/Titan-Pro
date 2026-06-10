@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import AnatomyChart from './AnatomyChart';
 import RadarChart from './RadarChart';
+import { CyberneticClassPanel } from './CyberneticClassPanel';
 import { POOLS } from '../data/exercises';
 
 interface SessionSet {
@@ -1927,6 +1928,16 @@ export default function AnatomyDashboard({
               className="overflow-hidden"
             >
               <div className="p-6 space-y-6">
+                
+                {/* 🛡️ Strength-to-Weight "Cybernetic Class" Hierarchy Section */}
+                <CyberneticClassPanel
+                  sex={sex === "female" ? "female" : "male"}
+                  localBodyweight={localBodyweight}
+                  actualBenchMax={actualBenchMax}
+                  actualSquatMax={actualSquatMax}
+                  actualDeadliftMax={actualDeadliftMax}
+                  actualOhpMax={actualOhpMax}
+                />
                 
                 {/* Bodyweight Setup Bar */}
                 <div className="p-4 bg-[#0a0a0a] border border-white/5 rounded-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
