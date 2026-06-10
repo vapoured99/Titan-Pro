@@ -1692,6 +1692,213 @@ export const BORDERS = [
 export default function AvatarPanel({ profile, setProfile, saveSettings, setToast, archivedWorkouts, currentUser }: AvatarPanelProps) {
   const [activeTab, setActiveTab] = useState<'operatives' | 'auras' | 'emotes' | 'titles' | 'operativeBorders'>('operatives');
 
+  // --- Rank Up Aura Exploding Particle States ---
+  const [showRankUp, setShowRankUp] = useState(false);
+  const [rankUpData, setRankUpData] = useState<{
+    type: 'level' | 'class' | 'pr';
+    title: string;
+    description: string;
+    prev: string | number;
+    current: string | number;
+    color: string;
+    glow: string;
+  }>({
+    type: 'level',
+    title: "LEVEL UP SECURED",
+    description: "New RPG Level milestones achieved",
+    prev: 1,
+    current: 1,
+    color: "bg-gym-accent",
+    glow: "shadow-[0_0_20px_rgba(212,175,55,0.6)]"
+  });
+  const [explodingParticles, setExplodingParticles] = useState<any[]>([]);
+
+  // Calculate current cybernetic class based on archived workouts
+  const cyberneticClassRaw = useMemo(() => {
+    // 1RM calculator helper
+    const calc1RM = (w: number, r: number) => {
+      if (r <= 1) return w;
+      return w * (1 + r / 30); // Epley Formula
+    };
+
+    const normalizeMatch = (name: string, target: string) => {
+      const n = name.toLowerCase().trim();
+      const t = target.toLowerCase();
+      if (t === 'bench') return n.includes('bench press') && !n.includes('incline') && !n.includes('decline');
+      if (t === 'squat') return n.includes('squat') && (n.includes('barbell') || n.includes('back') || n.includes('safety bar'));
+      if (t === 'deadlift') return n.includes('deadlift') && !n.includes('romanian') && !n.includes('stiff-leg');
+      if (t === 'ohp') return (n.includes('overhead press') || n.includes('military press') || n.includes('shoulder press')) && n.includes('barbell');
+      return false;
+    };
+
+    const movements = { bench: 0, squat: 0, deadlift: 0, ohp: 0 };
+
+    (archivedWorkouts || []).forEach((w) => {
+      if (w?.sets) {
+        w.sets.forEach((s: any) => {
+          Object.keys(movements).forEach((key) => {
+            const mKey = key as keyof typeof movements;
+            if (normalizeMatch(s.exerciseName, mKey)) {
+              const current1RM = calc1RM(Number(s.weight) || 0, Number(s.reps) || 0);
+              if (current1RM > movements[mKey]) {
+                movements[mKey] = current1RM;
+              }
+            }
+          });
+        });
+      }
+    });
+
+    const isFemale = profile?.sex === "female";
+    const weight = profile?.bodyweight || 80;
+
+    const benchRatio = movements.bench / weight;
+    const squatRatio = movements.squat / weight;
+    const deadliftRatio = movements.deadlift / weight;
+    const ohpRatio = movements.ohp / weight;
+    const totalRatio = benchRatio + squatRatio + deadliftRatio + ohpRatio;
+
+    const thresholds = isFemale
+      ? [0, 2.2, 3.3, 4.5, 5.95]
+      : [0, 3.45, 5.1, 6.8, 8.55];
+
+    const classNames = [
+      "Standard Carbon Frame",
+      "Reinforced Alloy Shell",
+      "Titanium Exochassis",
+      "Class IV Dreadnought Mech",
+      "Singularity Vanguard Titan"
+    ];
+
+    let currentClassIdx = 0;
+    for (let i = thresholds.length - 1; i >= 0; i--) {
+      if (totalRatio >= thresholds[i]) {
+        currentClassIdx = i;
+        break;
+      }
+    }
+
+    return {
+      index: currentClassIdx,
+      name: classNames[currentClassIdx],
+      ratio: totalRatio,
+    };
+  }, [archivedWorkouts, profile?.sex, profile?.bodyweight]);
+
+  // Track state transitions to trigger particle effects & Rank Up animation
+  useEffect(() => {
+    if (!profile) return;
+    const currentUserId = currentUser?.uid || 'guest';
+
+    const storedLvlKey = `last_seen_level_${currentUserId}`;
+    const storedClassIdxKey = `last_seen_cybernetic_class_${currentUserId}`;
+    const storedPrCountKey = `last_seen_pr_count_${currentUserId}`;
+
+    const prevLvlStr = localStorage.getItem(storedLvlKey);
+    const prevClassIdxStr = localStorage.getItem(storedClassIdxKey);
+    const prevPrCountStr = localStorage.getItem(storedPrCountKey);
+
+    const currentLevel = profile?.avatarLevel ?? 1;
+    const currentClassIdx = cyberneticClassRaw.index;
+    const currentPrCount = (archivedWorkouts || []).length;
+
+    let triggered = false;
+
+    // Helper to generate burst of 45 colorful dynamic sparks
+    const triggerSparkBurst = (type: 'level' | 'class' | 'pr', prevVal: string | number, curVal: string | number) => {
+      const colorsMap = {
+        level: ["#ffdf00", "#fbbf24", "#fef08a", "#ffffff"],
+        class: ["#06b6d4", "#a855f7", "#ec4899", "#22c55e", "#ffffff"],
+        pr: ["#ef4444", "#fbbf24", "#3b82f6", "#10b981", "#ffffff"]
+      };
+      
+      const typeDesc = {
+        level: { title: "RANK LEVEL UP!", desc: "Neuro-somatic capabilities upgraded to next level" },
+        class: { title: "CYBERNETIC SYSTEM EVOLVED!", desc: "Structural bi-skeletal limits advanced to next tier" },
+        pr: { title: "NEW PR THRESHOLD BROKEN!", desc: "Maximum kinetic compression capacity recorded" }
+      };
+
+      const selectedColors = colorsMap[type] || colorsMap.level;
+      const meta = typeDesc[type] || typeDesc.level;
+
+      const newParticles = Array.from({ length: 50 }).map((_, i) => {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 90 + Math.random() * 200; // outward spread
+        const tx = Math.sin(angle) * distance;
+        const ty = -Math.cos(angle) * distance - (10 + Math.random() * 40); // fly up
+        const color = selectedColors[Math.floor(Math.random() * selectedColors.length)];
+        const size = 3.5 + Math.random() * 6.5;
+        const delay = Math.random() * 0.25;
+        const duration = 0.8 + Math.random() * 1.2;
+        return {
+          id: i,
+          tx: `${tx}px`,
+          ty: `${ty}px`,
+          color,
+          size: `${size}px`,
+          delay: `${delay}s`,
+          duration: `${duration}s`,
+        };
+      });
+
+      setRankUpData({
+        type,
+        title: meta.title,
+        description: meta.desc,
+        prev: prevVal,
+        current: curVal,
+        color: type === 'class' ? 'bg-[#06b6d4]' : type === 'pr' ? 'bg-red-500' : 'bg-gym-accent',
+        glow: type === 'class' ? 'shadow-[0_0_25px_#06b6d4]' : type === 'pr' ? 'shadow-[0_0_25px_#ef4444]' : 'shadow-[0_0_25px_#ffdf00]'
+      });
+
+      setExplodingParticles(newParticles);
+      setShowRankUp(true);
+
+      // Auto clear overlay after a few seconds
+      setTimeout(() => {
+        setShowRankUp(false);
+      }, 5500);
+    };
+
+    // 1. Check Level Up
+    if (prevLvlStr !== null) {
+      const prevLvl = parseInt(prevLvlStr, 10);
+      if (currentLevel > prevLvl) {
+        triggerSparkBurst('level', prevLvl, currentLevel);
+        triggered = true;
+      }
+    }
+    localStorage.setItem(storedLvlKey, currentLevel.toString());
+
+    // 2. Check Cybernetic Class up
+    if (!triggered && prevClassIdxStr !== null) {
+      const prevClassIdx = parseInt(prevClassIdxStr, 10);
+      if (currentClassIdx > prevClassIdx) {
+        const classNames = [
+          "Standard Carbon Frame",
+          "Reinforced Alloy Shell",
+          "Titanium Exochassis",
+          "Class IV Dreadnought Mech",
+          "Singularity Vanguard Titan"
+        ];
+        triggerSparkBurst('class', classNames[prevClassIdx], classNames[currentClassIdx]);
+        triggered = true;
+      }
+    }
+    localStorage.setItem(storedClassIdxKey, currentClassIdx.toString());
+
+    // 3. Check PR/Workout milestones added
+    if (!triggered && prevPrCountStr !== null) {
+      const prevPrCount = parseInt(prevPrCountStr, 10);
+      if (currentPrCount > prevPrCount && prevPrCount > 0) {
+        triggerSparkBurst('pr', prevPrCount, currentPrCount);
+        triggered = true;
+      }
+    }
+    localStorage.setItem(storedPrCountKey, currentPrCount.toString());
+
+  }, [profile?.avatarLevel, cyberneticClassRaw.index, archivedWorkouts?.length, currentUser?.uid, profile]);
+
   // Tab scroll & swipe controls for mobile availability
   const tabContainerRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -2428,6 +2635,15 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           0%, 100% { filter: drop-shadow(0 0 15px rgba(0,0,0,0.95)) drop-shadow(0 0 35px rgba(15,23,42,0.85)); transform: scale(1); }
           50% { filter: drop-shadow(0 0 35px rgba(0,0,0,1)) drop-shadow(0 0 70px rgba(24,24,35,0.95)); transform: scale(1.02); }
         }
+        @keyframes particleFly {
+          0% { transform: translate(0, 0) scale(1); opacity: 1; }
+          100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+        @keyframes holoWave {
+          0% { transform: translateY(-100%); }
+          50% { transform: translateY(100%); }
+          100% { transform: translateY(-100%); }
+        }
       `}</style>
 
       {/* Header Area with Cyberpunk titles and Top-Right Currency */}
@@ -2603,6 +2819,81 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
               {/* Inner Aura overlay graphics rendered DIRECTLY on top of character image for max intensity */}
               {activeAuraStyling.innerEffects}
+
+              {/* Active Rank Up Holographic Scanning Window & Particles */}
+              {explodingParticles.map((p) => (
+                <div
+                  key={p.id}
+                  className="absolute top-1/2 left-1/2 rounded-full pointer-events-none z-30"
+                  style={{
+                    width: p.size,
+                    height: p.size,
+                    backgroundColor: p.color,
+                    boxShadow: `0 0 10px ${p.color}, 0 0 20px ${p.color}`,
+                    "--tx": p.tx,
+                    "--ty": p.ty,
+                    animation: `particleFly ${p.duration} cubic-bezier(0.1, 0.8, 0.3, 1) ${p.delay} forwards`,
+                  } as React.CSSProperties}
+                />
+              ))}
+
+              <AnimatePresence>
+                {showRankUp && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-black/85 backdrop-blur-sm z-30 flex flex-col items-center justify-center p-4 text-center font-mono"
+                  >
+                    {/* Glowing background burst */}
+                    <div className={`absolute w-36 h-36 rounded-full filter blur-[40px] opacity-25 ${rankUpData.type === 'class' ? 'bg-[#06b6d4]' : rankUpData.type === 'pr' ? 'bg-red-500' : 'bg-gym-accent'}`} />
+
+                    {/* Laser scanning sweep lines */}
+                    <div className="absolute inset-x-0 h-0.5 bg-gym-accent/40 z-40 filter blur-xs" style={{ animation: 'holoWave 2.2s linear infinite' }} />
+
+                    <motion.div
+                      initial={{ scale: 0.8, y: 15 }}
+                      animate={{ scale: 1, y: 0 }}
+                      exit={{ scale: 0.8, y: -15 }}
+                      transition={{ type: "spring", stiffness: 100, damping: 15 }}
+                      className="space-y-4 z-40"
+                    >
+                      {/* Interactive Spec Badge */}
+                      <span className={`text-[8px] font-black uppercase tracking-[0.25em] px-2.5 py-1 rounded-sm border ${
+                        rankUpData.type === 'class' ? 'text-cyan-400 border-cyan-500/20 bg-cyan-500/5' : rankUpData.type === 'pr' ? 'text-red-400 border-red-500/20 bg-red-500/5' : 'text-gym-accent border-gym-accent/20 bg-gym-accent/5'
+                      }`}>
+                        {rankUpData.title}
+                      </span>
+
+                      <div className="space-y-1 mt-2">
+                        <span className="text-[10px] text-white/40 uppercase tracking-widest block">{rankUpData.description}</span>
+                        
+                        <div className="flex flex-col items-center justify-center py-2.5 px-3 bg-black/60 border border-white/5 rounded-sm my-1">
+                          <span className="text-[9px] text-white/30 uppercase tracking-widest block">SYSTEM METRIC SHIFT</span>
+                          <div className="flex items-center gap-3 mt-1.5 font-bold">
+                            <span className="text-xs text-white/50 line-through tracking-wide">{rankUpData.prev}</span>
+                            <ChevronRight className="w-4 h-4 text-gym-accent animate-pulse" />
+                            <span className="text-sm text-white tracking-widest font-black uppercase text-glow accent-light animate-bounce">
+                              {rankUpData.current}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Success Badge */}
+                      <div className="flex justify-center">
+                        <div className="w-10 h-10 rounded-full bg-gym-accent/10 border border-gym-accent/30 flex items-center justify-center animate-pulse">
+                          <Zap className="w-4 h-4 text-gym-accent" />
+                        </div>
+                      </div>
+
+                      <span className="text-[7.5px] text-white/20 uppercase tracking-[0.3em] block mt-4 animate-pulse">
+                        Somatic calibration complete
+                      </span>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Dynamic visual overlay effects triggered by emote type */}
               {equippedEmote === 'flex_mode' && (
