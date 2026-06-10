@@ -1020,7 +1020,7 @@ export default function AnatomyDashboard({
 
   return (
     <div className="space-y-6" id="anatomy-dashboard">
-      
+
       {/* ────────────────── DROP DOWN 1: PHYSIOLOGICAL ANALYSIS ────────────────── */}
       <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
         <button

@@ -46,6 +46,7 @@ import {
   Zap,
   Target,
   Sliders,
+  Brain,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -1215,6 +1216,185 @@ export default function App() {
   const [creatingCustomForDay, setCreatingCustomForDay] = useState<
     number | null
   >(null);
+
+  const cnsFatigueAnalysis = useMemo(() => {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    const isWithin72Hours = (dateStr: string): boolean => {
+      if (!dateStr) return false;
+      try {
+        const date = new Date(dateStr + 'T00:00:00');
+        if (isNaN(date.getTime())) return false;
+        const diffTime = today.getTime() - date.getTime();
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        return diffDays >= 0 && diffDays <= 3;
+      } catch {
+        return false;
+      }
+    };
+
+    const getDaysAgo = (dateStr: string): number => {
+      if (!dateStr) return 0;
+      try {
+        const date = new Date(dateStr + 'T00:00:00');
+        if (isNaN(date.getTime())) return 0;
+        
+        const tToday = new Date(today);
+        tToday.setHours(0, 0, 0, 0);
+        const tDate = new Date(date);
+        tDate.setHours(0, 0, 0, 0);
+        
+        const diffTime = tToday.getTime() - tDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+        return Math.max(0, diffDays);
+      } catch {
+        return 0;
+      }
+    };
+
+    const getSpinalIntensity = (name: string): number => {
+      const n = name.toLowerCase().trim();
+      if (n.includes('deadlift') || n.includes('rack pull') || n.includes('good morning') || n.includes('deficit deadlift')) return 9.0;
+      if (n.includes('squat') && (n.includes('barbell') || n.includes('back') || n.includes('front') || n.includes('safety'))) return 7.5;
+      if (n.includes('row') && (n.includes('barbell') || n.includes('bent over') || n.includes('t-bar'))) return 5.0;
+      if (n.includes('press') && (n.includes('overhead') || n.includes('military') || n.includes('standing') || n.includes('shoulder')) || n.includes('clean') || n.includes('snatch') || n.includes('thruster')) return 5.0;
+      if (n.includes('squat') || n.includes('leg press') || n.includes('hack squat') || n.includes('lunges')) return 3.0;
+      if (n.includes('bench press') || n.includes('chest press') || n.includes('dip') || n.includes('pullup') || n.includes('chin up') || n.includes('lat pulldown') || n.includes('dumbbell row')) return 2.0;
+      if (n.includes('curl') || n.includes('extension') || n.includes('pushdown') || n.includes('fly') || n.includes('raise') || n.includes('shrug') || n.includes('crunch') || n.includes('plank')) return 0.4;
+      return 0.5;
+    };
+
+    // We will group sets by exercise name and daysAgo to correctly apply set-diminishing fatigue
+    const exerciseLoads: Record<string, Record<number, number>> = {};
+    const registerSetCount = (exerciseName: string, daysAgo: number) => {
+      const nameKey = exerciseName.toLowerCase().trim();
+      if (!exerciseLoads[nameKey]) {
+        exerciseLoads[nameKey] = {};
+      }
+      exerciseLoads[nameKey][daysAgo] = (exerciseLoads[nameKey][daysAgo] || 0) + 1;
+    };
+
+    // 1. Process active sets (today = 0 days ago)
+    sessionSets.forEach(s => {
+      registerSetCount(s.exerciseName, 0);
+    });
+
+    // 2. Process archived sets in last 72 hours
+    archivedWorkouts.forEach(w => {
+      if (w && isWithin72Hours(w.date) && w.sets && Array.isArray(w.sets)) {
+        const daysAgo = getDaysAgo(w.date);
+        if (daysAgo <= 3) {
+          w.sets.forEach((s: any) => {
+            registerSetCount(s.exerciseName, daysAgo);
+          });
+        }
+      }
+    });
+
+    let totalSpinalLoad = 0;
+    const contributors: { exercise: string; setsCount: number; loadingPerSet: number; totalContribution: number }[] = [];
+
+    // Map to get the display title of the exercise
+    const exerciseDisplayNames: Record<string, string> = {};
+    sessionSets.forEach(s => {
+      exerciseDisplayNames[s.exerciseName.toLowerCase().trim()] = s.exerciseName;
+    });
+    archivedWorkouts.forEach(w => {
+      if (w && w.sets && Array.isArray(w.sets)) {
+        w.sets.forEach((s: any) => {
+          exerciseDisplayNames[s.exerciseName.toLowerCase().trim()] = s.exerciseName;
+        });
+      }
+    });
+
+    Object.entries(exerciseLoads).forEach(([nameKey, daysAgoRecord]) => {
+      const baseIntensity = getSpinalIntensity(nameKey);
+      const displayName = exerciseDisplayNames[nameKey] || nameKey;
+      
+      let exerciseTotalContribution = 0;
+      let totalSetsCount = 0;
+
+      Object.entries(daysAgoRecord).forEach(([daysAgoStr, setsCount]) => {
+        const daysAgo = parseInt(daysAgoStr, 10);
+        
+        let timeDecay = 1.0;
+        if (daysAgo === 1) timeDecay = 0.50;
+        else if (daysAgo === 2) timeDecay = 0.25;
+        else if (daysAgo >= 3) timeDecay = 0.10;
+
+        let intervalContribution = 0;
+        for (let setIndex = 0; setIndex < setsCount; setIndex++) {
+          let setDecay = 1.0;
+          if (setIndex === 1) setDecay = 0.5;
+          else if (setIndex === 2) setDecay = 0.3;
+          else if (setIndex >= 3) setDecay = 0.2;
+          
+          intervalContribution += baseIntensity * setDecay * timeDecay;
+        }
+
+        exerciseTotalContribution += intervalContribution;
+        totalSetsCount += setsCount;
+      });
+
+      totalSpinalLoad += exerciseTotalContribution;
+
+      contributors.push({
+        exercise: displayName,
+        setsCount: totalSetsCount,
+        loadingPerSet: baseIntensity,
+        totalContribution: exerciseTotalContribution
+      });
+    });
+
+    contributors.sort((a, b) => b.totalContribution - a.totalContribution);
+
+    // Dynamic CNS fatigue index capped at 100%
+    // 30 load units represents heavy central fatigue safely and realistically with the diminishing loads model
+    const score = Math.min(100, Math.round((totalSpinalLoad / 30) * 100));
+
+    let label = 'FRESH & ENERGY CHARGED';
+    let sublabel = 'Optimal neural efficiency. Ready for high-force motor recruitment.';
+    let recommendations = 'CNS integrity is fully recovered. You are clear for high-load strength testing (3-5 rep max effort). Workouts targeting heavy compounds will be highly productive today.';
+    let levelColor = 'text-green-400 bg-green-500/10 border-green-500/20';
+    let barColor = 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]';
+    let hexColor = '#22c55e';
+
+    if (score > 85) {
+      label = 'CRITICAL CNS NEURAL FRY';
+      sublabel = 'Extremely high central fatigue detected. Joint shear risks elevated.';
+      recommendations = 'Take an active deload day or full active rest. If training today, perform strictly low-impact single-joint isolation machines (reps 15+). Do not touch the vertical barbell.';
+      levelColor = 'text-red-400 bg-red-950/40 border-red-500/20 animate-pulse';
+      barColor = 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.9)]';
+      hexColor = '#ef4444';
+    } else if (score > 55) {
+      label = 'CNS TAXED & DAMPENED';
+      sublabel = 'Substantial central nervous wear. Spinal stabilizers are under load.';
+      recommendations = 'Rest highly advised or transition to mechanical tension / hypertrophy. Keep absolute load sub-maximal (<75% 1RM). Focus on unilateral dumbbell or machine work rather than heavy standing barbell lifts.';
+      levelColor = 'text-amber-500 bg-amber-950/40 border-amber-500/20';
+      barColor = 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.7)]';
+      hexColor = '#f59e0b';
+    } else if (score > 25) {
+      label = 'MODERATE SYSTEMIC WEAR';
+      sublabel = 'Accumulating spinal load. Productive hypertrophy zoning.';
+      recommendations = 'Standard capacity. Excellent window for mid-range hypertrophy loads (8-12 reps per set). Ensure correct structural patterns and core bracing prior to squats or rows.';
+      levelColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+      barColor = 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]';
+      hexColor = '#10b981';
+    }
+
+    return {
+      score,
+      totalSpinalLoad,
+      contributors,
+      label,
+      sublabel,
+      recommendations,
+      levelColor,
+      barColor,
+      hexColor
+    };
+  }, [sessionSets, archivedWorkouts]);
 
   const combinedPools: Record<string, Exercise[]> = useMemo(() => {
     const merged: Record<string, Exercise[]> = { ...POOLS };
@@ -4095,6 +4275,183 @@ export default function App() {
                           </button>
                         </div>
                       </motion.div>
+                    </motion.div>
+
+                    {/* Spinal Depletion & CNS Fatigue Gauge widget */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 15 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-50px" }}
+                      className="relative overflow-hidden bg-black/70 border border-white/10 rounded-sm p-6 select-none backdrop-blur-md"
+                      id="spinal-gauge-hero-card"
+                    >
+                      {/* Abstract Corner Radial Glow */}
+                      <div 
+                        className="absolute -top-24 -left-24 w-48 h-48 rounded-full blur-[80px] pointer-events-none transition-colors duration-[1.5s]"
+                        style={{ backgroundColor: `${cnsFatigueAnalysis.hexColor}20` }}
+                      />
+                      <div className="absolute top-3 right-3 flex items-center gap-1.5 font-mono text-[7px] text-white/20 tracking-widest uppercase">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                        SYSTEMICS LEVEL 5 MONITOR
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                        
+                        {/* Semicircular Gauge Display (Left 4 cols) */}
+                        <div className="lg:col-span-4 flex flex-col items-center justify-center relative">
+                          <div className="relative w-full max-w-[220px] flex flex-col items-center justify-center">
+                            <svg className="w-full h-full" viewBox="0 0 200 120" id="spinal-depletion-radial-gauge">
+                              <defs>
+                                {/* Glowing Filter effects */}
+                                <filter id="spinal-gauge-glow" x="-20%" y="-20%" width="140%" height="140%">
+                                  <feGaussianBlur stdDeviation="3" result="blur" />
+                                  <feMerge>
+                                    <feMergeNode in="blur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                  </feMerge>
+                                </filter>
+                                <radialGradient id="spinal-interior-glow" cx="50%" cy="100%" r="65%">
+                                  <stop offset="0%" stopColor={cnsFatigueAnalysis.hexColor} stopOpacity="0.12" />
+                                  <stop offset="100%" stopColor={cnsFatigueAnalysis.hexColor} stopOpacity="0" />
+                                </radialGradient>
+                              </defs>
+
+                              {/* Semicircle bounding background glow fill */}
+                              <path d="M 30 100 A 70 70 0 0 1 170 100 Z" fill="url(#spinal-interior-glow)" />
+
+                              {/* Gauge Background track */}
+                              <path
+                                d="M 30 100 A 70 70 0 0 1 170 100"
+                                fill="none"
+                                stroke="rgba(255, 255, 255, 0.04)"
+                                strokeWidth="8"
+                                strokeLinecap="round"
+                              />
+
+                              {/* Animated active filled arc */}
+                              <motion.path
+                                d="M 30 100 A 70 70 0 0 1 170 100"
+                                fill="none"
+                                stroke={cnsFatigueAnalysis.hexColor}
+                                strokeWidth="8.5"
+                                strokeLinecap="round"
+                                filter="url(#spinal-gauge-glow)"
+                                initial={{ pathLength: 0 }}
+                                animate={{ pathLength: cnsFatigueAnalysis.score / 100 }}
+                                transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+                              />
+
+                              {/* Radial demarcation lines / ticks for zones (25%, 55%, 85%) */}
+                              {[0.25, 0.55, 0.85].map((pct, idx) => {
+                                const angle = Math.PI - pct * Math.PI;
+                                const r1 = 64;
+                                const r2 = 76;
+                                const x1 = 100 + r1 * Math.cos(angle);
+                                const y1 = 100 - r1 * Math.sin(angle);
+                                const x2 = 100 + r2 * Math.cos(angle);
+                                const y2 = 100 - r2 * Math.sin(angle);
+                                return (
+                                  <line
+                                    key={idx}
+                                    x1={x1}
+                                    y1={y1}
+                                    x2={x2}
+                                    y2={y2}
+                                    stroke="rgba(255,255,255,0.2)"
+                                    strokeWidth="1.2"
+                                  />
+                                );
+                              })}
+
+                              {/* Outer Labels */}
+                              <text x="22" y="112" className="text-[7.5px] font-mono fill-white/25 font-black text-center" textAnchor="middle">RECOVERED</text>
+                              <text x="100" y="24" className="text-[7.5px] font-mono fill-white/25 font-black text-center" textAnchor="middle">HYPERTROPHY</text>
+                              <text x="178" y="112" className="text-[7.5px] font-mono fill-white/25 font-black text-center" textAnchor="middle">CRITICAL</text>
+
+                              {/* Animated Needle sweep */}
+                              <motion.line
+                                x1="100"
+                                y1="100"
+                                x2="100"
+                                y2="42"
+                                stroke="rgba(255, 255, 255, 0.9)"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                style={{ originX: "100px", originY: "100px" }}
+                                initial={{ rotate: -90 }}
+                                animate={{ rotate: -90 + (cnsFatigueAnalysis.score / 100) * 180 }}
+                                transition={{ type: "spring", stiffness: 40, damping: 9, delay: 0.1 }}
+                              />
+
+                              {/* Center Pin node display */}
+                              <circle cx="100" cy="100" r="6.5" fill="#09090b" stroke="#ffffff" strokeWidth="2" />
+                              <circle cx="100" cy="100" r="2.5" fill={cnsFatigueAnalysis.hexColor} />
+                            </svg>
+
+                            {/* Digital Overlays directly under the pin */}
+                            <div className="absolute bottom-2 text-center">
+                              <motion.span 
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.5, delay: 0.3 }}
+                                className="text-2xl font-black text-white font-mono leading-none block"
+                              >
+                                {cnsFatigueAnalysis.score}%
+                              </motion.span>
+                              <span className="text-[7px] tracking-widest font-mono text-white/30 uppercase mt-0.5 block">
+                                CNS FATIGUE INDEX
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Deep Analytics & Training Action Directives (Right 8 cols) */}
+                        <div className="lg:col-span-8 space-y-4">
+                          <div className="space-y-1">
+                            <span className={`text-[8.5px] font-mono font-black uppercase tracking-wider px-2 py-0.5 rounded-sm border inline-block select-none ${cnsFatigueAnalysis.levelColor}`}>
+                              {cnsFatigueAnalysis.label}
+                            </span>
+                            <h4 className="text-sm font-black text-white uppercase tracking-wider mt-1.5 flex items-center gap-2">
+                              <Brain className="w-4 h-4 text-gym-accent" />
+                              Spinal Depletion Status (Past 72h)
+                            </h4>
+                            <p className="text-[10px] text-white/40 uppercase tracking-widest block font-mono">
+                              COMPUTE SUMMARY: {cnsFatigueAnalysis.totalSpinalLoad.toFixed(1)} SPINAL LOAD UNITS • {cnsFatigueAnalysis.contributors.length} SYSTEMIC CONTRIBUTORS
+                            </p>
+                          </div>
+
+                          <p className="text-xs text-white/85 leading-relaxed font-sans pr-4 border-l-2 border-white/5 pl-3">
+                            {cnsFatigueAnalysis.recommendations}
+                          </p>
+
+                          <div className="flex flex-wrap gap-x-5 gap-y-2 border-t border-white/5 pt-3.5 mt-2.5">
+                            <div className="text-left">
+                              <span className="text-[7.5px] text-white/30 font-mono uppercase tracking-wider block">72h Load Profile</span>
+                              <span className="text-xs font-bold text-white font-mono block mt-0.5">
+                                {cnsFatigueAnalysis.contributors.length > 0 ? `${cnsFatigueAnalysis.contributors.length} exercises logged` : 'Optimal Recovery'}
+                              </span>
+                            </div>
+                            <div className="h-6 w-px bg-white/5 self-center" />
+                            <div className="text-left">
+                              <span className="text-[7.5px] text-white/30 font-mono uppercase tracking-wider block">Intensity Rating</span>
+                              <span className="text-xs font-bold font-mono block mt-0.5" style={{ color: cnsFatigueAnalysis.hexColor }}>
+                                {cnsFatigueAnalysis.score > 85 ? 'Critical Neuro-Shear' : cnsFatigueAnalysis.score > 55 ? 'Heavy Systemic Wear' : cnsFatigueAnalysis.score > 25 ? 'Average Structural Strain' : 'Restored / Perfect CNS'}
+                              </span>
+                            </div>
+                            <div className="h-6 w-px bg-white/5 self-center" />
+                            <button
+                              onClick={() => {
+                                setActiveView("anatomy");
+                              }}
+                              className="ml-auto text-[9px] text-gym-accent font-extrabold uppercase tracking-wider border border-gym-accent/20 hover:border-gym-accent/60 bg-gym-accent/5 hover:bg-gym-accent/10 px-3 py-1.5 rounded-sm transition-all duration-200 cursor-pointer flex items-center gap-1.5 font-mono hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                              Inspect Neural Component Log
+                              <span className="text-xs">→</span>
+                            </button>
+                          </div>
+                        </div>
+
+                      </div>
                     </motion.div>
 
                     {/* Third Row: Micro Progress Graphs */}
