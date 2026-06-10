@@ -145,13 +145,13 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
     });
 
     const categories = [
-      { id: "chest", label: "Chest (Anterior Pressing)", primaryMuscle: "Pectoralis Major" },
-      { id: "back", label: "Back (Vertical/Horizontal Pull)", primaryMuscle: "Latissimus Dorsi / Rhomboids" },
-      { id: "shoulders", label: "Shoulders (Deltoid Clusters)", primaryMuscle: "Deltoids" },
-      { id: "quads", label: "Quads (Knee Extension)", primaryMuscle: "Quadriceps" },
-      { id: "posterior_legs", label: "Hamstrings & Glutes (Posterior)", primaryMuscle: "Biceps Femoris / Gluteus" },
-      { id: "biceps", label: "Bicep Synapses (Flexors)", primaryMuscle: "Biceps Brachii / Brachialis" },
-      { id: "triceps", label: "Tricep Synapses (Extensors)", primaryMuscle: "Triceps Brachii" },
+      { id: "chest", label: "Chest Pressing", primaryMuscle: "Main Chest Muscles" },
+      { id: "back", label: "Back Rowing & Pulling", primaryMuscle: "Upper Back & Lats" },
+      { id: "shoulders", label: "Shoulder Pressing", primaryMuscle: "Shoulder Muscles" },
+      { id: "quads", label: "Quad Exercises", primaryMuscle: "Front Thighs" },
+      { id: "posterior_legs", label: "Hamstrings & Glutes", primaryMuscle: "Back Legs & Glutes" },
+      { id: "biceps", label: "Bicep Exercises", primaryMuscle: "Front Arms" },
+      { id: "triceps", label: "Tricep Exercises", primaryMuscle: "Back Arms" },
     ];
 
     const results = categories.map((cat) => {
@@ -191,36 +191,36 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
 
       maxConsecutiveWeeks = highestExerciseStreak;
 
-      // Base receptivity math (Stimulus Decay / Repeated Bout Effect)
-      // Highly adaptive (fresh stimulus): 100%. Plateau lock: 15-20%.
+      // Base responsiveness math (Muscle Adaptation / Repeated Bout Effect)
+      // High responsiveness (fresh stimulus): 100%. Plateau: 15-20%.
       let receptivityValue = 100;
-      let statusLabel = "Highly Adaptive";
-      let statusDesc = "Ready for maximum growth. Fresh muscle fibers are highly responsive to mechanical tension.";
+      let statusLabel = "High Progress Potential";
+      let statusDesc = "Your muscles are highly responsive to this exercise right now. Excellent phase for building strength and size.";
       let themeColor = "text-emerald-400 border-emerald-500/20 bg-emerald-500/5";
       let barColor = "bg-emerald-400";
 
       if (maxConsecutiveWeeks === 2) {
         receptivityValue = 85;
-        statusLabel = "Optimal Growth Zone";
-        statusDesc = "Perfect neuromuscular synchronization. Fiber recruitment is optimized and fully primed.";
+        statusLabel = "Optimal Zone";
+        statusDesc = "You are currently well-adjusted to this movement. Strength gains are standard and performing well.";
         themeColor = "text-cyan-400 border-cyan-500/20 bg-cyan-500/5";
         barColor = "bg-cyan-400";
       } else if (maxConsecutiveWeeks === 3) {
         receptivityValue = 68;
-        statusLabel = "Adapting (Normal)";
-        statusDesc = "Systemic desensitization starting. Minor resistance to identical load angles is active.";
+        statusLabel = "Gradual Adaptation";
+        statusDesc = "Your muscles are adapting to this specific movement angle. Gains may begin to slow down slightly.";
         themeColor = "text-violet-400 border-violet-500/20 bg-violet-500/5";
         barColor = "bg-violet-400";
       } else if (maxConsecutiveWeeks === 4) {
         receptivityValue = 45;
-        statusLabel = "Saturated";
-        statusDesc = "Repeated Bout Effect active. Mechanical tension stimulus is heavily decayed. Switch suggested.";
+        statusLabel = "Highly Adapted";
+        statusDesc = "Your body is highly adjusted to this exact loading angle. We suggest swapping this exercise soon to spark new progress.";
         themeColor = "text-amber-500 border-amber-500/20 bg-amber-500/5";
         barColor = "bg-amber-500";
       } else if (maxConsecutiveWeeks >= 5) {
         receptivityValue = 20;
-        statusLabel = "Plateau Locked";
-        statusDesc = "Fiber stimulation highly desensitized. Force output is sated. Rotate exercise to break plateau.";
+        statusLabel = "Plateau Zone";
+        statusDesc = "You have hit adaptation limit on this movement. Rotate to a new recommended exercise to unlock fresh growth.";
         themeColor = "text-red-400 border-red-500/20 bg-red-500/5";
         barColor = "bg-red-500";
       }
@@ -312,13 +312,13 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-[8px] font-mono tracking-[0.25em] text-white/40 uppercase">
             <RefreshCw className="w-3.5 h-3.5 text-emerald-400 animate-spin-slow" />
-            REPEATED BOUT EFFECT MECHANICAL CALCULATOR
+            EXERCISE VARIETY & PROGRESS TRAIL ANALYZER
           </div>
           <h3 className="text-sm font-black text-white tracking-wide uppercase flex items-center gap-2">
-            📉 HYPERTROPHIC ADAPTATION & STIMULUS DESENSITIZATION PREDICTOR
+            📉 MUSCLE ADAPTATION & PLATEAU PREDICTOR
           </h3>
           <p className="text-[10px] text-white/40 font-mono uppercase tracking-wider">
-            Analyzes exercise volume stagnation. Measures structural adaptation to calculate optimal lift rotation cycles.
+            Analyzes your workout history to identify when your muscles have fully adapted to certain exercises, helping you rotate movements to keep making progress.
           </p>
         </div>
 
@@ -329,7 +329,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
             className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-[9.5px] font-mono rounded-sm border border-white/10 cursor-pointer transition-all uppercase"
           >
             <HelpCircle className="w-3.5 h-3.5" />
-            {showExplanation ? "Hide Explanation" : "The Science"}
+            {showExplanation ? "Hide Info" : "How It Works"}
           </button>
         </div>
       </div>
@@ -347,16 +347,16 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
             <div className="p-4 bg-white/[0.02] border border-white/5 rounded-sm space-y-3 text-[10px] leading-relaxed text-white/60 font-mono uppercase">
               <span className="text-[10.5px] text-emerald-400 font-black block flex items-center gap-2">
                 <Sparkles className="w-4 h-4" />
-                THE SCIENCE: THE REPEATED BOUT EFFECT (RBE)
+                THE IMPORTANCE OF EXERCISE ROTATION
               </span>
               <p>
-                When a muscle experiences a <strong className="text-white">novel eccentric stimulus</strong>, it prompts mechanical stress, severe micro-tearing, and signaling for high muscle protein synthesis (hypertrophy).
+                When you do a new exercise for the first time, it challenges your muscles in a fresh way, promoting high levels of muscle tension and micro-tears that trigger <strong className="text-white">new muscle growth and strength</strong>.
               </p>
               <p>
-                However, under the <strong className="text-white">Repeated Bout Effect (RBE)</strong>, the muscular and neural systems rapidly adapt to the precise load vector, velocity, and recruitment scheme. Within 4-5 consecutive weeks of doing identical movements (e.g. Flat Barbell Bench Press), structural micro-damage drops virtually to zero, and the adaptive response decays into plateau.
+                However, after repeating the exact same exercise (like the barbell bench press or squats) for <strong className="text-white">4 to 5 weeks in a row</strong>, your nervous system and muscle fibers become highly adapted to that exact angle and movement path. Because of this adaptation, the exercise becomes less effective over time.
               </p>
               <p>
-                <strong className="text-white">The Dictum:</strong> By strategically swapping out variations (e.g., rotating from Barbell Bench Press to Incline Dumbbell Bench Press, or substituting Squats with Front Squats) every 4-6 weeks, you bypass RBE resistance, rebooting hypertrophic stimulus receptivity to 100%.
+                <strong className="text-white">The Solution:</strong> By swapping your main lifts for another high-quality variation (for example, switching from Flat Barbell Bench Press to Incline Dumbbell Bench Press, or from Back Squats to Front Squats) every 4 to 6 weeks, you challenge your body in a brand-new way to stimulate fresh growth and bypass training plateaus!
               </p>
             </div>
           </motion.div>
@@ -367,7 +367,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
         {/* Left 6 cols: Muscle Category Receptivity Dashboard */}
         <div className="lg:col-span-6 space-y-4">
           <span className="text-[8px] font-mono text-white/30 tracking-widest uppercase block border-b border-white/5 pb-1.5">
-            STIMULUS RECEPTIVITY RATIOS
+            YOUR ESTIMATED MUSCLE PROGRESS POTENTIAL
           </span>
 
           <div className="space-y-3.5">
@@ -393,7 +393,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
                     </div>
 
                     <div className="text-right">
-                      <span className="text-[7.5px] text-white/30 font-mono uppercase block">RECEPTIVITY</span>
+                      <span className="text-[7.5px] text-white/30 font-mono uppercase block">RESPONSIVENESS</span>
                       <span className={`text-[10px] font-mono font-black ${item.receptivity < 50 ? "text-red-400" : item.receptivity < 75 ? "text-amber-400" : "text-emerald-400"}`}>
                         {item.receptivity}%
                       </span>
@@ -409,7 +409,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
                       />
                     </div>
                     <div className="flex justify-between items-center text-[7.5px] font-mono text-white/40 uppercase">
-                      <span>Streak: {item.consecutiveWeeks} consecutive weeks</span>
+                      <span>Streak: {item.consecutiveWeeks} weeks in a row</span>
                       <span className="font-bold">{item.statusLabel}</span>
                     </div>
                   </div>
@@ -421,16 +421,16 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
 
         {/* Right 6 cols: Deep Adaptation Report & Rotation Blueprint */}
         <div className="lg:col-span-6 space-y-4">
-          <div className="bg-black/60 border border-white/5 rounded-sm p-4 space-y-4 font-mono">
+          <div className="bg-black/60 border border-white/5 rounded-sm p-4 space-y-4 font-mono font-mono">
             <span className="text-[8px] text-white/40 tracking-widest uppercase flex items-center gap-1.5 border-b border-white/5 pb-2">
               <Gauge className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-              DEEP SATURATION REPORT &bull; {activeCategoryData.label}
+              ADAPTATION STATUS &bull; {activeCategoryData.label}
             </span>
 
             {/* Current status summary info panel */}
             <div className={`p-3.5 rounded-sm border ${activeCategoryData.themeColor} space-y-1 cursor-default`}>
               <div className="flex items-center justify-between text-[11px] font-black uppercase">
-                <span>STIMULUS STATE: {activeCategoryData.statusLabel}</span>
+                <span>STIMULUS POTENTIAL: {activeCategoryData.statusLabel}</span>
                 <span className="text-xs">{activeCategoryData.receptivity}%</span>
               </div>
               <p className="text-[9.5px] text-white/70 leading-relaxed uppercase">
@@ -441,22 +441,22 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
             {/* Dynamic Telemetry Matrix */}
             <div className="grid grid-cols-2 gap-4 pt-1">
               <div className="p-3 bg-[#030304] border border-white/5 rounded">
-                <span className="text-[7px] text-white/30 uppercase tracking-widest block">Active Locked Lift</span>
+                <span className="text-[7px] text-white/30 uppercase tracking-widest block">Most Repeated Exercise</span>
                 <span className="text-[11px] text-white font-bold block mt-1 truncate uppercase">
                   {activeCategoryData.targetExercise}
                 </span>
                 <span className="text-[7.2px] text-white/40 uppercase block mt-0.5">
-                  Sustained {activeCategoryData.consecutiveWeeks} consecutive weeks
+                  Done for {activeCategoryData.consecutiveWeeks} weeks straight
                 </span>
               </div>
 
               <div className="p-3 bg-[#030304] border border-white/5 rounded">
                 <span className="text-[7px] text-white/30 uppercase tracking-widest block">Recommended Action</span>
                 <span className="text-[11px] text-[#ffdf00] font-black block mt-1 uppercase">
-                  {activeCategoryData.consecutiveWeeks >= 4 ? "SWAP VARIATION" : "RETAIN VECTOR"}
+                  {activeCategoryData.consecutiveWeeks >= 4 ? "SWAP EXERCISE" : "KEEP EXERCISE"}
                 </span>
                 <span className="text-[7.2px] text-white/40 uppercase block mt-0.5">
-                  {activeCategoryData.consecutiveWeeks >= 4 ? "Overcoming desensitization" : "Stimulus still yielding gains"}
+                  {activeCategoryData.consecutiveWeeks >= 4 ? "Ready for a new movement" : "Still yielding strong gains"}
                 </span>
               </div>
             </div>
@@ -464,7 +464,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
             {/* Suggestion blueprint block targeting the selected muscle group rotation variations */}
             <div className="space-y-2 pt-1">
               <span className="text-[8.5px] text-white/30 uppercase tracking-wider block">
-                🧬 OPTIMAL STRUCTURAL ROTATIONS BLUEPRINT (REBOOT RECEPTIVITY)
+                🧬 RECOMMENDED REPLACEMENT EXERCISES (RESTORE GROWTH POTENTIAL)
               </span>
 
               <div className="space-y-2">
@@ -476,19 +476,19 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
                     >
                       <div className="flex items-center gap-2.5">
                         <span className="text-[8px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1 py-0.5 rounded-sm">
-                          ROTATION {i + 1}
+                          OPTION {i + 1}
                         </span>
                         <span className="text-[10px] font-bold text-white uppercase truncate">{altName}</span>
                       </div>
                       <span className="text-[7.5px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1 shrink-0">
-                        +100% RECEPTIVITY
+                        +100% FRESH EFFORT
                         <ChevronRight className="w-3 h-3" />
                       </span>
                     </div>
                   ))
                 ) : (
                   <div className="p-3 text-center bg-white/[0.01] border border-white/5 rounded text-[10px] text-white/40 uppercase">
-                    No historic sets recorded. Add compound lifts to generate specific rotation targets.
+                    No historic exercises logged. Add some exercises to get personalized recommended swaps!
                   </div>
                 )}
               </div>
@@ -499,8 +499,8 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
               <div className="p-2.5 bg-amber-500/5 border border-amber-500/15 text-amber-500 rounded-sm flex items-start gap-2.5 text-[9px] uppercase leading-relaxed">
                 <AlertCircle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5" />
                 <div>
-                  <span className="font-bold block">Stimulus Plateau Alert</span>
-                  Executing {activeCategoryData.targetExercise} has reached structural saturation limits. Progressions from sets logged on this exercise may stagnate due to cellular memory. We recommend installing an active rotation above.
+                  <span className="font-bold block">Plateau Warning</span>
+                  Performing <strong className="text-white">{activeCategoryData.targetExercise}</strong> for this many weeks has reached adaptation limits. Your strength and growth gains may slow down soon due to muscular memory. We recommend introducing one of the alternative exercises above.
                 </div>
               </div>
             )}

@@ -47,17 +47,17 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
     return [
       {
         id: 1,
-        name: "Standard Carbon Frame",
-        codename: "CARBON-GEN-1",
+        name: "Base Sportsman",
+        codename: "CLASS-LEVEL-1",
         color: "text-zinc-400",
         borderColor: "border-zinc-500/20",
         bgGlow: "rgba(113, 113, 122, 0.08)",
         textColor: "#a1a1aa",
-        desc: "Baseline biological platform. Undergoes unreinforced soft-tissue flexion. Subject to high mechanical stress under heavy compounds.",
+        desc: "Starting out your physical strength journey. Building initial bone density and organic muscle coordination. Reaching these initial numbers builds an excellent foundation.",
         specs: {
-          skeletal: "Standard Calcium Matrix",
-          muscular: "Standard Organic Type-I Fast Twitch",
-          synapses: "Conventional Bio-Neuron Recruiter",
+          skeletal: "Developing Bone Density",
+          muscular: "Standard Muscle Fibers",
+          synapses: "Neuromuscular Recruiter Pathways",
         },
         threshold: 0,
         targets: isFemale
@@ -66,17 +66,17 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
       },
       {
         id: 2,
-        name: "Reinforced Alloy Shell",
-        codename: "CHROMIUM-SHELL-V2",
+        name: "Advanced Trainee",
+        codename: "CLASS-LEVEL-2",
         color: "text-blue-400",
         borderColor: "border-blue-500/20",
         bgGlow: "rgba(59, 130, 246, 0.08)",
         textColor: "#60a5fa",
-        desc: "Micro-fracture treated bone architecture bonded with high-tensile carbon ligaments. Spinal columns stabilized with alloy mesh wraps.",
+        desc: "Strengthened bone framework and connective ligaments. Body is highly responsive to regular physical stress with optimized muscle recovery speeds.",
         specs: {
-          skeletal: "Carbon-Infused Sintered Alloy",
-          muscular: "Hyper-trophic Redirection Polymers",
-          synapses: "Coaxially Screened Neural Pathways",
+          skeletal: "Strengthened Bone & Connective Tissue",
+          muscular: "Hypertrophy Responsive Fibers",
+          synapses: "Efficient Neural Recruitment Pathways",
         },
         threshold: isFemale ? 2.2 : 3.45,
         targets: isFemale
@@ -85,17 +85,17 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
       },
       {
         id: 3,
-        name: "Titanium Exochassis",
-        codename: "TITAN-EXO-CLASS-3",
+        name: "Symmetric Specialist",
+        codename: "CLASS-LEVEL-3",
         color: "text-amber-500",
         borderColor: "border-amber-500/20",
         bgGlow: "rgba(245, 158, 11, 0.08)",
         textColor: "#f59e0b",
-        desc: "Biomimetic titanium bone plating with integrated heavy-load socket couplers. Stabilizers redirect spinal load pressures seamlessly.",
+        desc: "Elite peak athletic body structure. Spinal structures redistribute pressure cleanly, enabling extremely heavy compound weight movements.",
         specs: {
-          skeletal: "Sub-dermal Titanium Gr-5 plating",
-          muscular: "Pneumatic-Assist Muscle Bundle wraps",
-          synapses: "High-Frequency Neuro-Link Shunts",
+          skeletal: "Premium Bone Mineralization",
+          muscular: "Highly Dense Muscle Bundles",
+          synapses: "Fast Action Potential Synapse Firing",
         },
         threshold: isFemale ? 3.3 : 5.1,
         targets: isFemale
@@ -104,17 +104,17 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
       },
       {
         id: 4,
-        name: "Class IV Dreadnought Mech",
-        codename: "NEURAL-DREADNOUGHT-V4",
+        name: "Elite Competitor",
+        codename: "CLASS-LEVEL-4",
         color: "text-rose-500",
         borderColor: "border-rose-500/20",
         bgGlow: "rgba(244, 63, 94, 0.09)",
         textColor: "#f43f5e",
-        desc: "Autonomous mechanical load absorption frames. Eliminates central safety limits to fire motor-units at 98% efficiency under gravity.",
+        desc: "Superior competitive level muscular force and bone support. System safety limits are extended, allowing extreme force output.",
         specs: {
-          skeletal: "Sintered Tungsten-Carbide Girders",
-          muscular: "High-Density Neodymium Muscle Core",
-          synapses: "Myelinated Quantum Nerve Accel",
+          skeletal: "Max Strength Bone Support System",
+          muscular: "Highly Developed Muscle Fibers",
+          synapses: "Instant Muscle Activation Speed",
         },
         threshold: isFemale ? 4.5 : 6.8,
         targets: isFemale
@@ -123,17 +123,17 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
       },
       {
         id: 5,
-        name: "Singularity Vanguard Titan",
-        codename: "VANGUARD-TITAN-OMEGA",
+        name: "Absolute Master",
+        codename: "CLASS-LEVEL-5",
         color: "text-purple-400",
         borderColor: "border-purple-500/25",
         bgGlow: "rgba(168, 85, 247, 0.1)",
         textColor: "#c084fc",
-        desc: "Absolute cosmic unit. Matter manipulation vectors and weight dampeners allow skeletal structures to handle infinite compression waves.",
+        desc: "Top tier biological strength limit. Effortless coordination and physical balance allow skeletal structures to sustain record-breaking loads.",
         specs: {
-          skeletal: "Hyper-Dense Singularity Core",
-          muscular: "Gravitational Redirection Tendons",
-          synapses: "Direct Neural Singularity Streamer",
+          skeletal: "Premium Structural Integrity",
+          muscular: "Peak Muscle Dynamics",
+          synapses: "Maximal Mind-Muscle Integration",
         },
         threshold: isFemale ? 5.95 : 8.55,
         targets: isFemale
@@ -225,41 +225,41 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
 
     // Bench unlocks
     if (benchRatio >= CLASS_CONFIG[1].targets.bench) {
-      logs.push({ text: `CARBON-ARMOR OVERRIDE: Bench ratio (${benchRatio.toFixed(2)}x) unlocked Reinforced Alloy standards.`, success: true, date: todayStr });
+      logs.push({ text: `STRENGTH MILESTONE: Bench press (${benchRatio.toFixed(2)}x Bodyweight) unlocked Advanced Trainee tier!`, success: true, date: todayStr });
     }
     if (benchRatio >= CLASS_CONFIG[2].targets.bench) {
-      logs.push({ text: `CHEST CORE MATRIX SYSTEMICS: Bench ratio (${benchRatio.toFixed(2)}x) expanded into Titanium Exochassis standards.`, success: true, date: todayStr });
+      logs.push({ text: `CHEST CAPACITY EXCEEDED: Bench press (${benchRatio.toFixed(2)}x Bodyweight) achieved Symmetric Specialist tier.`, success: true, date: todayStr });
     }
     if (benchRatio >= CLASS_CONFIG[3].targets.bench) {
-      logs.push({ text: `DREADNOUGHT REINFORCEMENTS: Bench ratio (${benchRatio.toFixed(2)}x) cleared for Dreadnought Mech-standards!`, success: true, date: todayStr });
+      logs.push({ text: `ELITE LIFTING SYSTEM: Bench press (${benchRatio.toFixed(2)}x Bodyweight) unlocked Elite Competitor credentials!`, success: true, date: todayStr });
     }
 
     // Squat unlocks
     if (squatRatio >= CLASS_CONFIG[1].targets.squat) {
-      logs.push({ text: `HYDRAULIC UPGRADE: Posterior stabilizers (${squatRatio.toFixed(2)}x) unlocked Reinforced Alloy standards.`, success: true, date: todayStr });
+      logs.push({ text: `STRENGTH MILESTONE: Leg Squat (${squatRatio.toFixed(2)}x Bodyweight) unlocked Advanced Trainee tier.`, success: true, date: todayStr });
     }
     if (squatRatio >= CLASS_CONFIG[2].targets.squat) {
-      logs.push({ text: `HEAVY ABSORBER UPGRADE: Squat ratio (${squatRatio.toFixed(2)}x) expanded into Titanium Exochassis standards.`, success: true, date: todayStr });
+      logs.push({ text: `LOWER STABILITY ACHIEVED: Squat (${squatRatio.toFixed(2)}x Bodyweight) achieved Symmetric Specialist tier.`, success: true, date: todayStr });
     }
     if (squatRatio >= CLASS_CONFIG[3].targets.squat) {
-      logs.push({ text: `DREADNOUGHT ENGINE UPGRADE: Squat ratio (${squatRatio.toFixed(2)}x) operates at supreme mechanical loads.`, success: true, date: todayStr });
+      logs.push({ text: `ELITE SQUAT RATING: Squat (${squatRatio.toFixed(2)}x Bodyweight) has advanced to Elite Competitor limits!`, success: true, date: todayStr });
     }
 
     // Deadlift unlocks
     if (deadliftRatio >= CLASS_CONFIG[1].targets.deadlift) {
-      logs.push({ text: `SPINAL SHEAR FORCE UPGRADE: Posterior chain (${deadliftRatio.toFixed(2)}x) passed Alloy Shell standard.`, success: true, date: todayStr });
+      logs.push({ text: `STRENGTH MILESTONE: Deadlift (${deadliftRatio.toFixed(2)}x Bodyweight) passed Advanced Trainee standards.`, success: true, date: todayStr });
     }
     if (deadliftRatio >= CLASS_CONFIG[2].targets.deadlift) {
-      logs.push({ text: `GRAVITY SHUNT INTEGRATION: Deadlift ratio (${deadliftRatio.toFixed(2)}x) passed Titanium Exo standards.`, success: true, date: todayStr });
+      logs.push({ text: `POSTERIOR STRENGTH ACTIVE: Deadlift (${deadliftRatio.toFixed(2)}x Bodyweight) passed Symmetric Specialist tier.`, success: true, date: todayStr });
     }
     if (deadliftRatio >= CLASS_CONFIG[3].targets.deadlift) {
-      logs.push({ text: `CRITICAL LOAD CAPACTY PASSED: Deadlift ratio (${deadliftRatio.toFixed(2)}x) is certified for Dreadnought operation levels.`, success: true, date: todayStr });
+      logs.push({ text: `ELITE DEADLIFT RATING: Deadlift (${deadliftRatio.toFixed(2)}x Bodyweight) is certified for Elite Competitor rating.`, success: true, date: todayStr });
     }
 
     // Fallback if none are unlocked
     if (logs.length === 0) {
       logs.push({
-        text: "SYSTEM INITIALIZED: Awaiting additional bio-data compilation. Compile heavy lifts to override safety limiters.",
+        text: "SESSION INITIALIZED: Awaiting additional training entries. Log your heavy lifts to track strength tiers.",
         success: false,
         date: todayStr,
       });
@@ -283,29 +283,29 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
       {/* Background structural cybernetic grids */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:10px_10px] [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)] pointer-events-none" />
 
-      {/* Military Spec Level 5 Tech Header */}
+      {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/5 pb-4 gap-4 relative z-10">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 text-[8px] font-mono tracking-[0.25em] text-white/40 uppercase">
             <Cpu className="w-3.5 h-3.5 text-gym-accent animate-pulse" />
-            BIOMECHANICAL REINFORCEMENT FRAME SPECTRA v5.9
+            ATHLETIC STRENGTH CLASS DIAGNOSTICS v2.0
           </div>
           <h2 className="text-base font-black text-white tracking-wide uppercase flex items-center gap-2">
-            🛡️ BIOMECHANICAL CYBERNETIC FRAME
+            🛡️ PHYSICAL STRENGTH CLASS
           </h2>
           <p className="text-[10px] text-white/40 font-mono leading-relaxed max-w-xl uppercase">
-            Skeletal stress matrices computed by relative bodyweight multipliers. Real-time hydraulic and skeletal upgrade class diagnostics.
+            Strength metrics calculated based on compound lift ratios relative to your bodyweight. Real-time class estimation diagnostics.
           </p>
         </div>
 
-        {/* Current frame rank status badge */}
+        {/* Current status badge */}
         <div className="flex flex-col font-mono text-right shrink-0">
-          <span className="text-[7.5px] uppercase text-white/30 tracking-widest font-black">CURRENT CHASSIS CLASSIFICATION</span>
+          <span className="text-[7.5px] uppercase text-white/30 tracking-widest font-black">CURRENT STRENGTH CLASSIFICATION</span>
           <span className={`text-md font-black tracking-wider uppercase mt-1 ${currentClass.color}`}>
             {currentClass.name}
           </span>
           <span className="text-[8px] text-white/20 mt-0.5 tracking-wider uppercase">
-            CODEX: {currentClass.codename}
+            CLASS CODE: {currentClass.codename}
           </span>
         </div>
       </div>
@@ -343,12 +343,12 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
               </div>
 
               <div className="space-y-1">
-                <span className="text-[8px] font-mono tracking-widest text-white/40 uppercase block">FRAME STATUS INTEGRITY</span>
+                <span className="text-[8px] font-mono tracking-widest text-white/40 uppercase block">STRENGTH CLASS TIER STATUS</span>
                 <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                   <span style={{ color: currentClass.textColor }}>■</span> {currentClass.name}
                 </h3>
                 <span className="text-[9px] font-mono text-white/30 uppercase tracking-wider block bg-white/5 border border-white/5 py-0.5 px-2 rounded-sm max-w-fit">
-                  Cumulative Standard Index: <strong className="text-white">{totalRatio.toFixed(2)}x</strong> multiplier achieved
+                  Combined Strength Index: <strong className="text-white">{totalRatio.toFixed(2)}x</strong> bodyweight multiplier achieved
                 </span>
               </div>
             </div>
@@ -361,15 +361,15 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
             {/* Micro component list specs */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-4 mt-3.5 border-t border-white/5 text-[9px] font-mono">
               <div className="p-2 bg-black/40 border border-white/5 rounded-sm">
-                <span className="text-white/35 uppercase text-[7.5px] block tracking-wider">Skeletal Framework</span>
+                <span className="text-white/35 uppercase text-[7.5px] block tracking-wider">Skeletal Density</span>
                 <span className="text-white font-bold block truncate mt-0.5 uppercase">{currentClass.specs.skeletal}</span>
               </div>
               <div className="p-2 bg-black/40 border border-white/5 rounded-sm">
-                <span className="text-white/35 uppercase text-[7.5px] block tracking-wider">Myofibril Polymers</span>
+                <span className="text-white/35 uppercase text-[7.5px] block tracking-wider">Muscular Hypertrophy</span>
                 <span className="text-white font-bold block truncate mt-0.5 uppercase">{currentClass.specs.muscular}</span>
               </div>
               <div className="p-2 bg-black/40 border border-white/5 rounded-sm">
-                <span className="text-white/35 uppercase text-[7.5px] block tracking-wider">Neural Recruiter</span>
+                <span className="text-white/35 uppercase text-[7.5px] block tracking-wider">Neural Activation</span>
                 <span className="text-white font-bold block truncate mt-0.5 uppercase">{currentClass.specs.synapses}</span>
               </div>
             </div>
@@ -381,14 +381,14 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
               <div className="flex justify-between items-center text-[9px] font-mono">
                 <div className="flex items-center gap-1.5 uppercase tracking-wider text-white">
                   <Target className="w-3.5 h-3.5 text-gym-accent animate-pulse" />
-                  NEXT STRUCTURAL EVOLUTION UPGRADE
+                  NEXT STRENGTH CLASS EVOLUTION
                 </div>
                 <div className="text-white/40 uppercase">
-                  Class total threshold: <strong className="text-white font-mono">{nextClass.threshold.toFixed(2)}x</strong>
+                  Required Class Multiplier: <strong className="text-white font-mono">{nextClass.threshold.toFixed(2)}x</strong>
                 </div>
               </div>
 
-              {/* Progress bar to next frame upgrade */}
+              {/* Progress bar to next upgrade */}
               <div className="space-y-1 pt-1">
                 <div className="w-full h-2 bg-black border border-white/5 rounded-full overflow-hidden p-0.5 relative">
                   <motion.div
@@ -402,7 +402,7 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
                   <span className="flex items-center gap-1">
                     Index: {totalRatio.toFixed(2)}x / {nextClass.threshold.toFixed(2)}x
                   </span>
-                  <span>{percentToNext}% towards {nextClass.name}</span>
+                  <span>{percentToNext}% completed to {nextClass.name}</span>
                 </div>
               </div>
 
@@ -410,7 +410,7 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
               <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/15 rounded-sm text-[10px] leading-relaxed text-gym-accent uppercase tracking-wider flex items-start gap-2">
                 <TrendingUp className="w-4 h-4 shrink-0 mt-0.5" />
                 <div>
-                  <span>UPGRADE THRESHOLD REQUIREMENT: Pass a total cumulative ratio of <strong>{nextClass.threshold.toFixed(2)}x</strong> bodyweight across compounds. Accumulate <strong>{(nextClass.threshold - totalRatio).toFixed(2)}x</strong> more relative load to bypass limits.</span>
+                  <span>REQUIRED INCREASE: Cross a total combined bodyweight ratio of <strong>{nextClass.threshold.toFixed(2)}x</strong> bodyweight across four core lifts. Increase your current multipliers by <strong>{(nextClass.threshold - totalRatio).toFixed(2)}x</strong> to advance to the next strength stage.</span>
                 </div>
               </div>
             </div>
@@ -418,10 +418,10 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
             <div className="bg-purple-950/20 border border-purple-500/20 p-4 rounded-sm">
               <div className="flex items-center gap-2 text-xs font-black text-purple-400 font-mono uppercase tracking-widest animate-pulse">
                 <Unlock className="w-4 h-4" />
-                MAXIMUM CYBERNETIC INTEGRATION ACHIEVED
+                MAXIMUM STRENGTH INTEGRATION COMMENCING
               </div>
               <p className="text-[10px] font-mono text-purple-300 mt-1 uppercase tracking-wider">
-                System limits completely overridden. Gravity calculations normalized. The subject possesses god-tier biomechanical strength relative to organic matrix standards.
+                System limits completely conquered. Muscle recruitment outputs are running at top world standards. Possesses master-tier strength relative to normal weight categories.
               </p>
             </div>
           )}
@@ -459,7 +459,7 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
           <div className="bg-[#030304] border border-white/5 rounded-sm p-4 flex flex-col items-center justify-center relative select-none">
             <span className="absolute top-2.5 left-2.5 flex items-center gap-1.5 font-mono text-[7px] text-white/30 tracking-widest uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
-              EVOLUTION TARGET OVERLAY
+              STRENGTH CLASS RADAR TARGET
             </span>
 
             {/* Render direct SVG diamond radar spider chart */}
@@ -598,7 +598,7 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-1.5 border border-dashed inline-block rounded-xs" style={{ borderColor: nextClass?.textColor || '#c084fc' }} />
-                <span className="text-white/60">Target Frame</span>
+                <span className="text-white/60">Target Tiers</span>
               </div>
             </div>
           </div>
@@ -608,9 +608,9 @@ export const CyberneticClassPanel: React.FC<CyberneticClassPanelProps> = ({
             <div className="flex items-center justify-between border-b border-white/5 pb-2 mb-2 select-none">
               <span className="text-[7px] text-white/40 tracking-widest uppercase flex items-center gap-1.5">
                 <Tv className="w-3 h-3 text-[#ffbe1a]" />
-                UNLOCKED FRAME SECTOR OVERRIDES
+                UNLOCKED STRENGTH SECTOR ACHIEVEMENT LOGS
               </span>
-              <span className="text-[6.5px] bg-white/5 text-white/50 px-1 font-mono uppercase">TTY_SYSTEM</span>
+              <span className="text-[6.5px] bg-white/5 text-white/50 px-1 font-mono uppercase">ACHIEVEMENT_SYSTEM</span>
             </div>
 
             <div className="space-y-2 select-none">

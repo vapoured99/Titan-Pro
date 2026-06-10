@@ -1763,11 +1763,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       : [0, 3.45, 5.1, 6.8, 8.55];
 
     const classNames = [
-      "Standard Carbon Frame",
-      "Reinforced Alloy Shell",
-      "Titanium Exochassis",
-      "Class IV Dreadnought Mech",
-      "Singularity Vanguard Titan"
+      "Base Sportsman",
+      "Advanced Trainee",
+      "Symmetric Specialist",
+      "Elite Competitor",
+      "Absolute Master"
     ];
 
     let currentClassIdx = 0;
@@ -1813,9 +1813,9 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       };
       
       const typeDesc = {
-        level: { title: "RANK LEVEL UP!", desc: "Neuro-somatic capabilities upgraded to next level" },
-        class: { title: "CYBERNETIC SYSTEM EVOLVED!", desc: "Structural bi-skeletal limits advanced to next tier" },
-        pr: { title: "NEW PR THRESHOLD BROKEN!", desc: "Maximum kinetic compression capacity recorded" }
+        level: { title: "ATHLETIC LEVEL UP!", desc: "Your level has increased! Keep up the great work." },
+        class: { title: "ATHLETIC CLASS EVOLVED!", desc: "Your training class and physical tier have officially reached the next stage." },
+        pr: { title: "NEW PERSONAL RECORD!", desc: "You've beaten your previous best lift. Outstanding strength!" }
       };
 
       const selectedColors = colorsMap[type] || colorsMap.level;
@@ -1875,11 +1875,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       const prevClassIdx = parseInt(prevClassIdxStr, 10);
       if (currentClassIdx > prevClassIdx) {
         const classNames = [
-          "Standard Carbon Frame",
-          "Reinforced Alloy Shell",
-          "Titanium Exochassis",
-          "Class IV Dreadnought Mech",
-          "Singularity Vanguard Titan"
+          "Base Sportsman",
+          "Advanced Trainee",
+          "Symmetric Specialist",
+          "Elite Competitor",
+          "Absolute Master"
         ];
         triggerSparkBurst('class', classNames[prevClassIdx], classNames[currentClassIdx]);
         triggered = true;
