@@ -19,6 +19,7 @@ import {
 import AnatomyChart from './AnatomyChart';
 import RadarChart from './RadarChart';
 import { CyberneticClassPanel } from './CyberneticClassPanel';
+import { SynapticReplenishmentPlanner } from './SynapticReplenishmentPlanner';
 import { POOLS } from '../data/exercises';
 
 interface SessionSet {
@@ -2740,6 +2741,13 @@ export default function AnatomyDashboard({
                   </div>
 
                 </div>
+
+                {/* 🧪 Electrochemical Synaptic Replenishment Planner Section */}
+                <SynapticReplenishmentPlanner
+                  cnsScore={cnsFatigueAnalysis.score}
+                  sessionSetsCount={sessionSets.length}
+                  compoundSetsCount={cnsFatigueAnalysis.contributors.reduce((acc, contrib) => contrib.loadingPerSet >= 5 ? acc + contrib.setsCount : acc, 0)}
+                />
 
               </div>
             </motion.div>
