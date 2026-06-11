@@ -149,7 +149,7 @@ interface GymTheme {
 const GYM_THEMES: Record<string, GymTheme> = {
   default: {
     id: "default",
-    name: "Default Theme",
+    name: "Titan Pro",
     description: "Golden highlights on dark canvas.",
     accent: "#D4AF37",
     accentRgb: "212, 175, 55",
@@ -936,6 +936,7 @@ interface UserProfile {
   lastWorkoutDate?: string;
   activeView?: string;
   themeId?: string;
+  carbonBlack?: boolean;
   equippedBorder?: string;
   bodyweight?: number;
   sex?: "male" | "female" | "other";
@@ -3739,7 +3740,25 @@ export default function App() {
     );
   }
 
-  const activeTheme = GYM_THEMES[currentThemeId] || GYM_THEMES.default;
+  const isCarbonBlack = profile?.carbonBlack ?? false;
+  const rawTheme = GYM_THEMES[currentThemeId] || GYM_THEMES.default;
+  const activeTheme = isCarbonBlack
+    ? {
+        ...rawTheme,
+        id: "carbon_black",
+        name: "Carbon Black",
+        accent: "#FFFFFF",
+        accentRgb: "255, 255, 255",
+        accentLight: "#E5E5E0",
+        accentDark: "#737373",
+        bg: "#000000",
+        isGradient: false,
+        testPrimary: "#ffffff",
+        testMuted: "rgba(255, 255, 255, 0.65)",
+        testSubtle: "rgba(255, 255, 255, 0.35)",
+        opacity: "opacity-0",
+      }
+    : rawTheme;
 
   const dynamicStyles = {
     "--gym-accent": activeTheme.accent,
@@ -3771,10 +3790,44 @@ export default function App() {
           0% { stroke-dashoffset: 200; }
           100% { stroke-dashoffset: 0; }
         }
+        ${isCarbonBlack ? `
+          /* High Contrast Carbon Black Mode overrides */
+          body, html, .min-h-screen {
+            background-color: #000000 !important;
+          }
+          .border-white\\/10, .border-white\\/20, .border-white\\/15, .border-white\\/5 {
+            border-color: rgba(255, 255, 255, 0.3) !important;
+          }
+          .bg-black\\/85, .bg-zinc-950, .bg-zinc-900\\/50, .bg-black\\/30, .bg-black\\/50 {
+            background-color: #000000 !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+            box-shadow: none !important;
+          }
+          .text-white\\/50, .text-theme-text-muted, .text-white\\/45 {
+            color: rgba(255, 255, 255, 0.75) !important;
+          }
+          .text-white\\/30, .text-[#ffffff]\\/30 {
+            color: rgba(255, 255, 255, 0.5) !important;
+          }
+          img {
+            filter: grayscale(100%) brightness(85%) contrast(115%) !important;
+          }
+          /* Eliminate any background ambient neon lights and gradients */
+          .bg-gradient-to-r, .bg-gradient-to-t, .bg-gradient-to-b, .bg-gradient-to-bl {
+            background-image: none !important;
+            background-color: #000000 !important;
+          }
+          /* Custom style for high contrast buttons */
+          .bg-gym-accent\\/10 {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+          }
+        ` : ""}
       `}</style>
       {/* Background Atmosphere */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        {activeTheme.isGradient ? (
+        {isCarbonBlack ? (
+          <div className="absolute inset-0 bg-[#000000]" />
+        ) : activeTheme.isGradient ? (
           <div
             className="absolute inset-0 bg-[#000000]"
             style={{
@@ -8937,34 +8990,6 @@ export default function App() {
                               </select>
                             </div>
                           </div>
-
-                          {/* Manual reset trigger inside Settings Panel */}
-                          <div className="pt-6 border-t border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mt-6">
-                            <div>
-                              <span className="text-[10px] text-rose-500 font-black uppercase tracking-wider block font-mono">
-                                RPG Sandbox Controls
-                              </span>
-                              <p className="text-xs text-white/40 mt-0.5">
-                                Reset leveling, companion pets, and premium
-                                customisations back to a Level 3 starting slate.
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (
-                                  window.confirm(
-                                    "Are you sure you want to completely reset your avatar character to Level 3, lock premium options, and reset biometrics to base? This is irreversible.",
-                                  )
-                                ) {
-                                  handleResetProfile();
-                                }
-                              }}
-                              className="bg-rose-950/40 hover:bg-rose-900/60 text-rose-400 border border-rose-500/20 hover:border-rose-500/40 px-4 py-2 rounded text-xs font-black uppercase font-mono transition-all cursor-pointer min-w-[120px]"
-                            >
-                              Reset Avatar Stats
-                            </button>
-                          </div>
                         </div>
                       </div>
 
@@ -8975,6 +9000,68 @@ export default function App() {
                             Theme Customizer
                           </span>
                         </h4>
+
+                        {/* Global Toggle for Titan Pro vs Carbon Black */}
+                        <div id="high-contrast-toggle-section" className="bg-zinc-950/40 border border-white/10 rounded-lg p-5 mb-8 relative overflow-hidden">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10 font-sans">
+                            <div className="text-left">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[9px] bg-white/10 border border-white/20 text-white font-mono px-2 py-0.5 rounded uppercase font-black tracking-widest">
+                                  CORE CALIBRATION
+                                </span>
+                              </div>
+                              <h5 className="text-sm font-semibold text-white tracking-wide mt-1.5">
+                                High Contrast Display Mode
+                              </h5>
+                              <p className="text-[11px] text-white/50 tracking-wide mt-0.5 max-w-[420px] leading-relaxed">
+                                Switch between the ambient atmosphere of <strong className="text-gym-accent font-black">Titan Pro</strong> (and selected secondary themes) and a pure high-contrast flat <strong className="text-white font-black">Carbon Black</strong> performance layout.
+                              </p>
+                            </div>
+                            
+                            {/* Sliding segment controller */}
+                            <div className="bg-zinc-950 p-1 border border-white/10 rounded-lg flex shrink-0 w-full sm:w-auto relative select-none">
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const updated = { carbonBlack: false };
+                                  setProfile(prev => prev ? { ...prev, ...updated } : prev);
+                                  await saveSettings(updated);
+                                  setToast({
+                                    message: "⚡ Enabled Titan Pro Full Theme atmosphere!",
+                                    type: "success"
+                                  });
+                                }}
+                                className={`flex-1 sm:flex-none text-center px-4 py-2 font-mono text-[9px] uppercase tracking-widest font-black transition-all duration-200 cursor-pointer rounded ${
+                                  !isCarbonBlack 
+                                    ? "bg-gym-accent text-black font-extrabold shadow-[0_0_8px_rgba(212,175,55,0.4)]"
+                                    : "text-white/40 hover:text-white"
+                                }`}
+                              >
+                                Titan Pro
+                              </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const updated = { carbonBlack: true };
+                                  setProfile(prev => prev ? { ...prev, ...updated } : prev);
+                                  await saveSettings(updated);
+                                  setToast({
+                                    message: "🌑 Enabled Pure Carbon Black High-Contrast Mode!",
+                                    type: "success"
+                                  });
+                                }}
+                                className={`flex-1 sm:flex-none text-center px-4 py-2 font-mono text-[9px] uppercase tracking-widest font-black transition-all duration-200 cursor-pointer rounded ${
+                                  isCarbonBlack 
+                                    ? "bg-white text-black font-extrabold shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+                                    : "text-white/40 hover:text-white"
+                                }`}
+                              >
+                                Carbon Black
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
                         <p className="text-xs text-white/40 mb-6 font-light leading-relaxed">
                           Select a visual theme to align with your training
                           mentality. Each atmosphere re-defines the color
