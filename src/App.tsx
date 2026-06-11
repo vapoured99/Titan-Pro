@@ -1484,7 +1484,11 @@ export default function App() {
     bodyFat: true,
     workoutCalendar: true,
     trending: false,
+    personalRecords: true,
   });
+  const [pbSearchQuery, setPbSearchQuery] = useState("");
+  const [pbSortKey, setPbSortKey] = useState<"name" | "weight" | "date">("date");
+  const [pbSortOrder, setPbSortOrder] = useState<"asc" | "desc">("desc");
   const [volumeTimeframe, setVolumeTimeframe] = useState<
     "day" | "week" | "month"
   >("day");
@@ -2871,6 +2875,41 @@ export default function App() {
         err,
         OperationType.DELETE,
         `users/${currentUser.uid}/sets/${setId}`,
+      );
+    }
+  };
+
+  const handleDeletePB = async (exName: string) => {
+    if (!currentUser) return;
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the Personal Best record for "${exName}"?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      // Optimistically delete from state
+      setPersonalBests((prev) => {
+        const next = { ...prev };
+        delete next[exName];
+        return next;
+      });
+
+      const pbsPath = `users/${currentUser.uid}/pbs/${exName}`;
+      await deleteDoc(doc(db, pbsPath));
+      
+      setToast({
+        message: `Personal Best for "${exName}" deleted successfully.`,
+        type: "success",
+      });
+      setTimeout(() => setToast(null), 3000);
+    } catch (err) {
+      handleFirestoreError(
+        err,
+        OperationType.DELETE,
+        `users/${currentUser.uid}/pbs/${exName}`
       );
     }
   };
@@ -6911,6 +6950,237 @@ export default function App() {
                               </motion.div>
                             )}
                           </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Personal Records Feed Section */}
+                <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                  <button
+                    onClick={() =>
+                      setExpandedProgressSections((prev) => ({
+                        ...prev,
+                        personalRecords: !prev.personalRecords,
+                      }))
+                    }
+                    className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                        <Trophy className="w-5 h-5 animate-pulse" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                          Personal Records Feed
+                        </h3>
+                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                          PB accomplishments with date stamps and weight details
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronDown
+                      className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.personalRecords ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {expandedProgressSections.personalRecords && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-8 pb-10 pt-4">
+                          {/* Search & Sorting Toolbar */}
+                          <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6 pb-6 border-b border-white/5">
+                            {/* Search bar */}
+                            <div className="relative w-full sm:w-72">
+                              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                              <input
+                                type="text"
+                                placeholder="Search exercise PB..."
+                                value={pbSearchQuery}
+                                onChange={(e) => setPbSearchQuery(e.target.value)}
+                                className="w-full bg-black/55 border border-white/10 rounded-sm pl-11 pr-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-gym-accent transition-all font-sans"
+                              />
+                            </div>
+
+                            {/* Sorting Controls */}
+                            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                              <span className="text-[9px] text-white/30 uppercase tracking-widest font-black font-mono">
+                                Sort By
+                              </span>
+                              <div className="flex bg-white/5 p-1 rounded-sm border border-white/5">
+                                {[
+                                  { key: "date", label: "Date" },
+                                  { key: "weight", label: "Weight" },
+                                  { key: "name", label: "A-Z" }
+                                ].map((opt) => (
+                                  <button
+                                    key={opt.key}
+                                    onClick={() => {
+                                      if (pbSortKey === opt.key) {
+                                        setPbSortOrder(prev => prev === "asc" ? "desc" : "asc");
+                                      } else {
+                                        setPbSortKey(opt.key as any);
+                                        setPbSortOrder(opt.key === "name" ? "asc" : "desc");
+                                      }
+                                    }}
+                                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all flex items-center gap-1 cursor-pointer ${
+                                      pbSortKey === opt.key
+                                        ? "bg-gym-accent text-black font-extrabold shadow-sm"
+                                        : "text-white/40 hover:text-white"
+                                    }`}
+                                  >
+                                    {opt.label}
+                                    {pbSortKey === opt.key && (
+                                      pbSortOrder === "asc" ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* List container */}
+                          {(() => {
+                            const formatDate = (dateStr?: string) => {
+                              if (!dateStr) return "Unknown Date";
+                              try {
+                                const parts = dateStr.split("-").map(Number);
+                                if (parts.length !== 3 || parts.some(isNaN)) return dateStr;
+                                const date = new Date(parts[0], parts[1] - 1, parts[2]);
+                                return date.toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric"
+                                });
+                              } catch (e) {
+                                return dateStr;
+                              }
+                            };
+
+                            const pbsList = Object.entries(personalBests || {}).map(([key, value]) => ({
+                              ...(value as PB),
+                              exerciseName: (value as PB).exerciseName || key,
+                            }));
+                            
+                            // Filter list
+                            const filteredPbs = pbsList.filter((pb) =>
+                              pb.exerciseName?.toLowerCase().includes(pbSearchQuery.toLowerCase())
+                            );
+
+                            // Sort list
+                            const sortedPbs = [...filteredPbs].sort((a, b) => {
+                              let comparison = 0;
+                              if (pbSortKey === "name") {
+                                comparison = (a.exerciseName || "").localeCompare(b.exerciseName || "");
+                              } else if (pbSortKey === "weight") {
+                                comparison = (a.bestWeight || 0) - (b.bestWeight || 0);
+                              } else if (pbSortKey === "date") {
+                                const tA = a.bestDate ? new Date(a.bestDate).getTime() : 0;
+                                const tB = b.bestDate ? new Date(b.bestDate).getTime() : 0;
+                                comparison = tA - tB;
+                              }
+                              return pbSortOrder === "desc" ? -comparison : comparison;
+                            });
+
+                            if (pbsList.length === 0) {
+                              return (
+                                <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                  <Trophy className="w-10 h-10 text-white/10 mb-3" />
+                                  <p className="text-white/30 text-xs font-semibold uppercase tracking-wider">
+                                    No Personal Bests Established
+                                  </p>
+                                  <p className="text-[10px] text-white/20 mt-1 max-w-[340px] leading-relaxed">
+                                    Record your exercise sets in active workouts to calculate and persist your primary PB records automatically!
+                                  </p>
+                                </div>
+                              );
+                            }
+
+                            if (sortedPbs.length === 0) {
+                              return (
+                                <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                  <p className="text-white/30 text-xs font-semibold">
+                                    No matches found for "{pbSearchQuery}"
+                                  </p>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="max-h-96 overflow-y-auto pr-1 space-y-2.5 divide-y divide-white/5 no-scrollbar">
+                                {sortedPbs.map((pb, index) => {
+                                  return (
+                                    <div
+                                      key={pb.exerciseName || index}
+                                      className={`pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-sm bg-black/45 border border-white/5 hover:border-white/10 hover:bg-white/[0.01] transition-all group/pbitem ${
+                                        index === 0 ? "pt-3.5" : ""
+                                      }`}
+                                    >
+                                      {/* Left block containing details */}
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-xs font-black tracking-widest text-[#ffffff] uppercase font-mono">
+                                            {pb.exerciseName}
+                                          </span>
+                                        </div>
+                                        
+                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-[10px] text-white/40">
+                                          <div className="flex items-center gap-1.5 font-mono">
+                                            <span className="text-[9px] text-[#ffffff]/30 uppercase font-black tracking-wider">
+                                              Achieved:
+                                            </span>
+                                            <span className="text-white/60 font-semibold">
+                                              {formatDate(pb.bestDate)}
+                                            </span>
+                                          </div>
+                                          {pb.lastDate && pb.lastDate !== pb.bestDate && (
+                                            <div className="flex items-center gap-1.5 font-mono border-l border-white/10 pl-4">
+                                              <span className="text-[9px] text-[#ffffff]/30 uppercase font-black tracking-wider">
+                                                Last Lifted:
+                                              </span>
+                                              <span className="text-white/40 font-semibold">
+                                                {formatDate(pb.lastDate)} ({pb.lastWeight}kg)
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Right block containing visual weights and options */}
+                                      <div className="flex items-center gap-4 shrink-0">
+                                        <div className="flex flex-col text-right">
+                                          <span className="text-[8px] text-[#ffffff]/20 font-black tracking-widest uppercase font-mono mb-0.5">
+                                            PERSONAL RECORD
+                                          </span>
+                                          <div className="bg-gym-accent/10 border border-gym-accent/20 rounded px-2.5 py-1 text-gym-accent font-mono text-xs font-black uppercase tracking-wider inline-flex items-center gap-1.5 font-bold">
+                                            <Dumbbell className="w-3 h-3 text-gym-accent/70" />
+                                            <span>{pb.bestWeight} kg</span>
+                                            <span className="text-[9px] text-gym-accent/55">×</span>
+                                            <span>{pb.bestReps} reps</span>
+                                          </div>
+                                        </div>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeletePB(pb.exerciseName)}
+                                          className="p-2 text-white/30 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded transition-all cursor-pointer flex items-center justify-center self-center"
+                                          title={`Delete Personal Best for ${pb.exerciseName}`}
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </motion.div>
                     )}
