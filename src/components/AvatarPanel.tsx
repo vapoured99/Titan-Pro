@@ -428,6 +428,94 @@ export const RAID_BOSSES: RaidBoss[] = [
   }
 ];
 
+export interface Relic {
+  id: string;
+  name: string;
+  bossId: string;
+  bossName: string;
+  icon: string;
+  badgeColor: string;
+  description: string;
+  bonusText: string;
+  bonus: {
+    maxHp?: number;
+    attack?: number;
+    defense?: number;
+    criticalChance?: number;
+    xpMultiplier?: number;
+    statPercentBonus?: number;
+  };
+}
+
+export const RELICS: Relic[] = [
+  {
+    id: 'obsidian_heart',
+    name: 'Shattered Obsidian Heart',
+    bossId: 'iron_leviathan',
+    bossName: 'The Obsidian Golem',
+    icon: '🪨',
+    badgeColor: 'border-amber-500/30 bg-amber-500/10 text-amber-300',
+    description: 'An ancient volcanic core vibrating with intense seismic force.',
+    bonusText: 'Permanent +15 Max Fortitude HP',
+    bonus: { maxHp: 15 }
+  },
+  {
+    id: 'pyroclastic_seed',
+    name: 'Pyroclastic Flame Seed',
+    bossId: 'plasma_phoenix',
+    bossName: 'Pyroclastic Storm Drake',
+    icon: '🔥',
+    badgeColor: 'border-rose-500/30 bg-rose-500/10 text-rose-300',
+    description: 'A glowing particle forged at the heart of the earth\'s furnace.',
+    bonusText: 'Permanent +5 Might (ATK) power',
+    bonus: { attack: 5 }
+  },
+  {
+    id: 'abyssal_lantern',
+    name: 'Abyssal Soul Lantern',
+    bossId: 'cyber_beast_reaper',
+    bossName: 'Abyssal Dread Shadow Stalker',
+    icon: '💀',
+    badgeColor: 'border-purple-500/30 bg-purple-500/10 text-purple-300',
+    description: 'A spectral light that anchors your mind against overwhelming neural exhaustion.',
+    bonusText: 'Permanent +3 Resting Defense',
+    bonus: { defense: 3 }
+  },
+  {
+    id: 'sun_gilded_scepter',
+    name: 'Sun-Gilded Archon Scepter',
+    bossId: 'lumen_singularity_gate',
+    bossName: 'Stellar Archon of the Spires',
+    icon: '🔱',
+    badgeColor: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300',
+    description: 'A divine beacon radiating the raw stardust of solar peaks.',
+    bonusText: 'Permanent +10% Experience (XP) Gain multiplier from trials',
+    bonus: { xpMultiplier: 0.10 }
+  },
+  {
+    id: 'chrono_hourglass',
+    name: 'Chrono-Hourglass of Kronos',
+    bossId: 'chrono_apocalypse_archon',
+    bossName: 'The Chrono-Titan Kronos',
+    icon: '⏳',
+    badgeColor: 'border-red-500/30 bg-red-500/10 text-red-300',
+    description: 'An arcane device filled with the flowing sands of eldritch timelines.',
+    bonusText: 'Permanent +1.5% Critical Blow Chance',
+    bonus: { criticalChance: 1.5 }
+  },
+  {
+    id: 'demiurge_crest',
+    name: 'Primordial Crest of the Demiurge',
+    bossId: 'primeval_god_specimen',
+    bossName: 'The Ancient Primeval Demiurge',
+    icon: '👑',
+    badgeColor: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300',
+    description: 'The supreme crown element symbolizing mastery over organic physical evolution.',
+    bonusText: 'Permanent +5% Strength & +10% Core Health multipliers',
+    bonus: { statPercentBonus: 0.05 }
+  }
+];
+
 // Auras with premium, outer glow and custom blended overlay effects
 export const AURAS = [
   { id: 'none', name: 'No Aura', price: 0, desc: 'Clean focus.', statMultiplier: { power: 1.0, kinetic: 1.0, symmetry: 1.0, velocity: 1.0 } },
@@ -1984,8 +2072,8 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   const petLevelsKey = `gym_pet_levels_${userId}`;
   const petXpsKey = `gym_pet_xps_${userId}`;
 
-  // --- New 4-Tab Navigation & RPG state fields ---
-  const [innerTab, setInnerTab] = useState<'customization' | 'sphere_grid' | 'auras' | 'raid_portal'>('customization');
+  // --- New 5-Tab Navigation & RPG state fields ---
+  const [innerTab, setInnerTab] = useState<'customization' | 'sphere_grid' | 'auras' | 'raid_portal' | 'trophies'>('customization');
 
   // Draggable Swipeable Biometric Carousel States & Controls
   const bioScrollRef = useRef<HTMLDivElement>(null);
@@ -2068,20 +2156,37 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
   // Stats bundle for battle simulator
   const derivedStats = useMemo(() => {
-    const maxHp = 100 + (finalSymmetry * 8) + (finalKinetic * 5) + (finalRecoveryAttr * 4);
-    const attack = 10 + (finalPower * 2);
-    const defense = 5 + Math.round(finalSymmetry * 1.5) + Math.round(finalRecoveryAttr * 0.5);
-    const criticalChance = 5 + Math.round(finalVelocity * 0.5);
+    const unlockedRelics: string[] = profile?.unlockedRelics || [];
+    const hasObsidianHeart = unlockedRelics.includes('obsidian_heart');
+    const hasPyroclasticSeed = unlockedRelics.includes('pyroclastic_seed');
+    const hasAbyssalLantern = unlockedRelics.includes('abyssal_lantern');
+    const hasChronoHourglass = unlockedRelics.includes('chrono_hourglass');
+    const hasDemiurgeCrest = unlockedRelics.includes('demiurge_crest');
+
+    const baseMaxHp = 100 + (finalSymmetry * 8) + (finalKinetic * 5) + (finalRecoveryAttr * 4);
+    const maxHp = Math.round((baseMaxHp + (hasObsidianHeart ? 15 : 0)) * (hasDemiurgeCrest ? 1.10 : 1.0));
+    
+    const baseAttack = 10 + (finalPower * 2);
+    const attack = Math.round((baseAttack + (hasPyroclasticSeed ? 5 : 0)) * (hasDemiurgeCrest ? 1.05 : 1.0));
+    
+    const defense = 5 + Math.round(finalSymmetry * 1.5) + Math.round(finalRecoveryAttr * 0.5) + (hasAbyssalLantern ? 3 : 0);
+    const criticalChance = 5 + Math.round(finalVelocity * 0.5) + (hasChronoHourglass ? 1.5 : 0);
     const dodgeChance = 2 + Math.round(finalRecoveryAttr * 0.4);
     
     return { maxHp, attack, defense, criticalChance, dodgeChance };
-  }, [finalPower, finalKinetic, finalSymmetry, finalVelocity, finalRecoveryAttr]);
+  }, [finalPower, finalKinetic, finalSymmetry, finalVelocity, finalRecoveryAttr, profile?.unlockedRelics]);
 
   // RPG Raid victory reward processor
-  const handleGainRaidRewards = async (xpGained: number, creditsGained: number, bossAura?: string) => {
+  const handleGainRaidRewards = async (xpGained: number, creditsGained: number, bossAura?: string, relicId?: string) => {
     let nextLevel = level;
     const petMultiplier = 1.45 + ((petLevels[equippedOutfit] || 1) - 1) * 0.1;
-    const multipliedXp = Math.round(xpGained * petMultiplier);
+    
+    // Apply Sun-Gilded Archon Scepter bonus
+    const relics: string[] = profile?.unlockedRelics || [];
+    const hasScepter = relics.includes('sun_gilded_scepter') || relicId === 'sun_gilded_scepter';
+    const scepterMultiplier = hasScepter ? 1.10 : 1.0;
+
+    const multipliedXp = Math.round(xpGained * petMultiplier * scepterMultiplier);
     let nextXp = xp + multipliedXp;
     const nextCredits = credits + creditsGained;
     let letPoints = unassignedPoints;
@@ -2096,12 +2201,18 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       leveledUp = true;
     }
 
+    const nextRelics = [...relics];
+    if (relicId && !nextRelics.includes(relicId)) {
+      nextRelics.push(relicId);
+    }
+
     const updated: any = {
       avatarLevel: nextLevel,
       avatarXp: nextXp,
       avatarCredits: nextCredits,
       unassignedPoints: letPoints,
-      completedRaidsCount: completedRaidsCount + 1
+      completedRaidsCount: completedRaidsCount + 1,
+      unlockedRelics: nextRelics
     };
 
     if (bossAura) {
@@ -2111,7 +2222,13 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
     setProfile(prev => prev ? { ...prev, ...updated } : null);
     await saveSettings(updated);
     
-    if (leveledUp) {
+    if (relicId) {
+      const foundRelic = RELICS.find(r => r.id === relicId);
+      setToast({ 
+        message: `🏛️ MYTHIC DROP: Claimed ${foundRelic?.name || relicId}! Passive unlocked.`, 
+        type: 'success' 
+      });
+    } else if (leveledUp) {
       setToast({ message: `🎉 LEVELED UP to Level ${nextLevel}! +3 Talent Points!`, type: 'success' });
     } else {
       setToast({ message: `✓ Raid Complete! Gained +${multipliedXp} XP & +${creditsGained} Coins.`, type: 'success' });
@@ -2212,7 +2329,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
   const handleInteractPet = (action: 'feed' | 'train' | 'pet') => {
     if (action === 'feed') {
-      const cost = 25;
+      if (currentPetLevel >= 100) {
+        setToast({ message: `${currentPetName} is already at peak level 100!`, type: "info" });
+        return;
+      }
+      const cost = 100;
       if (credits < cost) {
         setToast({ message: "Insufficient Coins to purchase high-energy protein shakes!", type: "info" });
         return;
@@ -2225,7 +2346,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       let newLvl = currentPetLevel;
       if (newXp >= 100) {
         newXp = newXp - 100;
-        newLvl += 1;
+        newLvl = Math.min(100, newLvl + 1);
+        if (newLvl === 100) {
+          newXp = 0;
+        }
         setToast({ message: `Level Up! ${currentPetName} reached Level ${newLvl}!`, type: "success" });
       } else {
         setToast({ message: `Fed ${currentPetName}! +15 XP`, type: "success" });
@@ -2242,7 +2366,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       setTimeout(() => setPetFeedEffect('none'), 1200);
 
     } else if (action === 'train') {
-      const cost = 50;
+      if (currentPetLevel >= 100) {
+        setToast({ message: `${currentPetName} is already at peak level 100!`, type: "info" });
+        return;
+      }
+      const cost = 200;
       if (credits < cost) {
         setToast({ message: "Insufficient Coins to purchase mini lifting logs!", type: "info" });
         return;
@@ -2255,7 +2383,10 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       let newLvl = currentPetLevel;
       if (newXp >= 100) {
         newXp = newXp - 100;
-        newLvl += 1;
+        newLvl = Math.min(100, newLvl + 1);
+        if (newLvl === 100) {
+          newXp = 0;
+        }
         setToast({ message: `Level Up! ${currentPetName} reached Level ${newLvl}!`, type: "success" });
       } else {
         setToast({ message: `${currentPetName} worked out the iron! +35 XP`, type: "success" });
@@ -2676,13 +2807,14 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       </div>
 
 
-      {/* 4-Tab Navigation Ribbon for Avatar Panel */}
+      {/* 5-Tab Navigation Ribbon for Avatar Panel */}
       <div className="flex items-center gap-2 border-b border-white/10 pb-4 mb-6 overflow-x-auto no-scrollbar">
         {[
           { id: 'customization', label: 'PRESTIGE DESIGNER', icon: Shield, color: 'text-amber-400' },
           { id: 'sphere_grid', label: 'TALENT SPHERE GRID', icon: Trophy, color: 'text-gym-accent' },
           { id: 'auras', label: 'AURA SYNTHESIZER', icon: Sparkles, color: 'text-fuchsia-400' },
           { id: 'raid_portal', label: 'CHALLENGE PORTAL', icon: Skull, color: 'text-rose-500' },
+          { id: 'trophies', label: 'TROPHY SHELF', icon: Award, color: 'text-yellow-400' },
         ].map(tab => {
           const Icon = tab.icon;
           const isSelected = innerTab === tab.id;
@@ -3117,7 +3249,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 className="bg-emerald-500/[0.03] hover:bg-emerald-500/10 active:scale-95 text-emerald-400 border border-emerald-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
               >
                 <div className="text-[9px] font-black uppercase tracking-wider">Feed Shake</div>
-                <div className="text-[6.5px] font-mono text-emerald-400/80 font-bold">25 COINS // +15XP</div>
+                <div className="text-[6.5px] font-mono text-emerald-400/80 font-bold">100 COINS // +15XP</div>
               </button>
 
               <button 
@@ -3125,7 +3257,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 className="bg-amber-500/[0.03] hover:bg-amber-500/10 active:scale-95 text-amber-400 border border-amber-500/20 py-1.5 px-1 rounded flex flex-col items-center justify-center gap-1 transition-all cursor-pointer"
               >
                 <div className="text-[9px] font-black uppercase tracking-wider">Lifting Logs</div>
-                <div className="text-[6.5px] font-mono text-amber-400/80 font-bold">50 COINS // +35XP</div>
+                <div className="text-[6.5px] font-mono text-amber-400/80 font-bold">200 COINS // +35XP</div>
               </button>
 
               <button 
@@ -3344,20 +3476,20 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 <div className="flex-1 flex flex-col justify-between gap-2.5 mt-3">
                   {[
                     {
-                      label: 'MAX HEALTH (HP)',
-                      value: `${derivedStats.maxHp} HP`,
-                      percent: Math.min(100, Math.round((derivedStats.maxHp / 550) * 100)),
-                      icon: Activity,
-                      color: 'text-blue-400',
-                      barColor: 'from-blue-500 to-cyan-400'
-                    },
-                    {
                       label: 'ATTACK RATING',
                       value: `${derivedStats.attack} ATK`,
                       percent: Math.min(100, Math.round((derivedStats.attack / 250) * 100)),
                       icon: Sword,
                       color: 'text-red-500',
                       barColor: 'from-red-500 to-rose-400'
+                    },
+                    {
+                      label: 'MAX HEALTH (HP)',
+                      value: `${derivedStats.maxHp} HP`,
+                      percent: Math.min(100, Math.round((derivedStats.maxHp / 550) * 100)),
+                      icon: Activity,
+                      color: 'text-blue-400',
+                      barColor: 'from-blue-500 to-cyan-400'
                     },
                     {
                       label: 'ACTIVE DEFENSE',
@@ -3568,7 +3700,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   equippedAura={currentAuraId}
                   onBuyOrEquip={(auraId, price) => buyOrEquipItem('auras', auraId, price)}
                 />
-              ) : (
+              ) : innerTab === 'raid_portal' ? (
                 <ChallengePortal 
                   displayName={profile?.displayName || "Athlete Specimen"}
                   level={level}
@@ -3576,7 +3708,126 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   onGainRewards={handleGainRaidRewards}
                   activePetLevel={currentPetLevel}
                   activePetName={currentPetName}
+                  unlockedRelics={profile?.unlockedRelics || []}
                 />
+              ) : (
+                <div id="trophy-shelf-section" className="bg-black/85 border border-white/10 rounded-lg p-6 relative overflow-hidden shadow-xl h-full flex flex-col justify-start flex-1 gap-6 min-h-[500px]">
+                  <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-yellow-500/10 to-transparent pointer-events-none" />
+                  <div className="absolute top-1/2 left-0 w-36 h-36 bg-gradient-to-r from-amber-500/5 to-transparent pointer-events-none blur-xl" />
+                  
+                  {/* Title Header */}
+                  <div className="flex flex-col md:flex-row md:items-center justify-between border-b border-white/10 pb-4 gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="p-1 px-2 rounded bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 font-mono text-[9px] uppercase tracking-wider font-extrabold animate-pulse">🏛️ Coliseum Specialty</span>
+                      </div>
+                      <h3 className="text-xl font-light font-serif text-white tracking-wide mt-1.5">Coliseum Trophy Room & Relic Forge</h3>
+                      <p className="text-[11px] text-white/50 tracking-wide font-sans mt-0.5">Defeating legendary portal titans forges physical relics that provide passive physical status bonuses.</p>
+                    </div>
+                    {/* Active Relics Tracker */}
+                    <div className="bg-zinc-950 border border-white/5 p-3 rounded-lg flex items-center gap-3 shrink-0">
+                      <div className="p-2 bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 rounded-full">
+                        <Trophy className="w-5 h-5" />
+                      </div>
+                      <div className="font-mono">
+                        <span className="text-[9px] uppercase tracking-widest text-[#ffffff]/45 block">Relics Active</span>
+                        <span className="text-lg font-black text-white">{(profile?.unlockedRelics || []).length} <span className="text-xs text-white/30">/ {RELICS.length}</span></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Relic Resonance Summary Section */}
+                  <div className="bg-zinc-950/90 border border-yellow-500/10 rounded-lg p-4 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/[0.02] to-transparent pointer-events-none" />
+                    <h4 className="text-[9.5px] font-mono font-extrabold tracking-widest text-yellow-500 uppercase flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 animate-pulse" /> RELIC RESONANCE PASSIVES
+                    </h4>
+                    
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-3">
+                      {[
+                        { label: 'Max Health pool', value: (profile?.unlockedRelics || []).includes('obsidian_heart') ? '+15 HP' : '+0 HP', active: (profile?.unlockedRelics || []).includes('obsidian_heart') },
+                        { label: 'Somatic Might', value: (profile?.unlockedRelics || []).includes('pyroclastic_seed') ? '+5 ATK' : '+0 ATK', active: (profile?.unlockedRelics || []).includes('pyroclastic_seed') },
+                        { label: 'Resting Defense', value: (profile?.unlockedRelics || []).includes('abyssal_lantern') ? '+3 DEF' : '+0 DEF', active: (profile?.unlockedRelics || []).includes('abyssal_lantern') },
+                        { label: 'Trial Experience', value: (profile?.unlockedRelics || []).includes('sun_gilded_scepter') ? '+10% XP' : '+0% XP', active: (profile?.unlockedRelics || []).includes('sun_gilded_scepter') },
+                        { label: 'Critical Strike', value: (profile?.unlockedRelics || []).includes('chrono_hourglass') ? '+1.5% CRIT' : '+0% CRIT', active: (profile?.unlockedRelics || []).includes('chrono_hourglass') },
+                      ].map((sub, i) => (
+                        <div key={i} className={`p-2.5 rounded border font-mono text-center flex flex-col justify-center items-center gap-0.5 ${sub.active ? 'border-yellow-500/20 bg-yellow-500/[0.04] text-white' : 'border-white/5 bg-black/40 text-white/30'}`}>
+                          <span className="text-[8.5px] uppercase tracking-wider block font-sans text-white/40">{sub.label}</span>
+                          <span className={`text-xs font-black mt-1 ${sub.active ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]' : 'text-white/20'}`}>{sub.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {(profile?.unlockedRelics || []).includes('demiurge_crest') && (
+                      <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/25 rounded flex items-center justify-between text-[11px] font-mono text-yellow-300 px-3">
+                        <span className="font-extrabold">👑 PRIMORDIAL ASCENSION ACTIVE:</span>
+                        <span>+5% General Strength Multiplier & +10% Core Health Multiplier enabled!</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Relics Library Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {RELICS.map((relic) => {
+                      const isUnlocked = (profile?.unlockedRelics || []).includes(relic.id);
+                      return (
+                        <div 
+                          key={relic.id}
+                          className={`relative border rounded-lg p-4 bg-zinc-950/90 flex flex-col justify-between min-h-[170px] transition-all duration-300 overflow-hidden group/relic ${
+                            isUnlocked 
+                              ? 'border-yellow-500/35 text-white shadow-[0_0_20px_rgba(234,179,8,0.06)] hover:border-yellow-500/50 hover:shadow-[0_0_25px_rgba(234,179,8,0.12)] bg-gradient-to-b from-yellow-500/[0.01] to-transparent' 
+                              : 'border-white/5 text-white/40 bg-zinc-950/40 select-none'
+                          }`}
+                        >
+                          {/* Top row */}
+                          <div>
+                            <div className="flex items-start justify-between">
+                              <div className={`p-2.5 rounded-lg border font-mono text-2xl flex items-center justify-center shrink-0 shadow-md ${
+                                isUnlocked 
+                                  ? relic.badgeColor + ' shadow-yellow-500/5'
+                                  : 'border-white/5 bg-zinc-900/50 text-white/20'
+                              }`}>
+                                {relic.icon}
+                              </div>
+                              {isUnlocked ? (
+                                <span className="flex items-center gap-1 text-[8.5px] font-mono font-extrabold text-[#10b981] bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded uppercase">
+                                  <Check className="w-3 h-3 stroke-[3]" /> Bound & Active
+                                </span>
+                              ) : (
+                                <span className="flex items-center gap-1 text-[8.5px] font-mono font-black text-[#f43f5e] bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded uppercase">
+                                  <Lock className="w-3 h-3" /> Dormant
+                                </span>
+                              )}
+                            </div>
+                            
+                            {/* Relic Title */}
+                            <h5 className={`font-serif text-sm mt-3.5 transition-colors ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
+                              {relic.name}
+                            </h5>
+                            
+                            {/* Relic Description */}
+                            <p className="text-[11px] text-white/50 font-normal mt-1 leading-relaxed">
+                              {relic.description}
+                            </p>
+                          </div>
+
+                          {/* Passive Bonus Tag lines */}
+                          <div className="mt-4 border-t border-white/5 pt-3 flex flex-col gap-1">
+                            <div className="flex justify-between items-center">
+                              <span className="text-[9px] font-mono uppercase tracking-wider text-[#ffffff]/30">Passive Attributer:</span>
+                              <span className={`text-[10px] font-mono font-black ${isUnlocked ? 'text-yellow-400' : 'text-white/20'}`}>
+                                {relic.bonusText}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center text-[9px] font-mono mt-0.5">
+                              <span className="text-[#ffffff]/30">Titan Vessel Name:</span>
+                              <span className={isUnlocked ? 'text-white/70' : 'text-white/20'}>{relic.bossName}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               )}
             </motion.div>
           </AnimatePresence>

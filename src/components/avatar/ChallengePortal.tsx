@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Sword, Skull, Shield, Zap, Activity, Info, Sparkles, Scroll } from 'lucide-react';
-import { RAID_BOSSES, RaidBoss } from '../AvatarPanel';
+import { RAID_BOSSES, RaidBoss, RELICS, Relic } from '../AvatarPanel';
 
 const RaidBackdrop: React.FC<{ bossId: string }> = ({ bossId }) => {
   // Generate stable particle attributes using stable seeds based on ID
@@ -356,9 +356,10 @@ interface ChallengePortalProps {
     defense: number;
     criticalChance: number;
   };
-  onGainRewards: (xp: number, credits: number, auraId?: string) => void;
+  onGainRewards: (xp: number, credits: number, auraId?: string, relicId?: string) => void;
   activePetLevel?: number;
   activePetName?: string;
+  unlockedRelics?: string[];
 }
 
 interface CombatFloater {
@@ -376,6 +377,7 @@ export const ChallengePortal: React.FC<ChallengePortalProps> = ({
   onGainRewards,
   activePetLevel = 1,
   activePetName,
+  unlockedRelics = [],
 }) => {
   const [selectedBoss, setSelectedBoss] = useState<RaidBoss | null>(null);
   const [isFighting, setIsFighting] = useState(false);
@@ -473,11 +475,20 @@ export const ChallengePortal: React.FC<ChallengePortalProps> = ({
     // Check boss defeat
     if (nextBossHp <= 0) {
       setBattleFinished('won');
+      const bossRelic = RELICS.find(r => r.bossId === selectedBoss.id);
+      const relicId = bossRelic && !unlockedRelics.includes(bossRelic.id) ? bossRelic.id : undefined;
       const victorLogs = [
         `🔥 TRIUMPH! You have successfully overcome ${selectedBoss.name}!`,
         `🏆 Permanent rewards claimed: +${selectedBoss.rewards.xp} XP and +${selectedBoss.rewards.credits} Sacred Coins.`
       ];
-      onGainRewards(selectedBoss.rewards.xp, selectedBoss.rewards.credits, selectedBoss.rewards.aura);
+      if (bossRelic) {
+        if (relicId) {
+          victorLogs.push(`🏛️ MYTHIC DROP: Claimed legendary relic [${bossRelic.name}] (${bossRelic.bonusText})!`);
+        } else {
+          victorLogs.push(`🏛️ RELIC EQUIPPED: [${bossRelic.name}] is active on your Trophy Shelf (${bossRelic.bonusText}).`);
+        }
+      }
+      onGainRewards(selectedBoss.rewards.xp, selectedBoss.rewards.credits, selectedBoss.rewards.aura, relicId);
       setBattleLogs(prev => [...victorLogs, ...roundLogs, ...prev]);
       return;
     }
@@ -695,7 +706,7 @@ export const ChallengePortal: React.FC<ChallengePortalProps> = ({
                     <div className="relative w-16 h-16 flex items-center justify-center">
                       <div className="absolute inset-0 border border-cyan-500/30 rounded-full animate-[spin_18s_linear_infinite]" />
                       <div className="absolute w-11 h-11 border border-cyan-500/40 bg-cyan-950/20 rounded-full flex items-center justify-center animate-pulse">
-                        <span className="text-3xl filter drop-shadow-[0_0_12px_rgba(6,182,212,0.85)]">👼</span>
+                        <span className="text-3xl filter drop-shadow-[0_0_12px_rgba(6,182,212,0.85)]">☄️</span>
                       </div>
                     </div>
                   )}
@@ -704,7 +715,7 @@ export const ChallengePortal: React.FC<ChallengePortalProps> = ({
                     <div className="relative w-18 h-18 flex items-center justify-center">
                       <div className="absolute inset-0 border border-dashed border-rose-500/20 rounded-full animate-[spin_14s_linear_infinite]" />
                       <div className="absolute w-13 h-13 border border-rose-500/30 bg-rose-950/10 rounded-full flex items-center justify-center">
-                        <span className="text-3xl filter drop-shadow-[0_0_12px_rgba(244,63,94,0.85)]">⏳</span>
+                        <span className="text-3xl filter drop-shadow-[0_0_12px_rgba(244,63,94,0.85)]">🌀</span>
                       </div>
                       <div className="absolute top-0 text-[5px] font-mono text-red-400 bg-red-950/80 border border-red-500/30 px-1 rounded uppercase font-black">
                         CHRONO TIME
