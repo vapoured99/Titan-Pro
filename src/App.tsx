@@ -1163,6 +1163,12 @@ export default function App() {
   const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
   const [editingRoutineName, setEditingRoutineName] = useState<string>("");
   const [guidanceEx, setGuidanceEx] = useState<Exercise | null>(null);
+  const [swappingExercise, setSwappingExercise] = useState<{
+    dayIndex: number;
+    exIndex: number;
+    exercise: Exercise;
+  } | null>(null);
+  const [swapSearch, setSwapSearch] = useState("");
 
   // --- Custom Routine Builder States ---
   const [isCreatingRoutine, setIsCreatingRoutine] = useState(false);
@@ -2457,133 +2463,145 @@ export default function App() {
     }
   }, [googleDriveToken]);
 
+  const getSubcategoryPoolKey = (ex: Exercise): string | null => {
+    let poolKey: string | null = ex.pool || null;
+    if (poolKey && combinedPools[poolKey]) {
+      return poolKey;
+    }
+
+    const lowerExName = ex.name.trim().toLowerCase();
+    for (const [key, exercises] of Object.entries(combinedPools)) {
+      if (
+        exercises.some((e) => e.name.trim().toLowerCase() === lowerExName)
+      ) {
+        return key;
+      }
+    }
+
+    if (
+      lowerExName.includes("incline") &&
+      (lowerExName.includes("bench") ||
+        lowerExName.includes("chest") ||
+        lowerExName.includes("press") ||
+        lowerExName.includes("fly"))
+    ) {
+      return "upper_chest";
+    }
+    if (
+      lowerExName.includes("decline") &&
+      (lowerExName.includes("bench") ||
+        lowerExName.includes("chest") ||
+        lowerExName.includes("press") ||
+        lowerExName.includes("fly"))
+    ) {
+      return "lower_chest";
+    }
+    if (
+      lowerExName.includes("chest") ||
+      lowerExName.includes("bench") ||
+      lowerExName.includes("press") ||
+      lowerExName.includes("fly")
+    ) {
+      return "middle_chest";
+    }
+    if (
+      lowerExName.includes("lat pull") ||
+      lowerExName.includes("chin") ||
+      lowerExName.includes("pullup") ||
+      lowerExName.includes("row")
+    ) {
+      return "upper_back";
+    }
+    if (
+      lowerExName.includes("deadlift") ||
+      lowerExName.includes("lower back") ||
+      lowerExName.includes("back extension") ||
+      lowerExName.includes("hyperextension") ||
+      lowerExName.includes("good morning")
+    ) {
+      return "lower_back";
+    }
+    if (lowerExName.includes("bicep") || lowerExName.includes("curl")) {
+      if (lowerExName.includes("incline") || lowerExName.includes("hammer")) {
+        return "short_biceps";
+      }
+      return "long_biceps";
+    }
+    if (
+      lowerExName.includes("tricep") ||
+      lowerExName.includes("pushdown") ||
+      lowerExName.includes("skull")
+    ) {
+      if (lowerExName.includes("overhead")) return "long_triceps";
+      return "lateral_triceps";
+    }
+    if (
+      lowerExName.includes("lateral raise") ||
+      lowerExName.includes("side delt") ||
+      lowerExName.includes("upright row")
+    ) {
+      return "side_delts";
+    }
+    if (
+      lowerExName.includes("rear delt") ||
+      lowerExName.includes("face pull") ||
+      lowerExName.includes("reverse fly")
+    ) {
+      return "rear_delts";
+    }
+    if (
+      lowerExName.includes("shoulder") ||
+      lowerExName.includes("overhead press") ||
+      lowerExName.includes("military") ||
+      lowerExName.includes("arnold")
+    ) {
+      return "front_delts";
+    }
+    if (
+      lowerExName.includes("squat") ||
+      lowerExName.includes("leg press") ||
+      lowerExName.includes("lunge") ||
+      lowerExName.includes("extensions") ||
+      lowerExName.includes("quad")
+    ) {
+      return "legs";
+    }
+    if (
+      lowerExName.includes("oblique") ||
+      lowerExName.includes("twist") ||
+      lowerExName.includes("side bend")
+    ) {
+      return "obliques";
+    }
+    if (
+      lowerExName.includes("leg raise") ||
+      lowerExName.includes("hanging") ||
+      lowerExName.includes("lower ab")
+    ) {
+      return "lower_core";
+    }
+    if (
+      lowerExName.includes("crunch") ||
+      lowerExName.includes("situp") ||
+      lowerExName.includes("plank") ||
+      lowerExName.includes("ab")
+    ) {
+      return "upper_core";
+    }
+
+    return null;
+  };
+
   const handleSwap = (dayIndex: number, exIndex: number) => {
     if (!currentDays[dayIndex]) return;
-    const day = [...currentDays[dayIndex]];
-    const ex = day[exIndex];
+    const ex = currentDays[dayIndex][exIndex];
     if (!ex) return;
+    setSwappingExercise({ dayIndex, exIndex, exercise: ex });
+  };
 
-    let poolKey = ex.pool;
-    if (!poolKey || !combinedPools[poolKey]) {
-      const lowerExName = ex.name.trim().toLowerCase();
-      // Search across ALL pools to find which one contains this exercise
-      for (const [key, exercises] of Object.entries(combinedPools)) {
-        if (
-          exercises.some((e) => e.name.trim().toLowerCase() === lowerExName)
-        ) {
-          poolKey = key as any;
-          break;
-        }
-      }
-    }
-
-    if (!poolKey || !combinedPools[poolKey]) {
-      console.warn(
-        "Could not find pool for exercise:",
-        ex.name,
-        "poolKey:",
-        poolKey,
-      );
-      // Fallback: If we still can't find it, try to guess from common strings or default to chest
-      const low = ex.name.toLowerCase();
-      if (
-        low.includes("chest") ||
-        low.includes("press") ||
-        low.includes("bench") ||
-        low.includes("fly")
-      )
-        poolKey = "chest";
-      else if (
-        low.includes("rack pull") ||
-        low.includes("exten") ||
-        low.includes("good morning")
-      )
-        poolKey = "lower_back";
-      else if (
-        low.includes("row") ||
-        low.includes("lat") ||
-        low.includes("back") ||
-        low.includes("pull") ||
-        low.includes("chin")
-      )
-        poolKey = "upper_back";
-      else if (low.includes("bicep") || low.includes("curl"))
-        poolKey = "biceps";
-      else if (
-        low.includes("tricep") ||
-        low.includes("skull") ||
-        low.includes("dip")
-      )
-        poolKey = "triceps";
-      else if (
-        low.includes("squat") ||
-        low.includes("leg") ||
-        low.includes("deadlift") ||
-        low.includes("hamstring")
-      )
-        poolKey = "legs";
-      else if (low.includes("lateral raise")) poolKey = "side_delts";
-      else if (low.includes("rear delt") || low.includes("face pull"))
-        poolKey = "rear_delts";
-      else if (
-        low.includes("shoulder") ||
-        low.includes("raise") ||
-        low.includes("press") ||
-        low.includes("arnold")
-      )
-        poolKey = "front_delts";
-      else if (
-        low.includes("oblique") ||
-        low.includes("twist") ||
-        low.includes("side plank") ||
-        low.includes("heel tap") ||
-        low.includes("bicycle")
-      )
-        poolKey = "obliques";
-      else if (
-        low.includes("leg raise") ||
-        low.includes("flutter") ||
-        low.includes("reverse crunch") ||
-        low.includes("deadbug")
-      )
-        poolKey = "lower_core";
-      else if (
-        low.includes("ab") ||
-        low.includes("crunch") ||
-        low.includes("core") ||
-        low.includes("sit up") ||
-        low.includes("plank")
-      )
-        poolKey = "upper_core";
-
-      if (!poolKey) {
-        alert(
-          `Cannot determine exercise category for "${ex.name}". Please manually swap via Library.`,
-        );
-        return;
-      }
-    }
-
-    const pool = combinedPools[poolKey];
-    // Filter out current exercise and any other exercise already in the day
-    const currentDayExNames = new Set(
-      day.map((d) => d.name.trim().toLowerCase()),
-    );
-    const otherExercises = pool.filter((e) => {
-      const normalizedEName = e.name.trim().toLowerCase();
-      return (
-        normalizedEName !== ex.name.trim().toLowerCase() &&
-        !currentDayExNames.has(normalizedEName)
-      );
-    });
-
-    if (otherExercises.length === 0) {
-      alert("No more unique exercises left in this category to swap!");
-      return;
-    }
-
-    const newEx =
-      otherExercises[Math.floor(Math.random() * otherExercises.length)];
+  const executeSwap = (dayIndex: number, exIndex: number, newEx: Exercise) => {
+    if (!currentDays[dayIndex]) return;
+    const day = [...currentDays[dayIndex]];
     day[exIndex] = newEx;
 
     const nextCurrentDays = [...currentDays];
@@ -2600,6 +2618,8 @@ export default function App() {
         return next;
       });
     }, 2000);
+
+    setSwappingExercise(null);
   };
 
   const extractYoutubeId = (url: string): string | undefined => {
@@ -9742,6 +9762,21 @@ export default function App() {
                                           height={16}
                                         />
                                       </div>
+                                      {/* Sub-muscle Category Badge */}
+                                      {(() => {
+                                        const resolvedEx = findExerciseByName(ex.name);
+                                        const poolKey = resolvedEx?.pool || ex.pool;
+                                        if (!poolKey) return null;
+                                        const label = poolKey
+                                          .split('_')
+                                          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                                          .join(' ');
+                                        return (
+                                          <div className="mt-1 text-[9px] font-mono font-bold uppercase tracking-wider text-white/45 bg-white/[0.03] border border-white/5 px-2 py-0.5 rounded-sm inline-block self-start">
+                                            Compartment: <span className="text-gym-accent/80">{label}</span>
+                                          </div>
+                                        );
+                                      })()}
                                     </div>
                                     <div className="flex gap-2">
                                       <button
@@ -10888,6 +10923,194 @@ export default function App() {
                         className="px-10 py-4 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-gym-accent hover:bg-gym-accent/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] cursor-pointer rounded-sm"
                       >
                         Close Archive
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              );
+            })()}
+        </AnimatePresence>
+
+        {/* Biomechanical Alternatives (Swapping) Modal */}
+        <AnimatePresence>
+          {swappingExercise &&
+            (() => {
+              const currentEx = swappingExercise.exercise;
+              const poolKey = getSubcategoryPoolKey(currentEx);
+              
+              const pool = poolKey ? (combinedPools[poolKey] || []) : [];
+              const currentDayIdx = swappingExercise.dayIndex;
+              const currentDayExNames = new Set(
+                (currentDays[currentDayIdx] || []).map((d) => d.name.trim().toLowerCase())
+              );
+              
+              const alternatives = pool.filter((e) => {
+                const normalizedEName = e.name.trim().toLowerCase();
+                return (
+                  normalizedEName !== currentEx.name.trim().toLowerCase() &&
+                  !currentDayExNames.has(normalizedEName)
+                );
+              });
+
+              const filteredAlternatives = alternatives.filter((alt) =>
+                alt.name.toLowerCase().includes(swapSearch.toLowerCase())
+              );
+
+              const formattedCategoryName = poolKey
+                ? poolKey
+                    .split("_")
+                    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(" ")
+                : "Unknown subcategory";
+
+              return (
+                <div className="fixed inset-0 z-[115] flex justify-center overflow-y-auto p-4 sm:p-10 font-sans">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => {
+                      setSwappingExercise(null);
+                      setSwapSearch("");
+                    }}
+                    className="fixed inset-0 bg-black/95 backdrop-blur-md"
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                    className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-sm flex flex-col shadow-2xl my-auto z-10"
+                  >
+                    {/* Header */}
+                    <div className="p-8 border-b border-white/5 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/5 rounded-full blur-3xl -mr-16 -mt-16" />
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center">
+                            <ArrowLeftRight className="w-6 h-6 text-gym-accent" />
+                          </div>
+                          <div>
+                            <span className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.4em] block mb-1">
+                              Biomechanical Alternatives Finder
+                            </span>
+                            <h3 className="text-3xl font-light italic font-serif text-white tracking-tight pt-1 leading-normal pr-1">
+                              Swap: {currentEx.name}
+                            </h3>
+                          </div>
+                        </div>
+
+                        <div className="bg-white/[0.02] border border-white/5 rounded-sm p-4 mt-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                              <span className="text-[8px] text-white/30 uppercase tracking-widest font-black block mb-0.5">
+                                Target Section / Compartment
+                              </span>
+                              <span className="text-xs text-white/90 font-bold uppercase tracking-wider font-mono bg-white/[0.04] border border-white/10 px-2.5 py-1 rounded-sm inline-block">
+                                {formattedCategoryName}
+                              </span>
+                            </div>
+                            {alternatives.length > 0 && (
+                              <button
+                                onClick={() => {
+                                  const randomEx = alternatives[Math.floor(Math.random() * alternatives.length)];
+                                  executeSwap(swappingExercise.dayIndex, swappingExercise.exIndex, randomEx);
+                                  setSwapSearch("");
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 bg-gym-accent hover:bg-gym-accent/90 text-black text-[10px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer self-start sm:self-center"
+                              >
+                                <Zap className="w-3.5 h-3.5 fill-black" />
+                                Surprise Me (Random Equivalent)
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-white/40 leading-relaxed mt-3">
+                            Direct replacements target the exact same muscle fibers and joint mechanics. Select an option below to keep your high-quality stimulus without waiting for blocked equipment.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Search inside alternatives */}
+                    <div className="px-8 pt-6 pb-2 border-b border-white/5 bg-white/[0.01]">
+                      <div className="relative">
+                        <Search className="w-4 h-4 text-white/30 absolute left-4 top-1/2 -translate-y-1/2" />
+                        <input
+                          type="text"
+                          value={swapSearch}
+                          onChange={(e) => setSwapSearch(e.target.value)}
+                          placeholder={`Search ${alternatives.length} biomechanical equivalents...`}
+                          className="w-full bg-black/60 border border-white/10 focus:border-gym-accent rounded-sm pl-11 pr-4 py-3 text-xs font-light focus:outline-none transition-all text-white placeholder-white/20 font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Alternatives list */}
+                    <div className="p-8 max-h-[350px] overflow-y-auto space-y-3">
+                      {filteredAlternatives.length > 0 ? (
+                        filteredAlternatives.map((alt) => {
+                          return (
+                            <div
+                              key={alt.name}
+                              onClick={() => {
+                                executeSwap(swappingExercise.dayIndex, swappingExercise.exIndex, alt);
+                                setSwapSearch("");
+                              }}
+                              className="group p-4 bg-white/[0.01] border border-white/5 hover:border-gym-accent/30 hover:bg-gym-accent/[0.02] rounded-sm transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                            >
+                              <div className="space-y-1.5 flex-1 pr-4">
+                                <div className="flex items-center gap-2">
+                                  <h4 className="text-base font-semibold text-white/90 group-hover:text-gym-accent transition-colors leading-snug">
+                                    {alt.name}
+                                  </h4>
+                                  {alt.category && (
+                                    <span
+                                      className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-[0.1em] ${
+                                        alt.category === "compound"
+                                          ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                          : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
+                                      }`}
+                                    >
+                                      {alt.category}
+                                    </span>
+                                  )}
+                                </div>
+                                {alt.instructions && alt.instructions.length > 0 && (
+                                  <p className="text-[10px] text-white/40 leading-relaxed font-light line-clamp-2">
+                                    💡 {alt.instructions[0]}
+                                  </p>
+                                )}
+                              </div>
+                              <span className="shrink-0 px-4 py-2 border border-white/10 group-hover:border-gym-accent group-hover:bg-gym-accent group-hover:text-black hover:bg-gym-accent text-white/60 text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer whitespace-nowrap text-center">
+                                Swap & Replace
+                              </span>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="p-8 rounded-sm border border-dashed border-white/10 bg-white/[0.005] flex flex-col items-center justify-center text-center gap-3 py-10">
+                          <Dumbbell className="w-8 h-8 text-white/20" />
+                          <div>
+                            <span className="text-xs font-bold text-white uppercase tracking-wider block">
+                              No Matches Found
+                            </span>
+                            <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">
+                              Try clearing filters or check the exercise name
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="p-6 border-t border-white/5 bg-white/[0.02] flex justify-end">
+                      <button
+                        onClick={() => {
+                          setSwappingExercise(null);
+                          setSwapSearch("");
+                        }}
+                        className="px-8 py-3.5 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-gym-accent hover:bg-gym-accent/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] cursor-pointer rounded-sm"
+                      >
+                        Cancel Swap
                       </button>
                     </div>
                   </motion.div>
