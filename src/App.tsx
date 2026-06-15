@@ -5352,6 +5352,72 @@ export default function App() {
                                           />
                                         </div>
 
+                                        {/* Ghost Set Target (Historical Overlay) */}
+                                        {(() => {
+                                          const loggedSetsForThisEx = sessionSets.filter(
+                                            (s) =>
+                                              s &&
+                                              s.exerciseName &&
+                                              s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                                          );
+                                          const nextSetIndex = loggedSetsForThisEx.length;
+                                          const previousWorkouts = archivedWorkouts
+                                            .filter((w) =>
+                                              w.sets?.some(
+                                                (s: any) =>
+                                                  s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                                              )
+                                            )
+                                            .sort((a, b) => b.date.localeCompare(a.date));
+
+                                          const lastWorkout = previousWorkouts[0];
+                                          if (!lastWorkout) return null;
+
+                                          const lastSets = lastWorkout.sets.filter(
+                                            (s: any) =>
+                                              s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                                          );
+
+                                          const ghostSet = lastSets[nextSetIndex];
+                                          if (!ghostSet) return null;
+
+                                          const dateFormatted = new Date(lastWorkout.date).toLocaleDateString("en-GB", {
+                                            day: "numeric",
+                                            month: "short",
+                                          });
+
+                                          return (
+                                            <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-sm px-2.5 py-1.5 mt-1 text-[10px] w-full font-sans">
+                                              <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
+                                                <span className="relative flex h-1.5 w-1.5 shrink-0">
+                                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gym-accent/40 opacity-75"></span>
+                                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gym-accent/70"></span>
+                                                </span>
+                                                <span className="text-white/40 font-mono truncate">
+                                                  Ghost Set {nextSetIndex + 1} ({dateFormatted}):
+                                                </span>
+                                                <span className="text-gym-accent font-mono font-bold shrink-0">
+                                                  {ghostSet.weight}kg × {ghostSet.reps}
+                                                </span>
+                                              </div>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  const idSafe = ex.name.replace(/\s+/g, "-");
+                                                  const wInput = document.getElementById(`lib-w-${idSafe}`) as HTMLInputElement;
+                                                  const rInput = document.getElementById(`lib-r-${idSafe}`) as HTMLInputElement;
+                                                  if (wInput) wInput.value = ghostSet.weight.toString();
+                                                  if (rInput) rInput.value = ghostSet.reps.toString();
+                                                }}
+                                                className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+                                                title="Use ghost set target values"
+                                              >
+                                                Match
+                                              </button>
+                                            </div>
+                                          );
+                                        })()}
+
                                         {/* Row 3: Log button */}
                                         <button
                                           onClick={() => {
@@ -9850,6 +9916,71 @@ export default function App() {
                                         className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
                                       />
                                     </div>
+
+                                    {/* Ghost Set Target (Historical Overlay) */}
+                                    {(() => {
+                                      const loggedSetsForThisEx = sessionSets.filter(
+                                        (s) =>
+                                          s &&
+                                          s.exerciseName &&
+                                          s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                                      );
+                                      const nextSetIndex = loggedSetsForThisEx.length;
+                                      const previousWorkouts = archivedWorkouts
+                                        .filter((w) =>
+                                          w.sets?.some(
+                                            (s: any) =>
+                                              s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                                          )
+                                        )
+                                        .sort((a, b) => b.date.localeCompare(a.date));
+
+                                      const lastWorkout = previousWorkouts[0];
+                                      if (!lastWorkout) return null;
+
+                                      const lastSets = lastWorkout.sets.filter(
+                                        (s: any) =>
+                                          s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                                      );
+
+                                      const ghostSet = lastSets[nextSetIndex];
+                                      if (!ghostSet) return null;
+
+                                      const dateFormatted = new Date(lastWorkout.date).toLocaleDateString("en-GB", {
+                                        day: "numeric",
+                                        month: "short",
+                                      });
+
+                                      return (
+                                        <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-sm px-2.5 py-1.5 mt-1 text-[10px]">
+                                          <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
+                                            <span className="relative flex h-1.5 w-1.5 shrink-0">
+                                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gym-accent/40 opacity-75"></span>
+                                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gym-accent/70"></span>
+                                            </span>
+                                            <span className="text-white/40 font-mono truncate">
+                                              Ghost Set {nextSetIndex + 1} ({dateFormatted}):
+                                            </span>
+                                            <span className="text-gym-accent font-mono font-bold shrink-0">
+                                              {ghostSet.weight}kg × {ghostSet.reps}
+                                            </span>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              const wInput = document.getElementById(`w-${di}-${ei}`) as HTMLInputElement;
+                                              const rInput = document.getElementById(`r-${di}-${ei}`) as HTMLInputElement;
+                                              if (wInput) wInput.value = ghostSet.weight.toString();
+                                              if (rInput) rInput.value = ghostSet.reps.toString();
+                                            }}
+                                            className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+                                            title="Use ghost set target values"
+                                          >
+                                            Match
+                                          </button>
+                                        </div>
+                                      );
+                                    })()}
 
                                     {/* Row 3: Log button */}
                                     <button
