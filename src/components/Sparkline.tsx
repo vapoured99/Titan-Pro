@@ -101,6 +101,8 @@ export default function Sparkline({
     );
   }
 
+  const isAssisted = exName.trim().toLowerCase().includes("assisted pull");
+
   // Calculate coordinates for SVG
   const minVal = Math.min(...trendData.map(d => d.val));
   const maxVal = Math.max(...trendData.map(d => d.val));
@@ -113,8 +115,12 @@ export default function Sparkline({
   // Map each data point to svg coordinates
   const coords = trendData.map((d, i) => {
     const x = (i / (trendData.length - 1)) * width;
-    // SVG 0,0 is at the top left, so we invert the Y coordinate
-    const y = height - padding - ((d.val - minVal) / valRange) * usableHeight;
+    // SVG 0,0 is at the top left
+    // For normal: higher value is better (higher on screen -> smaller Y value in SVG)
+    // For assisted: lower value is better (higher on screen -> smaller Y value in SVG)
+    const y = isAssisted
+      ? padding + ((d.val - minVal) / valRange) * usableHeight
+      : height - padding - ((d.val - minVal) / valRange) * usableHeight;
     return { x, y, val: d.val, date: d.date };
   });
 
@@ -125,12 +131,16 @@ export default function Sparkline({
   // Colors: dynamic sparkline color depending on performance trajectory
   const firstVal = trendData[0].val;
   const lastVal = trendData[trendData.length - 1].val;
-  const isUpward = lastVal >= firstVal;
+  const isUpward = isAssisted ? lastVal <= firstVal : lastVal >= firstVal;
   const strokeColor = isUpward ? '#22c55e' : '#f43f5e'; // gym-accent green vs danger red
   const gradientId = `sparkline-grad-${exName.replace(/[^a-zA-Z0-9]/g, '-')}`;
 
+  // Delta calculation: for assisted, diff should be inverted so negative delta (strength improved) shows up positive.
+  const diffVal = lastVal - firstVal;
+  const displayDiff = isAssisted ? -diffVal : diffVal;
+
   return (
-    <div className="flex items-center gap-2 group/sparkline relative" title={`Est. 1RM progression from ${firstVal}kg to ${lastVal}kg across ${trendData.length} records`}>
+    <div className="flex items-center gap-2 group/sparkline relative" title={isAssisted ? `Assisted Pull-up resistance progression from ${firstVal}kg to ${lastVal}kg (lower is stronger) across ${trendData.length} records` : `Est. 1RM progression from ${firstVal}kg to ${lastVal}kg across ${trendData.length} records`}>
       <svg width={width} height={height} className="overflow-visible">
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -175,7 +185,7 @@ export default function Sparkline({
       </svg>
       {/* Absolute micro statistics tag shown on hover */}
       <span className="hidden group-hover/sparkline:inline-flex absolute -bottom-6 right-0 z-50 bg-[#0c0c0c] border border-white/20 px-1.5 py-0.5 rounded-[2px] text-[8px] font-mono font-bold leading-none uppercase tracking-widest text-white/95 whitespace-nowrap shadow-xl">
-        {isUpward ? '▲' : '▼'} {Math.round(lastVal - firstVal)}kg Δ ({lastVal}kg)
+        {isUpward ? '▲' : '▼'} {Math.abs(Math.round(displayDiff))}kg Δ ({lastVal}kg)
       </span>
     </div>
   );

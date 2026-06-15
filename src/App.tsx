@@ -797,20 +797,33 @@ const PBBlock = ({
     }
   }
 
+  const isAssisted = exName.trim().toLowerCase().includes("assisted pull");
+
   // Calculate maximum 1 Rep Max (1RM) using Epley Formula
-  let max1RM = 0;
+  let max1RM = isAssisted ? 999999 : 0;
   let maxBaseSet: { weight: number; reps: number; date?: string } | null = null;
 
   exerciseSets.forEach((set) => {
-    if (set.weight > 0 && set.reps > 0) {
+    if (set.reps > 0 && (isAssisted ? set.weight >= 0 : set.weight > 0)) {
       const base1RM =
         set.reps === 1 ? set.weight : set.weight * (1 + set.reps / 30);
-      if (base1RM > max1RM) {
-        max1RM = base1RM;
-        maxBaseSet = set;
+      if (isAssisted) {
+        if (base1RM < max1RM) {
+          max1RM = base1RM;
+          maxBaseSet = set;
+        }
+      } else {
+        if (base1RM > max1RM) {
+          max1RM = base1RM;
+          maxBaseSet = set;
+        }
       }
     }
   });
+
+  if (isAssisted && max1RM === 999999) {
+    max1RM = 0;
+  }
 
   if (!pb && max1RM === 0) {
     return (
@@ -877,12 +890,11 @@ const PBBlock = ({
         </div>
       )}
 
-      {max1RM > 0 && (
+      {max1RM >= 0 && (maxBaseSet !== null) && (
         <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
           <div className="flex flex-col">
             <span className="text-[10px] opacity-40 uppercase tracking-widest flex items-center gap-1">
-              <Flame className="w-3 h-3 text-gym-accent animate-pulse" /> Est. 1
-              Rep Max
+              <Flame className="w-3 h-3 text-gym-accent animate-pulse" /> {isAssisted ? "Est. 1RM Assistance" : "Est. 1 Rep Max"}
             </span>
             <div className="flex items-baseline gap-1 mt-1">
               <span className="text-xl font-semibold text-gym-accent">
@@ -1163,6 +1175,7 @@ export default function App() {
   }[]>([]);
   const [builderSearch, setBuilderSearch] = useState("");
   const [newRoutinePeriodization, setNewRoutinePeriodization] = useState<"hypertrophy" | "strength" | "deload">("hypertrophy");
+  const [shuffleTrigger, setShuffleTrigger] = useState(0);
 
   const [customExercises, setCustomExercises] = useState<Exercise[]>(() => {
     const saved = localStorage.getItem("gym_custom_exercises");
@@ -1432,6 +1445,80 @@ export default function App() {
     return list;
   };
 
+  const suggestedExercises = useMemo(() => {
+    const config = DAY_CONFIG[newRoutineCategory];
+    if (!config) return [];
+    const suggested: Exercise[] = [];
+    const pools = config.pools;
+
+    // Helper to shuffle array (purely)
+    const shuffle = <T,>(arr: T[]): T[] => {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    };
+
+    // Shuffling the exercises in each pool
+    const shuffledPools: Record<string, Exercise[]> = {};
+    pools.forEach((poolKey) => {
+      shuffledPools[poolKey] = shuffle(combinedPools[poolKey] || []);
+    });
+
+    // 1. Get at least 1 exercise from each pool to cover each muscle compartment (muscle section)
+    pools.forEach((poolKey) => {
+      const list = shuffledPools[poolKey] || [];
+      if (list.length > 0) {
+        suggested.push(list[0]);
+      }
+    });
+
+    // 2. We want at least 7 exercises to cover a complete routine (user requested "at least 6-7 exercises")
+    if (suggested.length < 7) {
+      let poolIdx = 0;
+      const poolIdxMap: Record<string, number> = {};
+      pools.forEach(pk => { poolIdxMap[pk] = 1; }); // start looking from index 1
+
+      let attempts = 0;
+      while (suggested.length < 7 && attempts < 150) {
+        attempts++;
+        const poolKey = pools[poolIdx % pools.length];
+        const list = shuffledPools[poolKey] || [];
+        const nextIdx = poolIdxMap[poolKey] || 1;
+        if (nextIdx < list.length) {
+          const found = list[nextIdx];
+          if (!suggested.some(s => s.name.toLowerCase() === found.name.toLowerCase())) {
+            suggested.push(found);
+          }
+          poolIdxMap[poolKey] = nextIdx + 1;
+        }
+        poolIdx++;
+      }
+    }
+
+    return suggested;
+  }, [newRoutineCategory, combinedPools, shuffleTrigger]);
+
+  const handleLoadSuggestedExercises = (exercisesToLoad: Exercise[]) => {
+    const items = exercisesToLoad.map((ex) => ({
+      id: Math.random().toString(36).substring(2, 9),
+      exerciseName: ex.name.trim(),
+      sets: [
+        { weight: 20, reps: 10, notes: "" },
+        { weight: 20, reps: 10, notes: "" },
+        { weight: 20, reps: 10, notes: "" },
+      ],
+    }));
+
+    setNewRoutineExercises(items);
+    setToast({
+      message: `Loaded ${items.length} suggested exercises covering all muscle sections!`,
+      type: "success"
+    });
+  };
+
   const [toast, setToast] = useState<{
     message: string;
     type: "success" | "pb" | "info";
@@ -1489,6 +1576,7 @@ export default function App() {
   const [pbSearchQuery, setPbSearchQuery] = useState("");
   const [pbSortKey, setPbSortKey] = useState<"name" | "weight" | "date">("date");
   const [pbSortOrder, setPbSortOrder] = useState<"asc" | "desc">("desc");
+  const [deletingPbName, setDeletingPbName] = useState<string | null>(null);
   const [volumeTimeframe, setVolumeTimeframe] = useState<
     "day" | "week" | "month"
   >("day");
@@ -2697,14 +2785,23 @@ export default function App() {
 
     const existing = personalBests[exName];
     let isNewPB = false;
+    const isAssisted = exName.toLowerCase().includes("assisted pull");
 
     if (!existing) {
       isNewPB = true;
     } else {
-      if (nWeight > existing.bestWeight) {
-        isNewPB = true;
-      } else if (nWeight === existing.bestWeight && nReps > existing.bestReps) {
-        isNewPB = true;
+      if (isAssisted) {
+        if (nWeight < existing.bestWeight) {
+          isNewPB = true;
+        } else if (nWeight === existing.bestWeight && nReps > existing.bestReps) {
+          isNewPB = true;
+        }
+      } else {
+        if (nWeight > existing.bestWeight) {
+          isNewPB = true;
+        } else if (nWeight === existing.bestWeight && nReps > existing.bestReps) {
+          isNewPB = true;
+        }
       }
     }
 
@@ -2881,13 +2978,6 @@ export default function App() {
 
   const handleDeletePB = async (exName: string) => {
     if (!currentUser) return;
-    if (
-      !window.confirm(
-        `Are you sure you want to delete the Personal Best record for "${exName}"?`
-      )
-    ) {
-      return;
-    }
 
     try {
       // Optimistically delete from state
@@ -7152,29 +7242,56 @@ export default function App() {
                                         </div>
                                       </div>
 
-                                      {/* Right block containing visual weights and options */}
-                                      <div className="flex items-center gap-4 shrink-0">
-                                        <div className="flex flex-col text-right">
-                                          <span className="text-[8px] text-[#ffffff]/20 font-black tracking-widest uppercase font-mono mb-0.5">
-                                            PERSONAL RECORD
-                                          </span>
-                                          <div className="bg-gym-accent/10 border border-gym-accent/20 rounded px-2.5 py-1 text-gym-accent font-mono text-xs font-black uppercase tracking-wider inline-flex items-center gap-1.5 font-bold">
-                                            <Dumbbell className="w-3 h-3 text-gym-accent/70" />
-                                            <span>{pb.bestWeight} kg</span>
-                                            <span className="text-[9px] text-gym-accent/55">×</span>
-                                            <span>{pb.bestReps} reps</span>
+                                        {/* Right block containing visual weights and options */}
+                                        <div className="flex items-center gap-4 shrink-0">
+                                          <div className="flex flex-col text-right">
+                                            <span className="text-[8px] text-[#ffffff]/20 font-black tracking-widest uppercase font-mono mb-0.5">
+                                              PERSONAL RECORD
+                                            </span>
+                                            <div className="bg-gym-accent/10 border border-gym-accent/20 rounded px-2.5 py-1 text-gym-accent font-mono text-xs font-black uppercase tracking-wider inline-flex items-center gap-1.5 font-bold">
+                                              <Dumbbell className="w-3 h-3 text-gym-accent/70" />
+                                              <span>{pb.bestWeight} kg</span>
+                                              <span className="text-[9px] text-gym-accent/55">×</span>
+                                              <span>{pb.bestReps} reps</span>
+                                            </div>
                                           </div>
-                                        </div>
 
-                                        <button
-                                          type="button"
-                                          onClick={() => handleDeletePB(pb.exerciseName)}
-                                          className="p-2 text-white/30 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded transition-all cursor-pointer flex items-center justify-center self-center"
-                                          title={`Delete Personal Best for ${pb.exerciseName}`}
-                                        >
-                                          <Trash2 className="w-4 h-4" />
-                                        </button>
-                                      </div>
+                                          {deletingPbName === pb.exerciseName ? (
+                                            <div className="flex items-center gap-2 bg-rose-950/40 border border-rose-500/20 rounded-md p-1 px-1.5">
+                                              <span className="text-[9px] text-rose-400 font-extrabold uppercase tracking-wide font-mono">
+                                                DEL?
+                                              </span>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  handleDeletePB(pb.exerciseName);
+                                                  setDeletingPbName(null);
+                                                }}
+                                                className="p-1 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded transition-all cursor-pointer"
+                                                title="Confirm deletion"
+                                              >
+                                                <Check className="w-3.5 h-3.5" />
+                                              </button>
+                                              <button
+                                                type="button"
+                                                onClick={() => setDeletingPbName(null)}
+                                                className="p-1 text-white/40 hover:text-white hover:bg-white/10 rounded transition-all cursor-pointer"
+                                                title="Cancel deletion"
+                                              >
+                                                <span className="text-xs font-bold leading-none px-1">×</span>
+                                              </button>
+                                            </div>
+                                          ) : (
+                                            <button
+                                              type="button"
+                                              onClick={() => setDeletingPbName(pb.exerciseName)}
+                                              className="p-2 text-white/30 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded transition-all cursor-pointer flex items-center justify-center self-center"
+                                              title={`Delete Personal Best for ${pb.exerciseName}`}
+                                            >
+                                              <Trash2 className="w-4 h-4" />
+                                            </button>
+                                          )}
+                                        </div>
                                     </div>
                                   );
                                 })}
@@ -8156,9 +8273,9 @@ export default function App() {
                     </div>
 
                     {/* Routine Info Form */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-white/[0.01] border border-white/5 p-6 rounded-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/[0.01] border border-white/5 p-6 rounded-sm">
                       {/* Name input */}
-                      <div className="md:col-span-2 space-y-2">
+                      <div className="space-y-2">
                         <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
                           Routine Name
                         </label>
@@ -8190,52 +8307,124 @@ export default function App() {
                           ))}
                         </select>
                       </div>
+                    </div>
 
-                      {/* Micro-Periodization Block */}
-                      <div className="space-y-2">
-                        <label className="text-[10px] text-gym-accent uppercase tracking-widest font-bold block">
-                          Micro-Periodization Phase
-                        </label>
-                        <select
-                          value={newRoutinePeriodization}
-                          onChange={(e) => {
-                            const val = e.target.value as "hypertrophy" | "strength" | "deload";
-                            setNewRoutinePeriodization(val);
-                            
-                            // Auto adjust reps/notes for and exercises currently loaded in builder
-                            setNewRoutineExercises(prev => {
-                              return prev.map(exItem => {
-                                return {
-                                  ...exItem,
-                                  sets: exItem.sets.map(setItem => {
-                                    let r = 10;
-                                    let note = setItem.notes || "";
-                                    if (val === "strength") {
-                                      r = 5;
-                                      note = "[RPE 9 - Strength Block]";
-                                    } else if (val === "deload") {
-                                      r = 12;
-                                      note = "[RPE 5 - Deload Block]";
-                                    } else {
-                                      r = 10;
-                                      note = "[RPE 8 - Hypertrophy Block]";
-                                    }
-                                    return {
-                                      ...setItem,
-                                      reps: r,
-                                      notes: note
-                                    };
-                                  })
-                                };
-                              });
-                            });
-                          }}
-                          className="w-full bg-black/60 border border-gym-accent/25 hover:border-gym-accent/50 focus:border-gym-accent rounded-sm px-4 py-3 text-sm font-semibold focus:outline-none transition-all text-gym-accent cursor-pointer fill-gym-accent"
-                        >
-                          <option value="hypertrophy" className="bg-black text-white">Hypertrophy (8-12 reps)</option>
-                          <option value="strength" className="bg-black text-white">Strength Phase (1-5 reps)</option>
-                          <option value="deload" className="bg-black text-white">Active Deload (12-15 reps)</option>
-                        </select>
+                    {/* Quick Muscle Split Cards Panel */}
+                    <div className="space-y-3 bg-white/[0.01] border border-white/5 p-5 rounded-sm">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-widest text-[#ffffff]/80">
+                            Quick Muscle Split Selector
+                          </h4>
+                          <p className="text-[10px] text-white/35 uppercase tracking-wider font-semibold mt-0.5">
+                            Visual selector for your targeted routine day focus
+                          </p>
+                        </div>
+                        <span className="text-[8px] font-mono font-bold bg-gym-accent/5 px-2.5 py-1 rounded-sm border border-gym-accent/15 text-gym-accent uppercase tracking-wider">
+                          Auto Synced
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
+                        {DAY_CONFIG.map((day, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              setNewRoutineCategory(idx);
+                              // Auto name default based on theme
+                              if (!newRoutineName || DAY_CONFIG.some(d => newRoutineName.startsWith(d.name) || newRoutineName.includes("Routine"))) {
+                                setNewRoutineName(`${day.name} Routine`);
+                              }
+                            }}
+                            className={`p-3 rounded border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
+                              newRoutineCategory === idx
+                                ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_15px_rgba(255,231,101,0.12)] scale-[1.01]"
+                                : "bg-black/45 border-white/5 text-white/50 hover:bg-white/[0.02] hover:text-white"
+                            }`}
+                          >
+                            <div className="opacity-85 scale-110">{day.icon}</div>
+                            <span className="text-[9px] font-black uppercase tracking-widest leading-none text-center">
+                              {day.name}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Integrated Muscle Section Suggestion Engine */}
+                    <div className="bg-white/[0.01] border border-gym-accent/20 rounded-md p-5 space-y-4 shadow-[0_4px_25px_rgba(0,0,0,0.5)]">
+                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-gym-accent animate-pulse" />
+                            <h4 className="text-sm font-semibold italic font-serif text-white uppercase tracking-wider">
+                              Sectional Suggestion Engine: {DAY_CONFIG[newRoutineCategory].name}
+                            </h4>
+                          </div>
+                          <p className="text-[10px] text-white/50 max-w-2xl leading-normal uppercase tracking-wide">
+                            We selected exactly <strong>{suggestedExercises.length}</strong> complementary movements to satisfy your request. This guarantees 100% full coverage of <strong>every target muscle section / compartment</strong> list for this focus day.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShuffleTrigger(prev => prev + 1);
+                              setToast({ message: "Suggestions shuffled!", type: "success" });
+                            }}
+                            className="px-4 py-2.5 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer"
+                          >
+                            🔄 Reshuffle
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleLoadSuggestedExercises(suggestedExercises)}
+                            className="px-4 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer shadow-[0_0_12px_rgba(255,231,101,0.2)] font-semibold"
+                          >
+                            ⚡ Load Suggestions (Replace All)
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Horizontal display of suggested exercises */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                        {suggestedExercises.map((ex, i) => {
+                          const isAlreadyAdded = newRoutineExercises.some(r => r.exerciseName.toLowerCase() === ex.name.toLowerCase());
+                          // Nicer pool labels
+                          const poolLabel = ex.pool
+                            .split('_')
+                            .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                            .join(' ');
+
+                          return (
+                            <div 
+                              key={i} 
+                              className={`p-3 rounded border text-left flex flex-col justify-between min-h-[90px] transition-all relative ${
+                                isAlreadyAdded 
+                                  ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400" 
+                                  : "bg-black/50 border-white/5 text-white/90 hover:bg-white/[0.02]"
+                              }`}
+                            >
+                              <div className="min-w-0">
+                                <span className="text-[8px] text-gym-accent font-mono block mb-1 uppercase tracking-wider font-extrabold">{poolLabel}</span>
+                                <p className="text-[10px] font-bold leading-tight line-clamp-2">{ex.name}</p>
+                              </div>
+                              <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between">
+                                {!isAlreadyAdded ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddExercise(ex.name)}
+                                    className="text-[9px] font-bold text-gym-accent hover:text-white uppercase tracking-wider cursor-pointer bg-transparent border-0 p-0"
+                                  >
+                                    + Quick Add
+                                  </button>
+                                ) : (
+                                  <span className="text-[9px] text-emerald-400 font-bold uppercase tracking-wider">✓ Active</span>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -8365,138 +8554,45 @@ export default function App() {
                             </p>
                           </div>
                         ) : (
-                          <div className="space-y-4">
+                          <div className="space-y-2">
                             {newRoutineExercises.map((exItem, exIdx) => (
                               <div
                                 key={exItem.id}
                                 className="bg-black/55 border border-white/10 rounded-sm overflow-hidden"
                               >
                                 {/* Header of block */}
-                                <div className="p-4 bg-white/[0.02] border-b border-white/5 flex items-center justify-between gap-4">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-xs font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/20 px-2 py-0.5 rounded-sm">
+                                <div className="p-4 bg-white/[0.01] flex items-center justify-between gap-4">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-xs font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/20 px-2.5 py-0.5 rounded-sm">
                                       {exIdx + 1}
                                     </span>
-                                    <h5 className="text-sm font-semibold text-white/95 truncate max-w-[250px] sm:max-w-none">
-                                      {exItem.exerciseName}
-                                    </h5>
+                                    <div>
+                                      <h5 className="text-sm font-semibold text-white/95 leading-snug">
+                                        {exItem.exerciseName}
+                                      </h5>
+                                      {/* Muscle subcategory targeting */}
+                                      {(() => {
+                                        const resolvedEx = findExerciseByName(exItem.exerciseName);
+                                        const subcat = resolvedEx?.pool || "custom";
+                                        const subcatLabel = subcat
+                                          .split('_')
+                                          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                                          .join(' ');
+                                        return (
+                                          <span className="inline-block text-[9px] font-mono font-extrabold uppercase tracking-widest text-gym-accent/80 mt-1">
+                                            Target Section: {subcatLabel}
+                                          </span>
+                                        );
+                                      })()}
+                                    </div>
                                   </div>
                                   <button
                                     onClick={() => handleRemoveExercise(exItem.id)}
-                                    className="p-1.5 text-white/30 hover:text-red-400 transition-colors cursor-pointer bg-transparent border-0"
+                                    className="p-1.5 text-white/30 hover:text-rose-400 hover:bg-rose-500/10 rounded-sm transition-all cursor-pointer bg-transparent border-0"
                                     title="Remove exercise"
                                   >
-                                    <Trash2 className="w-4 h-4 text-white/30" />
+                                    <Trash2 className="w-4 h-4" />
                                   </button>
-                                </div>
-
-                                {/* Sets of block */}
-                                <div className="p-4 space-y-2.5">
-                                  {exItem.sets.map((set, setIdx) => (
-                                    <div
-                                      key={setIdx}
-                                      className="flex flex-wrap items-center gap-3 bg-white/[0.01] p-2.5 rounded-sm border border-white/5"
-                                    >
-                                      {/* Set badge */}
-                                      <span className="text-[10px] font-mono font-bold text-white/40 uppercase tracking-wider min-w-[45px]">
-                                        Set {setIdx + 1}
-                                      </span>
-
-                                      {/* Weight input */}
-                                      <div className="flex items-center gap-1.5 min-w-[100px] flex-1">
-                                        <input
-                                          type="number"
-                                          value={set.weight || ""}
-                                          onChange={(e) => {
-                                            const val = Number(e.target.value) || 0;
-                                            setNewRoutineExercises(prev => prev.map(ex => {
-                                              if (ex.id === exItem.id) {
-                                                const next = [...ex.sets];
-                                                next[setIdx] = { ...next[setIdx], weight: val };
-                                                return { ...ex, sets: next };
-                                              }
-                                              return ex;
-                                            }));
-                                          }}
-                                          placeholder="Weight"
-                                          className="w-16 bg-black/60 border border-white/15 focus:border-gym-accent rounded-sm px-2 py-1 text-xs text-center font-medium font-mono focus:outline-none transition-all text-white"
-                                        />
-                                        <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
-                                          {findExerciseByName(exItem.exerciseName)?.pool === "cardio" ? "m" : "kg"}
-                                        </span>
-                                      </div>
-
-                                      {/* Reps input */}
-                                      <div className="flex items-center gap-1.5 min-w-[100px] flex-1">
-                                        <input
-                                          type="number"
-                                          value={set.reps || ""}
-                                          onChange={(e) => {
-                                            const val = Number(e.target.value) || 0;
-                                            setNewRoutineExercises(prev => prev.map(ex => {
-                                              if (ex.id === exItem.id) {
-                                                const next = [...ex.sets];
-                                                next[setIdx] = { ...next[setIdx], reps: val };
-                                                return { ...ex, sets: next };
-                                              }
-                                              return ex;
-                                            }));
-                                          }}
-                                          placeholder="Reps"
-                                          className="w-16 bg-black/60 border border-white/15 focus:border-gym-accent rounded-sm px-2 py-1 text-xs text-center font-medium font-mono focus:outline-none transition-all text-white"
-                                        />
-                                        <span className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
-                                          {findExerciseByName(exItem.exerciseName)?.pool === "cardio" ? "speed" : "reps"}
-                                        </span>
-                                      </div>
-
-                                      {/* Notes input */}
-                                      <div className="flex-1 min-w-[180px]">
-                                        <input
-                                          type="text"
-                                          value={set.notes || ""}
-                                          onChange={(e) => {
-                                            const val = e.target.value;
-                                            setNewRoutineExercises(prev => prev.map(ex => {
-                                              if (ex.id === exItem.id) {
-                                                const next = [...ex.sets];
-                                                next[setIdx] = { ...next[setIdx], notes: val };
-                                                return { ...ex, sets: next };
-                                              }
-                                              return ex;
-                                            }));
-                                          }}
-                                          placeholder="Optional cue (e.g. drop set, stretch focus)"
-                                          className="w-full bg-black/60 border border-white/15 focus:border-gym-accent rounded-sm px-3 py-1 text-xs font-light focus:outline-none transition-all text-white placeholder-white/25"
-                                        />
-                                      </div>
-
-                                      {/* Delete set button */}
-                                      {exItem.sets.length > 1 && (
-                                        <button
-                                          onClick={() => handleRemoveSet(exItem.id, setIdx)}
-                                          className="p-1 text-white/20 hover:text-rose-400 transition-colors cursor-pointer bg-transparent border-0"
-                                          title="Remove set"
-                                        >
-                                          ✕
-                                        </button>
-                                      )}
-                                    </div>
-                                  ))}
-
-                                  {/* Add set trigger row */}
-                                  <div className="flex items-center justify-between pt-1 border-t border-white/5 mt-2">
-                                    <button
-                                      onClick={() => handleAddSet(exItem.id)}
-                                      className="flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-white/10 hover:text-white text-white/70 text-[9px] font-bold uppercase tracking-wider rounded-sm cursor-pointer transition-all border border-white/5"
-                                    >
-                                      <Plus className="w-3 h-3 text-gym-accent animate-none" />
-                                      Add Set
-                                    </button>
-                                    <span className="text-[8px] text-white/30 font-mono">
-                                      {exItem.sets.length} total set(s)
-                                    </span>
-                                  </div>
                                 </div>
                               </div>
                             ))}
