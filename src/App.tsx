@@ -8273,7 +8273,7 @@ export default function App() {
                     </div>
 
                     {/* Routine Info Form */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/[0.01] border border-white/5 p-6 rounded-sm">
+                    <div className="bg-white/[0.01] border border-white/5 p-6 rounded-sm">
                       {/* Name input */}
                       <div className="space-y-2">
                         <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
@@ -8286,26 +8286,6 @@ export default function App() {
                           onChange={(e) => setNewRoutineName(e.target.value)}
                           className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm font-light focus:outline-none transition-all text-white"
                         />
-                      </div>
-
-                      {/* Day category selector */}
-                      <div className="space-y-2">
-                        <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
-                          Day / Focus Category
-                        </label>
-                        <select
-                          value={newRoutineCategory}
-                          onChange={(e) => {
-                            setNewRoutineCategory(Number(e.target.value));
-                          }}
-                          className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm font-medium focus:outline-none transition-all text-white cursor-pointer"
-                        >
-                          {DAY_CONFIG.map((day, idx) => (
-                            <option key={idx} value={idx} className="bg-black text-white">
-                              {day.name} (Day {idx + 1})
-                            </option>
-                          ))}
-                        </select>
                       </div>
                     </div>
 
