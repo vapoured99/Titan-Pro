@@ -9,6 +9,7 @@ export interface Exercise {
   equipmentCategory?: string;
   youtubeId?: string;
   youtubeUrl?: string;
+  secondaryMuscles?: string[];
 }
 
 const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
@@ -2302,4 +2303,59 @@ export const POOLS: Record<string, Exercise[]> = Object.keys(RAW_POOLS).reduce((
   });
   return acc;
 }, {} as Record<string, Exercise[]>);
+
+export const getSecondaryMusclesForExercise = (ex: Exercise): string[] => {
+  if (ex.secondaryMuscles && ex.secondaryMuscles.length > 0) {
+    return ex.secondaryMuscles;
+  }
+  
+  const nameLower = (ex.name || "").toLowerCase();
+  const poolLower = (ex.pool || "").toLowerCase();
+
+  // Handcrafted specific rules as well as fallback mapping
+  if (nameLower.includes("bench press") || nameLower.includes("chest press") || nameLower.includes("push up") || nameLower.includes("dips")) {
+    return ["Triceps", "Shoulders"];
+  }
+  if (nameLower.includes("fly") || nameLower.includes("cable crossover")) {
+    return ["Shoulders"];
+  }
+  if (nameLower.includes("squat") || nameLower.includes("leg press")) {
+    return ["Glutes", "Hamstrings", "Calves", "Core"];
+  }
+  if (nameLower.includes("deadlift") || nameLower.includes("romanian")) {
+    return ["Glutes", "Hamstrings", "Lower Back", "Forearms", "Core"];
+  }
+  if (nameLower.includes("lat pulldown") || nameLower.includes("row") || nameLower.includes("pull up") || nameLower.includes("chin up")) {
+    return ["Biceps", "Forearms", "Rear Delts", "Upper Back"];
+  }
+  if (nameLower.includes("overhead press") || nameLower.includes("shoulder press") || nameLower.includes("military press")) {
+    return ["Triceps", "Upper Chest", "Core"];
+  }
+  if (nameLower.includes("hip thrust")) {
+    return ["Glutes", "Hamstrings", "Core"];
+  }
+  if (nameLower.includes("hip abductor") || nameLower.includes("hip abduction")) {
+    return ["Glutes", "Outer Thighs"];
+  }
+  if (nameLower.includes("hip adductor") || nameLower.includes("hip adduction")) {
+    return ["Inner Thighs", "Glutes"];
+  }
+
+  // General fallback mappings by pool
+  if (poolLower.includes("chest")) return ["Triceps", "Shoulders"];
+  if (poolLower.includes("back") || poolLower === "lats" || poolLower === "rhomboids_traps" || poolLower === "erector_spinae") {
+    return ["Biceps", "Forearms", "Rear Delts"];
+  }
+  if (poolLower.includes("biceps") || poolLower === "brachialis" || poolLower === "forearms") {
+    return ["Forearms"];
+  }
+  if (poolLower.includes("triceps")) return ["Chest", "Shoulders"];
+  if (poolLower.includes("delts") || poolLower === "shoulders") return ["Triceps", "Core"];
+  if (poolLower === "quads" || poolLower === "legs") return ["Glutes", "Hamstrings", "Core"];
+  if (poolLower === "hamstrings") return ["Glutes", "Lower Back"];
+  if (poolLower === "calves") return ["Ankles"];
+  if (poolLower.includes("core") || poolLower === "obliques") return ["Lower Back"];
+  
+  return [];
+};
 

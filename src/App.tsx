@@ -100,7 +100,7 @@ import {
   writeBatch,
   onSnapshot,
 } from "./lib/firebase";
-import { Exercise, POOLS } from "./data/exercises";
+import { Exercise, POOLS, getSecondaryMusclesForExercise } from "./data/exercises";
 import { getProTipsForExercise } from "./data/proTips";
 
 // --- Background Images ---
@@ -1674,6 +1674,37 @@ export default function App() {
       const group = mapPoolToMuscleGroup(pool);
       counts[group] = (counts[group] || 0) + 1;
       total++;
+    });
+    
+    if (total === 0) return [];
+    
+    return Object.entries(counts)
+      .map(([group, count]) => ({
+        group,
+        count,
+        percentage: Math.round((count / total) * 100),
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [selectedRoutine, combinedPools]);
+
+  const selectedRoutineSecondaryMuscleGroups = useMemo(() => {
+    if (!selectedRoutine || !selectedRoutine.sets) return [];
+    
+    const uniqueExs = Array.from(
+      new Set(selectedRoutine.sets.map((s: any) => s.exerciseName))
+    ) as string[];
+    
+    const counts: Record<string, number> = {};
+    let total = 0;
+    
+    uniqueExs.forEach((name) => {
+      const ex = findExerciseByName(name);
+      if (!ex) return;
+      const secondaries = getSecondaryMusclesForExercise(ex);
+      secondaries.forEach((mus) => {
+        counts[mus] = (counts[mus] || 0) + 1;
+        total++;
+      });
     });
     
     if (total === 0) return [];
@@ -9215,6 +9246,58 @@ export default function App() {
                                 </div>
                               ))}
                             </div>
+
+                            {selectedRoutineSecondaryMuscleGroups.length > 0 && (
+                              <div className="pt-6 border-t border-white/5 space-y-3">
+                                <div className="flex items-center gap-1.5">
+                                  <Sliders className="w-3 h-3 text-gym-accent/60" />
+                                  <span className="text-[10px] text-white/50 uppercase tracking-[0.2em] font-bold">
+                                    Secondary & Supportive Muscle Synergy
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                  {selectedRoutineSecondaryMuscleGroups.map((item) => (
+                                    <div
+                                      key={item.group}
+                                      className="bg-white/[0.005] border border-white/5 rounded-sm p-3.5 flex flex-col justify-between hover:bg-white/[0.02] hover:border-white/10 transition-all group/item"
+                                    >
+                                      <div className="flex items-center justify-between mb-2">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                          <span className="text-white/40 group-hover/item:text-gym-accent/60 shrink-0">
+                                            {getMuscleGroupIcon(item.group)}
+                                          </span>
+                                          <span className="text-[9px] text-white/70 font-semibold uppercase tracking-wider truncate">
+                                            {item.group}
+                                          </span>
+                                        </div>
+                                        <span className="text-[8px] text-white/30 font-mono">
+                                          x{item.count}
+                                        </span>
+                                      </div>
+
+                                      <div>
+                                        <div className="flex items-baseline justify-between mb-1">
+                                          <span className="text-[12px] font-bold text-white/90 group-hover/item:text-gym-accent transition-colors font-mono">
+                                            {item.percentage}%
+                                          </span>
+                                          <span className="text-[6px] text-white/20 uppercase tracking-widest font-bold">
+                                            Synergy Contribution
+                                          </span>
+                                        </div>
+                                        <div className="w-full bg-white/5 h-[3px] rounded-sm overflow-hidden font-mono">
+                                          <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${item.percentage}%` }}
+                                            transition={{ duration: 0.8, ease: "easeOut" }}
+                                            className="bg-white/40 h-full rounded-sm"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -10245,21 +10328,7 @@ export default function App() {
                                           height={16}
                                         />
                                       </div>
-                                      {/* Sub-muscle Category Badge */}
-                                      {(() => {
-                                        const resolvedEx = findExerciseByName(ex.name);
-                                        const poolKey = resolvedEx?.pool || ex.pool;
-                                        if (!poolKey) return null;
-                                        const label = poolKey
-                                          .split('_')
-                                          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-                                          .join(' ');
-                                        return (
-                                          <div className="mt-1 text-[9px] font-mono font-bold uppercase tracking-wider text-white/45 bg-white/[0.03] border border-white/5 px-2 py-0.5 rounded-sm inline-block self-start">
-                                            Compartment: <span className="text-gym-accent/80">{label}</span>
-                                          </div>
-                                        );
-                                      })()}
+                                      {/* Sub-muscle Category Badge removed from title header */}
                                     </div>
                                     <div className="flex gap-2">
                                       <button
@@ -10288,7 +10357,24 @@ export default function App() {
                                     </div>
                                   </div>
 
-                                  <div className="flex flex-col gap-3 mt-auto mb-4 bg-white/[0.02] border border-white/[0.04] p-3 rounded-sm w-full">
+                                  <div className="mt-auto flex flex-col w-full">
+                                    {/* Sub-muscle Category Label */}
+                                    {(() => {
+                                      const resolvedEx = findExerciseByName(ex.name);
+                                      const poolKey = resolvedEx?.pool || ex.pool;
+                                      if (!poolKey) return null;
+                                      const label = poolKey
+                                        .split('_')
+                                        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                                        .join(' ');
+                                      return (
+                                        <div className="mb-1.5 text-[9px] font-mono font-bold uppercase tracking-wider text-gym-accent/80">
+                                          {label}
+                                        </div>
+                                      );
+                                    })()}
+
+                                    <div className="flex flex-col gap-3 mb-4 bg-white/[0.02] border border-white/[0.04] p-3 rounded-sm w-full">
                                     {/* Row 1: Weight & Reps side by side */}
                                     <div className="grid grid-cols-2 gap-3">
                                       <div className="flex flex-col">
@@ -10426,6 +10512,7 @@ export default function App() {
                                       Log Set
                                     </button>
                                   </div>
+                                </div>
 
                                   {(() => {
                                     const loggedSetsForThisEx =
@@ -11312,7 +11399,7 @@ export default function App() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-6">
+                        <div className="flex flex-wrap items-center gap-6">
                           <div className="flex flex-col">
                             <span className="text-[8px] text-white/20 uppercase tracking-widest font-black mb-1">
                               Focus Area
@@ -11321,6 +11408,29 @@ export default function App() {
                               {resolvedEx.pool}
                             </span>
                           </div>
+                          {(() => {
+                            const secondaries = getSecondaryMusclesForExercise(resolvedEx);
+                            if (secondaries.length > 0) {
+                              return (
+                                <div className="flex flex-col">
+                                  <span className="text-[8px] text-white/20 uppercase tracking-widest font-black mb-1">
+                                    Synergistic Support
+                                  </span>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {secondaries.map((mus) => (
+                                      <span
+                                        key={mus}
+                                        className="text-[9px] text-white/50 font-bold uppercase tracking-widest border border-white/5 px-2 py-1 rounded-sm bg-white/[0.01]"
+                                      >
+                                        {mus}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
                           <div className="flex flex-col">
                             <span className="text-[8px] text-white/20 uppercase tracking-widest font-black mb-1">
                               Source
