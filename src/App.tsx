@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   ChevronDown,
   Dumbbell,
@@ -47,6 +47,7 @@ import {
   Target,
   Sliders,
   Brain,
+  GripVertical,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -579,7 +580,7 @@ const DAY_CONFIG = [
   {
     label: "4",
     name: "Legs & Core",
-    pools: ["legs", "upper_core", "lower_core", "obliques"],
+    pools: ["quads", "hamstrings", "calves", "upper_core", "lower_core", "obliques"],
     icon: <ArrowDown className="w-5 h-5 text-gym-accent" />,
     bg: "bg-white/[0.03]",
     border: "border-gym-accent/10",
@@ -611,7 +612,7 @@ const calculateCaloriesBurned = (
 ) => {
   if (!sets || sets.length === 0) return 0;
 
-  const bodyweight = userProfile?.bodyweight || 75; // kg
+  const bodyweight = userProfile?.bodyweight || 65; // kg
   const height = userProfile?.height || 175; // cm
   const age = userProfile?.age || 28; // years
   const sex = userProfile?.sex || "male";
@@ -663,8 +664,8 @@ const calculateCaloriesBurned = (
     setsByExercise[s.exerciseName].push(s);
   });
 
-  let totalCalories = 0;
-  const numExercises = Object.keys(setsByExercise).length;
+  let totalActiveCalories = 0;
+  let totalActiveTimeMin = 0;
 
   Object.entries(setsByExercise).forEach(([exName, exSets]) => {
     const ex = findExByName(exName);
@@ -672,37 +673,35 @@ const calculateCaloriesBurned = (
     const isEquipment = ex?.pool === "equipment";
 
     const activeMET = isCardio ? 8.0 : isEquipment ? 6.5 : 5.5;
-    const restMET = 1.5;
 
     if (isCardio) {
       exSets.forEach((s) => {
         const durationMin = s.weight || 0;
         const activeCalPerMin = (activeMET * 3.5 * bodyweight) / 200;
-        totalCalories += durationMin * activeCalPerMin;
+        totalActiveCalories += durationMin * activeCalPerMin;
+        totalActiveTimeMin += durationMin;
       });
     } else {
       exSets.forEach((s) => {
         const reps = s.reps || 0;
         const activeTimeSec = reps * 4;
-        const restTimeSec = 45;
-
         const activeTimeMin = activeTimeSec / 60;
-        const restTimeMin = restTimeSec / 60;
-
         const activeCalPerMin = (activeMET * 3.5 * bodyweight) / 200;
-        const restCalPerMin = (restMET * 3.5 * bodyweight) / 200;
 
-        totalCalories +=
-          activeTimeMin * activeCalPerMin + restTimeMin * restCalPerMin;
+        totalActiveCalories += activeTimeMin * activeCalPerMin;
+        totalActiveTimeMin += activeTimeMin;
       });
     }
   });
 
-  if (numExercises > 1) {
-    const transitionMin = ((numExercises - 1) * 90) / 60;
-    const transitionCalPerMin = (1.3 * 3.5 * bodyweight) / 200;
-    totalCalories += transitionMin * transitionCalPerMin;
-  }
+  // Spread the remainder of the 90-minute session as rest/baseline recovery time
+  const totalSessionMin = 90;
+  const restTimeMin = Math.max(0, totalSessionMin - totalActiveTimeMin);
+  const restMET = 1.5;
+  const restCalPerMin = (restMET * 3.5 * bodyweight) / 200;
+  const restCalories = restTimeMin * restCalPerMin;
+
+  const totalCalories = totalActiveCalories + restCalories;
 
   return Math.round(totalCalories);
 };
@@ -1169,6 +1168,7 @@ export default function App() {
     exercise: Exercise;
   } | null>(null);
   const [swapSearch, setSwapSearch] = useState("");
+  const hasConsolidatedRef = useRef(false);
 
   // --- Custom Routine Builder States ---
   const [isCreatingRoutine, setIsCreatingRoutine] = useState(false);
@@ -1179,6 +1179,7 @@ export default function App() {
     exerciseName: string;
     sets: { weight: number; reps: number; notes: string }[];
   }[]>([]);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [builderSearch, setBuilderSearch] = useState("");
   const [newRoutinePeriodization, setNewRoutinePeriodization] = useState<"hypertrophy" | "strength" | "deload">("hypertrophy");
   const [shuffleTrigger, setShuffleTrigger] = useState(0);
@@ -1448,7 +1449,7 @@ export default function App() {
         }
       });
     });
-    return list;
+    return [...list].sort((a, b) => a.name.localeCompare(b.name));
   };
 
   const suggestedExercises = useMemo(() => {
@@ -1543,6 +1544,10 @@ export default function App() {
   }, [toast]);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const profileRef = useRef<UserProfile | null>(null);
+  useEffect(() => {
+    profileRef.current = profile;
+  }, [profile]);
   const [currentThemeId, setCurrentThemeId] = useState<string>(() => {
     return localStorage.getItem("gym-theme-id") || "default";
   });
@@ -1773,6 +1778,7 @@ export default function App() {
     setArchivedWorkouts([]);
     setRoutines([]);
     setProfile(null);
+    hasConsolidatedRef.current = false;
     if (!currentUser) {
       const saved = localStorage.getItem("gym_custom_exercises");
       if (saved) {
@@ -1888,9 +1894,104 @@ export default function App() {
         orderBy("timestamp", "desc"),
       ),
       (snapshot) => {
-        const workouts: any[] = [];
-        snapshot.forEach((d) => workouts.push({ id: d.id, ...d.data() }));
-        setArchivedWorkouts(workouts);
+        const rawWorkouts: any[] = [];
+        snapshot.forEach((d) => rawWorkouts.push({ id: d.id, ...d.data() }));
+
+        const workoutsByDate: Record<string, any[]> = {};
+        rawWorkouts.forEach((w) => {
+          const dateStr = w.date || (w.timestamp ? new Date(w.timestamp.seconds * 1000).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]);
+          if (!workoutsByDate[dateStr]) {
+            workoutsByDate[dateStr] = [];
+          }
+          workoutsByDate[dateStr].push(w);
+        });
+
+        const mergedWorkouts: any[] = [];
+        const toDeleteIds: string[] = [];
+        const toUpdate: { id: string; data: any }[] = [];
+
+        Object.entries(workoutsByDate).forEach(([dateStr, list]) => {
+          if (list.length <= 1) {
+            const single = { ...list[0] };
+            const recomputed = calculateCaloriesBurned(single.sets || [], profileRef.current);
+            if (single.id && single.estimatedCalories !== recomputed) {
+              single.estimatedCalories = recomputed;
+              toUpdate.push({ id: single.id, data: { estimatedCalories: recomputed } });
+            }
+            mergedWorkouts.push(single);
+            return;
+          }
+
+          // Sort so the oldest session keeps the ID
+          list.sort((a, b) => {
+            const timeA = a.timestamp?.seconds || 0;
+            const timeB = b.timestamp?.seconds || 0;
+            return timeA - timeB;
+          });
+
+          const primary = list[0];
+          const duplicates = list.slice(1);
+
+          // Combine all sets seamlessly
+          const allSets = list.flatMap((w) => w.sets || []);
+
+          // Recalculate total volume excluding cardio
+          const totalVolume = allSets.reduce((sum, s) => {
+            const searchName = s.exerciseName?.trim().toLowerCase();
+            let isCardio = false;
+            for (const pool of Object.values(POOLS)) {
+              const found = pool.find(
+                (e) => e.name.trim().toLowerCase() === searchName
+              );
+              if (found && found.pool === "cardio") {
+                isCardio = true;
+                break;
+              }
+            }
+            return sum + (isCardio ? 0 : s.weight * s.reps);
+          }, 0);
+
+          // Combine estimated calories burned
+          const newCalories = calculateCaloriesBurned(allSets, profileRef.current);
+
+          const mergedData = {
+            ...primary,
+            sets: allSets,
+            totalVolume,
+            exercisesCount: new Set(allSets.map((s) => s.exerciseName)).size,
+            totalSets: allSets.length,
+            estimatedCalories: newCalories,
+          };
+
+          mergedWorkouts.push(mergedData);
+          toUpdate.push({ id: primary.id, data: mergedData });
+          duplicates.forEach((dup) => toDeleteIds.push(dup.id));
+        });
+
+        // Persist consolidated workouts in a single db write transaction
+        if (toUpdate.length > 0 || toDeleteIds.length > 0) {
+          const batch = writeBatch(db);
+          toUpdate.forEach((item) => {
+            const docRef = doc(db, `users/${currentUser.uid}/workouts/${item.id}`);
+            batch.set(docRef, item.data, { merge: true });
+          });
+          toDeleteIds.forEach((id) => {
+            const docRef = doc(db, `users/${currentUser.uid}/workouts/${id}`);
+            batch.delete(docRef);
+          });
+          batch.commit().catch((err) => {
+            console.error("Auto session merge write failed:", err);
+          });
+        }
+
+        // Sort in descending order to keep recent workouts at the top of lists/charts
+        mergedWorkouts.sort((a, b) => {
+          const timeA = a.timestamp?.seconds || 0;
+          const timeB = b.timestamp?.seconds || 0;
+          return timeB - timeA;
+        });
+
+        setArchivedWorkouts(mergedWorkouts);
       },
       (err) => console.error("Workouts listener error:", err),
     );
@@ -2035,6 +2136,104 @@ export default function App() {
       setExpandedLibrarySections(newState);
     }
   }, [searchQuery]);
+
+  // Automatically consolidate existing archived workouts with matching duplicate dates
+  useEffect(() => {
+    if (!currentUser || archivedWorkouts.length === 0) {
+      return;
+    }
+
+    if (hasConsolidatedRef.current) return;
+
+    // Find duplicates based on workout 'date'
+    const dateGroups: Record<string, any[]> = {};
+    archivedWorkouts.forEach((w) => {
+      if (w.date) {
+        if (!dateGroups[w.date]) dateGroups[w.date] = [];
+        dateGroups[w.date].push(w);
+      }
+    });
+
+    const duplicates = Object.entries(dateGroups).filter(([_, list]) => list.length > 1);
+
+    if (duplicates.length > 0) {
+      hasConsolidatedRef.current = true; // prevent multiple execution triggers
+
+      const mergeAllDuplicates = async () => {
+        try {
+          const batch = writeBatch(db);
+          let mergedAny = false;
+
+          for (const [date, list] of duplicates) {
+            // Keep the first document as master
+            const master = list[0];
+            const others = list.slice(1);
+
+            let combinedSets = [...(master.sets || [])];
+            let extraCalories = 0;
+
+            others.forEach((other) => {
+              combinedSets = [...combinedSets, ...(other.sets || [])];
+              extraCalories += other.estimatedCalories || 0;
+            });
+
+            // Recalculate totalVolume
+            const totalVolume = combinedSets.reduce((sum, s) => {
+              const searchName = s.exerciseName?.trim().toLowerCase();
+              let isCardio = false;
+              for (const pool of Object.values(combinedPools)) {
+                const found = pool.find(
+                  (e) => e.name.trim().toLowerCase() === searchName,
+                );
+                if (found && found.pool === "cardio") {
+                  isCardio = true;
+                  break;
+                }
+              }
+              return sum + (isCardio ? 0 : s.weight * s.reps);
+            }, 0);
+
+            const estimatedCalories = (master.estimatedCalories || 0) + extraCalories;
+
+            // Updated data for the master workout document
+            const masterRef = doc(db, `users/${currentUser.uid}/workouts/${master.id}`);
+            batch.set(
+              masterRef,
+              {
+                sets: combinedSets,
+                totalVolume,
+                exercisesCount: new Set(combinedSets.map((s) => s.exerciseName)).size,
+                totalSets: combinedSets.length,
+                estimatedCalories,
+              },
+              { merge: true }
+            );
+
+            // Delete duplicates
+            others.forEach((other) => {
+              const otherRef = doc(db, `users/${currentUser.uid}/workouts/${other.id}`);
+              batch.delete(otherRef);
+            });
+
+            mergedAny = true;
+          }
+
+          if (mergedAny) {
+            await batch.commit();
+            setToast({
+              message: "Consolidated duplicate same-day workout logs securely in cloud archive!",
+              type: "success",
+            });
+            setTimeout(() => setToast(null), 3500);
+          }
+        } catch (err) {
+          console.error("Error background consolidating duplicate workouts:", err);
+        }
+      };
+
+      mergeAllDuplicates();
+    }
+  }, [archivedWorkouts, currentUser]);
 
   const getVolumeData = () => {
     if (archivedWorkouts.length === 0) return [];
@@ -2558,13 +2757,30 @@ export default function App() {
       return "front_delts";
     }
     if (
+      lowerExName.includes("calf") ||
+      lowerExName.includes("calves") ||
+      lowerExName.includes("heel raise")
+    ) {
+      return "calves";
+    }
+    if (
+      lowerExName.includes("hamstring") ||
+      lowerExName.includes("leg curl") ||
+      lowerExName.includes("deadlift") ||
+      lowerExName.includes("rdl") ||
+      lowerExName.includes("posterior")
+    ) {
+      return "hamstrings";
+    }
+    if (
       lowerExName.includes("squat") ||
       lowerExName.includes("leg press") ||
       lowerExName.includes("lunge") ||
       lowerExName.includes("extensions") ||
-      lowerExName.includes("quad")
+      lowerExName.includes("quad") ||
+      lowerExName.includes("leg")
     ) {
-      return "legs";
+      return "quads";
     }
     if (
       lowerExName.includes("oblique") ||
@@ -3036,7 +3252,15 @@ export default function App() {
       );
       const targetDate = dates[0] || new Date().toISOString().split("T")[0];
 
-      const totalVolume = sessionSets.reduce((sum, s) => {
+      const existingWorkoutForDay = archivedWorkouts.find(
+        (w) => w.date === targetDate
+      );
+
+      const combinedSets = existingWorkoutForDay
+        ? [...(existingWorkoutForDay.sets || []), ...sessionSets]
+        : sessionSets;
+
+      const totalVolume = combinedSets.reduce((sum, s) => {
         const searchName = s.exerciseName?.trim().toLowerCase();
         let isCardio = false;
         for (const pool of Object.values(combinedPools)) {
@@ -3050,19 +3274,21 @@ export default function App() {
         }
         return sum + (isCardio ? 0 : s.weight * s.reps);
       }, 0);
-      const workoutRef = doc(
-        collection(db, `users/${currentUser.uid}/workouts`),
-      );
 
-      const estimatedCalories = calculateCaloriesBurned(sessionSets, profile);
+      const workoutRef = existingWorkoutForDay
+        ? doc(db, `users/${currentUser.uid}/workouts/${existingWorkoutForDay.id}`)
+        : doc(collection(db, `users/${currentUser.uid}/workouts`));
+
+      const newCalories = calculateCaloriesBurned(sessionSets, profile);
+      const estimatedCalories = (existingWorkoutForDay ? (existingWorkoutForDay.estimatedCalories || 0) : 0) + newCalories;
 
       const workoutData = {
         date: targetDate,
-        timestamp: serverTimestamp(),
-        sets: sessionSets,
+        timestamp: existingWorkoutForDay ? (existingWorkoutForDay.timestamp || serverTimestamp()) : serverTimestamp(),
+        sets: combinedSets,
         totalVolume,
-        exercisesCount: new Set(sessionSets.map((s) => s.exerciseName)).size,
-        totalSets: sessionSets.length,
+        exercisesCount: new Set(combinedSets.map((s) => s.exerciseName)).size,
+        totalSets: combinedSets.length,
         estimatedCalories,
       };
 
@@ -3143,7 +3369,11 @@ export default function App() {
 
       // sessionSets will be cleared via onSnapshot
       setSelectedWorkoutId(workoutRef.id);
-      alert(`Workout session from ${targetDate} captured and archived!`);
+      if (existingWorkoutForDay) {
+        alert(`Workout session from ${targetDate} appended and merged with the existing session! Calories combined!`);
+      } else {
+        alert(`Workout session from ${targetDate} captured and archived!`);
+      }
     } catch (error) {
       handleFirestoreError(
         error,
@@ -3347,6 +3577,52 @@ export default function App() {
     setNewRoutineExercises((prev) => prev.filter((ex) => ex.id !== id));
   };
 
+  const handleMoveExerciseUp = (index: number) => {
+    if (index === 0) return;
+    setNewRoutineExercises((prev) => {
+      const next = [...prev];
+      const temp = next[index];
+      next[index] = next[index - 1];
+      next[index - 1] = temp;
+      return next;
+    });
+  };
+
+  const handleMoveExerciseDown = (index: number) => {
+    if (index === newRoutineExercises.length - 1) return;
+    setNewRoutineExercises((prev) => {
+      const next = [...prev];
+      const temp = next[index];
+      next[index] = next[index + 1];
+      next[index + 1] = temp;
+      return next;
+    });
+  };
+
+  const handleRoutineExDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData("text/plain", index.toString());
+    setDraggedIdx(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleRoutineExDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+  };
+
+  const handleRoutineExDrop = (e: React.DragEvent, dIndex: number) => {
+    e.preventDefault();
+    const sIndex = Number(e.dataTransfer.getData("text/plain"));
+    if (isNaN(sIndex) || sIndex === dIndex) return;
+
+    setNewRoutineExercises((prev) => {
+      const next = [...prev];
+      const [removed] = next.splice(sIndex, 1);
+      next.splice(dIndex, 0, removed);
+      return next;
+    });
+    setDraggedIdx(null);
+  };
+
   const handleAddSet = (exId: string) => {
     setNewRoutineExercises((prev) =>
       prev.map((ex) => {
@@ -3380,6 +3656,51 @@ export default function App() {
         return ex;
       })
     );
+  };
+
+  const handlePreloadToBuilder = (routine: any) => {
+    if (!routine) return;
+    setNewRoutineName(`${routine.name} Tweak`);
+    setNewRoutineCategory(routine.categoryIndex !== undefined ? routine.categoryIndex : 0);
+    
+    const rawPeriod = routine.periodization;
+    const period: "hypertrophy" | "strength" | "deload" =
+      rawPeriod === "strength" || rawPeriod === "deload" || rawPeriod === "hypertrophy"
+        ? rawPeriod
+        : "hypertrophy";
+    setNewRoutinePeriodization(period);
+    
+    // Group flat sets by exerciseName
+    const grouped: Record<string, {
+      id: string;
+      exerciseName: string;
+      sets: { weight: number; reps: number; notes: string }[];
+    }> = {};
+
+    const sets = routine.sets || [];
+    sets.forEach((s: any) => {
+      const exName = s.exerciseName || "Exercise";
+      if (!grouped[exName]) {
+        grouped[exName] = {
+          id: Math.random().toString(36).substring(2, 9),
+          exerciseName: exName,
+          sets: [],
+        };
+      }
+      grouped[exName].sets.push({
+        weight: s.weight !== undefined ? Number(s.weight) : 20,
+        reps: s.reps !== undefined ? Number(s.reps) : 10,
+        notes: s.notes || "",
+      });
+    });
+
+    setNewRoutineExercises(Object.values(grouped));
+    setIsCreatingRoutine(true);
+    setBuilderSearch("");
+    setToast({
+      message: `Preloaded "${routine.name}" into custom builder! Make your modifications now.`,
+      type: "success",
+    });
   };
 
   const handleLoadRoutineToActiveSession = async (routine: any) => {
@@ -4180,13 +4501,10 @@ export default function App() {
                 const xpPercentage = Math.min(100, (xp / xpNeeded) * 100);
 
                 const getWorkoutCalories = (w: any) => {
-                  if (
-                    w.estimatedCalories !== undefined &&
-                    w.estimatedCalories > 0
-                  ) {
-                    return w.estimatedCalories;
+                  if (w.sets && w.sets.length > 0) {
+                    return calculateCaloriesBurned(w.sets, profile);
                   }
-                  return calculateCaloriesBurned(w.sets || [], profile);
+                  return w.estimatedCalories || w.caloriesBurned || 0;
                 };
 
                 const dailyMapConsole: Record<
@@ -5009,6 +5327,11 @@ export default function App() {
                           (combinedPools["long_triceps"]?.length || 0) +
                           (combinedPools["lateral_triceps"]?.length || 0) +
                           (combinedPools["medial_triceps"]?.length || 0);
+                      } else if (sec.key === "legs") {
+                        listCount =
+                          (combinedPools["quads"]?.length || 0) +
+                          (combinedPools["hamstrings"]?.length || 0) +
+                          (combinedPools["calves"]?.length || 0);
                       } else if (sec.key === "core") {
                         listCount =
                           (combinedPools["upper_core"]?.length || 0) +
@@ -5139,6 +5462,12 @@ export default function App() {
                         ...(combinedPools["lateral_triceps"] || []),
                         ...(combinedPools["medial_triceps"] || []),
                       ];
+                    } else if (catKey === "legs") {
+                      list = [
+                        ...(combinedPools["quads"] || []),
+                        ...(combinedPools["hamstrings"] || []),
+                        ...(combinedPools["calves"] || []),
+                      ];
                     } else if (catKey === "core") {
                       list = [
                         ...(combinedPools["upper_core"] || []),
@@ -5152,19 +5481,21 @@ export default function App() {
                     return {
                       key: catKey,
                       title: catKey.charAt(0).toUpperCase() + catKey.slice(1),
-                      list: list.filter(
-                        (ex) =>
-                          ex.name
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase()) ||
-                          ex.pool
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase()) ||
-                          (ex.category &&
-                            ex.category
+                      list: list
+                        .filter(
+                          (ex) =>
+                            ex.name
                               .toLowerCase()
-                              .includes(searchQuery.toLowerCase())),
-                      ),
+                              .includes(searchQuery.toLowerCase()) ||
+                            ex.pool
+                              .toLowerCase()
+                              .includes(searchQuery.toLowerCase()) ||
+                            (ex.category &&
+                              ex.category
+                                .toLowerCase()
+                                .includes(searchQuery.toLowerCase())),
+                        )
+                        .sort((a, b) => a.name.localeCompare(b.name)),
                     };
                   });
 
@@ -7426,16 +7757,10 @@ export default function App() {
                         <div className="px-8 pb-10 pt-4">
                           {(() => {
                             const getWorkoutCalories = (w: any) => {
-                              if (
-                                w.estimatedCalories !== undefined &&
-                                w.estimatedCalories > 0
-                              ) {
-                                return w.estimatedCalories;
+                              if (w.sets && w.sets.length > 0) {
+                                return calculateCaloriesBurned(w.sets, profile);
                               }
-                              return calculateCaloriesBurned(
-                                w.sets || [],
-                                profile,
-                              );
+                              return w.estimatedCalories || w.caloriesBurned || 0;
                             };
 
                             // Aggregate total and daily
@@ -8360,18 +8685,47 @@ export default function App() {
 
                     {/* Routine Info Form */}
                     <div className="bg-white/[0.01] border border-white/5 p-6 rounded-sm">
-                      {/* Name input */}
-                      <div className="space-y-2">
-                        <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
-                          Routine Name
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. Savage Chest & Arms, Powerhouse Legs..."
-                          value={newRoutineName}
-                          onChange={(e) => setNewRoutineName(e.target.value)}
-                          className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm font-light focus:outline-none transition-all text-white"
-                        />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Name input */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
+                            Routine Name
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Savage Chest & Arms, Powerhouse Legs..."
+                            value={newRoutineName}
+                            onChange={(e) => setNewRoutineName(e.target.value)}
+                            className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm font-light focus:outline-none transition-all text-white"
+                          />
+                        </div>
+
+                        {/* Preload Dropdown */}
+                        {routines.length > 0 && (
+                          <div className="space-y-2">
+                            <label className="text-[10px] text-gym-accent uppercase tracking-widest font-bold block flex items-center gap-1.5 animate-none">
+                              <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                              Preload Stored Routine (Optional)
+                            </label>
+                            <select
+                              onChange={(e) => {
+                                const selected = routines.find((r) => r.id === e.target.value);
+                                if (selected) {
+                                  handlePreloadToBuilder(selected);
+                                }
+                              }}
+                              defaultValue=""
+                              className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white/80 cursor-pointer font-light"
+                            >
+                              <option value="" disabled>-- Select a routine to preload & tweak --</option>
+                              {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
+                                <option key={r.id || ri} value={r.id}>
+                                  {r.name} ({DAY_CONFIG[r.categoryIndex]?.name || "Muscle Focus"})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -8624,16 +8978,32 @@ export default function App() {
                             {newRoutineExercises.map((exItem, exIdx) => (
                               <div
                                 key={exItem.id}
-                                className="bg-black/55 border border-white/10 rounded-sm overflow-hidden"
+                                draggable
+                                onDragStart={(e) => handleRoutineExDragStart(e, exIdx)}
+                                onDragOver={(e) => handleRoutineExDragOver(e, exIdx)}
+                                onDrop={(e) => handleRoutineExDrop(e, exIdx)}
+                                className={`transition-all rounded-sm overflow-hidden border ${
+                                  draggedIdx === exIdx
+                                    ? "opacity-35 bg-gym-accent/5 border-gym-accent/40 border-dashed animate-pulse scale-[0.99]"
+                                    : "bg-black/55 border-white/10 hover:border-white/20 hover:bg-black/70"
+                                }`}
                               >
                                 {/* Header of block */}
                                 <div className="p-4 bg-white/[0.01] flex items-center justify-between gap-4">
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-xs font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/20 px-2.5 py-0.5 rounded-sm">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    {/* Grip Drag Handle */}
+                                    <div 
+                                      className="cursor-grab active:cursor-grabbing p-1.5 text-white/20 hover:text-gym-accent transition-colors shrink-0 rounded-sm hover:bg-white/5" 
+                                      title="Drag and drop to reorder exercise"
+                                    >
+                                      <GripVertical className="w-3.5 h-3.5" />
+                                    </div>
+
+                                    <span className="text-xs font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/20 px-2.5 py-0.5 rounded-sm shrink-0">
                                       {exIdx + 1}
                                     </span>
-                                    <div>
-                                      <h5 className="text-sm font-semibold text-white/95 leading-snug">
+                                    <div className="min-w-0">
+                                      <h5 className="text-sm font-semibold text-white/95 leading-snug truncate">
                                         {exItem.exerciseName}
                                       </h5>
                                       {/* Muscle subcategory targeting */}
@@ -8652,13 +9022,50 @@ export default function App() {
                                       })()}
                                     </div>
                                   </div>
-                                  <button
-                                    onClick={() => handleRemoveExercise(exItem.id)}
-                                    className="p-1.5 text-white/30 hover:text-rose-400 hover:bg-rose-500/10 rounded-sm transition-all cursor-pointer bg-transparent border-0"
-                                    title="Remove exercise"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
+
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    {/* Move Up */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveExerciseUp(exIdx)}
+                                      disabled={exIdx === 0}
+                                      className={`p-1.5 rounded-sm transition-all border border-transparent ${
+                                        exIdx === 0
+                                          ? "text-white/10 cursor-not-allowed"
+                                          : "text-white/40 hover:text-gym-accent hover:bg-white/5 cursor-pointer"
+                                      }`}
+                                      title="Move Up"
+                                    >
+                                      <ArrowUp className="w-3.5 h-3.5" />
+                                    </button>
+
+                                    {/* Move Down */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveExerciseDown(exIdx)}
+                                      disabled={exIdx === newRoutineExercises.length - 1}
+                                      className={`p-1.5 rounded-sm transition-all border border-transparent ${
+                                        exIdx === newRoutineExercises.length - 1
+                                          ? "text-white/10 cursor-not-allowed"
+                                          : "text-white/40 hover:text-gym-accent hover:bg-white/5 cursor-pointer"
+                                      }`}
+                                      title="Move Down"
+                                    >
+                                      <ArrowDown className="w-3.5 h-3.5" />
+                                    </button>
+
+                                    <div className="w-px h-4 bg-white/10 mx-1 shrink-0" />
+
+                                    {/* Delete/Remove */}
+                                    <button
+                                      type="button"
+                                      onClick={() => handleRemoveExercise(exItem.id)}
+                                      className="p-1.5 text-white/30 hover:text-rose-400 hover:bg-rose-500/10 rounded-sm transition-all cursor-pointer bg-transparent border-0"
+                                      title="Remove exercise"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             ))}
@@ -8735,7 +9142,7 @@ export default function App() {
                               onChange={(e) => setSelectedRoutineId(e.target.value)}
                               className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-[11px] font-bold uppercase tracking-wider rounded-sm px-3.5 py-2 focus:outline-none transition-all cursor-pointer min-w-[180px] max-w-[280px]"
                             >
-                              {routines.map((r, ri) => (
+                              {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
                                 <option key={r.id || ri} value={r.id}>
                                   {r.name}
                                 </option>
@@ -8969,10 +9376,20 @@ export default function App() {
                                                   routine,
                                                 );
                                               }}
-                                              className="px-3 py-1.5 bg-gym-accent/10 border border-gym-accent/30 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] font-bold uppercase tracking-wider transition-all rounded-sm cursor-pointer"
+                                              className="px-2.5 py-1.5 bg-gym-accent/15 border border-gym-accent/25 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] font-bold uppercase tracking-wider transition-all rounded-sm cursor-pointer"
                                               title="Load sets into today's active session"
                                             >
                                               Use Routine
+                                            </button>
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handlePreloadToBuilder(routine);
+                                              }}
+                                              className="px-2.5 py-1.5 bg-white/5 border border-white/10 hover:border-gym-accent/40 hover:text-gym-accent text-white/70 text-[9px] font-bold uppercase tracking-wider transition-all rounded-sm cursor-pointer whitespace-nowrap"
+                                              title="Tweak, edit, or adjust this routine in custom builder"
+                                            >
+                                              Modify & Tweak
                                             </button>
                                             <button
                                               onClick={(e) => {
@@ -10645,7 +11062,19 @@ export default function App() {
                                           ? "Upper Abs"
                                           : poolKey === "lower_core"
                                             ? "Lower Abs"
-                                            : poolKey === "obliques"
+                                            : poolKey === "quads"
+                                           ? "Quads"
+                                         : poolKey === "hamstrings"
+                                           ? "Hamstrings"
+                                         : poolKey === "calves"
+                                           ? "Calves"
+                                         : poolKey === "quads"
+                                           ? "Quads"
+                                         : poolKey === "hamstrings"
+                                           ? "Hamstrings"
+                                         : poolKey === "calves"
+                                           ? "Calves"
+                                         : poolKey === "obliques"
                                               ? "Obliques"
                                               : poolKey === "upper_chest"
                                                 ? "Upper Chest"
@@ -11083,9 +11512,9 @@ export default function App() {
                 );
               });
 
-              const filteredAlternatives = alternatives.filter((alt) =>
-                alt.name.toLowerCase().includes(swapSearch.toLowerCase())
-              );
+              const filteredAlternatives = alternatives
+                .filter((alt) => alt.name.toLowerCase().includes(swapSearch.toLowerCase()))
+                .sort((a, b) => a.name.localeCompare(b.name));
 
               const formattedCategoryName = poolKey
                 ? poolKey
@@ -11889,16 +12318,10 @@ export default function App() {
                                   <AreaChart
                                     data={(() => {
                                       const getWorkoutCalories = (w: any) => {
-                                        if (
-                                          w.estimatedCalories !== undefined &&
-                                          w.estimatedCalories > 0
-                                        ) {
-                                          return w.estimatedCalories;
+                                        if (w.sets && w.sets.length > 0) {
+                                          return calculateCaloriesBurned(w.sets, profile);
                                         }
-                                        return calculateCaloriesBurned(
-                                          w.sets || [],
-                                          profile,
-                                        );
+                                        return w.estimatedCalories || w.caloriesBurned || 0;
                                       };
 
                                       const dailyMap: Record<

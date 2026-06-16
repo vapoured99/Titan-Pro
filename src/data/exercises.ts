@@ -1,7 +1,7 @@
 export interface Exercise {
   name: string;
   icon: string;
-  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps' | 'lats' | 'rhomboids_traps' | 'erector_spinae';
+  pool: 'chest' | 'back' | 'shoulders' | 'legs' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps' | 'lats' | 'rhomboids_traps' | 'erector_spinae' | 'quads' | 'hamstrings' | 'calves';
   instructions?: string[];
   muscleGroup?: 'chest' | 'back' | 'shoulders' | 'quads' | 'hamstrings' | 'calves' | 'glutes' | 'biceps' | 'triceps' | 'core' | 'cardio' | 'equipment' | 'forearms' | 'upper_back' | 'lower_back' | 'front_delts' | 'side_delts' | 'rear_delts' | 'upper_core' | 'lower_core' | 'obliques' | 'upper_chest' | 'middle_chest' | 'lower_chest' | 'long_biceps' | 'short_biceps' | 'brachialis' | 'long_triceps' | 'lateral_triceps' | 'medial_triceps' | 'lats' | 'rhomboids_traps' | 'erector_spinae';
   legRegion?: 'upper' | 'lower';
@@ -668,15 +668,15 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Machine Shoulder Press", 
+      name: "Overhead Press", 
       icon: "ArrowUpCircle", 
       pool: "front_delts",
       instructions: [
-        "Another variant of the machine shoulder press, often with a different grip.",
-        "Follow the same pressing motion as the standard machine press.",
-        "Adjust the weight to a challenging but manageable level.",
-        "Maintain a steady tempo for both the lift and the lower.",
-        "Focus on the contraction of the deltoids."
+        "Set the barbell at shoulder height on the rack. Grip it with hands slightly wider than shoulder-width apart.",
+        "Unrack the barbell, bracing your chest, core, and glutes. Keep your forearms completely vertical.",
+        "Take a deep breath, tuck your chin back slightly, and press the bar straight overhead by extending your arms.",
+        "Push your head forward slightly once the bar clears your face, locking out your arms at the top of the movement.",
+        "Lower the barbell back to the start position with control at the collarbone/upper chest area."
       ]
     }
   ],
@@ -732,11 +732,11 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     }
   ],
-  legs: [
+  quads: [
     { 
       name: "Barbell Back Squat", 
       icon: "ArrowDown", 
-      pool: "legs",
+      pool: "quads",
       muscleGroup: "quads",
       legRegion: "upper",
       instructions: [
@@ -750,7 +750,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Bulgarian Split Squats", 
       icon: "Flame", 
-      pool: "legs",
+      pool: "quads",
       muscleGroup: "quads",
       legRegion: "upper",
       instructions: [
@@ -762,23 +762,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Conventional Deadlift", 
-      icon: "ArrowUp", 
-      pool: "legs",
-      muscleGroup: "glutes",
-      legRegion: "upper",
-      instructions: [
-        "Stand with your feet hip-width apart and the barbell over the middle of your feet.",
-        "Hinge at your hips and grip the bar with a flat back and shins touching the bar.",
-        "Drive through your legs to lift the bar, keeping it close to your shins throughout.",
-        "Stand tall at the top, locking out your hips and knees.",
-        "Slowly lower the bar by hinging at the hips and then bending your knees once past the thighs."
-      ]
-    },
-    { 
       name: "Goblet Squat", 
       icon: "ArrowDown", 
-      pool: "legs",
+      pool: "quads",
       muscleGroup: "quads",
       legRegion: "upper",
       instructions: [
@@ -792,7 +778,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Hack Squat", 
       icon: "ArrowDown", 
-      pool: "legs",
+      pool: "quads",
       muscleGroup: "quads",
       legRegion: "upper",
       instructions: [
@@ -806,7 +792,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Leg Extensions", 
       icon: "ArrowUp", 
-      pool: "legs",
+      pool: "quads",
       muscleGroup: "quads",
       legRegion: "upper",
       instructions: [
@@ -820,7 +806,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Lunges", 
       icon: "Flame", 
-      pool: "legs",
+      pool: "quads",
       muscleGroup: "quads",
       legRegion: "upper",
       instructions: [
@@ -832,9 +818,39 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
+      name: "Seated Leg Press", 
+      icon: "ArrowDown", 
+      pool: "quads",
+      muscleGroup: "quads",
+      legRegion: "upper",
+      instructions: [
+        "Sit in the leg press machine and place your feet shoulder-width apart on the platform.",
+        "Lower the platform toward your chest by bending your knees until they are at a 90-degree angle.",
+        "Push the platform away using your heels, but do not lock out your knees at the top.",
+        "Keep your back and head pressed firmly against the seat throughout the movement.",
+        "Maintain control as you return to the starting position."
+      ]
+    }
+  ],
+  hamstrings: [
+    { 
+      name: "Conventional Deadlift", 
+      icon: "ArrowUp", 
+      pool: "hamstrings",
+      muscleGroup: "glutes",
+      legRegion: "upper",
+      instructions: [
+        "Stand with your feet hip-width apart and the barbell over the middle of your feet.",
+        "Hinge at your hips and grip the bar with a flat back and shins touching the bar.",
+        "Drive through your legs to lift the bar, keeping it close to your shins throughout.",
+        "Stand tall at the top, locking out your hips and knees.",
+        "Slowly lower the bar by hinging at the hips and then bending your knees once past the thighs."
+      ]
+    },
+    { 
       name: "Lying Hamstring Curl", 
       icon: "ArrowDown", 
-      pool: "legs",
+      pool: "hamstrings",
       muscleGroup: "hamstrings",
       legRegion: "upper",
       instructions: [
@@ -848,7 +864,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Romanian Deadlift", 
       icon: "ArrowUp", 
-      pool: "legs",
+      pool: "hamstrings",
       muscleGroup: "hamstrings",
       legRegion: "upper",
       instructions: [
@@ -860,23 +876,9 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Seated Leg Press", 
-      icon: "ArrowDown", 
-      pool: "legs",
-      muscleGroup: "quads",
-      legRegion: "upper",
-      instructions: [
-        "Sit in the leg press machine and place your feet shoulder-width apart on the platform.",
-        "Lower the platform toward your chest by bending your knees until they are at a 90-degree angle.",
-        "Push the platform away using your heels, but do not lock out your knees at the top.",
-        "Keep your back and head pressed firmly against the seat throughout the movement.",
-        "Maintain control as you return to the starting position."
-      ]
-    },
-    { 
       name: "Sumo Deadlift", 
       icon: "ArrowUp", 
-      pool: "legs",
+      pool: "hamstrings",
       muscleGroup: "glutes",
       legRegion: "upper",
       instructions: [
@@ -886,11 +888,13 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Stand tall and squeeze your glutes at the top.",
         "Lower the bar back to the floor with control, keeping it close to your body."
       ]
-    },
+    }
+  ],
+  calves: [
     { 
       name: "Standing Calf Raises", 
       icon: "ArrowUp", 
-      pool: "legs",
+      pool: "calves",
       muscleGroup: "calves",
       legRegion: "lower",
       instructions: [
@@ -904,7 +908,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     { 
       name: "Seated Calf Raises", 
       icon: "ArrowUp", 
-      pool: "legs",
+      pool: "calves",
       muscleGroup: "calves",
       legRegion: "lower",
       instructions: [
@@ -1399,15 +1403,27 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
   ],
   forearms: [
     {
-      name: "Dumbbell Wrist Curls",
+      name: "Wrist Curls",
       icon: "Activity",
       pool: "forearms",
       muscleGroup: "forearms",
       instructions: [
-        "Sit on a flat bench with your forearms resting flat on your thighs, holding dumbbells with palms facing up.",
-        "Allow your wrists to extend fully down toward the floor, letting the dumbbells roll slightly down into your fingers.",
-        "Curl your wrists upward as high as possible, contracting and squeezing your forearm flexor muscles.",
-        "Lower the weight back down slowly under full tension."
+        "Sit on a flat bench with your forearms resting flat on your thighs or on the bench, holding dumbbells or a barbell with palms facing up.",
+        "Allow the weight to roll down slightly into your fingers, extending your wrists toward the floor.",
+        "Curl your wrists upward as high as possible, contracting and squeezing your forearm flexor muscles at the top of the movement.",
+        "Slowly lower the weight back down to the starting position with control under full tension."
+      ]
+    },
+    {
+      name: "Reverse Wrist Curls",
+      icon: "Activity",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Sit on a flat bench with your forearms resting flat on your thighs or on the bench, holding dumbbells or a barbell with palms facing down (pronated grip).",
+        "Let your wrists hang slightly over your knees, allowing the weight to extend down towards the floor.",
+        "Raise the weight by extending your wrists upward as high as possible, feeling a deep contraction in your forearm extensor muscles.",
+        "Lower the weight slowly with steady control to return to the starting position."
       ]
     },
     {
@@ -2005,7 +2021,7 @@ export function getExerciseCategory(name: string, pool: string): 'compound' | 'i
     return 'isolation';
   }
   
-  if (pool === 'legs') {
+  if (pool === 'legs' || pool === 'quads' || pool === 'hamstrings' || pool === 'calves') {
     if (n.includes('squat') || n.includes('deadlift') || n.includes('lunge') || n.includes('press')) {
       return 'compound';
     }
@@ -2142,7 +2158,6 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Dumbbell Floor Fly": "oQYjzNukkTY",
   "Dumbbell Lateral Raise": "z-kOn7flIZg",
   "Dumbbell Shoulder Press": "aI2hGzsAMXs",
-  "Dumbbell Wrist Curls": "3VLTzIrnb5g",
   "EZ Bar Skull Crushers": "zR9gty7LUxE",
   "Face Pulls": "0Po47vvj9g4",
   "Farmer's Hand Walk Carry": "8OtwXwrJizk",
@@ -2177,10 +2192,10 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Machine Fly": "eGjt4lk6g34",
   "Machine Incline Press": "sqNwDkUU_Ps",
   "Machine Row": "TeFo51Q_Nsc",
-  "Machine Shoulder Press": "TnhIyp4kmO8",
   "Machine Triceps Extension": "NNyuuN2sJb0",
   "Military Press": "43GSKivZnw4",
   "Overhead Ball Slam": "DMrxbUgoZTg",
+  "Overhead Press": "-5MmFTKLC-0",
   "Overhead Tricep Extension": "9wxRhONFsRA",
   "Passive Dead Hang": "0Bx_Ap7-EwU",
   "Pendlay Row": "h4nkoayPFWw",
@@ -2196,6 +2211,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Rack Pulls": "9vYBWV5OeKg",
   "Rear Delt Flyes": "nlkF7_2O_Lw",
   "Reverse Hyperextensions": "NAPMNd9RRxM",
+  "Reverse Wrist Curls": "_tcLwn78rSw",
   "Romanian Deadlift": "zU-f6DMCdAI",
   "Russian Twists": "99T1EfpMwPA",
   "Seated Cable Fly": "x4JX_T5QAMM",
@@ -2237,6 +2253,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Weighted Chest Dips": "ZDOrGNvRdM0",
   "Weighted Sled Pull": "BSJIKV7h5po",
   "Weighted Sled Push": "QwscR2BhdEg",
+  "Wrist Curls": "3VLTzIrnb5g",
   "Wide Grip Lat Pulldowns": "7JnP8dFbS14"
 };
 
