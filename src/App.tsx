@@ -3035,6 +3035,25 @@ export default function App() {
     });
   };
 
+  const handleClearAllExercises = () => {
+    const totalExercises = currentDays.reduce(
+      (acc, val) => acc + (val ? val.length : 0),
+      0,
+    );
+    if (totalExercises === 0) {
+      setToast({ message: "No exercises selected to remove.", type: "info" });
+      return;
+    }
+
+    const clearedDays: Exercise[][] = [[], [], [], [], [], [], []];
+    setCurrentDays(clearedDays);
+    saveWorkout(clearedDays);
+    setToast({
+      message: "All exercises have been cleared from weekly programming!",
+      type: "success",
+    });
+  };
+
   const handleSaveSet = async (
     exName: string,
     weight: string,
@@ -10213,14 +10232,24 @@ export default function App() {
                       Curate your physical evolution
                     </p>
                   </div>
-                  <button
-                    onClick={handleOrganizeMovementOrder}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-gym-accent/10 border border-gym-accent/25 hover:border-gym-accent/50 hover:bg-gym-accent/20 text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-gym-accent/5"
-                    title="Prioritise compound exercises and move isolation movements to the end"
-                  >
-                    <ArrowUpDown className="w-3.5 h-3.5" />
-                    Compounds First
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={handleOrganizeMovementOrder}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-gym-accent/10 border border-gym-accent/25 hover:border-gym-accent/50 hover:bg-gym-accent/20 text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-gym-accent/5"
+                      title="Prioritise compound exercises and move isolation movements to the end"
+                    >
+                      <ArrowUpDown className="w-3.5 h-3.5" />
+                      Compounds First
+                    </button>
+                    <button
+                      onClick={handleClearAllExercises}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 border border-red-500/25 hover:border-red-500/50 hover:bg-red-500/20 text-red-400 rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-red-500/5"
+                      title="Clear and de-select all exercises from weekly programming"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Remove All
+                    </button>
+                  </div>
                 </div>
 
                 {DAY_CONFIG.map((day, di) => (
