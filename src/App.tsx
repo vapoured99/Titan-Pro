@@ -5824,6 +5824,80 @@ export default function App() {
                                       </div>
                                     </div>
 
+                                    {/* Progression Suggestion Card */}
+                                    {(() => {
+                                      if (ex.pool === "cardio") return null;
+                                      const exSets = sessionSets.filter(
+                                        (s) =>
+                                          s &&
+                                          s.exerciseName &&
+                                          s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                                      );
+                                      const weightGroups: Record<number, number[]> = {};
+                                      exSets.forEach((set) => {
+                                        const w = typeof set.weight === 'string' ? parseFloat(set.weight) : set.weight;
+                                        const r = typeof set.reps === 'string' ? parseInt(set.reps, 10) : set.reps;
+                                        if (!isNaN(w) && !isNaN(r)) {
+                                          if (!weightGroups[w]) weightGroups[w] = [];
+                                          weightGroups[w].push(r);
+                                        }
+                                      });
+
+                                      let recommendWeight = 0;
+                                      let targetWeight = 0;
+                                      for (const [weightStr, repsList] of Object.entries(weightGroups)) {
+                                        const weight = parseFloat(weightStr);
+                                        const successfulSets = repsList.filter((r) => r >= 10).length;
+                                        if (successfulSets >= 3) {
+                                          targetWeight = weight;
+                                          recommendWeight = weight + 2.5;
+                                          break;
+                                        }
+                                      }
+
+                                      if (recommendWeight > 0) {
+                                        return (
+                                          <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mt-3 p-3.5 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                                          >
+                                            <div className="flex items-center gap-1.5 justify-between">
+                                              <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
+                                                <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
+                                                PROGRESSION TARGET ACQUIRED
+                                              </span>
+                                              <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
+                                                +{2.5}kg Target
+                                              </span>
+                                            </div>
+                                            <p className="text-[10px] text-white/70 leading-relaxed font-sans">
+                                              You completed <strong className="text-white">3 sets of 10+ reps</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span> today! Double-progression triggered. Upgrade your target weight.
+                                            </p>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                const idSafe = ex.name.replace(/\s+/g, "-");
+                                                const wInput = document.getElementById(`lib-w-${idSafe}`) as HTMLInputElement;
+                                                const rInput = document.getElementById(`lib-r-${idSafe}`) as HTMLInputElement;
+                                                if (wInput) wInput.value = recommendWeight.toString();
+                                                if (rInput) rInput.value = "10";
+                                                setToast({
+                                                  message: `Set ${ex.name} target weight to ${recommendWeight}kg × 10 reps!`,
+                                                  type: "success",
+                                                });
+                                                setTimeout(() => setToast(null), 3000);
+                                              }}
+                                              className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-semibold rounded-sm text-[9px] font-black uppercase tracking-[0.15em] font-mono transition-all cursor-pointer shadow-md shadow-emerald-500/15 text-center"
+                                            >
+                                              Apply {recommendWeight}kg Recommendation
+                                            </button>
+                                          </motion.div>
+                                        );
+                                      }
+                                      return null;
+                                    })()}
+
                                     <PBBlock
                                       exName={ex.name}
                                       pbs={personalBests}
@@ -10253,6 +10327,84 @@ export default function App() {
                   </div>
                 </div>
 
+                {/* Progression Recognition Banner */}
+                {(() => {
+                  const progressions: { name: string; weight: number; rec: number }[] = [];
+                  const setsByEx: Record<string, SessionSet[]> = {};
+                  sessionSets.forEach((s) => {
+                    if (!s || !s.exerciseName) return;
+                    const name = s.exerciseName.trim();
+                    if (!setsByEx[name]) setsByEx[name] = [];
+                    setsByEx[name].push(s);
+                  });
+
+                  for (const [exName, sets] of Object.entries(setsByEx)) {
+                    const weightGroups: Record<number, number[]> = {};
+                    sets.forEach((set) => {
+                      const w = typeof set.weight === 'string' ? parseFloat(set.weight) : set.weight;
+                      const r = typeof set.reps === 'string' ? parseInt(set.reps, 10) : set.reps;
+                      if (!isNaN(w) && !isNaN(r)) {
+                        if (!weightGroups[w]) weightGroups[w] = [];
+                        weightGroups[w].push(r);
+                      }
+                    });
+
+                    for (const [weightStr, repsList] of Object.entries(weightGroups)) {
+                      const weight = parseFloat(weightStr);
+                      const successfulSets = repsList.filter((r) => r >= 10).length;
+                      if (successfulSets >= 3) {
+                        progressions.push({
+                          name: exName,
+                          weight: weight,
+                          rec: weight + 2.5,
+                        });
+                        break;
+                      }
+                    }
+                  }
+
+                  if (progressions.length === 0) return null;
+
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mb-6 p-4 rounded-sm border border-emerald-500/30 bg-emerald-950/20 bg-gradient-to-r from-emerald-500/10 to-transparent relative overflow-hidden accent-shadow-card"
+                    >
+                      <div className="absolute top-0 right-0 p-3 text-emerald-400 font-mono text-[11px] animate-pulse">⚡ PROGRESSION DETECTED</div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="w-4 h-4 text-emerald-400 animate-pulse" />
+                        <h4 className="text-[10px] font-black uppercase text-emerald-400 tracking-[0.25em] font-mono">
+                          Adaptation Threshold Upgraded
+                        </h4>
+                      </div>
+                      <p className="text-xs text-white/80 leading-relaxed max-w-2xl mb-3.5">
+                        In today's training cycle, you executed <strong className="text-white font-bold">3 sets of 10+ reps</strong> on these movements. Neuromuscular overload achieved. For continued hypertrophic stimulus, increase target weight for next session:
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {progressions.map((p, idx) => (
+                          <div
+                            key={idx}
+                            className="flex flex-wrap items-center justify-between text-xs bg-black/45 border border-white/5 py-2.5 px-3 rounded-sm hover:border-emerald-500/25 transition-colors"
+                          >
+                            <span className="font-semibold text-white/90 font-sans">
+                              {p.name}
+                            </span>
+                            <div className="flex items-center gap-3">
+                              <span className="text-[10px] font-mono text-white/40">
+                                Completed Weight: <span className="text-white/80 font-bold">{p.weight}kg</span>
+                              </span>
+                              <span className="text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1.5">
+                                Upgrade Recommendation: <span>{p.rec}kg</span>
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+
                 {DAY_CONFIG.map((day, di) => (
                   <div key={di} className="group">
                     <button
@@ -10557,12 +10709,70 @@ export default function App() {
                                       );
                                     if (loggedSetsForThisEx.length === 0)
                                       return null;
+
+                                    // Check weight progression
+                                    const weightGroups: Record<number, number[]> = {};
+                                    loggedSetsForThisEx.forEach((set) => {
+                                      const w = typeof set.weight === 'string' ? parseFloat(set.weight) : set.weight;
+                                      const r = typeof set.reps === 'string' ? parseInt(set.reps, 10) : set.reps;
+                                      if (!isNaN(w) && !isNaN(r)) {
+                                        if (!weightGroups[w]) weightGroups[w] = [];
+                                        weightGroups[w].push(r);
+                                      }
+                                    });
+
+                                    let recommendWeight = 0;
+                                    let targetWeight = 0;
+                                    for (const [weightStr, repsList] of Object.entries(weightGroups)) {
+                                      const weight = parseFloat(weightStr);
+                                      const successfulSets = repsList.filter((r) => r >= 10).length;
+                                      if (successfulSets >= 3) {
+                                        targetWeight = weight;
+                                        recommendWeight = weight + 2.5;
+                                        break;
+                                      }
+                                    }
+
                                     return (
                                       <motion.div
                                         initial={{ opacity: 0, height: 0 }}
                                         animate={{ opacity: 1, height: "auto" }}
                                         className="mb-4 p-3 rounded-sm bg-gym-accent/5 border border-gym-accent/20 overflow-hidden"
                                       >
+                                        {recommendWeight > 0 && (
+                                          <div className="mb-3.5 p-3 rounded-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 flex flex-col gap-2">
+                                            <div className="flex items-center gap-1.5 justify-between">
+                                              <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
+                                                <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
+                                                PROGRESSION UPGRADE AVAILABLE
+                                              </span>
+                                              <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
+                                                +{2.5}kg Target
+                                              </span>
+                                            </div>
+                                            <p className="text-[9px] text-white/70 leading-relaxed font-sans">
+                                              You mastered <strong className="text-white font-bold">3 sets of 10+ reps</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span>. Apply recommendations below to stimulate higher hypertrophic output.
+                                            </p>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                const wInput = document.getElementById(`w-${di}-${ei}`) as HTMLInputElement;
+                                                const rInput = document.getElementById(`r-${di}-${ei}`) as HTMLInputElement;
+                                                if (wInput) wInput.value = recommendWeight.toString();
+                                                if (rInput) rInput.value = "10";
+                                                setToast({
+                                                  message: `Target set to ${recommendWeight}kg × 10 reps!`,
+                                                  type: "success",
+                                                });
+                                                setTimeout(() => setToast(null), 3000);
+                                              }}
+                                              className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold uppercase tracking-[0.15em] font-mono text-[8px] transition-all cursor-pointer shadow-sm rounded-sm text-center"
+                                            >
+                                              Apply {recommendWeight}kg Next-Set Target
+                                            </button>
+                                          </div>
+                                        )}
+
                                         <div className="flex justify-between items-center mb-2">
                                           <span className="text-[9px] font-black text-gym-accent uppercase tracking-wider flex items-center gap-1.5">
                                             <Activity className="w-3 h-3 text-gym-accent animate-pulse" />{" "}
