@@ -1163,6 +1163,7 @@ export default function AnatomyDashboard({
                   archivedWorkouts={archivedWorkouts} 
                   viewMode={anatomyMode}
                   routineMuscleGroups={routineMuscleGroups}
+                  selectedDashboardRoutine={selectedDashboardRoutine}
                 />
 
                 {anatomyMode === 'logged' && sessionSets.length === 0 && (

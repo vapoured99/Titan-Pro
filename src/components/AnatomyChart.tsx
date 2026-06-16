@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { POOLS } from '../data/exercises';
+import { POOLS, getSecondaryMusclesForExercise } from '../data/exercises';
 import { 
   Crosshair, 
   Target, 
@@ -155,6 +155,7 @@ interface AnatomyChartProps {
   compact?: boolean;
   viewMode?: 'logged' | 'routine';
   routineMuscleGroups?: { group: string; percentage: number; count: number }[];
+  selectedDashboardRoutine?: any;
 }
 
 const AnatomyChart: React.FC<AnatomyChartProps> = ({ 
@@ -162,7 +163,8 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
   archivedWorkouts = [], 
   compact = false,
   viewMode = 'logged',
-  routineMuscleGroups = []
+  routineMuscleGroups = [],
+  selectedDashboardRoutine = null
 }) => {
   const [today, setToday] = React.useState(() => new Date().toISOString().split('T')[0]);
 
@@ -381,6 +383,173 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
 
   const statuses = getMuscleStatuses();
 
+  // Secondary Muscle Mapping Helper
+  const mapSecondaryToAnatomyKey = (muscle: string): string | null => {
+    const m = muscle.toLowerCase().trim();
+    if (m.includes('chest')) return 'chest';
+    if (m.includes('upper back') || m.includes('back') || m.includes('lats') || m.includes('rhomboids_traps') || m.includes('traps') || m.includes('rear delts')) return 'upper_back';
+    if (m.includes('lower back') || m.includes('erector_spinae')) return 'lower_back';
+    if (m.includes('shoulder') || m.includes('delts') || m.includes('deltoid')) return 'shoulders';
+    if (m.includes('quad')) return 'quads';
+    if (m.includes('hamstring')) return 'hamstrings';
+    if (m.includes('glute')) return 'glutes';
+    if (m.includes('calf') || m.includes('calves')) return 'calves';
+    if (m.includes('bicep')) return 'biceps';
+    if (m.includes('tricep')) return 'triceps';
+    if (m.includes('core') || m.includes('ab') || m.includes('abs') || m.includes('oblique')) return 'core';
+    if (m.includes('forearm')) return 'forearms';
+    return null;
+  };
+
+  const findExerciseObjByName = (exerciseName: string) => {
+    if (!exerciseName) return null;
+    const cleanName = exerciseName.trim().toLowerCase();
+    try {
+      const saved = localStorage.getItem('gym_custom_exercises');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const found = parsed.find(e => e.name?.trim().toLowerCase() === cleanName);
+          if (found) {
+            return {
+              name: found.name,
+              pool: found.pool || found.muscleGroup,
+              muscleGroup: found.muscleGroup || found.pool,
+              secondaryMuscles: found.secondaryMuscles || [],
+              icon: found.icon || "Activity",
+              category: found.category || "isolation"
+            } as any;
+          }
+        }
+      }
+    } catch (e) {}
+
+    for (const [poolKey, exercises] of Object.entries(POOLS)) {
+      const ex = exercises.find(e => e.name.trim().toLowerCase() === cleanName);
+      if (ex) {
+        return ex;
+      }
+    }
+    return null;
+  };
+
+  const getSecondaryMuscleStatuses = () => {
+    const groupsToShow = ['chest', 'upper_back', 'lower_back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
+    const statuses: Record<string, { daysDiff: number; text: string; fill: string; filterUrl: string }> = {};
+
+    groupsToShow.forEach(group => {
+      statuses[group] = {
+        daysDiff: 999,
+        text: 'No Secondary Tension',
+        fill: 'rgba(255, 255, 255, 0.12)',
+        filterUrl: 'none'
+      };
+    });
+
+    const markSecondaryGroup = (group: string, daysDiff: number) => {
+      if (daysDiff < statuses[group].daysDiff) {
+        statuses[group].daysDiff = daysDiff;
+      }
+    };
+
+    const processExerciseSecs = (exName: string, daysDiff: number) => {
+      const exObj = findExerciseObjByName(exName);
+      if (!exObj) return;
+      const secondaries = getSecondaryMusclesForExercise(exObj);
+      secondaries.forEach(secName => {
+        const mapped = mapSecondaryToAnatomyKey(secName);
+        if (mapped) {
+          markSecondaryGroup(mapped, daysDiff);
+        }
+      });
+    };
+
+    if (viewMode === 'routine' && selectedDashboardRoutine) {
+      if (selectedDashboardRoutine.sets && selectedDashboardRoutine.sets.length > 0) {
+        selectedDashboardRoutine.sets.forEach((s: any) => {
+          processExerciseSecs(s.exerciseName, 0);
+        });
+      }
+    } else {
+      if (sets && sets.length > 0) {
+        sets.forEach(set => {
+          processExerciseSecs(set.exerciseName, 0);
+        });
+      }
+
+      if (archivedWorkouts && archivedWorkouts.length > 0) {
+        archivedWorkouts.forEach(workout => {
+          const wDate = workout.date;
+          if (!wDate) return;
+          const diff = getDaysDiff(today, wDate);
+          if (diff >= 0 && diff <= 4) {
+            const wSets = workout.sets || [];
+            wSets.forEach((set: any) => {
+              processExerciseSecs(set.exerciseName, diff);
+            });
+          }
+        });
+      }
+    }
+
+    groupsToShow.forEach(group => {
+      const state = statuses[group];
+      if (state.daysDiff === 0) {
+        state.text = 'Active Secondary Today';
+        state.fill = '#3b82f6'; // Bright Electric Blue
+        state.filterUrl = 'url(#glow-blue-strong)';
+      } else if (state.daysDiff === 1 || state.daysDiff === 2) {
+        state.text = 'Secondary Tension (D1-D2)';
+        state.fill = '#60a5fa'; // Mid Blue
+        state.filterUrl = 'url(#glow-blue-medium)';
+      } else if (state.daysDiff === 3) {
+        state.text = 'Ready / Restored (D3)';
+        state.fill = '#93c5fd'; // Soft Light Blue
+        state.filterUrl = 'none';
+      } else {
+        state.text = 'Untouched / Rested';
+        state.fill = 'rgba(255, 255, 255, 0.12)';
+        state.filterUrl = 'none';
+      }
+    });
+
+    return statuses;
+  };
+
+  const secondaryStatuses = getSecondaryMuscleStatuses();
+
+  const getSecondaryPulseClass = (group: string) => {
+    const state = secondaryStatuses[group];
+    if (!state) return '';
+    if (state.daysDiff === 0) {
+      return 'pulse-strong-blue';
+    } else if (state.daysDiff === 1 || state.daysDiff === 2) {
+      return 'pulse-medium-blue';
+    } else if (state.daysDiff === 3) {
+      return 'pulse-minor-blue';
+    }
+    return '';
+  };
+
+  const getSecondaryMuscleProps = (group: string) => {
+    const isSelected = selectedMuscle === group;
+    const secStatus = secondaryStatuses[group];
+    return {
+      fill: isSelected ? '#ffd700' : (secStatus?.fill || 'rgba(255, 255, 255, 0.12)'),
+      fillOpacity: isSelected ? 0.65 : 1,
+      filter: isSelected ? 'url(#glow-active)' : (secStatus?.filterUrl || 'none'),
+      stroke: isSelected ? '#ffd700' : 'rgba(255, 255, 255, 0.3)',
+      strokeWidth: isSelected ? '2' : '1.25',
+      strokeDasharray: isSelected ? '3, 1' : 'none',
+      onClick: () => {
+        if (compact) return;
+        setSelectedMuscle(selectedMuscle === group ? null : group);
+        setExpandedExercise(null);
+      },
+      className: `hover-target-muscle transition-all duration-300 ${isSelected ? 'brightness-125' : ''} ${getSecondaryPulseClass(group)}`
+    };
+  };
+
   const getFill = (group: string) => {
     return statuses[group]?.fill || 'rgba(255, 255, 255, 0.25)';
   };
@@ -476,7 +645,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
 
   return (
     <div className="w-full space-y-4">
-      <div className={compact ? "grid grid-cols-2 gap-4 py-2 w-full" : (selectedMuscle ? "grid grid-cols-1 lg:grid-cols-12 gap-8 py-4 w-full" : "grid grid-cols-1 md:grid-cols-2 gap-12 py-4 w-full")}>
+      <div className={compact ? "grid grid-cols-2 gap-4 py-2 w-full" : (selectedMuscle ? "grid grid-cols-1 lg:grid-cols-12 gap-6 py-4 w-full" : "grid grid-cols-2 lg:grid-cols-4 gap-6 py-4 w-full")}>
         {/* Dynamic styles injected for pulsing live effects */}
         <style dangerouslySetInnerHTML={{ __html: `
           @keyframes minor-pulse {
@@ -521,6 +690,27 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
           .pulse-strong-amber {
             animation: strong-pulse-amber 0.85s infinite ease-in-out;
           }
+          @keyframes minor-pulse-blue {
+            0%, 100% { opacity: 0.8; filter: drop-shadow(0 0 1px rgba(59, 130, 246, 0.3)); }
+            50% { opacity: 1; filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.6)); }
+          }
+          @keyframes medium-pulse-blue {
+            0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 2px rgba(59, 130, 246, 0.4)); }
+            50% { opacity: 1; filter: drop-shadow(0 0 7px rgba(59, 130, 246, 0.75)); }
+          }
+          @keyframes strong-pulse-blue {
+            0%, 100% { opacity: 0.6; filter: drop-shadow(0 0 3px rgba(59, 130, 246, 0.5)); }
+            50% { opacity: 1; filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.95)); }
+          }
+          .pulse-minor-blue {
+            animation: minor-pulse-blue 2.2s infinite ease-in-out;
+          }
+          .pulse-medium-blue {
+            animation: medium-pulse-blue 1.3s infinite ease-in-out;
+          }
+          .pulse-strong-blue {
+            animation: strong-pulse-blue 0.85s infinite ease-in-out;
+          }
           .hover-target-muscle {
             cursor: pointer;
             transition: all 0.2s ease;
@@ -532,10 +722,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
           }
         `}} />
 
-        {/* Front View */}
-        <div className={selectedMuscle ? "lg:col-span-3 flex flex-col items-center" : "flex flex-col items-center"}>
+        {/* 1. Front View - Primary */}
+        <div className={compact ? "flex flex-col items-center" : (selectedMuscle ? "lg:col-span-2 flex flex-col items-center" : "flex flex-col items-center")}>
           <div className={compact ? "h-8 flex items-center justify-center text-center mb-2" : "min-h-[2.5rem] flex items-center justify-center text-center mb-6"}>
-            <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em]" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em]"}>Front Evolution Grid</h4>
+            <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em]" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em]"}>
+              {compact ? "Front View" : "Front Primary"}
+            </h4>
           </div>
           <svg viewBox="0 0 200 400" className={compact ? "w-full max-w-[120px] h-auto" : "w-full max-w-[210px] h-auto"}>
             {/* Cybernetic High-Contrast SVG Glow Filters */}
@@ -590,6 +782,26 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
                   <feMergeNode in="SourceGraphic" />
                 </feMerge>
               </filter>
+              <filter id="glow-blue-strong" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="3.5" result="blur" />
+                <feComponentTransfer in="blur" result="glow">
+                  <feFuncA type="linear" slope="0.85" />
+                </feComponentTransfer>
+                <feMerge>
+                  <feMergeNode in="glow" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+              <filter id="glow-blue-medium" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="2.5" result="blur" />
+                <feComponentTransfer in="blur" result="glow">
+                  <feFuncA type="linear" slope="0.6" />
+                </feComponentTransfer>
+                <feMerge>
+                  <feMergeNode in="glow" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
             </defs>
 
             {/* Stylized Body Outline - Front */}
@@ -636,10 +848,64 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
           </svg>
         </div>
 
-        {/* Back View */}
-        <div className={selectedMuscle ? "lg:col-span-3 flex flex-col items-center" : "flex flex-col items-center"}>
+        {/* 2. Front View - Secondary */}
+        {!compact && (
+          <div className={selectedMuscle ? "lg:col-span-2 flex flex-col items-center" : "flex flex-col items-center"}>
+            <div className="min-h-[2.5rem] flex items-center justify-center text-center mb-6">
+              <h4 className="text-[10px] text-blue-400 font-bold uppercase tracking-[0.3em]">Front Secondary</h4>
+            </div>
+            <svg viewBox="0 0 200 400" className="w-full max-w-[210px] h-auto">
+              {/* Stylized Body Outline - Front */}
+              <g fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.25">
+                <path d={bodyOutlinePath} />
+              </g>
+
+              {/* Muscle Groups - Front (Secondary Highlight Mode) */}
+              {/* Shoulders */}
+              <path 
+                d="M85,75 Q75,75 70,90 L75,105 Q80,105 85,95 Z M115,75 Q125,75 130,90 L125,105 Q120,105 115,95 Z" 
+                {...getSecondaryMuscleProps('shoulders')}
+              />
+              {/* Chest */}
+              <path 
+                d="M88,90 Q100,85 112,90 L115,115 Q100,120 85,115 Z" 
+                {...getSecondaryMuscleProps('chest')}
+              />
+              {/* Abs (Core) */}
+              <path 
+                d="M90,125 Q100,122 110,125 L108,185 Q100,188 92,185 Z" 
+                {...getSecondaryMuscleProps('core')}
+              />
+              {/* Biceps */}
+              <path 
+                d="M65,105 Q60,115 62,130 L70,125 Q72,115 70,105 Z M135,105 Q140,115 138,130 L130,125 Q128,115 130,105 Z" 
+                {...getSecondaryMuscleProps('biceps')}
+              />
+              {/* Forearms */}
+              <path 
+                d="M62,130 Q62,150 66,165 L73,160 Q70,145 70,125 Z M138,130 Q138,150 134,165 L127,160 Q130,145 130,125 Z" 
+                {...getSecondaryMuscleProps('forearms')}
+              />
+              {/* Quads (Upper Legs) */}
+              <path 
+                d="M82,200 Q90,195 98,200 L95,255 L85,255 Z M102,200 Q110,195 118,200 L115,255 L105,255 Z" 
+                {...getSecondaryMuscleProps('quads')}
+              />
+              {/* Calves (Lower Legs) */}
+              <path 
+                d="M84,265 L92,265 L88,330 L80,330 Z M116,265 L108,265 L112,330 L120,330 Z" 
+                {...getSecondaryMuscleProps('calves')}
+              />
+            </svg>
+          </div>
+        )}
+
+        {/* 3. Back View - Primary */}
+        <div className={compact ? "flex flex-col items-center" : (selectedMuscle ? "lg:col-span-2 flex flex-col items-center" : "flex flex-col items-center")}>
           <div className={compact ? "h-8 flex items-center justify-center text-center mb-2" : "min-h-[2.5rem] flex items-center justify-center text-center mb-6"}>
-            <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em]" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em]"}>Rear Evolution Grid</h4>
+            <h4 className={compact ? "text-[8px] text-gym-accent font-bold uppercase tracking-[0.2em]" : "text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em]"}>
+              {compact ? "Rear View" : "Rear Primary"}
+            </h4>
           </div>
           <svg viewBox="0 0 200 400" className={compact ? "w-full max-w-[120px] h-auto" : "w-full max-w-[210px] h-auto"}>
             {/* Stylized Body Outline - Back */}
@@ -691,9 +957,66 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
           </svg>
         </div>
 
+        {/* 4. Back View - Secondary */}
+        {!compact && (
+          <div className={selectedMuscle ? "lg:col-span-2 flex flex-col items-center" : "flex flex-col items-center"}>
+            <div className="min-h-[2.5rem] flex items-center justify-center text-center mb-6">
+              <h4 className="text-[10px] text-blue-400 font-bold uppercase tracking-[0.3em]">Rear Secondary</h4>
+            </div>
+            <svg viewBox="0 0 200 400" className="w-full max-w-[210px] h-auto">
+              {/* Stylized Body Outline - Back */}
+              <g fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.25">
+                <path d={bodyOutlinePath} />
+              </g>
+
+              {/* Muscle Groups - Back (Secondary Highlight Mode) */}
+              {/* Upper/Mid Back */}
+              <path 
+                d="M85,85 Q100,75 115,85 L120,135 Q100,145 80,135 Z" 
+                {...getSecondaryMuscleProps('upper_back')}
+              />
+              {/* Middle/Lower Back */}
+              <path 
+                d="M90,140 Q100,145 110,140 L115,180 Q100,185 85,180 Z" 
+                {...getSecondaryMuscleProps('lower_back')}
+              />
+              {/* Shoulders */}
+              <path 
+                d="M85,75 Q75,75 70,90 L75,105 Q80,105 85,95 Z M115,75 Q125,75 130,90 L125,105 Q120,105 115,95 Z" 
+                {...getSecondaryMuscleProps('shoulders')}
+              />
+              {/* Triceps */}
+              <path 
+                d="M62,105 Q58,115 60,130 L68,135 Q70,120 68,105 Z M138,105 Q142,115 140,130 L132,135 Q130,120 132,105 Z" 
+                {...getSecondaryMuscleProps('triceps')}
+              />
+              {/* Forearms */}
+              <path 
+                d="M60,130 Q60,150 64,165 L71,160 Q68,145 68,135 Z M140,130 Q140,150 136,165 L129,160 Q132,145 132,135 Z" 
+                {...getSecondaryMuscleProps('forearms')}
+              />
+              {/* Glutes */}
+              <path 
+                d="M82,185 C75,185 75,220 82,225 C90,225 100,215 100,215 C100,215 110,225 118,225 C125,220 125,185 118,185 C110,185 100,195 100,195 C100,195 90,185 82,185 Z" 
+                {...getSecondaryMuscleProps('glutes')}
+              />
+              {/* Hamstrings */}
+              <path 
+                d="M82,225 L95,225 L92,265 L84,265 Z M118,225 L105,225 L108,265 L116,265 Z" 
+                {...getSecondaryMuscleProps('hamstrings')}
+              />
+              {/* Calves (Lower Legs) */}
+              <path 
+                d="M84,265 L92,265 L88,335 L78,335 Z M116,265 L108,265 L112,335 L122,335 Z" 
+                {...getSecondaryMuscleProps('calves')}
+              />
+            </svg>
+          </div>
+        )}
+
         {/* Sidebar panel for interactive drills (Option 2) */}
         {!compact && selectedMuscle && (
-          <div className="lg:col-span-6 bg-[#040404]/90 border border-gym-accent/35 rounded-sm p-5 space-y-5 shadow-[0_0_20px_rgba(255,215,0,0.03)] backdrop-blur-md flex flex-col justify-between">
+          <div className="lg:col-span-4 bg-[#040404]/90 border border-gym-accent/35 rounded-sm p-5 space-y-5 shadow-[0_0_20px_rgba(255,215,0,0.03)] backdrop-blur-md flex flex-col justify-between">
             {/* Header: Reticle Active Indicator */}
             <div className="flex items-center justify-between border-b border-white/5 pb-3">
               <div className="flex items-center gap-2.5">
