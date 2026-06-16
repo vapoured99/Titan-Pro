@@ -559,7 +559,7 @@ export default function AnatomyDashboard({
       if (t === 'bench') return n.includes('bench press') && !n.includes('incline') && !n.includes('decline');
       if (t === 'squat') return n.includes('squat') && (n.includes('barbell') || n.includes('back') || n.includes('safety bar'));
       if (t === 'deadlift') return n.includes('deadlift') && !n.includes('romanian') && !n.includes('stiff-leg');
-      if (t === 'ohp') return (n.includes('overhead press') || n.includes('military press') || n.includes('shoulder press')) && n.includes('barbell');
+      if (t === 'ohp') return n.includes('overhead press') || n.includes('military press') || (n.includes('shoulder press') && n.includes('barbell'));
       return false;
     };
 

@@ -230,14 +230,14 @@ const CATEGORIES: Record<string, ProTips> = {
 };
 
 export function getProTipsForExercise(
-  name: string,
+  name: any,
   pool?: string,
   muscleGroup?: string
 ): ProTips {
-  const normName = name.toLowerCase().trim();
+  const normName = typeof name === 'string' ? name.toLowerCase().trim() : '';
 
   // 1. Direct Specific Match
-  if (SPECIFIC_TIPS[normName]) {
+  if (normName && SPECIFIC_TIPS[normName]) {
     return SPECIFIC_TIPS[normName];
   }
 

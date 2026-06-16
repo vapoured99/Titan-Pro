@@ -1815,7 +1815,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       if (t === 'bench') return n.includes('bench press') && !n.includes('incline') && !n.includes('decline');
       if (t === 'squat') return n.includes('squat') && (n.includes('barbell') || n.includes('back') || n.includes('safety bar'));
       if (t === 'deadlift') return n.includes('deadlift') && !n.includes('romanian') && !n.includes('stiff-leg');
-      if (t === 'ohp') return (n.includes('overhead press') || n.includes('military press') || n.includes('shoulder press')) && n.includes('barbell');
+      if (t === 'ohp') return n.includes('overhead press') || n.includes('military press') || (n.includes('shoulder press') && n.includes('barbell'));
       return false;
     };
 
@@ -2051,7 +2051,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
   const equippedOutfit = profile?.equippedOutfit ?? 'vanguard_cadet';
   const equippedAura = profile?.equippedAura ?? 'none';
   const equippedBackItem = profile?.equippedBackItem ?? 'none';
-  const equippedEmote = profile?.equippedEmote ?? 'none';
+  const equippedEmote = (profile as any)?.[`equippedEmote_${equippedOutfit}`] ?? 'none';
   const equippedTitle = profile?.equippedTitle ?? 'lifter';
   const equippedBanner = OUTFIT_TO_BANNER[equippedOutfit] || 'default_slate';
   const equippedBorder = profile?.equippedBorder ?? 'none';
@@ -2466,7 +2466,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
     if (category === 'operatives') {
       const isAlreadyUnlocked = unlockedOutfits.includes(itemId);
       if (isAlreadyUnlocked) {
-        const updated = { equippedOutfit: itemId };
+        const updated = { 
+          equippedOutfit: itemId,
+          [`equippedEmote_${itemId}`]: 'none',
+          equippedEmote: 'none'
+        };
         setProfile(prev => prev ? { ...prev, ...updated } : null);
         await saveSettings(updated);
       } else {
@@ -2478,7 +2482,9 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         const updated = {
           avatarCredits: credits - price,
           unlockedOutfits: [...unlockedOutfits, itemId],
-          equippedOutfit: itemId
+          equippedOutfit: itemId,
+          [`equippedEmote_${itemId}`]: 'none',
+          equippedEmote: 'none'
         };
         setProfile(prev => prev ? { ...prev, ...updated } : null);
         await saveSettings(updated);
@@ -2507,10 +2513,13 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       }
     }
     else if (category === 'emotes') {
-      const dbKey = `unlocked_emote_${itemId}`;
+      const dbKey = `unlocked_emote_${equippedOutfit}_${itemId}`;
       const isUnlocked = itemId === 'none' || itemId === 'flex_mode' || (profile as any)?.[dbKey];
       if (isUnlocked) {
-        const updated = { equippedEmote: itemId };
+        const updated = { 
+          [`equippedEmote_${equippedOutfit}`]: itemId,
+          equippedEmote: itemId
+        };
         setProfile(prev => prev ? { ...prev, ...updated } : null);
         await saveSettings(updated);
       } else {
@@ -2522,6 +2531,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         const updated = {
           avatarCredits: credits - price,
           [dbKey]: true,
+          [`equippedEmote_${equippedOutfit}`]: itemId,
           equippedEmote: itemId
         };
         setProfile(prev => prev ? { ...prev, ...updated } : null);
@@ -2947,6 +2957,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                     : 'scale-100 group-hover:scale-[1.04]'
                 }`}
                 toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                fallbackSrc={activeOutfit.image}
               />
 
               {/* Inner Aura overlay graphics rendered DIRECTLY on top of character image for max intensity */}
@@ -3301,6 +3312,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                     alt="Active Micro Outfit" 
                     className="w-full h-full object-cover rounded-sm transition-transform duration-500 group-hover:scale-[1.08]" 
                     toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                    fallbackSrc={activeOutfit.image}
                   />
                   <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
@@ -3940,6 +3952,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                               alt={outfit.name} 
                               className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" 
                               toleranceMultiplier={outfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                              fallbackSrc={outfit.image}
                             />
                             {!isUnlocked && (
                               <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
@@ -3978,7 +3991,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
                   {/* Category 2: Emotes / Poses */}
                   {activeTab === 'emotes' && EMOTES.map((emote) => {
-                    const dbKey = `unlocked_emote_${emote.id}`;
+                    const dbKey = `unlocked_emote_${equippedOutfit}_${emote.id}`;
                     const isUnlocked = emote.id === 'none' || emote.id === 'flex_mode' || (profile as any)?.[dbKey];
                     const isEquipped = equippedEmote === emote.id;
 

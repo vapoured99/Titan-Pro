@@ -182,7 +182,8 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
   }, [today]);
 
   // Secondary Muscle Mapping Helper
-  const mapSecondaryToAnatomyKey = (muscle: string): string | null => {
+  const mapSecondaryToAnatomyKey = (muscle: any): string | null => {
+    if (typeof muscle !== 'string') return null;
     const m = muscle.toLowerCase().trim();
     if (m.includes('chest')) return 'chest';
     if (m.includes('upper back') || m.includes('back') || m.includes('lats') || m.includes('rhomboids_traps') || m.includes('traps') || m.includes('rear delts')) return 'upper_back';

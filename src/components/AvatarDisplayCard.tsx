@@ -44,7 +44,7 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
   const equippedOutfit = profile?.equippedOutfit ?? 'vanguard_cadet';
   const equippedAura = profile?.equippedAura ?? 'none';
   const equippedBackItem = profile?.equippedBackItem ?? 'none';
-  const equippedEmote = profile?.equippedEmote ?? 'none';
+  const equippedEmote = (profile as any)?.[`equippedEmote_${equippedOutfit}`] ?? 'none';
   const equippedTitle = profile?.equippedTitle ?? 'lifter';
   const equippedBanner = OUTFIT_TO_BANNER[equippedOutfit] || 'default_slate';
   const equippedBorder = profile?.equippedBorder ?? 'none';
@@ -280,6 +280,7 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
               : 'scale-100 group-hover:scale-[1.04]'
           }`}
           toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+          fallbackSrc={activeOutfit.image}
         />
 
         {/* Inner Aura overlay graphics rendered DIRECTLY on top of character image for max intensity */}

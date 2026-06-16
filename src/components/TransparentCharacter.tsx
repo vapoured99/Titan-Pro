@@ -6,12 +6,13 @@ interface TransparentCharacterProps {
   className?: string;
   style?: React.CSSProperties;
   toleranceMultiplier?: number;
+  fallbackSrc?: string;
 }
 
 // Low-overhead client-side cache to ensure we never process the same image URL twice
 const imageCache: Record<string, string> = {};
 
-export function TransparentCharacter({ src, alt, className, style, toleranceMultiplier = 1.0 }: TransparentCharacterProps) {
+export function TransparentCharacter({ src, alt, className, style, toleranceMultiplier = 1.0, fallbackSrc }: TransparentCharacterProps) {
   const [processedSrc, setProcessedSrc] = useState<string>(src);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const activeSrcRef = useRef<string>(src);
@@ -29,7 +30,10 @@ export function TransparentCharacter({ src, alt, className, style, toleranceMult
     setIsProcessing(true);
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.src = src;
+    
+    let currentSrc = src;
+    let fallbackAttempted = false;
+    img.src = currentSrc;
 
     img.onload = () => {
       // Guard against component unmounting or src changing during async loading
@@ -192,10 +196,16 @@ export function TransparentCharacter({ src, alt, className, style, toleranceMult
     };
 
     img.onerror = () => {
-      setProcessedSrc(src);
-      setIsProcessing(false);
+      if (fallbackSrc && !fallbackAttempted) {
+        fallbackAttempted = true;
+        currentSrc = fallbackSrc;
+        img.src = fallbackSrc;
+      } else {
+        setProcessedSrc(src);
+        setIsProcessing(false);
+      }
     };
-  }, [src, toleranceMultiplier]);
+  }, [src, toleranceMultiplier, fallbackSrc]);
 
   return (
     <img
