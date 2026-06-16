@@ -830,6 +830,34 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Keep your back and head pressed firmly against the seat throughout the movement.",
         "Maintain control as you return to the starting position."
       ]
+    },
+    {
+      name: "Hip Abductor",
+      icon: "ArrowUp",
+      pool: "quads",
+      muscleGroup: "glutes",
+      legRegion: "upper",
+      instructions: [
+        "Sit in the hip abduction machine and select an appropriate resistance weight.",
+        "Adjust the starting position to a comfortable range of motion, setting the thigh pads to rest against the outside of your knees.",
+        "Sit tall, press your lower back firmly against the backrest, and grip the support handles.",
+        "Drive your legs outward against the pads as far as comfortable, contracting your outer thighs and glutes.",
+        "Pause and squeeze for a second at maximum extension, then slowly control the pads back to the starting position."
+      ]
+    },
+    {
+      name: "Hip Adductor",
+      icon: "ArrowDown",
+      pool: "quads",
+      muscleGroup: "quads",
+      legRegion: "upper",
+      instructions: [
+        "Sit in the hip adduction machine and select an appropriate resistance weight.",
+        "Adjust the starting position so that your legs are comfortably opened, setting the thigh pads on the inside of your knees.",
+        "Sit tall, press your back firmly against the seat, and grip the support handles for stability.",
+        "Squeeze your legs inward together against the resistance until the pads meet, focusing on your inner thighs.",
+        "Pause briefly, then slowly and under control return your legs back to the starting wide position."
+      ]
     }
   ],
   hamstrings: [
@@ -2168,6 +2196,8 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Hammer Curls": "B4RznoFvTl4",
   "Hanging Leg Raises": "Yrtvs-nEnk0",
   "High to Low Cable Flys": "hhruLxo9yZU",
+  "Hip Abductor": "G_8LItOiZ0Q",
+  "Hip Adductor": "CjAVezAggkI",
   "Incline Dumbbell Chest Fly": "JSDpq14vCZ8",
   "Incline Dumbbell Chest Press": "oZVCBM9f8Eo",
   "Incline Dumbbell Curls": "XVQBeug_9LU",
