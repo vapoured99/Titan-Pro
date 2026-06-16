@@ -3047,6 +3047,7 @@ export default function App() {
 
     const clearedDays: Exercise[][] = [[], [], [], [], [], [], []];
     setCurrentDays(clearedDays);
+    setExpandedDays({});
     saveWorkout(clearedDays);
     setToast({
       message: "All exercises have been cleared from weekly programming!",
@@ -11470,6 +11471,25 @@ export default function App() {
                             </span>
                           </div>
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Anatomy Mapping Section */}
+                    <div className="p-10 pb-6 bg-white/[0.01] border-b border-white/5">
+                      <h4 className="text-[9px] font-black text-gym-accent uppercase tracking-[0.4em] mb-4 flex items-center gap-3">
+                        <div className="h-px flex-1 bg-gym-accent/20" />
+                        Target Muscular Activation
+                        <div className="h-px flex-1 bg-gym-accent/20" />
+                      </h4>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest text-center mb-6">
+                        Primary target <span className="text-orange-500 font-bold">orange</span> / Synergistic support <span className="text-blue-400 font-bold">blue</span>
+                      </p>
+                      <div className="flex justify-center py-2 bg-black/40 border border-white/5 rounded-sm overflow-hidden max-w-md mx-auto">
+                        <AnatomyChart 
+                          sets={[]} 
+                          compact={true} 
+                          focusedExerciseGuidance={resolvedEx} 
+                        />
                       </div>
                     </div>
 

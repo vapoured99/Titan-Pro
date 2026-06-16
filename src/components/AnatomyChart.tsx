@@ -156,6 +156,7 @@ interface AnatomyChartProps {
   viewMode?: 'logged' | 'routine';
   routineMuscleGroups?: { group: string; percentage: number; count: number }[];
   selectedDashboardRoutine?: any;
+  focusedExerciseGuidance?: any;
 }
 
 const AnatomyChart: React.FC<AnatomyChartProps> = ({ 
@@ -164,7 +165,8 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
   compact = false,
   viewMode = 'logged',
   routineMuscleGroups = [],
-  selectedDashboardRoutine = null
+  selectedDashboardRoutine = null,
+  focusedExerciseGuidance = null
 }) => {
   const [today, setToday] = React.useState(() => new Date().toISOString().split('T')[0]);
 
@@ -178,6 +180,56 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
     }, 15000); // Check every 15 seconds
     return () => clearInterval(interval);
   }, [today]);
+
+  // Secondary Muscle Mapping Helper
+  const mapSecondaryToAnatomyKey = (muscle: string): string | null => {
+    const m = muscle.toLowerCase().trim();
+    if (m.includes('chest')) return 'chest';
+    if (m.includes('upper back') || m.includes('back') || m.includes('lats') || m.includes('rhomboids_traps') || m.includes('traps') || m.includes('rear delts')) return 'upper_back';
+    if (m.includes('lower back') || m.includes('erector_spinae')) return 'lower_back';
+    if (m.includes('shoulder') || m.includes('delts') || m.includes('deltoid')) return 'shoulders';
+    if (m.includes('quad')) return 'quads';
+    if (m.includes('hamstring')) return 'hamstrings';
+    if (m.includes('glute')) return 'glutes';
+    if (m.includes('calf') || m.includes('calves')) return 'calves';
+    if (m.includes('bicep')) return 'biceps';
+    if (m.includes('tricep')) return 'triceps';
+    if (m.includes('core') || m.includes('ab') || m.includes('abs') || m.includes('oblique')) return 'core';
+    if (m.includes('forearm')) return 'forearms';
+    return null;
+  };
+
+  const findExerciseObjByName = (exerciseName: string) => {
+    if (!exerciseName) return null;
+    const cleanName = exerciseName.trim().toLowerCase();
+    try {
+      const saved = localStorage.getItem('gym_custom_exercises');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const found = parsed.find(e => e.name?.trim().toLowerCase() === cleanName);
+          if (found) {
+            return {
+              name: found.name,
+              pool: found.pool || found.muscleGroup,
+              muscleGroup: found.muscleGroup || found.pool,
+              secondaryMuscles: found.secondaryMuscles || [],
+              icon: found.icon || "Activity",
+              category: found.category || "isolation"
+            } as any;
+          }
+        }
+      }
+    } catch (e) {}
+
+    for (const [poolKey, exercises] of Object.entries(POOLS)) {
+      const ex = exercises.find(e => e.name.trim().toLowerCase() === cleanName);
+      if (ex) {
+        return ex;
+      }
+    }
+    return null;
+  };
 
   // Helper to parse exercises to muscle groups
   const findMuscleGroupForExercise = (exerciseName: string): string | null => {
@@ -266,6 +318,39 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
         filterUrl: 'none'
       };
     });
+
+    if (focusedExerciseGuidance) {
+      const resolved = findExerciseObjByName(focusedExerciseGuidance.name) || focusedExerciseGuidance;
+      const primaryGroup = findMuscleGroupForExercise(resolved.name);
+      
+      if (primaryGroup && statuses[primaryGroup]) {
+        statuses[primaryGroup] = {
+          daysDiff: 0,
+          dates: [today],
+          text: 'Primary Muscle Group Target',
+          fill: '#f97316', // Orange Glow
+          filterUrl: 'url(#glow-orange)',
+          isPrimaryGuidance: true
+        } as any;
+      }
+
+      const secondaries = getSecondaryMusclesForExercise(resolved);
+      secondaries.forEach((secName: string) => {
+        const mapped = mapSecondaryToAnatomyKey(secName);
+        if (mapped && statuses[mapped] && mapped !== primaryGroup) {
+          statuses[mapped] = {
+            daysDiff: 0,
+            dates: [today],
+            text: 'Synergistic Muscle Group Target',
+            fill: '#3b82f6', // Glowing blue
+            filterUrl: 'url(#glow-blue-strong)',
+            isSecondaryGuidance: true
+          } as any;
+        }
+      });
+
+      return statuses;
+    }
 
     if (viewMode === 'routine' && routineMuscleGroups && routineMuscleGroups.length > 0) {
       const matchGroup = (anatomyGroup: string, routineGroup: string) => {
@@ -382,56 +467,6 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
   const [expandedExercise, setExpandedExercise] = React.useState<string | null>(null);
 
   const statuses = getMuscleStatuses();
-
-  // Secondary Muscle Mapping Helper
-  const mapSecondaryToAnatomyKey = (muscle: string): string | null => {
-    const m = muscle.toLowerCase().trim();
-    if (m.includes('chest')) return 'chest';
-    if (m.includes('upper back') || m.includes('back') || m.includes('lats') || m.includes('rhomboids_traps') || m.includes('traps') || m.includes('rear delts')) return 'upper_back';
-    if (m.includes('lower back') || m.includes('erector_spinae')) return 'lower_back';
-    if (m.includes('shoulder') || m.includes('delts') || m.includes('deltoid')) return 'shoulders';
-    if (m.includes('quad')) return 'quads';
-    if (m.includes('hamstring')) return 'hamstrings';
-    if (m.includes('glute')) return 'glutes';
-    if (m.includes('calf') || m.includes('calves')) return 'calves';
-    if (m.includes('bicep')) return 'biceps';
-    if (m.includes('tricep')) return 'triceps';
-    if (m.includes('core') || m.includes('ab') || m.includes('abs') || m.includes('oblique')) return 'core';
-    if (m.includes('forearm')) return 'forearms';
-    return null;
-  };
-
-  const findExerciseObjByName = (exerciseName: string) => {
-    if (!exerciseName) return null;
-    const cleanName = exerciseName.trim().toLowerCase();
-    try {
-      const saved = localStorage.getItem('gym_custom_exercises');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          const found = parsed.find(e => e.name?.trim().toLowerCase() === cleanName);
-          if (found) {
-            return {
-              name: found.name,
-              pool: found.pool || found.muscleGroup,
-              muscleGroup: found.muscleGroup || found.pool,
-              secondaryMuscles: found.secondaryMuscles || [],
-              icon: found.icon || "Activity",
-              category: found.category || "isolation"
-            } as any;
-          }
-        }
-      }
-    } catch (e) {}
-
-    for (const [poolKey, exercises] of Object.entries(POOLS)) {
-      const ex = exercises.find(e => e.name.trim().toLowerCase() === cleanName);
-      if (ex) {
-        return ex;
-      }
-    }
-    return null;
-  };
 
   const getSecondaryMuscleStatuses = () => {
     const groupsToShow = ['chest', 'upper_back', 'lower_back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'calves', 'biceps', 'triceps', 'core', 'forearms'];
@@ -561,6 +596,11 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
   const getPulseClass = (group: string) => {
     const state = statuses[group];
     if (!state) return '';
+    if (focusedExerciseGuidance) {
+      if ((state as any).isPrimaryGuidance) return 'pulse-strong-amber';
+      if ((state as any).isSecondaryGuidance) return 'pulse-strong-blue';
+      return '';
+    }
     if (state.daysDiff === 0) {
       return viewMode === 'routine' ? 'pulse-strong-amber' : 'pulse-strong';
     } else if (state.daysDiff === 1 || state.daysDiff === 2) {
