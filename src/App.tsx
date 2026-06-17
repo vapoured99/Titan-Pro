@@ -48,6 +48,10 @@ import {
   Sliders,
   Brain,
   GripVertical,
+  Play,
+  Square,
+  Timer,
+  Clock,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -694,9 +698,55 @@ const calculateCaloriesBurned = (
     }
   });
 
-  // Spread the remainder of the 90-minute session as rest/baseline recovery time
-  const totalSessionMin = 90;
-  const restTimeMin = Math.max(0, totalSessionMin - totalActiveTimeMin);
+  // Calculate total session duration in minutes based on active timer or manual overrides
+  let sessionDurationMin = 0;
+  let hasValidDuration = false;
+
+  if (userProfile) {
+    if (userProfile.timerManualDuration && userProfile.timerManualDuration > 0) {
+      sessionDurationMin = userProfile.timerManualDuration;
+      hasValidDuration = true;
+    } else if (userProfile.timerStartTime) {
+      const startMs = Date.parse(userProfile.timerStartTime);
+      if (!isNaN(startMs)) {
+        const endMs = userProfile.timerActive
+          ? Date.now()
+          : (userProfile.timerEndTime ? Date.parse(userProfile.timerEndTime) : Date.now());
+        if (!isNaN(endMs) && endMs > startMs) {
+          const rawDuration = (endMs - startMs) / 60000;
+          // Fail-safe: if timer has run for more than 4 hours (240 mins) because user forgot to click stop,
+          // we treat it as unstopped and cap it at 180 min, or let manual override correct it.
+          if (rawDuration > 240) {
+            sessionDurationMin = 180;
+          } else {
+            sessionDurationMin = rawDuration;
+          }
+          hasValidDuration = true;
+        }
+      }
+    }
+  }
+
+  // Estimate rest/transition time
+  let restTimeMin = 0;
+  if (hasValidDuration && sessionDurationMin > 0) {
+    // recalibrate: rest/baseline overhead is total duration minus the actual active lifting/running duration
+    restTimeMin = Math.max(0, sessionDurationMin - totalActiveTimeMin);
+  } else {
+    // fallback: proportional estimation based on logged sets to prevent large baseline errors
+    let estimatedRestTimeMin = 0;
+    Object.entries(setsByExercise).forEach(([exName, exSets]) => {
+      const ex = findExByName(exName);
+      const isCardio = ex?.pool === "cardio";
+      if (!isCardio) {
+        estimatedRestTimeMin += exSets.length * 1.5;
+      } else {
+        estimatedRestTimeMin += 1.0;
+      }
+    });
+    restTimeMin = estimatedRestTimeMin;
+  }
+
   const restMET = 1.5;
   const restCalPerMin = (restMET * 3.5 * bodyweight) / 200;
   const restCalories = restTimeMin * restCalPerMin;
@@ -795,6 +845,19 @@ const PBBlock = ({
       });
     }
   }
+
+  // Find highest logged weight for this specific exercise
+  let maxWeightAtBlock = -1;
+  exerciseSets.forEach((s) => {
+    if (s.weight > maxWeightAtBlock) {
+      maxWeightAtBlock = s.weight;
+    }
+  });
+
+  const setsAtMaxWith10PlusReps = exerciseSets.filter(
+    (s) => s.weight === maxWeightAtBlock && s.reps >= 10
+  );
+  const completed3SetsOf10 = setsAtMaxWith10PlusReps.length >= 3;
 
   const isAssisted = exName.trim().toLowerCase().includes("assisted pull");
 
@@ -905,7 +968,7 @@ const PBBlock = ({
             </div>
           </div>
           {maxBaseSet && (
-            <div className="text-right flex flex-col justify-end">
+            <div className="text-right flex flex-col justify-end items-end">
               <span className="text-[9px] text-white/20 uppercase tracking-tighter">
                 Based on
               </span>
@@ -929,6 +992,11 @@ const PBBlock = ({
                     return maxBaseSet.date;
                   })()}
                   )
+                </span>
+              )}
+              {completed3SetsOf10 && (
+                <span className="mt-1 font-mono text-[9px] text-[#34d399] font-black uppercase tracking-wide">
+                  🚀 Increase by 2.5 kg
                 </span>
               )}
             </div>
@@ -958,6 +1026,10 @@ interface UserProfile {
   avatarXp?: number;
   avatarCredits?: number;
   unassignedPoints?: number;
+  timerStartTime?: string;
+  timerEndTime?: string;
+  timerActive?: boolean;
+  timerManualDuration?: number;
 }
 
 interface ProfileDisplayNameEditorProps {
@@ -1545,9 +1617,23 @@ export default function App() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const profileRef = useRef<UserProfile | null>(null);
+  const [timerTick, setTimerTick] = useState<number>(0);
   useEffect(() => {
     profileRef.current = profile;
   }, [profile]);
+  useEffect(() => {
+    let interval: any = null;
+    if (profile?.timerActive) {
+      interval = setInterval(() => {
+        setTimerTick((prev) => prev + 1);
+      }, 1000);
+    } else {
+      setTimerTick(0);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [profile?.timerActive]);
   const [currentThemeId, setCurrentThemeId] = useState<string>(() => {
     return localStorage.getItem("gym-theme-id") || "default";
   });
@@ -1585,6 +1671,7 @@ export default function App() {
     personalRecords: true,
   });
   const [pbSearchQuery, setPbSearchQuery] = useState("");
+  const [pbSubTab, setPbSubTab] = useState<"pbs" | "progression">("pbs");
   const [pbSortKey, setPbSortKey] = useState<"name" | "weight" | "date">("date");
   const [pbSortOrder, setPbSortOrder] = useState<"asc" | "desc">("desc");
   const [deletingPbName, setDeletingPbName] = useState<string | null>(null);
@@ -1631,6 +1718,27 @@ export default function App() {
       window.removeEventListener("resize", updateScale);
     };
   }, [showProgressReport]);
+
+  // Collapse all dropdowns and accordion lists when switching between tabs
+  useEffect(() => {
+    setShowHistoryMenu(false);
+    setExpandedDays({});
+    setExpandedRoutinesDays({});
+    setShowWeightHistoryList(false);
+    setShowBodyFatHistoryList(false);
+    setShowCalorieHistoryList(false);
+    setExpandedProgressSections({
+      weight: false,
+      bodyFat: false,
+      workoutCalendar: false,
+      trending: false,
+      personalRecords: false,
+      calorieTracker: false,
+    });
+    setExpandedLibrarySections({});
+    setExpandedWorkouts({});
+    setShowClearConfirm(false);
+  }, [activeView]);
 
   const findExerciseByName = (name: string): Exercise | null => {
     if (!name) return null;
@@ -3123,10 +3231,12 @@ export default function App() {
     // Optimistic Update
     setSessionSets((prev) => [...prev, newSet]);
 
+    const isFirstSet = sessionSets.length === 0;
+
     setToast({
       message: isNewPB
-        ? `New PB: ${exName}!`
-        : `Logged ${exName}: ${nWeight}kg × ${nReps}`,
+        ? `New PB: ${exName}!${isFirstSet ? " (Stopwatch Started)" : ""}`
+        : `Logged ${exName}: ${nWeight}kg × ${nReps}${isFirstSet ? " — Stopwatch Started" : ""}`,
       type: isNewPB ? "pb" : "success",
     });
     setTimeout(() => setToast(null), 3000);
@@ -3150,6 +3260,17 @@ export default function App() {
 
         const newStreak = diffDays === 1 ? (profile.streakCount || 0) + 1 : 1;
         streakUpdate = { streakCount: newStreak, lastWorkoutDate: today };
+      }
+
+      // Automatically start the stopwatch if this is the first set logged and there's no active timer
+      let timerUpdate = {};
+      if (isFirstSet && (!profile || !profile.timerActive)) {
+        timerUpdate = {
+          timerStartTime: new Date().toISOString(),
+          timerEndTime: null,
+          timerActive: true,
+          timerManualDuration: 0,
+        };
       }
 
       // Gamification Reward logic for completing a set.
@@ -3194,7 +3315,7 @@ export default function App() {
       };
 
       setProfile((prev) =>
-        prev ? { ...prev, ...streakUpdate, ...avatarUpdate } : null,
+        prev ? { ...prev, ...streakUpdate, ...avatarUpdate, ...timerUpdate } : null,
       );
 
       if (leveledUp) {
@@ -3224,6 +3345,7 @@ export default function App() {
         {
           ...streakUpdate,
           ...avatarUpdate,
+          ...timerUpdate,
           updatedAt: serverTimestamp(),
         },
         { merge: true },
@@ -7695,17 +7817,82 @@ export default function App() {
                               }
                             };
 
+                            const allLoggedSets: SessionSet[] = [];
+                            allLoggedSets.push(...sessionSets);
+                            archivedWorkouts.forEach((w) => {
+                              if (w.sets && Array.isArray(w.sets)) {
+                                allLoggedSets.push(...w.sets);
+                              }
+                            });
+
+                            const setsByExercise: Record<string, SessionSet[]> = {};
+                            allLoggedSets.forEach((set) => {
+                              if (!set || !set.exerciseName) return;
+                              const name = set.exerciseName.trim();
+                              if (!name) return;
+                              if (!setsByExercise[name]) {
+                                setsByExercise[name] = [];
+                              }
+                              setsByExercise[name].push(set);
+                            });
+
+                            const exercisesRequiringIncrease: Array<{
+                              exerciseName: string;
+                              highestWeight: number;
+                              repsDone: number;
+                              totalSetsAtMax: number;
+                              setsOf10Plus: number;
+                              completed3SetsOf10: boolean;
+                              setDate: string;
+                            }> = [];
+
+                            Object.entries(setsByExercise).forEach(([exName, sets]) => {
+                              if (sets.length === 0) return;
+                              let maxWeight = -1;
+                              sets.forEach((s) => {
+                                if (s.weight > maxWeight) {
+                                  maxWeight = s.weight;
+                                }
+                              });
+
+                              const setsAtMaxWeight = sets.filter((s) => s.weight === maxWeight);
+                              const setWith10Reps = setsAtMaxWeight.find((s) => s.reps >= 10);
+                              const setsOf10Plus = setsAtMaxWeight.filter((s) => s.reps >= 10).length;
+                              const completed3SetsOf10 = setsOf10Plus >= 3;
+
+                              if (setWith10Reps) {
+                                const dates = setsAtMaxWeight
+                                  .filter((s) => s.reps >= 10 && s.date)
+                                  .map((s) => s.date);
+                                const latestDate = dates.sort().reverse()[0] || "";
+
+                                exercisesRequiringIncrease.push({
+                                  exerciseName: exName,
+                                  highestWeight: maxWeight,
+                                  repsDone: setWith10Reps.reps,
+                                  totalSetsAtMax: setsAtMaxWeight.length,
+                                  setsOf10Plus,
+                                  completed3SetsOf10,
+                                  setDate: latestDate,
+                                });
+                              }
+                            });
+
                             const pbsList = Object.entries(personalBests || {}).map(([key, value]) => ({
                               ...(value as PB),
                               exerciseName: (value as PB).exerciseName || key,
                             }));
                             
-                            // Filter list
+                            // Filter lists
                             const filteredPbs = pbsList.filter((pb) =>
                               pb.exerciseName?.toLowerCase().includes(pbSearchQuery.toLowerCase())
                             );
 
-                            // Sort list
+                            const filteredProgression = exercisesRequiringIncrease.filter((item) =>
+                              item.exerciseName?.toLowerCase().includes(pbSearchQuery.toLowerCase())
+                            );
+
+                            // Sort lists
                             const sortedPbs = [...filteredPbs].sort((a, b) => {
                               let comparison = 0;
                               if (pbSortKey === "name") {
@@ -7720,123 +7907,252 @@ export default function App() {
                               return pbSortOrder === "desc" ? -comparison : comparison;
                             });
 
-                            if (pbsList.length === 0) {
-                              return (
-                                <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
-                                  <Trophy className="w-10 h-10 text-white/10 mb-3" />
-                                  <p className="text-white/30 text-xs font-semibold uppercase tracking-wider">
-                                    No Personal Bests Established
-                                  </p>
-                                  <p className="text-[10px] text-white/20 mt-1 max-w-[340px] leading-relaxed">
-                                    Record your exercise sets in active workouts to calculate and persist your primary PB records automatically!
-                                  </p>
-                                </div>
-                              );
-                            }
-
-                            if (sortedPbs.length === 0) {
-                              return (
-                                <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
-                                  <p className="text-white/30 text-xs font-semibold">
-                                    No matches found for "{pbSearchQuery}"
-                                  </p>
-                                </div>
-                              );
-                            }
+                            const sortedProgression = [...filteredProgression].sort((a, b) => {
+                              let comparison = 0;
+                              if (pbSortKey === "name") {
+                                comparison = a.exerciseName.localeCompare(b.exerciseName);
+                              } else if (pbSortKey === "weight") {
+                                comparison = a.highestWeight - b.highestWeight;
+                              } else if (pbSortKey === "date") {
+                                const tA = a.setDate ? new Date(a.setDate).getTime() : 0;
+                                const tB = b.setDate ? new Date(b.setDate).getTime() : 0;
+                                comparison = tA - tB;
+                              }
+                              return pbSortOrder === "desc" ? -comparison : comparison;
+                            });
 
                             return (
-                              <div className="max-h-96 overflow-y-auto pr-1 space-y-2.5 divide-y divide-white/5 no-scrollbar">
-                                {sortedPbs.map((pb, index) => {
-                                  return (
-                                    <div
-                                      key={pb.exerciseName || index}
-                                      className={`pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-sm bg-black/45 border border-white/5 hover:border-white/10 hover:bg-white/[0.01] transition-all group/pbitem ${
-                                        index === 0 ? "pt-3.5" : ""
-                                      }`}
-                                    >
-                                      {/* Left block containing details */}
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-xs font-black tracking-widest text-[#ffffff] uppercase font-mono">
-                                            {pb.exerciseName}
-                                          </span>
-                                        </div>
-                                        
-                                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-[10px] text-white/40">
-                                          <div className="flex items-center gap-1.5 font-mono">
-                                            <span className="text-[9px] text-[#ffffff]/30 uppercase font-black tracking-wider">
-                                              Achieved:
-                                            </span>
-                                            <span className="text-white/60 font-semibold">
-                                              {formatDate(pb.bestDate)}
-                                            </span>
-                                          </div>
-                                          {pb.lastDate && pb.lastDate !== pb.bestDate && (
-                                            <div className="flex items-center gap-1.5 font-mono border-l border-white/10 pl-4">
-                                              <span className="text-[9px] text-[#ffffff]/30 uppercase font-black tracking-wider">
-                                                Last Lifted:
-                                              </span>
-                                              <span className="text-white/40 font-semibold">
-                                                {formatDate(pb.lastDate)} ({pb.lastWeight}kg)
-                                              </span>
-                                            </div>
-                                          )}
-                                        </div>
+                              <div className="flex flex-col gap-4">
+                                {/* Sub-Tab Navigation */}
+                                <div className="flex border-b border-white/5 p-1 bg-white/[0.01] rounded-sm gap-2">
+                                  <button
+                                    onClick={() => setPbSubTab("pbs")}
+                                    className={`flex-1 py-2 text-[10px] font-mono font-bold uppercase tracking-wider text-center cursor-pointer transition-all border-b-2 flex items-center justify-center gap-1.5 ${
+                                      pbSubTab === "pbs"
+                                        ? "text-gym-accent border-gym-accent font-black"
+                                        : "text-white/40 border-transparent hover:text-white"
+                                    }`}
+                                  >
+                                    🏆 Established PBs ({pbsList.length})
+                                  </button>
+                                  <button
+                                    onClick={() => setPbSubTab("progression")}
+                                    className={`flex-1 py-2 text-[10px] font-mono font-bold uppercase tracking-wider text-center cursor-pointer transition-all border-b-2 flex items-center justify-center gap-1.5 ${
+                                      pbSubTab === "progression"
+                                        ? "text-gym-accent border-gym-accent font-black"
+                                        : "text-white/40 border-transparent hover:text-white"
+                                    }`}
+                                  >
+                                    🚀 Increase Weight Suggestions ({exercisesRequiringIncrease.length})
+                                    {exercisesRequiringIncrease.length > 0 && (
+                                      <span className="bg-emerald-500/20 text-[#34d399] font-extrabold text-[8px] px-1.5 py-0.5 rounded-full font-mono border border-emerald-500/30">
+                                        {exercisesRequiringIncrease.length}
+                                      </span>
+                                    )}
+                                  </button>
+                                </div>
+
+                                {pbSubTab === "pbs" ? (
+                                  <>
+                                    {pbsList.length === 0 ? (
+                                      <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                        <Trophy className="w-10 h-10 text-white/10 mb-3" />
+                                        <p className="text-white/30 text-xs font-semibold uppercase tracking-wider">
+                                          No Personal Bests Established
+                                        </p>
+                                        <p className="text-[10px] text-white/20 mt-1 max-w-[340px] leading-relaxed">
+                                          Record your exercise sets in active workouts to calculate and persist your primary PB records automatically!
+                                        </p>
                                       </div>
+                                    ) : sortedPbs.length === 0 ? (
+                                      <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                        <p className="text-white/30 text-xs font-semibold">
+                                          No matches found for "{pbSearchQuery}"
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <div className="max-h-96 overflow-y-auto pr-1 space-y-2.5 divide-y divide-white/5 no-scrollbar">
+                                        {sortedPbs.map((pb, index) => (
+                                          <div
+                                            key={pb.exerciseName || index}
+                                            className={`pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-sm bg-black/45 border border-white/5 hover:border-white/10 hover:bg-white/[0.01] transition-all group/pbitem ${
+                                              index === 0 ? "pt-3.5" : ""
+                                            }`}
+                                          >
+                                            {/* Left block containing details */}
+                                            <div className="flex-1">
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-xs font-black tracking-widest text-[#ffffff] uppercase font-mono">
+                                                  {pb.exerciseName}
+                                                </span>
+                                              </div>
+                                              
+                                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-[10px] text-white/40">
+                                                <div className="flex items-center gap-1.5 font-mono">
+                                                  <span className="text-[9px] text-[#ffffff]/30 uppercase font-black tracking-wider">
+                                                    Achieved:
+                                                  </span>
+                                                  <span className="text-white/60 font-semibold">
+                                                    {formatDate(pb.bestDate)}
+                                                  </span>
+                                                </div>
+                                                {pb.lastDate && pb.lastDate !== pb.bestDate && (
+                                                  <div className="flex items-center gap-1.5 font-mono border-l border-white/10 pl-4">
+                                                    <span className="text-[9px] text-[#ffffff]/30 uppercase font-black tracking-wider">
+                                                      Last Lifted:
+                                                    </span>
+                                                    <span className="text-white/40 font-semibold">
+                                                      {formatDate(pb.lastDate)} ({pb.lastWeight}kg)
+                                                    </span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </div>
 
-                                        {/* Right block containing visual weights and options */}
-                                        <div className="flex items-center gap-4 shrink-0">
-                                          <div className="flex flex-col text-right">
-                                            <span className="text-[8px] text-[#ffffff]/20 font-black tracking-widest uppercase font-mono mb-0.5">
-                                              PERSONAL RECORD
-                                            </span>
-                                            <div className="bg-gym-accent/10 border border-gym-accent/20 rounded px-2.5 py-1 text-gym-accent font-mono text-xs font-black uppercase tracking-wider inline-flex items-center gap-1.5 font-bold">
-                                              <Dumbbell className="w-3 h-3 text-gym-accent/70" />
-                                              <span>{pb.bestWeight} kg</span>
-                                              <span className="text-[9px] text-gym-accent/55">×</span>
-                                              <span>{pb.bestReps} reps</span>
+                                            {/* Right block containing visual weights and options */}
+                                            <div className="flex items-center gap-4 shrink-0">
+                                              <div className="flex flex-col text-right">
+                                                <span className="text-[8px] text-[#ffffff]/20 font-black tracking-widest uppercase font-mono mb-0.5">
+                                                  PERSONAL RECORD
+                                                </span>
+                                                <div className="bg-gym-accent/10 border border-gym-accent/20 rounded px-2.5 py-1 text-gym-accent font-mono text-xs font-black uppercase tracking-wider inline-flex items-center gap-1.5 font-bold">
+                                                  <Dumbbell className="w-3 h-3 text-gym-accent/70" />
+                                                  <span>{pb.bestWeight} kg</span>
+                                                  <span className="text-[9px] text-gym-accent/55">×</span>
+                                                  <span>{pb.bestReps} reps</span>
+                                                </div>
+                                              </div>
+
+                                              {deletingPbName === pb.exerciseName ? (
+                                                <div className="flex items-center gap-2 bg-rose-950/40 border border-rose-500/20 rounded-md p-1 px-1.5">
+                                                  <span className="text-[9px] text-rose-400 font-extrabold uppercase tracking-wide font-mono">
+                                                    DEL?
+                                                  </span>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                      handleDeletePB(pb.exerciseName);
+                                                      setDeletingPbName(null);
+                                                    }}
+                                                    className="p-1 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded transition-all cursor-pointer"
+                                                    title="Confirm deletion"
+                                                  >
+                                                    <Check className="w-3.5 h-3.5" />
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => setDeletingPbName(null)}
+                                                    className="p-1 text-white/40 hover:text-white hover:bg-white/10 rounded transition-all cursor-pointer"
+                                                    title="Cancel deletion"
+                                                  >
+                                                    <span className="text-xs font-bold leading-none px-1">×</span>
+                                                  </button>
+                                                </div>
+                                              ) : (
+                                                <button
+                                                  type="button"
+                                                  onClick={() => setDeletingPbName(pb.exerciseName)}
+                                                  className="p-2 text-white/30 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded transition-all cursor-pointer flex items-center justify-center self-center"
+                                                  title={`Delete Personal Best for ${pb.exerciseName}`}
+                                                >
+                                                  <Trash2 className="w-4 h-4" />
+                                                </button>
+                                              )}
                                             </div>
                                           </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
+                                    {exercisesRequiringIncrease.length === 0 ? (
+                                      <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                        <Flame className="w-10 h-10 text-white/10 mb-3" />
+                                        <p className="text-white/30 text-xs font-semibold uppercase tracking-wider">
+                                          No Progression Suggestions
+                                        </p>
+                                        <p className="text-[10px] text-white/20 mt-1 max-w-[340px] leading-relaxed">
+                                          Complete 10 or more reps at your highest logged weight on any exercise to trigger progression suggestion!
+                                        </p>
+                                      </div>
+                                    ) : sortedProgression.length === 0 ? (
+                                      <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                        <p className="text-white/30 text-xs font-semibold">
+                                          No matches found for "{pbSearchQuery}"
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <div className="max-h-96 overflow-y-auto pr-1 space-y-2.5 divide-y divide-white/5 no-scrollbar">
+                                        {sortedProgression.map((item, index) => (
+                                          <div
+                                            key={item.exerciseName}
+                                            className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-sm bg-black/45 border border-emerald-500/10 hover:border-emerald-500/25 hover:bg-emerald-500/[0.01] transition-all group/progitem"
+                                          >
+                                            <div className="flex-1">
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-xs font-black tracking-widest text-[#ffffff] uppercase font-mono">
+                                                  {item.exerciseName}
+                                                </span>
+                                                <span className="bg-emerald-500/10 border border-emerald-500/20 text-[#34d399] text-[8px] font-black uppercase px-2 py-0.5 rounded-sm tracking-wider flex items-center gap-1 font-mono">
+                                                  <TrendingUp className="w-2.5 h-2.5" /> Weight Increase Needed
+                                                </span>
+                                              </div>
+                                              
+                                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-[10px] text-white/40">
+                                                <div className="flex items-center gap-1.5 font-mono">
+                                                  <span className="text-[9px] text-[#ffffff]/30 uppercase font-black tracking-wider">
+                                                    Peak Logged Weight:
+                                                  </span>
+                                                  <span className="text-white/80 font-bold">
+                                                    {item.highestWeight} kg × {item.repsDone} reps
+                                                  </span>
+                                                </div>
+                                                {item.setDate && (
+                                                  <div className="flex items-center gap-1.5 font-mono border-l border-white/10 pl-4">
+                                                    <span className="text-[9px] text-[#ffffff]/30 uppercase font-black tracking-wider">
+                                                      Achieved On:
+                                                    </span>
+                                                    <span className="text-white/50 font-semibold">
+                                                      {formatDate(item.setDate)}
+                                                    </span>
+                                                  </div>
+                                                )}
+                                              </div>
 
-                                          {deletingPbName === pb.exerciseName ? (
-                                            <div className="flex items-center gap-2 bg-rose-950/40 border border-rose-500/20 rounded-md p-1 px-1.5">
-                                              <span className="text-[9px] text-rose-400 font-extrabold uppercase tracking-wide font-mono">
-                                                DEL?
-                                              </span>
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  handleDeletePB(pb.exerciseName);
-                                                  setDeletingPbName(null);
-                                                }}
-                                                className="p-1 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 rounded transition-all cursor-pointer"
-                                                title="Confirm deletion"
-                                              >
-                                                <Check className="w-3.5 h-3.5" />
-                                              </button>
-                                              <button
-                                                type="button"
-                                                onClick={() => setDeletingPbName(null)}
-                                                className="p-1 text-white/40 hover:text-white hover:bg-white/10 rounded transition-all cursor-pointer"
-                                                title="Cancel deletion"
-                                              >
-                                                <span className="text-xs font-bold leading-none px-1">×</span>
-                                              </button>
+                                              <div className="mt-2.5 bg-emerald-950/20 border border-emerald-500/10 rounded-sm p-2 text-[10px] text-emerald-400/90 font-mono leading-relaxed">
+                                                {item.completed3SetsOf10 ? (
+                                                  <div>
+                                                    <strong>🔥 STRONGLY RECOMMENDED PROGRESSION</strong>
+                                                    <p className="text-[9px] mt-0.5 text-emerald-400/70">
+                                                      Completed {item.setsOf10Plus} sets of 10+ reps at {item.highestWeight}kg. Muscle adaptation reached. Increase weight by <strong>+2.5 kg</strong> immediately to continue progressive overload.
+                                                    </p>
+                                                  </div>
+                                                ) : (
+                                                  <div>
+                                                    <strong>🚀 PROGRESSION SUGGESTION</strong>
+                                                    <p className="text-[9px] mt-0.5 text-white/45">
+                                                      Successfully completed 10 reps of your absolute heaviest logged load! Try a <strong>+2.5 kg load increase</strong> on your next workout to continue growth.
+                                                    </p>
+                                                  </div>
+                                                )}
+                                              </div>
                                             </div>
-                                          ) : (
-                                            <button
-                                              type="button"
-                                              onClick={() => setDeletingPbName(pb.exerciseName)}
-                                              className="p-2 text-white/30 hover:text-rose-500 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 rounded transition-all cursor-pointer flex items-center justify-center self-center"
-                                              title={`Delete Personal Best for ${pb.exerciseName}`}
-                                            >
-                                              <Trash2 className="w-4 h-4" />
-                                            </button>
-                                          )}
-                                        </div>
-                                    </div>
-                                  );
-                                })}
+
+                                            <div className="flex flex-col text-right shrink-0">
+                                              <span className="text-[8px] text-emerald-500/40 font-black tracking-widest uppercase font-mono mb-0.5">
+                                                RECOM. INC.
+                                              </span>
+                                              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded px-2.5 py-1 text-emerald-400 font-mono text-[9px] font-black uppercase tracking-wider inline-flex items-center justify-center gap-1 font-bold">
+                                                <span>+2.5 kg</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </>
+                                )}
                               </div>
                             );
                           })()}
@@ -8459,6 +8775,145 @@ export default function App() {
                               <div className="flex justify-between items-center text-[8px] text-white/30 uppercase font-black tracking-widest pl-1">
                                 <span>0 kcal</span>
                                 <span>Target: {targetCals} kcal</span>
+                              </div>
+
+                              {/* Dynamic Session Stopwatch & Calibration Panel */}
+                              <div className="mt-6 pt-5 border-t border-white/5 flex flex-col gap-4">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/5 p-3 rounded-sm">
+                                  <div className="flex items-center gap-2">
+                                    <Timer className={`w-4 h-4 ${profile?.timerActive ? "text-gym-accent animate-spin" : "text-white/40"}`} style={{ animationDuration: "3s" }} />
+                                    <div>
+                                      <div className="text-[10px] font-black uppercase text-white/80 tracking-wider">Workout Session Stopwatch</div>
+                                      <div className="text-[9px] text-white/40">Calibrate accurate rest time by logging session duration</div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex items-center gap-3 w-full sm:w-auto shrink-0 animate-fade-in">
+                                    {profile?.timerActive ? (
+                                      <button
+                                        onClick={async () => {
+                                          await saveSettings({
+                                            timerActive: false,
+                                            timerEndTime: new Date().toISOString(),
+                                          });
+                                          setToast({ message: "Workout session timer stopped!", type: "success" });
+                                          setTimeout(() => setToast(null), 3000);
+                                        }}
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-650 hover:bg-red-500 text-white rounded-sm text-[9px] font-mono font-bold uppercase tracking-wider cursor-pointer transition-colors"
+                                      >
+                                        <Square className="w-2.5 h-2.5 fill-current" /> Stop Stopwatch
+                                      </button>
+                                    ) : (
+                                      <button
+                                        onClick={async () => {
+                                          await saveSettings({
+                                            timerActive: true,
+                                            timerStartTime: new Date().toISOString(),
+                                            timerEndTime: null,
+                                            timerManualDuration: 0,
+                                          });
+                                          setToast({ message: "Workout session timer started!", type: "success" });
+                                          setTimeout(() => setToast(null), 3000);
+                                        }}
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gym-accent hover:bg-gym-accent-light text-black rounded-sm text-[9px] font-mono font-bold uppercase tracking-wider cursor-pointer transition-colors"
+                                      >
+                                        <Play className="w-2.5 h-2.5 fill-current animate-pulse" /> Start Stopwatch
+                                      </button>
+                                    )}
+                                    
+                                    {(profile?.timerStartTime || (profile?.timerManualDuration && profile.timerManualDuration > 0)) && (
+                                      <button
+                                        onClick={async () => {
+                                          await saveSettings({
+                                            timerStartTime: null,
+                                            timerEndTime: null,
+                                            timerActive: false,
+                                            timerManualDuration: 0,
+                                          });
+                                          setToast({ message: "Workout session timing reset!", type: "info" });
+                                          setTimeout(() => setToast(null), 3000);
+                                        }}
+                                        className="px-2.5 py-1.5 border border-white/10 hover:border-white/20 text-white/50 hover:text-white rounded-sm text-[9px] font-mono font-bold uppercase cursor-pointer transition-colors"
+                                        title="Reset timers and overrides"
+                                      >
+                                        Reset
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                                  {/* Timing Status Readout */}
+                                  <div className="flex flex-col justify-center bg-white/[0.01] border border-white/[0.03] p-3 rounded-sm">
+                                    <span className="text-[8px] text-white/30 uppercase tracking-widest font-black mb-1">Time Elapsed Status</span>
+                                    <div className="flex items-baseline gap-1.5">
+                                      {(() => {
+                                        if (profile?.timerManualDuration && profile.timerManualDuration > 0) {
+                                          return (
+                                            <>
+                                              <span className="text-lg font-mono text-emerald-400 font-bold">{profile.timerManualDuration}m</span>
+                                              <span className="text-[9px] text-white/40">(Manual Override Mode)</span>
+                                            </>
+                                          );
+                                        }
+                                        if (profile?.timerStartTime) {
+                                          const startMs = Date.parse(profile.timerStartTime);
+                                          if (!isNaN(startMs)) {
+                                            const endMs = profile.timerActive
+                                              ? Date.now()
+                                              : (profile.timerEndTime ? Date.parse(profile.timerEndTime) : Date.now());
+                                            const rawSecs = Math.max(0, Math.floor((endMs - startMs) / 1000));
+                                            const mins = Math.floor(rawSecs / 60);
+                                            const secs = rawSecs % 60;
+                                            const formatMins = mins > 0 ? `${mins}m ` : "";
+                                            const displayTime = `${formatMins}${secs}s`;
+                                            return (
+                                              <>
+                                                <span className={`text-lg font-mono font-bold ${profile.timerActive ? "text-gym-accent animate-pulse" : "text-white/85"}`}>
+                                                  {displayTime}
+                                                </span>
+                                                <span className="text-[8px] text-white/40 font-mono">
+                                                  ({profile.timerActive ? "Stopwatch Active" : "Final stopwatch duration"})
+                                                </span>
+                                              </>
+                                            );
+                                          }
+                                        }
+                                        return (
+                                          <>
+                                            <span className="text-xs font-mono text-white/30 italic">Not Tracked</span>
+                                            <span className="text-[8px] text-white/35 font-mono">(Using Proportional Estimator)</span>
+                                          </>
+                                        );
+                                      })()}
+                                    </div>
+                                  </div>
+
+                                  {/* Fail-safe Manual override minutes input */}
+                                  <div className="flex flex-col justify-center bg-white/[0.01] border border-white/[0.03] p-3 rounded-sm">
+                                    <label className="text-[8px] text-white/30 uppercase tracking-widest font-black mb-1.5 flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-white/30" /> Manual Override Calibration (Fail-safe)
+                                    </label>
+                                    <div className="flex items-center gap-2">
+                                      <input
+                                        type="number"
+                                        min="1"
+                                        max="360"
+                                        value={profile?.timerManualDuration || ""}
+                                        onChange={async (e) => {
+                                          const val = parseInt(e.target.value, 10);
+                                          await saveSettings({
+                                            timerManualDuration: isNaN(val) ? 0 : val,
+                                            timerActive: false, // overrides automatic timing immediately
+                                          });
+                                        }}
+                                        placeholder="Enter exact session minutes directly (e.g. 45)"
+                                        className="flex-1 bg-black/50 border border-white/10 rounded-sm px-2 py-1 text-[10px] text-white focus:outline-none focus:border-gym-accent/30 font-mono placeholder:text-white/15"
+                                      />
+                                      <span className="text-[9px] font-mono text-white/30">min</span>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           );

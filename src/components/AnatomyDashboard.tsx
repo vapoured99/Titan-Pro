@@ -104,9 +104,9 @@ export default function AnatomyDashboard({
   // Keep track of which dropdowns/accordions are expanded
   const [expanded, setExpanded] = useState<Record<string, boolean>>({
     physiological: false,
-    radar: true, // Default open Option 2: Muscular Radar Analysis
+    radar: false, // Default closed
     strength: false,
-    biomechanical: true,
+    biomechanical: false, // Default closed
     cnsFatigue: false
   });
 
