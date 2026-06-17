@@ -7975,7 +7975,12 @@ export default function App() {
                               <button
                                 onClick={handleRebuildPBsFromHistory}
                                 disabled={rebuildingPBs}
-                                className="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-[#34d399] hover:text-white bg-[#34d399]/10 border border-[#34d399]/25 hover:border-[#34d399]/40 disabled:opacity-40 rounded-sm font-mono flex items-center gap-1.5 cursor-pointer transition-all"
+                                style={{
+                                  color: activeTheme.accent,
+                                  backgroundColor: `${activeTheme.accent}12`,
+                                  borderColor: `${activeTheme.accent}40`,
+                                }}
+                                className="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest disabled:opacity-40 rounded-sm font-mono flex items-center gap-1.5 cursor-pointer transition-all hover:brightness-125 hover:border-white/30"
                                 title="Scan raw session history and recalibrate correct personal bests"
                               >
                                 <RefreshCw className={`w-3 h-3 ${rebuildingPBs ? 'animate-spin' : ''}`} />
@@ -11195,29 +11200,29 @@ export default function App() {
                                       </div>
                                       {/* Sub-muscle Category Badge removed from title header */}
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-col gap-1.5 shrink-0">
                                       <button
                                         onClick={() => setGuidanceEx(ex)}
-                                        className="p-3 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+                                        className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
                                         title="Guidance & Instructions"
                                       >
-                                        <BookOpen className="w-4 h-4" />
+                                        <BookOpen className="w-3.5 h-3.5" />
                                       </button>
                                       <button
                                         onClick={() => handleSwap(di, ei)}
-                                        className="p-3 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+                                        className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
                                         title="Swap Exercise"
                                       >
-                                        <RefreshCw className="w-4 h-4" />
+                                        <RefreshCw className="w-3.5 h-3.5" />
                                       </button>
                                       <button
                                         onClick={() =>
                                           handleRemoveExerciseFromPlan(di, ei)
                                         }
-                                        className="p-3 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-sm"
+                                        className="p-2.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-sm"
                                         title="Remove"
                                       >
-                                        <Trash2 className="w-4 h-4 text-red-500" />
+                                        <Trash2 className="w-3.5 h-3.5 text-red-500" />
                                       </button>
                                     </div>
                                   </div>
@@ -12003,12 +12008,18 @@ export default function App() {
                 className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl z-50 p-6 sm:p-8"
               >
                 {/* Visual Glow */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+                <div
+                  style={{ backgroundColor: `${activeTheme.accent}0d` }}
+                  className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl pointer-events-none"
+                />
 
                 {/* Header */}
                 <div className="flex items-start justify-between mb-6 relative z-10">
                   <div>
-                    <span className="text-[9px] text-[#34d399] font-black uppercase tracking-[0.3em] block mb-1">
+                    <span
+                      style={{ color: activeTheme.accent }}
+                      className="text-[9px] font-black uppercase tracking-[0.3em] block mb-1"
+                    >
                       Performance Analytics
                     </span>
                     <h3 className="text-2xl font-light italic font-serif text-white uppercase tracking-wider">
@@ -12039,7 +12050,7 @@ export default function App() {
                         </p>
                         <p className="text-[10px] text-white/30 mt-2 max-w-[420px] leading-relaxed font-mono px-4">
                           We found no historical workout sets completed for{" "}
-                          <span className="text-[#34d399]">
+                          <span style={{ color: activeTheme.accent }}>
                             "{selectedHistoryChartExercise}"
                           </span>{" "}
                           in your session logs yet. Create a workout, add sets, and archive it to generate beautiful trends!
@@ -12071,9 +12082,12 @@ export default function App() {
                           <span className="text-[8px] text-white/30 uppercase font-black tracking-wider block mb-1">
                             Peak Weight Load
                           </span>
-                          <span className="text-lg font-black text-[#34d399] font-mono">
+                          <span
+                            style={{ color: activeTheme.accent }}
+                            className="text-lg font-black font-mono"
+                          >
                             {maxVal}{" "}
-                            <span className="text-[10px] font-normal text-white/45">
+                            <span className="text-[10px] font-normal text-white/45 animate-pulse">
                               KG
                             </span>
                           </span>
@@ -12089,14 +12103,22 @@ export default function App() {
                             </span>
                           </span>
                         </div>
-                        <div className="bg-black/40 border border-[#34d399]/10 rounded-sm p-3.5 flex flex-col justify-center bg-[#34d399]/[0.01]">
-                          <span className="text-[8px] text-[#34d399]/40 uppercase font-black tracking-wider block mb-1">
+                        <div
+                          style={{
+                            borderColor: `${activeTheme.accent}20`,
+                            backgroundColor: `${activeTheme.accent}03`,
+                          }}
+                          className="border rounded-sm p-3.5 flex flex-col justify-center"
+                        >
+                          <span
+                            style={{ color: `${activeTheme.accent}70` }}
+                            className="text-[8px] uppercase font-black tracking-wider block mb-1"
+                          >
                             Absolute Growth
                           </span>
                           <span
-                            className={`text-lg font-black font-mono flex items-center ${
-                              gap >= 0 ? "text-[#34d399]" : "text-rose-400"
-                            }`}
+                            style={{ color: gap >= 0 ? activeTheme.accent : "#f87171" }}
+                            className="text-lg font-black font-mono flex items-center"
                           >
                             {gap >= 0 ? `+${gap}` : gap}{" "}
                             <span className="text-[10px] font-normal ml-1">
@@ -12126,12 +12148,12 @@ export default function App() {
                               >
                                 <stop
                                   offset="5%"
-                                  stopColor="#10b981"
+                                  stopColor={activeTheme.accent}
                                   stopOpacity={0.25}
                                 />
                                 <stop
                                   offset="95%"
-                                  stopColor="#10b981"
+                                  stopColor={activeTheme.accent}
                                   stopOpacity={0}
                                 />
                               </linearGradient>
@@ -12177,7 +12199,7 @@ export default function App() {
                                           year: "numeric",
                                         })}
                                       </p>
-                                      <p className="text-[#34d399] font-black">
+                                      <p style={{ color: activeTheme.accent }} className="font-black">
                                         PEAK WEIGHT: {data.weight} kg
                                       </p>
                                       <p className="text-white/70">
@@ -12195,20 +12217,20 @@ export default function App() {
                             <Area
                               type="monotone"
                               dataKey="weight"
-                              stroke="#34d399"
+                              stroke={activeTheme.accent}
                               strokeWidth={2}
                               fillOpacity={1}
                               fill="url(#progressChartGlow)"
                               dot={{
                                 r: 3,
-                                fill: "#34d399",
+                                fill: activeTheme.accent,
                                 strokeWidth: 1,
                                 stroke: "#000000",
                               }}
                               activeDot={{
                                 r: 5,
                                 fill: "#ffffff",
-                                stroke: "#34d399",
+                                stroke: activeTheme.accent,
                                 strokeWidth: 2,
                               }}
                             />
@@ -12228,7 +12250,11 @@ export default function App() {
                 <div className="mt-8 pt-4 border-t border-white/5 flex justify-end relative z-10">
                   <button
                     onClick={() => setSelectedHistoryChartExercise(null)}
-                    className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-sm text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-colors font-mono"
+                    style={{
+                      borderColor: `${activeTheme.accent}30`,
+                      backgroundColor: `${activeTheme.accent}0a`,
+                    }}
+                    className="px-6 py-2.5 hover:bg-white/10 hover:border-white/20 rounded-sm text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-colors font-mono"
                   >
                     Done
                   </button>
