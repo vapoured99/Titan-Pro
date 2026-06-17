@@ -126,6 +126,7 @@ import overgrownCyberCityBg from "./assets/images/cyber_city_bg_new_177971926211
 
 // --- Avatar Images & Screenshot Engine ---
 import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import imgVanguardDefault from "./assets/images/vanguard_default_1779362283869.png";
 import imgNeonStrikerDefault from "./assets/images/neon_striker_1779356868324.png";
 import imgShadowHunterDefault from "./assets/images/shadow_hunter_1779356889743.png";
@@ -1692,6 +1693,7 @@ export default function App() {
   const [selectedLibraryCategory, setSelectedLibraryCategory] =
     useState<string>("chest");
   const [showProgressReport, setShowProgressReport] = useState(false);
+  const [isExportingReport, setIsExportingReport] = useState(false);
   const [reportCardScale, setReportCardScale] = useState(1);
   const [reportCardHeight, setReportCardHeight] = useState<number | null>(null);
 
@@ -1754,6 +1756,147 @@ export default function App() {
       if (ex) return ex;
     }
     return null;
+  };
+
+  const handleExportPdf = async () => {
+    if (isExportingReport) return;
+    setIsExportingReport(true);
+    try {
+      const card = document.getElementById("progress-report-card");
+      if (!card) {
+        setToast({ message: "Progress report card element not found.", type: "info" });
+        setIsExportingReport(false);
+        return;
+      }
+
+      // Helper function to safely replace oklch, oklab, color-mix and light-dark with valid simple rbgColor to avoid crashing html2canvas parser
+      const replaceColorFunctions = (cssText: string): string => {
+        let result = cssText;
+        const keywords = ["oklch(", "oklab(", "color-mix(", "light-dark("];
+        
+        for (const keyword of keywords) {
+          let index = result.toLowerCase().indexOf(keyword);
+          while (index !== -1) {
+            let parenCount = 1;
+            let j = index + keyword.length;
+            while (j < result.length && parenCount > 0) {
+              if (result[j] === '(') {
+                parenCount++;
+              } else if (result[j] === ')') {
+                parenCount--;
+              }
+              j++;
+            }
+            
+            if (parenCount === 0) {
+              const before = result.substring(0, index);
+              const after = result.substring(j);
+              result = before + "rgb(128, 128, 128)" + after;
+              index = result.toLowerCase().indexOf(keyword, index);
+            } else {
+              index = result.toLowerCase().indexOf(keyword, index + 1);
+            }
+          }
+        }
+        return result;
+      };
+
+      // Store original transform and scale
+      const origTransform = card.style.transform;
+      // Unset transform temporarily for crisp extraction
+      card.style.transform = "none";
+
+      const canvas = await html2canvas(card, {
+        scale: 2, // 2x resolution for retina-sharp text and charts
+        useCORS: true,
+        backgroundColor: "#050505", // Precise background match
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Remove/replace unsupported modern CSS oklch, oklab, color-mix and light-dark colors from stylesheet content
+          const styles = clonedDoc.getElementsByTagName("style");
+          for (let i = 0; i < styles.length; i++) {
+            const style = styles[i];
+            if (style.textContent) {
+              style.textContent = replaceColorFunctions(style.textContent);
+            }
+          }
+
+          // Fetch external link stylesheets, replace color functions, and turn them into styled inline blocks
+          const links = Array.from(clonedDoc.getElementsByTagName("link"));
+          for (const link of links) {
+            if (link.getAttribute("rel") === "stylesheet") {
+              const href = link.getAttribute("href");
+              if (href) {
+                try {
+                  const xhr = new XMLHttpRequest();
+                  xhr.open("GET", href, false); // synchronous call to block safely inside onclone worker context
+                  xhr.send();
+                  if (xhr.status === 200) {
+                    const cssContent = replaceColorFunctions(xhr.responseText);
+                    const styleEl = clonedDoc.createElement("style");
+                    styleEl.textContent = cssContent;
+                    clonedDoc.head.appendChild(styleEl);
+                    link.remove();
+                  }
+                } catch (e) {
+                  console.error("Failed to replace link stylesheet color functions inside onclone:", href, e);
+                }
+              }
+            }
+          }
+
+          // Scrub oklch/oklab from elements' inline style, fill, and stroke attributes
+          const allElements = clonedDoc.getElementsByTagName("*");
+          for (let i = 0; i < allElements.length; i++) {
+            const el = allElements[i];
+            const styleAttr = el.getAttribute("style");
+            if (styleAttr && (styleAttr.toLowerCase().includes("oklch") || styleAttr.toLowerCase().includes("oklab") || styleAttr.toLowerCase().includes("color-mix") || styleAttr.toLowerCase().includes("light-dark"))) {
+              el.setAttribute("style", replaceColorFunctions(styleAttr));
+            }
+
+            const fillAttr = el.getAttribute("fill");
+            if (fillAttr && (fillAttr.toLowerCase().includes("oklch") || fillAttr.toLowerCase().includes("oklab") || fillAttr.toLowerCase().includes("color-mix") || fillAttr.toLowerCase().includes("light-dark"))) {
+              el.setAttribute("fill", "rgb(128, 128, 128)");
+            }
+
+            const strokeAttr = el.getAttribute("stroke");
+            if (strokeAttr && (strokeAttr.toLowerCase().includes("oklch") || strokeAttr.toLowerCase().includes("oklab") || strokeAttr.toLowerCase().includes("color-mix") || strokeAttr.toLowerCase().includes("light-dark"))) {
+              el.setAttribute("stroke", "rgb(128, 128, 128)");
+            }
+          }
+        },
+      });
+
+      // Restore original transform
+      card.style.transform = origTransform;
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+
+      // Create PDF in A4 size or dynamically scaled size to match layout aspect ratio perfectly
+      const pdfWidth = 595; // base A4 width in pt
+      const pdfHeight = (imgHeight / imgWidth) * pdfWidth;
+
+      const doc = new jsPDF({
+        orientation: pdfHeight > pdfWidth ? "portrait" : "landscape",
+        unit: "pt",
+        format: [pdfWidth, pdfHeight],
+      });
+
+      doc.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
+      
+      const athleteName = profile?.displayName || currentUser?.displayName || "Athlete";
+      const sanitizedName = athleteName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+      doc.save(`iron_archive_${sanitizedName}_report.pdf`);
+      
+      setToast({ message: "🏆 PDF Report exported successfully!", type: "success" });
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      setToast({ message: "Failed to generate PDF. Please try again.", type: "info" });
+    } finally {
+      setIsExportingReport(false);
+    }
   };
 
   // Pre-select first routine or reset if current is deleted/empty
@@ -13911,6 +14054,22 @@ export default function App() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Floating Action Button (FAB) for PDF Export */}
+                    <motion.button
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleExportPdf}
+                      disabled={isExportingReport}
+                      className="absolute bottom-6 right-6 z-[130] flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-gym-accent to-gym-accent-light text-black font-black uppercase tracking-widest text-[10px] rounded-full shadow-2xl cursor-pointer hover:brightness-110 active:scale-95 transition-all outline-none border border-black/15 select-none group focus:ring-2 focus:ring-gym-accent/50"
+                    >
+                      {isExportingReport ? (
+                        <Loader2 className="w-4.5 h-4.5 animate-spin text-black" />
+                      ) : (
+                        <Download className="w-4.5 h-4.5 text-black group-hover:translate-y-0.5 transition-transform" />
+                      )}
+                      <span>{isExportingReport ? "Generating PDF..." : "Export PDF Summary"}</span>
+                    </motion.button>
                   </motion.div>
                 </div>
               );
