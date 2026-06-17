@@ -1791,7 +1791,7 @@ export default function App() {
             if (parenCount === 0) {
               const before = result.substring(0, index);
               const after = result.substring(j);
-              result = before + "rgb(128, 128, 128)" + after;
+              result = before + "rgb(0, 0, 0)" + after;
               index = result.toLowerCase().indexOf(keyword, index);
             } else {
               index = result.toLowerCase().indexOf(keyword, index + 1);
@@ -1809,7 +1809,7 @@ export default function App() {
       const canvas = await html2canvas(card, {
         scale: 2, // 2x resolution for retina-sharp text and charts
         useCORS: true,
-        backgroundColor: "#050505", // Precise background match
+        backgroundColor: "#ffffff", // Crisp white backing for clean printing
         logging: false,
         onclone: (clonedDoc) => {
           // Remove/replace unsupported modern CSS oklch, oklab, color-mix and light-dark colors from stylesheet content
@@ -1845,6 +1845,228 @@ export default function App() {
             }
           }
 
+          // Inject printer-friendly high-contrast dark-on-white styling specifically for progress-report-card inside exported PDF
+          const printerStyleEl = clonedDoc.createElement("style");
+          printerStyleEl.textContent = `
+            #progress-report-card {
+              background-color: #ffffff !important;
+              background: #ffffff !important;
+              color: #000000 !important;
+              border-color: #000000 !important;
+            }
+
+            /* Container backgrounds */
+            #progress-report-card .bg-white\\[0\\.015\\],
+            #progress-report-card .bg-black\\/40,
+            #progress-report-card div[class*="bg-white/"],
+            #progress-report-card div[class*="bg-black/"],
+            #progress-report-card [class*="bg-white/"],
+            #progress-report-card [class*="bg-black/"] {
+              background-color: #f4f4f5 !important;
+              background: #f4f4f5 !important;
+              border-color: #000000 !important;
+            }
+
+            /* Heading colors */
+            #progress-report-card h1,
+            #progress-report-card h2,
+            #progress-report-card h3,
+            #progress-report-card h4,
+            #progress-report-card .text-white {
+              color: #000000 !important;
+              stroke: none !important;
+            }
+
+            /* Secondary labels */
+            #progress-report-card p,
+            #progress-report-card .text-white\\/60,
+            #progress-report-card .text-white\\/55 {
+              color: #000000 !important;
+              stroke: none !important;
+              font-weight: 500 !important;
+            }
+
+            /* Tertiary texts, timestamps */
+            #progress-report-card .text-white\\/30,
+            #progress-report-card .text-white\\/15,
+            #progress-report-card span.text-white\\/30,
+            #progress-report-card div.text-white {
+              color: #000000 !important;
+              stroke: none !important;
+            }
+
+            /* Gym accent highlights (metrics numbers, streak days, ranking classifications) */
+            #progress-report-card .text-gym-accent,
+            #progress-report-card [class*="text-gym-accent"] {
+              color: #000000 !important;
+              font-weight: 800 !important;
+              stroke: none !important;
+            }
+
+            /* Tech edge anchors */
+            #progress-report-card div[class*="border-t"],
+            #progress-report-card div[class*="border-b"],
+            #progress-report-card div[class*="border-l"],
+            #progress-report-card div[class*="border-r"] {
+              border-color: #000000 !important;
+            }
+
+            /* SVGs and Icons */
+            #progress-report-card svg {
+              stroke: #000000 !important;
+            }
+
+            /* Recharts Grid and Axis Lines */
+            #progress-report-card .recharts-cartesian-grid-horizontal line,
+            #progress-report-card .recharts-cartesian-grid-vertical line {
+              stroke: #000000 !important;
+              stroke-opacity: 0.15 !important;
+            }
+
+            #progress-report-card .recharts-cartesian-axis-line {
+              stroke: #000000 !important;
+              stroke-width: 1.5 !important;
+            }
+
+            #progress-report-card .recharts-text,
+            #progress-report-card text,
+            #progress-report-card .recharts-cartesian-axis-tick-value {
+              fill: #000000 !important;
+              stroke: none !important;
+              font-weight: 700 !important;
+            }
+
+            /* Area and Line charts path trend curves and circles */
+            #progress-report-card .recharts-area-curve,
+            #progress-report-card .recharts-line-curve,
+            #progress-report-card .recharts-line line,
+            #progress-report-card path.recharts-curve {
+              stroke: #000000 !important;
+              stroke-width: 3.5 !important;
+              stroke-opacity: 1 !important;
+            }
+
+            #progress-report-card .recharts-area-path {
+              fill: #000000 !important;
+              fill-opacity: 0.15 !important;
+            }
+
+            #progress-report-card .recharts-dot,
+            #progress-report-card .recharts-line-dot {
+              fill: #000000 !important;
+              stroke: #000000 !important;
+              stroke-width: 2 !important;
+            }
+
+            /* Level Bubble badge */
+            #progress-report-card div.absolute.bottom-1.bg-black\\/90 {
+              background-color: #000000 !important;
+              color: #ffffff !important;
+              border-color: #000000 !important;
+            }
+
+            /* Border adjustments */
+            #progress-report-card .border,
+            #progress-report-card .border-t,
+            #progress-report-card .border-b,
+            #progress-report-card .border-l,
+            #progress-report-card .border-r {
+              border-color: #000000 !important;
+            }
+
+            /* Tech corners of container cards */
+            #progress-report-card .border-gym-accent\\/20,
+            #progress-report-card .border-gym-accent\\/25,
+            #progress-report-card .border-gym-accent\\/50 {
+              border-color: #000000 !important;
+            }
+          `;
+          clonedDoc.head.appendChild(printerStyleEl);
+
+          // Specifically target elements inside the cloned progress report card to ensure absolute visibility on white backgrounds
+          const clonedReport = clonedDoc.getElementById("progress-report-card");
+          if (clonedReport) {
+            // 1. Force all SVG text elements (axis values, weights, date labels, legend ticks) to black
+            const textNodes = clonedReport.querySelectorAll("text, tspan");
+            textNodes.forEach((node) => {
+              node.setAttribute("fill", "#000000");
+              node.setAttribute("stroke", "none");
+              const el = node as any;
+              if (el.style) {
+                el.style.setProperty("fill", "#000000", "important");
+                el.style.setProperty("stroke", "none", "important");
+                el.style.setProperty("color", "#000000", "important");
+                el.style.setProperty("font-weight", "700", "important");
+              }
+            });
+
+            // 2. Make chart line curves, area trend lines, and border strokes dark/black
+            const curvePaths = clonedReport.querySelectorAll(".recharts-area-curve, .recharts-line-curve, .recharts-line line, path.recharts-curve");
+            curvePaths.forEach((path) => {
+              path.setAttribute("stroke", "#000000");
+              path.setAttribute("stroke-opacity", "1");
+              const el = path as any;
+              if (el.style) {
+                el.style.setProperty("stroke", "#000000", "important");
+                el.style.setProperty("stroke-opacity", "1", "important");
+                el.style.setProperty("stroke-width", "3px", "important");
+              }
+            });
+
+            // 3. Set the chart Area gradient fills to transparent gray/black
+            const pathAreas = clonedReport.querySelectorAll(".recharts-area-path");
+            pathAreas.forEach((area) => {
+              area.setAttribute("fill", "#000000");
+              area.setAttribute("fill-opacity", "0.15");
+              const el = area as any;
+              if (el.style) {
+                el.style.setProperty("fill", "#000000", "important");
+                el.style.setProperty("fill-opacity", "0.15", "important");
+              }
+            });
+
+            // 4. Adjust grid lines and tick/axis markers
+            const lineNodes = clonedReport.querySelectorAll("line");
+            lineNodes.forEach((node) => {
+              const strokeVal = node.getAttribute("stroke");
+              if (strokeVal && strokeVal !== "none") {
+                const el = node as any;
+                if (node.closest(".recharts-cartesian-grid")) {
+                  node.setAttribute("stroke", "#000000");
+                  node.setAttribute("stroke-opacity", "0.15");
+                  if (el.style) {
+                    el.style.setProperty("stroke", "#000000", "important");
+                    el.style.setProperty("stroke-opacity", "0.15", "important");
+                  }
+                } else {
+                  node.setAttribute("stroke", "#000000");
+                  node.setAttribute("stroke-opacity", "1");
+                  if (el.style) {
+                    el.style.setProperty("stroke", "#000000", "important");
+                    el.style.setProperty("stroke-opacity", "1", "important");
+                  }
+                }
+              }
+            });
+
+            // 5. Change all standard HTML text elements (spans, ps, headers) inside report card to dark
+            const textTags = clonedReport.querySelectorAll("span, p, h1, h2, h3, h4, h5, h6, div");
+            textTags.forEach((node) => {
+              const el = node as any;
+              // Ignore Level overlay bubble so it remains white-on-dark theme styling
+              if (node.closest("div.absolute.bottom-1") || el.classList?.contains("bottom-1")) {
+                return;
+              }
+              const cl = el.className;
+              const hasTextClasses = typeof cl === "string" && (cl.includes("text-white") || cl.includes("text-gym-accent"));
+              const isTextTag = ["SPAN", "P", "H1", "H2", "H3", "H4", "H5", "H6"].includes(el.tagName);
+              if ((isTextTag || hasTextClasses) && el.style) {
+                el.style.setProperty("color", "#000000", "important");
+                el.style.setProperty("stroke", "none", "important");
+              }
+            });
+          }
+
           // Scrub oklch/oklab from elements' inline style, fill, and stroke attributes
           const allElements = clonedDoc.getElementsByTagName("*");
           for (let i = 0; i < allElements.length; i++) {
@@ -1856,12 +2078,12 @@ export default function App() {
 
             const fillAttr = el.getAttribute("fill");
             if (fillAttr && (fillAttr.toLowerCase().includes("oklch") || fillAttr.toLowerCase().includes("oklab") || fillAttr.toLowerCase().includes("color-mix") || fillAttr.toLowerCase().includes("light-dark"))) {
-              el.setAttribute("fill", "rgb(128, 128, 128)");
+              el.setAttribute("fill", "rgb(0, 0, 0)");
             }
 
             const strokeAttr = el.getAttribute("stroke");
             if (strokeAttr && (strokeAttr.toLowerCase().includes("oklch") || strokeAttr.toLowerCase().includes("oklab") || strokeAttr.toLowerCase().includes("color-mix") || strokeAttr.toLowerCase().includes("light-dark"))) {
-              el.setAttribute("stroke", "rgb(128, 128, 128)");
+              el.setAttribute("stroke", "rgb(0, 0, 0)");
             }
           }
         },
