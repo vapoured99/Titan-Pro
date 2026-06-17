@@ -52,6 +52,7 @@ import {
   Square,
   Timer,
   Clock,
+  LineChart,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -65,6 +66,8 @@ import {
   Cell,
   AreaChart,
   Area,
+  LineChart as RechartsLineChart,
+  Line,
 } from "recharts";
 import AnatomyChart from "./components/AnatomyChart";
 import AnatomyDashboard from "./components/AnatomyDashboard";
@@ -1671,6 +1674,8 @@ export default function App() {
     personalRecords: true,
   });
   const [pbSearchQuery, setPbSearchQuery] = useState("");
+  const [rebuildingPBs, setRebuildingPBs] = useState(false);
+  const [selectedHistoryChartExercise, setSelectedHistoryChartExercise] = useState<string | null>(null);
   const [pbSubTab, setPbSubTab] = useState<"pbs" | "progression">("pbs");
   const [pbSortKey, setPbSortKey] = useState<"name" | "weight" | "date">("date");
   const [pbSortOrder, setPbSortOrder] = useState<"asc" | "desc">("desc");
@@ -1738,6 +1743,7 @@ export default function App() {
     setExpandedLibrarySections({});
     setExpandedWorkouts({});
     setShowClearConfirm(false);
+    setSelectedHistoryChartExercise(null);
   }, [activeView]);
 
   const findExerciseByName = (name: string): Exercise | null => {
@@ -3383,6 +3389,208 @@ export default function App() {
         `users/${currentUser.uid}/sets/${setId}`,
       );
     }
+  };
+
+  const handleRebuildPBsFromHistory = async () => {
+    if (!currentUser) return;
+    if (archivedWorkouts.length === 0) {
+      alert("No captured/archived sessions found to scan. Record and archive some workouts first!");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to scan all historical sessions and rebuild your Personal Best records? This will overwrite existing records with the actual highest loads performed in your session history.")) {
+      return;
+    }
+
+    try {
+      setRebuildingPBs(true);
+      
+      const sortedWorkouts = [...archivedWorkouts].sort((a, b) => {
+        const dateA = a.date || "";
+        const dateB = b.date || "";
+        return dateA.localeCompare(dateB);
+      });
+
+      const exerciseData: Record<string, {
+        allSets: Array<{ weight: number; reps: number; date: string; dateStrForPB: string }>;
+      }> = {};
+
+      sortedWorkouts.forEach((w) => {
+        if (!w.sets || !Array.isArray(w.sets)) return;
+        const wDate = w.date || "";
+        
+        let dateStrForPB = "";
+        try {
+          if (wDate) {
+            const dateObj = new Date(wDate);
+            dateStrForPB = dateObj.toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+            });
+          }
+        } catch (e) {
+          dateStrForPB = wDate;
+        }
+        if (!dateStrForPB) {
+          dateStrForPB = new Date().toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+          });
+        }
+
+        w.sets.forEach((s: any) => {
+          if (!s || !s.exerciseName) return;
+          const exName = s.exerciseName.trim();
+          if (!exName) return;
+
+          if (!exerciseData[exName]) {
+            exerciseData[exName] = { allSets: [] };
+          }
+          
+          exerciseData[exName].allSets.push({
+            weight: Number(s.weight) || 0,
+            reps: Number(s.reps) || 0,
+            date: wDate,
+            dateStrForPB,
+          });
+        });
+      });
+
+      const newPBs: Record<string, PB> = {};
+      
+      Object.entries(exerciseData).forEach(([exName, data]) => {
+        const sets = data.allSets;
+        if (sets.length === 0) return;
+
+        const isAssisted = exName.toLowerCase().includes("assisted pull");
+        const lastSet = sets[sets.length - 1];
+        let bestSet = sets[0];
+
+        for (let i = 1; i < sets.length; i++) {
+          const current = sets[i];
+          let isBetter = false;
+          
+          if (isAssisted) {
+            if (current.weight < bestSet.weight) {
+              isBetter = true;
+            } else if (current.weight === bestSet.weight && current.reps > bestSet.reps) {
+              isBetter = true;
+            }
+          } else {
+            if (current.weight > bestSet.weight) {
+              isBetter = true;
+            } else if (current.weight === bestSet.weight && current.reps > bestSet.reps) {
+              isBetter = true;
+            }
+          }
+
+          if (isBetter) {
+            bestSet = current;
+          }
+        }
+
+        newPBs[exName] = {
+          exerciseName: exName,
+          lastWeight: lastSet.weight,
+          lastReps: lastSet.reps,
+          lastDate: lastSet.dateStrForPB,
+          bestWeight: bestSet.weight,
+          bestReps: bestSet.reps,
+          bestDate: bestSet.dateStrForPB,
+        };
+      });
+
+      const batch = writeBatch(db);
+      
+      const existingPbNames = Object.keys(personalBests || {});
+      existingPbNames.forEach((name) => {
+        if (!newPBs[name]) {
+          const pbRef = doc(db, `users/${currentUser.uid}/pbs/${name}`);
+          batch.delete(pbRef);
+        }
+      });
+
+      Object.entries(newPBs).forEach(([exName, pb]) => {
+        const pbRef = doc(db, `users/${currentUser.uid}/pbs/${exName}`);
+        batch.set(pbRef, pb);
+      });
+
+      await batch.commit();
+
+      setToast({
+        message: `Successfully rebuilt ${Object.keys(newPBs).length} Personal Bests from raw session history!`,
+        type: "success",
+      });
+      setTimeout(() => setToast(null), 4000);
+    } catch (err) {
+      console.error("Error rebuilding PBs from history:", err);
+      alert("Failed to rebuild PBs. Please try again.");
+    } finally {
+      setRebuildingPBs(false);
+    }
+  };
+
+  const getExerciseHistoryData = (exName: string) => {
+    if (!exName) return [];
+    const searchName = exName.trim().toLowerCase();
+    const bestSetPerSession: Record<
+      string,
+      { weight: number; reps: number; dateStr: string; timestamp: number }
+    > = {};
+
+    archivedWorkouts.forEach((w) => {
+      if (!w.sets || !Array.isArray(w.sets)) return;
+      const wDate = w.date || "";
+      if (!wDate) return;
+
+      const sessionKey = w.id || wDate;
+
+      w.sets.forEach((s: any) => {
+        if (!s || !s.exerciseName) return;
+        if (s.exerciseName.trim().toLowerCase() === searchName) {
+          const weight = Number(s.weight) || 0;
+          const reps = Number(s.reps) || 0;
+
+          const existing = bestSetPerSession[sessionKey];
+          if (
+            !existing ||
+            weight > existing.weight ||
+            (weight === existing.weight && reps > existing.reps)
+          ) {
+            bestSetPerSession[sessionKey] = {
+              weight,
+              reps,
+              dateStr: wDate,
+              timestamp: new Date(wDate).getTime() || 0,
+            };
+          }
+        }
+      });
+    });
+
+    const rawPoints = Object.values(bestSetPerSession);
+    rawPoints.sort((a, b) => a.timestamp - b.timestamp);
+
+    return rawPoints.map((p) => {
+      let dateLabel = "";
+      try {
+        const d = new Date(p.dateStr);
+        dateLabel = d.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+        });
+      } catch (err) {
+        dateLabel = p.dateStr;
+      }
+
+      return {
+        date: dateLabel || "Unknown",
+        fullDate: p.dateStr,
+        weight: p.weight,
+        reps: p.reps,
+        volume: p.weight * p.reps,
+      };
+    });
   };
 
   const handleDeletePB = async (exName: string) => {
@@ -7763,7 +7971,17 @@ export default function App() {
                             </div>
 
                             {/* Sorting Controls */}
-                            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                            <div className="flex flex-wrap items-center gap-4 w-full sm:w-auto justify-end">
+                              <button
+                                onClick={handleRebuildPBsFromHistory}
+                                disabled={rebuildingPBs}
+                                className="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest text-[#34d399] hover:text-white bg-[#34d399]/10 border border-[#34d399]/25 hover:border-[#34d399]/40 disabled:opacity-40 rounded-sm font-mono flex items-center gap-1.5 cursor-pointer transition-all"
+                                title="Scan raw session history and recalibrate correct personal bests"
+                              >
+                                <RefreshCw className={`w-3 h-3 ${rebuildingPBs ? 'animate-spin' : ''}`} />
+                                <span>{rebuildingPBs ? "RECALIBRATING..." : "RECALIBRATE"}</span>
+                              </button>
+
                               <span className="text-[9px] text-white/30 uppercase tracking-widest font-black font-mono">
                                 Sort By
                               </span>
@@ -7982,9 +8200,14 @@ export default function App() {
                                             {/* Left block containing details */}
                                             <div className="flex-1">
                                               <div className="flex items-center gap-2">
-                                                <span className="text-xs font-black tracking-widest text-[#ffffff] uppercase font-mono">
-                                                  {pb.exerciseName}
-                                                </span>
+                                                <button
+                                                  onClick={() => setSelectedHistoryChartExercise(pb.exerciseName)}
+                                                  className="text-xs font-black tracking-widest text-[#ffffff] hover:text-gym-accent uppercase font-mono transition-colors flex items-center gap-1.5 cursor-pointer text-left focus:outline-none"
+                                                  title={`View progress chart for ${pb.exerciseName}`}
+                                                >
+                                                  <span>{pb.exerciseName}</span>
+                                                  <LineChart className="w-3.5 h-3.5 text-gym-accent opacity-0 group-hover/pbitem:opacity-100 transition-opacity" />
+                                                </button>
                                               </div>
                                               
                                               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-[10px] text-white/40">
@@ -8091,9 +8314,14 @@ export default function App() {
                                           >
                                             <div className="flex-1">
                                               <div className="flex items-center gap-2">
-                                                <span className="text-xs font-black tracking-widest text-[#ffffff] uppercase font-mono">
-                                                  {item.exerciseName}
-                                                </span>
+                                                <button
+                                                  onClick={() => setSelectedHistoryChartExercise(item.exerciseName)}
+                                                  className="text-xs font-black tracking-widest text-[#ffffff] hover:text-gym-accent uppercase font-mono transition-colors flex items-center gap-1.5 cursor-pointer text-left focus:outline-none"
+                                                  title={`View progress chart for ${item.exerciseName}`}
+                                                >
+                                                  <span>{item.exerciseName}</span>
+                                                  <LineChart className="w-3.5 h-3.5 text-gym-accent opacity-0 group-hover/progitem:opacity-100 transition-opacity" />
+                                                </button>
                                                 <span className="bg-emerald-500/10 border border-emerald-500/20 text-[#34d399] text-[8px] font-black uppercase px-2 py-0.5 rounded-sm tracking-wider flex items-center gap-1 font-mono">
                                                   <TrendingUp className="w-2.5 h-2.5" /> Weight Increase Needed
                                                 </span>
@@ -11751,6 +11979,259 @@ export default function App() {
                       Cancel
                     </button>
                   </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Dynamic Exercise Progression Timeline Chart Modal */}
+        <AnimatePresence>
+          {selectedHistoryChartExercise && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 text-white font-sans">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedHistoryChartExercise(null)}
+                className="absolute inset-0 bg-black/95 backdrop-blur-md"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 25 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 25 }}
+                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl z-50 p-6 sm:p-8"
+              >
+                {/* Visual Glow */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+
+                {/* Header */}
+                <div className="flex items-start justify-between mb-6 relative z-10">
+                  <div>
+                    <span className="text-[9px] text-[#34d399] font-black uppercase tracking-[0.3em] block mb-1">
+                      Performance Analytics
+                    </span>
+                    <h3 className="text-2xl font-light italic font-serif text-white uppercase tracking-wider">
+                      {selectedHistoryChartExercise}
+                    </h3>
+                    <p className="text-[10px] text-white/40 mt-1 uppercase tracking-widest font-mono">
+                      Logged Weight Progress Over Time
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedHistoryChartExercise(null)}
+                    className="p-1.5 px-3 text-white/40 hover:text-white hover:bg-white/5 border border-white/10 rounded transition-all cursor-pointer font-mono text-xs uppercase tracking-wider"
+                  >
+                    Close &times;
+                  </button>
+                </div>
+
+                {/* Content */}
+                {(() => {
+                  const chartData = getExerciseHistoryData(selectedHistoryChartExercise);
+
+                  if (chartData.length === 0) {
+                    return (
+                      <div className="py-16 border border-dashed border-white/5 bg-[#070707]/30 text-center flex flex-col items-center justify-center rounded-sm">
+                        <Dumbbell className="w-12 h-12 text-white/10 mb-4 animate-pulse" />
+                        <p className="text-white/60 text-xs font-semibold uppercase tracking-wider">
+                          No Chronological Logs
+                        </p>
+                        <p className="text-[10px] text-white/30 mt-2 max-w-[420px] leading-relaxed font-mono px-4">
+                          We found no historical workout sets completed for{" "}
+                          <span className="text-[#34d399]">
+                            "{selectedHistoryChartExercise}"
+                          </span>{" "}
+                          in your session logs yet. Create a workout, add sets, and archive it to generate beautiful trends!
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  const first = chartData[0];
+                  const last = chartData[chartData.length - 1];
+                  const weights = chartData.map((d) => d.weight);
+                  const maxVal = Math.max(...weights);
+                  const minVal = Math.min(...weights);
+                  const gap = last.weight - first.weight;
+
+                  return (
+                    <div className="space-y-6 relative z-10">
+                      {/* Stats bento */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="bg-black/40 border border-white/5 rounded-sm p-3.5 flex flex-col justify-center">
+                          <span className="text-[8px] text-white/30 uppercase font-black tracking-wider block mb-1">
+                            Recorded lifts
+                          </span>
+                          <span className="text-lg font-light text-white font-mono">
+                            {chartData.length}
+                          </span>
+                        </div>
+                        <div className="bg-black/40 border border-white/5 rounded-sm p-3.5 flex flex-col justify-center">
+                          <span className="text-[8px] text-white/30 uppercase font-black tracking-wider block mb-1">
+                            Peak Weight Load
+                          </span>
+                          <span className="text-lg font-black text-[#34d399] font-mono">
+                            {maxVal}{" "}
+                            <span className="text-[10px] font-normal text-white/45">
+                              KG
+                            </span>
+                          </span>
+                        </div>
+                        <div className="bg-black/40 border border-white/5 rounded-sm p-3.5 flex flex-col justify-center">
+                          <span className="text-[8px] text-white/30 uppercase font-black tracking-wider block mb-1">
+                            Starting Load
+                          </span>
+                          <span className="text-lg font-light text-white/60 font-mono">
+                            {first.weight}{" "}
+                            <span className="text-[10px] font-normal text-white/45">
+                              KG
+                            </span>
+                          </span>
+                        </div>
+                        <div className="bg-black/40 border border-[#34d399]/10 rounded-sm p-3.5 flex flex-col justify-center bg-[#34d399]/[0.01]">
+                          <span className="text-[8px] text-[#34d399]/40 uppercase font-black tracking-wider block mb-1">
+                            Absolute Growth
+                          </span>
+                          <span
+                            className={`text-lg font-black font-mono flex items-center ${
+                              gap >= 0 ? "text-[#34d399]" : "text-rose-400"
+                            }`}
+                          >
+                            {gap >= 0 ? `+${gap}` : gap}{" "}
+                            <span className="text-[10px] font-normal ml-1">
+                              KG
+                            </span>
+                            {gap > 0 && (
+                              <TrendingUp className="w-4 h-4 ml-1.5 shrink-0" />
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Line/Area Chart */}
+                      <div className="w-full h-64 bg-black/35 border border-white/5 rounded-sm p-4 pt-6">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart
+                            data={chartData}
+                            margin={{ top: 10, right: 10, left: -22, bottom: 0 }}
+                          >
+                            <defs>
+                              <linearGradient
+                                id="progressChartGlow"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                              >
+                                <stop
+                                  offset="5%"
+                                  stopColor="#10b981"
+                                  stopOpacity={0.25}
+                                />
+                                <stop
+                                  offset="95%"
+                                  stopColor="#10b981"
+                                  stopOpacity={0}
+                                />
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid
+                              strokeDasharray="3 3"
+                              stroke="rgba(255,255,255,0.03)"
+                              vertical={false}
+                            />
+                            <XAxis
+                              dataKey="date"
+                              stroke="rgba(255,255,255,0.2)"
+                              fontSize={9}
+                              tickLine={false}
+                              axisLine={false}
+                              dy={8}
+                              fontFamily="monospace"
+                            />
+                            <YAxis
+                              stroke="rgba(255,255,255,0.2)"
+                              fontSize={9}
+                              tickLine={false}
+                              axisLine={false}
+                              domain={[
+                                Math.max(0, minVal - 5),
+                                Math.max(10, maxVal + 5),
+                              ]}
+                              fontFamily="monospace"
+                            />
+                            <Tooltip
+                              content={({ active, payload }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0]
+                                    .payload as any;
+                                  return (
+                                    <div className="bg-[#0c0c0c] border border-white/10 p-3 shadow-2xl rounded-sm font-mono text-[10px]">
+                                      <p className="text-white/40 mb-1 font-sans">
+                                        {new Date(
+                                          data.fullDate,
+                                        ).toLocaleDateString("en-GB", {
+                                          day: "numeric",
+                                          month: "long",
+                                          year: "numeric",
+                                        })}
+                                      </p>
+                                      <p className="text-[#34d399] font-black">
+                                        PEAK WEIGHT: {data.weight} kg
+                                      </p>
+                                      <p className="text-white/70">
+                                        BEST REPS: {data.reps} reps
+                                      </p>
+                                      <p className="text-white/30 text-[9px] mt-0.5">
+                                        SESSION VOL: {data.volume} kg
+                                      </p>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              }}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="weight"
+                              stroke="#34d399"
+                              strokeWidth={2}
+                              fillOpacity={1}
+                              fill="url(#progressChartGlow)"
+                              dot={{
+                                r: 3,
+                                fill: "#34d399",
+                                strokeWidth: 1,
+                                stroke: "#000000",
+                              }}
+                              activeDot={{
+                                r: 5,
+                                fill: "#ffffff",
+                                stroke: "#34d399",
+                                strokeWidth: 2,
+                              }}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+
+                      {/* Explanation */}
+                      <p className="text-center text-[9px] text-white/20 font-mono tracking-wider uppercase">
+                        • Plotted values trace your peak loaded sets per logged workout day •
+                      </p>
+                    </div>
+                  );
+                })()}
+
+                {/* Footer */}
+                <div className="mt-8 pt-4 border-t border-white/5 flex justify-end relative z-10">
+                  <button
+                    onClick={() => setSelectedHistoryChartExercise(null)}
+                    className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-sm text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-colors font-mono"
+                  >
+                    Done
+                  </button>
                 </div>
               </motion.div>
             </div>
