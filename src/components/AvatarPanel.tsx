@@ -3748,96 +3748,99 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                     </div>
                   </div>
 
-                  {/* Relic Resonance Summary Section */}
-                  <div className="bg-zinc-950/90 border border-yellow-500/10 rounded-lg p-4 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/[0.02] to-transparent pointer-events-none" />
-                    <h4 className="text-[9.5px] font-mono font-extrabold tracking-widest text-yellow-500 uppercase flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 animate-pulse" /> RELIC RESONANCE PASSIVES
-                    </h4>
-                    
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-3">
-                      {[
-                        { label: 'Max Health pool', value: (profile?.unlockedRelics || []).includes('obsidian_heart') ? '+15 HP' : '+0 HP', active: (profile?.unlockedRelics || []).includes('obsidian_heart') },
-                        { label: 'Somatic Might', value: (profile?.unlockedRelics || []).includes('pyroclastic_seed') ? '+5 ATK' : '+0 ATK', active: (profile?.unlockedRelics || []).includes('pyroclastic_seed') },
-                        { label: 'Resting Defense', value: (profile?.unlockedRelics || []).includes('abyssal_lantern') ? '+3 DEF' : '+0 DEF', active: (profile?.unlockedRelics || []).includes('abyssal_lantern') },
-                        { label: 'Trial Experience', value: (profile?.unlockedRelics || []).includes('sun_gilded_scepter') ? '+10% XP' : '+0% XP', active: (profile?.unlockedRelics || []).includes('sun_gilded_scepter') },
-                        { label: 'Critical Strike', value: (profile?.unlockedRelics || []).includes('chrono_hourglass') ? '+1.5% CRIT' : '+0% CRIT', active: (profile?.unlockedRelics || []).includes('chrono_hourglass') },
-                      ].map((sub, i) => (
-                        <div key={i} className={`p-2.5 rounded border font-mono text-center flex flex-col justify-center items-center gap-0.5 ${sub.active ? 'border-yellow-500/20 bg-yellow-500/[0.04] text-white' : 'border-white/5 bg-black/40 text-white/30'}`}>
-                          <span className="text-[8.5px] uppercase tracking-wider block font-sans text-white/40">{sub.label}</span>
-                          <span className={`text-xs font-black mt-1 ${sub.active ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]' : 'text-white/20'}`}>{sub.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {(profile?.unlockedRelics || []).includes('demiurge_crest') && (
-                      <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/25 rounded flex items-center justify-between text-[11px] font-mono text-yellow-300 px-3">
-                        <span className="font-extrabold">👑 PRIMORDIAL ASCENSION ACTIVE:</span>
-                        <span>+5% General Strength Multiplier & +10% Core Health Multiplier enabled!</span>
+                  {/* Scrollable Container wrapper to prevent cutting off relics at the bottom */}
+                  <div className="flex-grow flex-1 overflow-y-auto custom-scrollbar pr-1 flex flex-col gap-6 min-h-0">
+                    {/* Relic Resonance Summary Section */}
+                    <div className="bg-zinc-950/90 border border-yellow-500/10 rounded-lg p-4 relative overflow-hidden shrink-0">
+                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/[0.02] to-transparent pointer-events-none" />
+                      <h4 className="text-[9.5px] font-mono font-extrabold tracking-widest text-yellow-500 uppercase flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 animate-pulse" /> RELIC RESONANCE PASSIVES
+                      </h4>
+                      
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mt-3">
+                        {[
+                          { label: 'Max Health pool', value: (profile?.unlockedRelics || []).includes('obsidian_heart') ? '+15 HP' : '+0 HP', active: (profile?.unlockedRelics || []).includes('obsidian_heart') },
+                          { label: 'Somatic Might', value: (profile?.unlockedRelics || []).includes('pyroclastic_seed') ? '+5 ATK' : '+0 ATK', active: (profile?.unlockedRelics || []).includes('pyroclastic_seed') },
+                          { label: 'Resting Defense', value: (profile?.unlockedRelics || []).includes('abyssal_lantern') ? '+3 DEF' : '+0 DEF', active: (profile?.unlockedRelics || []).includes('abyssal_lantern') },
+                          { label: 'Trial Experience', value: (profile?.unlockedRelics || []).includes('sun_gilded_scepter') ? '+10% XP' : '+0% XP', active: (profile?.unlockedRelics || []).includes('sun_gilded_scepter') },
+                          { label: 'Critical Strike', value: (profile?.unlockedRelics || []).includes('chrono_hourglass') ? '+1.5% CRIT' : '+0% CRIT', active: (profile?.unlockedRelics || []).includes('chrono_hourglass') },
+                        ].map((sub, i) => (
+                          <div key={i} className={`p-2.5 rounded border font-mono text-center flex flex-col justify-center items-center gap-0.5 ${sub.active ? 'border-yellow-500/20 bg-yellow-500/[0.04] text-white' : 'border-white/5 bg-black/40 text-white/30'}`}>
+                            <span className="text-[8.5px] uppercase tracking-wider block font-sans text-white/40">{sub.label}</span>
+                            <span className={`text-xs font-black mt-1 ${sub.active ? 'text-yellow-400 drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]' : 'text-white/20'}`}>{sub.value}</span>
+                          </div>
+                        ))}
                       </div>
-                    )}
-                  </div>
-
-                  {/* Relics Library Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {RELICS.map((relic) => {
-                      const isUnlocked = (profile?.unlockedRelics || []).includes(relic.id);
-                      return (
-                        <div 
-                          key={relic.id}
-                          className={`relative border rounded-lg p-4 bg-zinc-950/90 flex flex-col justify-between min-h-[170px] transition-all duration-300 overflow-hidden group/relic ${
-                            isUnlocked 
-                              ? 'border-yellow-500/35 text-white shadow-[0_0_20px_rgba(234,179,8,0.06)] hover:border-yellow-500/50 hover:shadow-[0_0_25px_rgba(234,179,8,0.12)] bg-gradient-to-b from-yellow-500/[0.01] to-transparent' 
-                              : 'border-white/5 text-white/40 bg-zinc-950/40 select-none'
-                          }`}
-                        >
-                          {/* Top row */}
-                          <div>
-                            <div className="flex items-start justify-between">
-                              <div className={`p-2.5 rounded-lg border font-mono text-2xl flex items-center justify-center shrink-0 shadow-md ${
-                                isUnlocked 
-                                  ? relic.badgeColor + ' shadow-yellow-500/5'
-                                  : 'border-white/5 bg-zinc-900/50 text-white/20'
-                              }`}>
-                                {relic.icon}
-                              </div>
-                              {isUnlocked ? (
-                                <span className="flex items-center gap-1 text-[8.5px] font-mono font-extrabold text-[#10b981] bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded uppercase">
-                                  <Check className="w-3 h-3 stroke-[3]" /> Bound & Active
-                                </span>
-                              ) : (
-                                <span className="flex items-center gap-1 text-[8.5px] font-mono font-black text-[#f43f5e] bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded uppercase">
-                                  <Lock className="w-3 h-3" /> Dormant
-                                </span>
-                              )}
-                            </div>
-                            
-                            {/* Relic Title */}
-                            <h5 className={`font-serif text-sm mt-3.5 transition-colors ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
-                              {relic.name}
-                            </h5>
-                            
-                            {/* Relic Description */}
-                            <p className="text-[11px] text-white/50 font-normal mt-1 leading-relaxed">
-                              {relic.description}
-                            </p>
-                          </div>
-
-                          {/* Passive Bonus Tag lines */}
-                          <div className="mt-4 border-t border-white/5 pt-3 flex flex-col gap-1">
-                            <div className="flex justify-between items-center">
-                              <span className="text-[9px] font-mono uppercase tracking-wider text-[#ffffff]/30">Passive Attributer:</span>
-                              <span className={`text-[10px] font-mono font-black ${isUnlocked ? 'text-yellow-400' : 'text-white/20'}`}>
-                                {relic.bonusText}
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center text-[9px] font-mono mt-0.5">
-                              <span className="text-[#ffffff]/30">Titan Vessel Name:</span>
-                              <span className={isUnlocked ? 'text-white/70' : 'text-white/20'}>{relic.bossName}</span>
-                            </div>
-                          </div>
+                      {(profile?.unlockedRelics || []).includes('demiurge_crest') && (
+                        <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/25 rounded flex items-center justify-between text-[11px] font-mono text-yellow-300 px-3">
+                          <span className="font-extrabold">👑 PRIMORDIAL ASCENSION ACTIVE:</span>
+                          <span>+5% General Strength Multiplier & +10% Core Health Multiplier enabled!</span>
                         </div>
-                      );
-                    })}
+                      )}
+                    </div>
+
+                    {/* Relics Library Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {RELICS.map((relic) => {
+                        const isUnlocked = (profile?.unlockedRelics || []).includes(relic.id);
+                        return (
+                          <div 
+                            key={relic.id}
+                            className={`relative border rounded-lg p-4 bg-zinc-950/90 flex flex-col justify-between min-h-[170px] transition-all duration-300 overflow-hidden group/relic ${
+                              isUnlocked 
+                                ? 'border-yellow-500/35 text-white shadow-[0_0_20px_rgba(234,179,8,0.06)] hover:border-yellow-500/50 hover:shadow-[0_0_25px_rgba(234,179,8,0.12)] bg-gradient-to-b from-yellow-500/[0.01] to-transparent' 
+                                : 'border-white/5 text-white/40 bg-zinc-950/40 select-none'
+                            }`}
+                          >
+                            {/* Top row */}
+                            <div>
+                              <div className="flex items-start justify-between">
+                                <div className={`p-2.5 rounded-lg border font-mono text-xl flex items-center justify-center shrink-0 shadow-md ${
+                                  isUnlocked 
+                                    ? relic.badgeColor + ' shadow-yellow-500/5'
+                                    : 'border-white/5 bg-zinc-900/50 text-white/20'
+                                }`}>
+                                  {relic.icon}
+                                </div>
+                                {isUnlocked ? (
+                                  <span className="flex items-center gap-1 text-[8.5px] font-mono font-extrabold text-[#10b981] bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded uppercase">
+                                    <Check className="w-3 h-3 stroke-[3]" /> Bound & Active
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center gap-1 text-[8.5px] font-mono font-black text-[#f43f5e] bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.5 rounded uppercase">
+                                    <Lock className="w-3 h-3" /> Dormant
+                                  </span>
+                                )}
+                              </div>
+                              
+                              {/* Relic Title */}
+                              <h5 className={`font-serif text-sm mt-3.5 transition-colors ${isUnlocked ? 'text-white' : 'text-white/40'}`}>
+                                {relic.name}
+                              </h5>
+                              
+                              {/* Relic Description */}
+                              <p className="text-[11px] text-white/50 font-normal mt-1 leading-relaxed">
+                                {relic.description}
+                              </p>
+                            </div>
+
+                            {/* Passive Bonus Tag lines */}
+                            <div className="mt-4 border-t border-white/5 pt-3 flex flex-col gap-1">
+                              <div className="flex justify-between items-center">
+                                <span className="text-[9px] font-mono uppercase tracking-wider text-[#ffffff]/30">Passive Attributer:</span>
+                                <span className={`text-[10px] font-mono font-black ${isUnlocked ? 'text-yellow-400' : 'text-white/20'}`}>
+                                  {relic.bonusText}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center text-[9px] font-mono mt-0.5">
+                                <span className="text-[#ffffff]/30">Titan Vessel Name:</span>
+                                <span className={isUnlocked ? 'text-white/70' : 'text-white/20'}>{relic.bossName}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
