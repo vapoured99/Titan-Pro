@@ -1028,7 +1028,7 @@ export default function AnatomyDashboard({
       <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
         <button
           onClick={() => toggleSection('physiological')}
-          className="w-full flex items-center justify-between p-5 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
           id="toggle-physiological"
         >
           <div className="flex items-center gap-3.5">
@@ -1107,7 +1107,7 @@ export default function AnatomyDashboard({
                         <select
                           value={selectedDashboardRoutineId || ""}
                           onChange={(e) => setSelectedDashboardRoutineId(e.target.value)}
-                          className="bg-black/90 border border-white/10 hover:border-white/25 focus:border-gym-accent text-white text-[10px] font-bold uppercase tracking-wider rounded-sm px-3 py-1.5 focus:outline-none transition-all cursor-pointer min-w-[140px] max-w-[220px]"
+                          className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer min-w-[200px] max-w-[320px] shadow-md"
                         >
                           {routines.map((r: any, idx: number) => (
                             <option key={r.id || idx} value={r.id}>
@@ -1195,7 +1195,7 @@ export default function AnatomyDashboard({
       <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
         <button
           onClick={() => toggleSection('radar')}
-          className="w-full flex items-center justify-between p-5 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
           id="toggle-radar"
         >
           <div className="flex items-center gap-3.5">
@@ -1542,7 +1542,7 @@ export default function AnatomyDashboard({
       <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
         <button
           onClick={() => toggleSection('biomechanical')}
-          className="w-full flex items-center justify-between p-5 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
           id="toggle-biomechanical"
         >
           <div className="flex items-center gap-3.5">
@@ -1891,7 +1891,7 @@ export default function AnatomyDashboard({
       <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
         <button
           onClick={() => toggleSection('strength')}
-          className="w-full flex items-center justify-between p-5 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
           id="toggle-strength"
         >
           <div className="flex items-center gap-3.5">
@@ -2489,7 +2489,7 @@ export default function AnatomyDashboard({
       <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md mt-4">
         <button
           onClick={() => toggleSection('cnsFatigue')}
-          className="w-full flex items-center justify-between p-5 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
           id="toggle-cns-fatigue"
         >
           <div className="flex items-center gap-3.5">

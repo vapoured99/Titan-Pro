@@ -1185,6 +1185,33 @@ const getMuscleGroupIcon = (group: string) => {
   }
 };
 
+const getLibraryCategoryIcon = (key: string) => {
+  switch (key.toLowerCase()) {
+    case "chest":
+      return <Crown className="w-5 h-5 text-gym-accent" />;
+    case "back":
+      return <ArrowUpDown className="w-5 h-5 text-gym-accent" />;
+    case "shoulders":
+      return <Target className="w-5 h-5 text-gym-accent" />;
+    case "legs":
+      return <ArrowDown className="w-5 h-5 text-gym-accent" />;
+    case "biceps":
+      return <RotateCw className="w-5 h-5 text-gym-accent" />;
+    case "triceps":
+      return <ArrowUpCircle className="w-5 h-5 text-gym-accent" />;
+    case "forearms":
+      return <GripVertical className="w-5 h-5 text-gym-accent" />;
+    case "core":
+      return <TrendingUp className="w-5 h-5 text-gym-accent" />;
+    case "cardio":
+      return <Flame className="w-5 h-5 text-gym-accent" />;
+    case "equipment":
+      return <Sliders className="w-5 h-5 text-gym-accent" />;
+    default:
+      return <Dumbbell className="w-5 h-5 text-gym-accent" />;
+  }
+};
+
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -6100,15 +6127,20 @@ export default function App() {
                             [section.title]: !prev[section.title],
                           }))
                         }
-                        className="w-full text-left px-6 py-5 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                        className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
                       >
                         <div className="flex items-center gap-4">
-                          <h3 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.4em]">
-                            {section.title}
-                          </h3>
-                          <span className="text-[10px] text-white/60 font-bold bg-white/15 px-2 py-0.5 rounded-full uppercase tracking-widest">
-                            {section.list.length} Exercises
-                          </span>
+                          <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
+                            {getLibraryCategoryIcon(section.key)}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-lg font-light italic font-serif text-white/90">
+                              {section.title}
+                            </h3>
+                            <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
+                              {section.list.length} Ex.
+                            </span>
+                          </div>
                         </div>
                         <ChevronDown
                           className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-all ${expandedLibrarySections[section.title] ? "rotate-180" : ""}`}
@@ -7066,7 +7098,7 @@ export default function App() {
                         weight: !prev.weight,
                       }))
                     }
-                    className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
                       <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
@@ -7094,7 +7126,7 @@ export default function App() {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <div className="px-8 pb-10 pt-4">
+                        <div className="px-6 pb-10 pt-4">
                           <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-10 pb-8 border-b border-white/5">
                             <div className="flex flex-wrap items-center gap-4">
                               <div className="relative">
@@ -7450,7 +7482,7 @@ export default function App() {
                         bodyFat: !prev.bodyFat,
                       }))
                     }
-                    className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
                       <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
@@ -7478,7 +7510,7 @@ export default function App() {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <div className="px-8 pb-10 pt-4">
+                        <div className="px-6 pb-10 pt-4">
                           <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-10 pb-8 border-b border-white/5">
                             <div className="flex flex-wrap items-center gap-4">
                               <div className="relative">
@@ -7840,7 +7872,7 @@ export default function App() {
                         workoutCalendar: !prev.workoutCalendar,
                       }))
                     }
-                    className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
                       <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
@@ -7868,7 +7900,7 @@ export default function App() {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <div className="px-8 pb-10 pt-4">
+                        <div className="px-6 pb-10 pt-4">
                           <WorkoutCalendarHeatmap
                             archivedWorkouts={archivedWorkouts}
                             activeTheme={activeTheme}
@@ -7888,7 +7920,7 @@ export default function App() {
                         trending: !prev.trending,
                       }))
                     }
-                    className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-[#0c0c0c]/80 transition-colors cursor-pointer group"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
                       <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
@@ -7916,7 +7948,7 @@ export default function App() {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <div className="px-8 pb-10 pt-4">
+                        <div className="px-6 pb-10 pt-4">
                           <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5">
                             <div className="flex bg-white/5 p-1 rounded-sm">
                               {(["day", "week", "month"] as const).map((tf) => (
@@ -8111,7 +8143,7 @@ export default function App() {
                         personalRecords: !prev.personalRecords,
                       }))
                     }
-                    className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
                       <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
@@ -8139,7 +8171,7 @@ export default function App() {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <div className="px-8 pb-10 pt-4">
+                        <div className="px-6 pb-10 pt-4">
                           {/* Search & Sorting Toolbar */}
                           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6 pb-6 border-b border-white/5">
                             {/* Search bar */}
@@ -8588,7 +8620,7 @@ export default function App() {
                         calorieTracker: !prev.calorieTracker,
                       }))
                     }
-                    className="w-full text-left px-8 py-6 flex items-center justify-between hover:bg-[#0c0c0c]/80 transition-colors cursor-pointer group"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
                   >
                     <div>
                       <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
@@ -8612,7 +8644,7 @@ export default function App() {
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <div className="px-8 pb-10 pt-4">
+                        <div className="px-6 pb-10 pt-4">
                           {(() => {
                             const getWorkoutCalories = (w: any) => {
                               if (w.sets && w.sets.length > 0) {
@@ -9712,7 +9744,7 @@ export default function App() {
                                 }
                               }}
                               defaultValue=""
-                              className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white/80 cursor-pointer font-light"
+                              className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
                             >
                               <option value="" disabled>-- Select a routine to preload & tweak --</option>
                               {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
@@ -10137,7 +10169,7 @@ export default function App() {
                             <select
                               value={selectedRoutineId || ""}
                               onChange={(e) => setSelectedRoutineId(e.target.value)}
-                              className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-[11px] font-bold uppercase tracking-wider rounded-sm px-3.5 py-2 focus:outline-none transition-all cursor-pointer min-w-[180px] max-w-[280px]"
+                              className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer min-w-[200px] max-w-[320px] shadow-md"
                             >
                               {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
                                 <option key={r.id || ri} value={r.id}>
@@ -10865,7 +10897,7 @@ export default function App() {
                                     prev ? { ...prev, sex: val as any } : null,
                                   );
                                 }}
-                                className="bg-transparent border-b border-white/10 py-2.5 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white cursor-pointer select-none"
+                                className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
                               >
                                 <option
                                   value="male"
@@ -12515,7 +12547,7 @@ export default function App() {
                     <select
                       value={customExPool}
                       onChange={(e) => setCustomExPool(e.target.value as any)}
-                      className="w-full bg-black border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white cursor-pointer font-light"
+                      className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
                     >
                       {creatingCustomForDay !== null ? (
                         DAY_CONFIG[creatingCustomForDay].pools.map(

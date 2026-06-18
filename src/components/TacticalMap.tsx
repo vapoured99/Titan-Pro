@@ -1964,7 +1964,7 @@ export default function TacticalMap() {
                       <select 
                         value={saveRouteDifficulty}
                         onChange={(e) => setSaveRouteDifficulty(e.target.value as any)}
-                        className="w-full bg-[#030304] border border-white/10 rounded-xs p-1.5 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[9px]"
+                        className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
                       >
                         <option value="EASY">EASY</option>
                         <option value="MEDIUM">MEDIUM</option>
@@ -2100,7 +2100,7 @@ export default function TacticalMap() {
                     handleClearRouteMap();
                   }
                 }}
-                className="w-full bg-[#030304] border border-white/5 rounded-xs p-2 text-xs text-white focus:outline-none focus:border-gym-accent/50 font-mono text-[10px] cursor-pointer"
+                className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
               >
                 <option value="">-- [BLANK CANVAS: PLOT CUSTOM ROUTE] --</option>
                 {matchingTrails.map((trail) => (
