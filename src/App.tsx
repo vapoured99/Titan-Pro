@@ -1723,6 +1723,50 @@ export default function App() {
   const [isExportingReport, setIsExportingReport] = useState(false);
   const [reportCardScale, setReportCardScale] = useState(1);
   const [reportCardHeight, setReportCardHeight] = useState<number | null>(null);
+  const [avatarImgBase64, setAvatarImgBase64] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!showProgressReport) {
+      setAvatarImgBase64(null);
+      return;
+    }
+
+    const activeOutfitId = profile?.equippedOutfit || "vanguard_cadet";
+    const equippedEmote = (profile as any)?.[`equippedEmote_${activeOutfitId}`] ?? "none";
+    const activeOutfit = OUTFITS.find((o) => o.id === activeOutfitId) || OUTFITS[0];
+    const imgUrl = activeOutfit.poseImages?.[equippedEmote as any] || activeOutfit.image;
+
+    if (!imgUrl) return;
+
+    let isMounted = true;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0);
+          const dataUrl = canvas.toDataURL("image/png");
+          if (isMounted) {
+            setAvatarImgBase64(dataUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Error converting avatar to base64:", err);
+      }
+    };
+    img.onerror = (err) => {
+      console.error("Failed to load avatar image for base64 conversion:", err);
+    };
+    img.src = imgUrl;
+
+    return () => {
+      isMounted = false;
+    };
+  }, [showProgressReport, profile]);
 
   useEffect(() => {
     if (!showProgressReport) return;
@@ -13381,7 +13425,7 @@ export default function App() {
               const activeOutfitId =
                 profile?.equippedOutfit || "vanguard_cadet";
               const avatarImg =
-                AVATAR_IMAGES[activeOutfitId] || imgVanguardDefault;
+                avatarImgBase64 || AVATAR_IMAGES[activeOutfitId] || imgVanguardDefault;
 
               return (
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-md overflow-hidden">
@@ -13499,6 +13543,7 @@ export default function App() {
                                     alt="Avatar spec"
                                     className="w-full h-full object-cover"
                                     referrerPolicy="no-referrer"
+                                    crossOrigin="anonymous"
                                   />
                                 ) : (
                                   <UserIcon className="w-12 h-12 text-white/10" />
