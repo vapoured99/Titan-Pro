@@ -1892,6 +1892,15 @@ export default function App() {
             if (strokeAttr && (strokeAttr.toLowerCase().includes("oklch") || strokeAttr.toLowerCase().includes("oklab") || strokeAttr.toLowerCase().includes("color-mix") || strokeAttr.toLowerCase().includes("light-dark"))) {
               el.setAttribute("stroke", replaceColorFunctions(strokeAttr));
             }
+
+            // Hide gradient overlays and decorative scans that break html2canvas/PDF output
+            const cl = el.className;
+            if (typeof cl === "string" && cl.includes("bg-gradient-") && cl.includes("pointer-events-none")) {
+              const domEl = el as any;
+              if (domEl.style) {
+                domEl.style.display = "none";
+              }
+            }
           }
         },
       });
@@ -1915,9 +1924,12 @@ export default function App() {
 
       doc.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
       
-      const athleteName = profile?.displayName || currentUser?.displayName || "Athlete";
-      const sanitizedName = athleteName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
-      doc.save(`iron_archive_${sanitizedName}_report.pdf`);
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`;
+      doc.save(`Gym_${formattedDate}.pdf`);
       
       setToast({ message: "🏆 PDF Report exported successfully!", type: "success" });
     } catch (error) {
@@ -13447,8 +13459,8 @@ export default function App() {
                                 AVATAR SPECIMEN
                               </span>
 
-                              {/* Image Box */}
-                              <div className="w-32 h-32 rounded-full bg-black/40 border border-gym-accent/20 overflow-hidden flex items-center justify-center my-4 relative">
+                              {/* Image Box - Converted to elegant rectangular dossier avatar display card */}
+                              <div className="w-[136px] h-[170px] rounded-sm bg-black/50 border border-gym-accent/30 overflow-hidden flex items-center justify-center my-4 relative shadow-inner">
                                 {avatarImg ? (
                                   <img
                                     src={avatarImg}
@@ -13457,12 +13469,21 @@ export default function App() {
                                     referrerPolicy="no-referrer"
                                   />
                                 ) : (
-                                  <UserIcon className="w-12 h-12 text-white/15" />
+                                  <UserIcon className="w-12 h-12 text-white/10" />
                                 )}
-                                {/* XP Progress Arc Outline */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                                {/* Technical scan lines overlay effect */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
+                                <div className="absolute top-0 inset-x-0 h-[1px] bg-gym-accent/20" />
+                                <div className="absolute bottom-0 inset-x-0 h-[1px] bg-gym-accent/20" />
+                                
+                                {/* Corner indicators inside the rectangle card */}
+                                <div className="absolute top-1 left-1 w-1.5 h-1.5 border-t border-l border-gym-accent/40" />
+                                <div className="absolute top-1 right-1 w-1.5 h-1.5 border-t border-r border-gym-accent/40" />
+                                <div className="absolute bottom-1 left-1 w-1.5 h-1.5 border-b border-l border-gym-accent/40" />
+                                <div className="absolute bottom-1 right-1 w-1.5 h-1.5 border-b border-r border-gym-accent/40" />
+
                                 {/* Floating Level */}
-                                <div className="absolute bottom-1 bg-black/90 border border-gym-accent/50 text-[11px] font-mono font-black text-gym-accent px-2.5 py-0.5 rounded-full scale-95 tracking-widest">
+                                <div className="absolute bottom-2 font-mono font-bold text-[11px] text-gym-accent tracking-widest uppercase">
                                   LVL {profile?.avatarLevel ?? 1}
                                 </div>
                               </div>
@@ -13558,7 +13579,7 @@ export default function App() {
                                   Weight Log Analysis (kg)
                                 </span>
                               </div>
-                              <span className="text-[10px] font-mono font-semibold text-white bg-white/10 px-2 py-0.5 border border-white/10 rounded-sm">
+                              <span className="text-[10px] font-mono font-bold text-gym-accent uppercase tracking-widest pt-1">
                                 HISTORICAL ENTRIES: {weightHistory.length}
                               </span>
                             </div>
@@ -13683,7 +13704,7 @@ export default function App() {
                                   Training Volume Trend (kg)
                                 </span>
                               </div>
-                              <span className="text-[10px] font-mono font-semibold text-white bg-white/10 px-2 py-0.5 border border-white/10 rounded-sm">
+                              <span className="text-[10px] font-mono font-bold text-gym-accent uppercase tracking-widest pt-1">
                                 TIMEFRAME: {volumeTimeframe.toUpperCase()}
                               </span>
                             </div>
@@ -13805,7 +13826,7 @@ export default function App() {
                                   Active Calorie Expenditure (kcal)
                                 </span>
                               </div>
-                              <span className="text-[10px] font-mono font-semibold text-white bg-white/10 px-2 py-0.5 border border-white/10 rounded-sm">
+                              <span className="text-[10px] font-mono font-bold text-gym-accent uppercase tracking-widest pt-1">
                                 HISTORICAL ENTRIES: {archivedWorkouts.length}
                               </span>
                             </div>
@@ -13941,7 +13962,7 @@ export default function App() {
                                   Body Fat Percentage Trend (%)
                                 </span>
                               </div>
-                              <span className="text-[10px] font-mono font-semibold text-white bg-white/10 px-2 py-0.5 border border-white/10 rounded-sm">
+                              <span className="text-[10px] font-mono font-bold text-gym-accent uppercase tracking-widest pt-1">
                                 HISTORICAL ENTRIES: {bodyFatHistory.length}
                               </span>
                             </div>
