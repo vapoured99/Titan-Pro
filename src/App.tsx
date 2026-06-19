@@ -528,6 +528,7 @@ interface SessionSet {
   date: string;
   timestamp: any;
   notes?: string;
+  difficulty?: "easy" | "moderate" | "hard";
 }
 
 interface WeightEntry {
@@ -1724,6 +1725,7 @@ export default function App() {
   const [reportCardScale, setReportCardScale] = useState(1);
   const [reportCardHeight, setReportCardHeight] = useState<number | null>(null);
   const [avatarImgBase64, setAvatarImgBase64] = useState<string | null>(null);
+  const [setDifficulties, setSetDifficulties] = useState<Record<string, "easy" | "moderate" | "hard">>({});
 
   useEffect(() => {
     if (!showProgressReport) {
@@ -3429,6 +3431,7 @@ export default function App() {
     weight: string,
     reps: string,
     notes: string = "",
+    difficulty?: "easy" | "moderate" | "hard",
   ) => {
     if (!weight || !currentUser) return;
     const nWeight = parseFloat(weight) || 0;
@@ -3487,6 +3490,7 @@ export default function App() {
       date: fullDate,
       timestamp: { seconds: Math.floor(Date.now() / 1000) },
       notes: notes.trim(),
+      ...(difficulty ? { difficulty } : {}),
     };
 
     // Optimistic Update
@@ -3599,6 +3603,7 @@ export default function App() {
         date: fullDate,
         timestamp: serverTimestamp(),
         notes: notes.trim(),
+        ...(difficulty ? { difficulty } : {}),
       });
 
       const p3 = setDoc(
@@ -6324,6 +6329,63 @@ export default function App() {
                                           />
                                         </div>
 
+                                        {/* Set Difficulty Rating Grid */}
+                                        <div className="flex flex-col w-full">
+                                          <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                                            Set Intensity (How'd it feel?)
+                                          </span>
+                                          <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-sm border border-white/5">
+                                            <button
+                                              type="button"
+                                              onClick={() =>
+                                                setSetDifficulties((prev) => ({
+                                                  ...prev,
+                                                  [ex.name]: "easy",
+                                                }))
+                                              }
+                                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                                                (setDifficulties[ex.name] || "moderate") === "easy"
+                                                  ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-black shadow-[0_0_8px_rgba(16,185,129,0.1)]"
+                                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                                              }`}
+                                            >
+                                              😊 Easy
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() =>
+                                                setSetDifficulties((prev) => ({
+                                                  ...prev,
+                                                  [ex.name]: "moderate",
+                                                }))
+                                              }
+                                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                                                (setDifficulties[ex.name] || "moderate") === "moderate"
+                                                  ? "bg-amber-500/15 border-amber-500/35 text-amber-400 font-bold shadow-[0_0_8px_rgba(245,158,11,0.1)]"
+                                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                                              }`}
+                                            >
+                                              ⚡ Good
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() =>
+                                                setSetDifficulties((prev) => ({
+                                                  ...prev,
+                                                  [ex.name]: "hard",
+                                                }))
+                                              }
+                                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                                                (setDifficulties[ex.name] || "moderate") === "hard"
+                                                  ? "bg-rose-500/15 border-rose-500/35 text-rose-400 font-black shadow-[0_0_8px_rgba(244,63,94,0.1)]"
+                                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                                              }`}
+                                            >
+                                              🔥 Struggle
+                                            </button>
+                                          </div>
+                                        </div>
+
                                         {/* Ghost Set Target (Historical Overlay) */}
                                         {(() => {
                                           const loggedSetsForThisEx = sessionSets.filter(
@@ -6400,11 +6462,17 @@ export default function App() {
                                             const w = wInput?.value;
                                             const r = rInput?.value;
                                             const notes = nInput?.value || "";
+                                            const diff = setDifficulties[ex.name] || "moderate";
                                             if (w && r) {
-                                              handleSaveSet(ex.name, w, r, notes);
+                                              handleSaveSet(ex.name, w, r, notes, diff);
                                               if (wInput) wInput.value = "";
                                               if (rInput) rInput.value = "";
                                               if (nInput) nInput.value = "";
+                                              // Reset difficulty back to moderate for next set
+                                              setSetDifficulties((prev) => ({
+                                                ...prev,
+                                                [ex.name]: "moderate",
+                                              }));
                                             }
                                           }}
                                           className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
@@ -6435,17 +6503,45 @@ export default function App() {
 
                                       let recommendWeight = 0;
                                       let targetWeight = 0;
+                                      let hasStruggled = false;
                                       for (const [weightStr, repsList] of Object.entries(weightGroups)) {
                                         const weight = parseFloat(weightStr);
                                         const successfulSets = repsList.filter((r) => r >= 10).length;
                                         if (successfulSets >= 3) {
                                           targetWeight = weight;
                                           recommendWeight = weight + 2.5;
+                                          hasStruggled = exSets.some((s) => {
+                                            const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
+                                            return sw === weight && s.difficulty === "hard";
+                                          });
                                           break;
                                         }
                                       }
 
                                       if (recommendWeight > 0) {
+                                        if (hasStruggled) {
+                                          return (
+                                            <motion.div
+                                              initial={{ opacity: 0, y: 10 }}
+                                              animate={{ opacity: 1, y: 0 }}
+                                              className="mt-3 p-3.5 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
+                                            >
+                                              <div className="flex items-center gap-1.5 justify-between">
+                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-amber-400 flex items-center gap-1.5 animate-pulse">
+                                                  <Activity className="w-3.5 h-3.5" />
+                                                  STRENGTH CONSOLIDATION RECOMMENDED
+                                                </span>
+                                                <span className="text-[8px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
+                                                  Safety Loop Active
+                                                </span>
+                                              </div>
+                                              <p className="text-[10px] text-white/70 leading-relaxed font-sans">
+                                                You completed <strong className="text-white">3 sets of 10+ reps</strong> at <span className="text-amber-400 font-mono font-bold">{targetWeight}kg</span>! Since you noted that this was a struggle (🔥), our cybernetic engine recommends maintaining <strong className="text-white">{targetWeight}kg</strong> for another workout to solidify neural adaptation before loading further.
+                                              </p>
+                                            </motion.div>
+                                          );
+                                        }
+
                                         return (
                                           <motion.div
                                             initial={{ opacity: 0, y: 10 }}
@@ -11550,6 +11646,63 @@ export default function App() {
                                       />
                                     </div>
 
+                                    {/* Set Difficulty Rating Grid */}
+                                    <div className="flex flex-col">
+                                      <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                                        Set Intensity (How'd it feel?)
+                                      </span>
+                                      <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-sm border border-white/5">
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            setSetDifficulties((prev) => ({
+                                              ...prev,
+                                              [ex.name]: "easy",
+                                            }))
+                                          }
+                                          className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                                            (setDifficulties[ex.name] || "moderate") === "easy"
+                                              ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-black shadow-[0_0_8px_rgba(16,185,129,0.1)]"
+                                              : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                                          }`}
+                                        >
+                                          😊 Easy
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            setSetDifficulties((prev) => ({
+                                              ...prev,
+                                              [ex.name]: "moderate",
+                                            }))
+                                          }
+                                          className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                                            (setDifficulties[ex.name] || "moderate") === "moderate"
+                                              ? "bg-amber-500/15 border-amber-500/35 text-amber-400 font-bold shadow-[0_0_8px_rgba(245,158,11,0.1)]"
+                                              : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                                          }`}
+                                        >
+                                          ⚡ Good
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            setSetDifficulties((prev) => ({
+                                              ...prev,
+                                              [ex.name]: "hard",
+                                            }))
+                                          }
+                                          className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                                            (setDifficulties[ex.name] || "moderate") === "hard"
+                                              ? "bg-rose-500/15 border-rose-500/35 text-rose-400 font-black shadow-[0_0_8px_rgba(244,63,94,0.1)]"
+                                              : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                                          }`}
+                                        >
+                                          🔥 Struggle
+                                        </button>
+                                      </div>
+                                    </div>
+
                                     {/* Ghost Set Target (Historical Overlay) */}
                                     {(() => {
                                       const loggedSetsForThisEx = sessionSets.filter(
@@ -11630,11 +11783,17 @@ export default function App() {
                                         const w = wInput?.value;
                                         const r = rInput?.value;
                                         const notes = nInput?.value || "";
+                                        const diff = setDifficulties[ex.name] || "moderate";
                                         if (w && r) {
-                                          handleSaveSet(ex.name, w, r, notes);
+                                          handleSaveSet(ex.name, w, r, notes, diff);
                                           if (wInput) wInput.value = "";
                                           if (rInput) rInput.value = "";
                                           if (nInput) nInput.value = "";
+                                          // Reset difficulty back to moderate for next set
+                                          setSetDifficulties((prev) => ({
+                                            ...prev,
+                                            [ex.name]: "moderate",
+                                          }));
                                         }
                                       }}
                                       className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
@@ -11671,12 +11830,17 @@ export default function App() {
 
                                     let recommendWeight = 0;
                                     let targetWeight = 0;
+                                    let hasStruggled = false;
                                     for (const [weightStr, repsList] of Object.entries(weightGroups)) {
                                       const weight = parseFloat(weightStr);
                                       const successfulSets = repsList.filter((r) => r >= 10).length;
                                       if (successfulSets >= 3) {
                                         targetWeight = weight;
                                         recommendWeight = weight + 2.5;
+                                        hasStruggled = loggedSetsForThisEx.some((s) => {
+                                          const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
+                                          return sw === weight && s.difficulty === "hard";
+                                        });
                                         break;
                                       }
                                     }
@@ -11688,37 +11852,54 @@ export default function App() {
                                         className="mb-4 p-3 rounded-sm bg-gym-accent/5 border border-gym-accent/20 overflow-hidden"
                                       >
                                         {recommendWeight > 0 && (
-                                          <div className="mb-3.5 p-3 rounded-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 flex flex-col gap-2">
-                                            <div className="flex items-center gap-1.5 justify-between">
-                                              <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
-                                                <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
-                                                PROGRESSION UPGRADE AVAILABLE
-                                              </span>
-                                              <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
-                                                +{2.5}kg Target
-                                              </span>
+                                          hasStruggled ? (
+                                            <div className="mb-3.5 p-3 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2">
+                                              <div className="flex items-center gap-1.5 justify-between">
+                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-amber-400 flex items-center gap-1.5 animate-pulse">
+                                                  <Activity className="w-3.5 h-3.5" />
+                                                  STRENGTH CONSOLIDATION RECOMMENDED
+                                                </span>
+                                                <span className="text-[8px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
+                                                  Safety Loop Active
+                                                </span>
+                                              </div>
+                                              <p className="text-[9px] text-white/70 leading-relaxed font-sans">
+                                                You completed <strong className="text-white font-bold">3 sets of 10+ reps</strong> at <span className="text-amber-400 font-mono font-bold">{targetWeight}kg</span>! Since you noted that this was a struggle (🔥), our cybernetic engine recommends maintaining <strong className="text-white">{targetWeight}kg</strong> for another workout to solidify neural adaptation before loading further.
+                                              </p>
                                             </div>
-                                            <p className="text-[9px] text-white/70 leading-relaxed font-sans">
-                                              You mastered <strong className="text-white font-bold">3 sets of 10+ reps</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span>. Apply recommendations below to stimulate higher hypertrophic output.
-                                            </p>
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                const wInput = document.getElementById(`w-${di}-${ei}`) as HTMLInputElement;
-                                                const rInput = document.getElementById(`r-${di}-${ei}`) as HTMLInputElement;
-                                                if (wInput) wInput.value = recommendWeight.toString();
-                                                if (rInput) rInput.value = "10";
-                                                setToast({
-                                                  message: `Target set to ${recommendWeight}kg × 10 reps!`,
-                                                  type: "success",
-                                                });
-                                                setTimeout(() => setToast(null), 3000);
-                                              }}
-                                              className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold uppercase tracking-[0.15em] font-mono text-[8px] transition-all cursor-pointer shadow-sm rounded-sm text-center"
-                                            >
-                                              Apply {recommendWeight}kg Next-Set Target
-                                            </button>
-                                          </div>
+                                          ) : (
+                                            <div className="mb-3.5 p-3 rounded-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 flex flex-col gap-2">
+                                              <div className="flex items-center gap-1.5 justify-between">
+                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
+                                                  <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
+                                                  PROGRESSION UPGRADE AVAILABLE
+                                                </span>
+                                                <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
+                                                  +{2.5}kg Target
+                                                </span>
+                                              </div>
+                                              <p className="text-[9px] text-white/70 leading-relaxed font-sans">
+                                                You mastered <strong className="text-white font-bold">3 sets of 10+ reps</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span>. Apply recommendations below to stimulate higher hypertrophic output.
+                                              </p>
+                                              <button
+                                                type="button"
+                                                onClick={() => {
+                                                  const wInput = document.getElementById(`w-${di}-${ei}`) as HTMLInputElement;
+                                                  const rInput = document.getElementById(`r-${di}-${ei}`) as HTMLInputElement;
+                                                  if (wInput) wInput.value = recommendWeight.toString();
+                                                  if (rInput) rInput.value = "10";
+                                                  setToast({
+                                                    message: `Target set to ${recommendWeight}kg × 10 reps!`,
+                                                    type: "success",
+                                                  });
+                                                  setTimeout(() => setToast(null), 3000);
+                                                }}
+                                                className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold uppercase tracking-[0.15em] font-mono text-[8px] transition-all cursor-pointer shadow-sm rounded-sm text-center"
+                                              >
+                                                Apply {recommendWeight}kg Next-Set Target
+                                              </button>
+                                            </div>
+                                          )
                                         )}
 
                                         <div className="flex justify-between items-center mb-2">
