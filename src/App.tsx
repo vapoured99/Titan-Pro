@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   ChevronDown,
+  X,
   Dumbbell,
   Flame,
   Trophy,
@@ -1269,6 +1270,11 @@ export default function App() {
   const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
   const [editingRoutineName, setEditingRoutineName] = useState<string>("");
   const [guidanceEx, setGuidanceEx] = useState<Exercise | null>(null);
+  const [loggingEx, setLoggingEx] = useState<Exercise | null>(null);
+  const [popupWeight, setPopupWeight] = useState("");
+  const [popupReps, setPopupReps] = useState("");
+  const [popupNotes, setPopupNotes] = useState("");
+  const [popupDifficulty, setPopupDifficulty] = useState<"easy" | "moderate" | "hard">("moderate");
   const [swappingExercise, setSwappingExercise] = useState<{
     dayIndex: number;
     exIndex: number;
@@ -1704,7 +1710,10 @@ export default function App() {
     workoutCalendar: true,
     trending: false,
     personalRecords: true,
+    exercises: false,
   });
+  const [exerciseProgressSearchQuery, setExerciseProgressSearchQuery] = useState("");
+  const [selectedExerciseProgress, setSelectedExerciseProgress] = useState<string | null>(null);
   const [pbSearchQuery, setPbSearchQuery] = useState("");
   const [rebuildingPBs, setRebuildingPBs] = useState(false);
   const [selectedHistoryChartExercise, setSelectedHistoryChartExercise] = useState<string | null>(null);
@@ -1816,6 +1825,7 @@ export default function App() {
       workoutCalendar: false,
       trending: false,
       personalRecords: false,
+      exercises: false,
       calorieTracker: false,
     });
     setExpandedLibrarySections({});
@@ -3854,6 +3864,144 @@ export default function App() {
         volume: p.weight * p.reps,
       };
     });
+  };
+
+  const trackingExercises = useMemo(() => {
+    // 1. Gather all logged exercises
+    const loggedSet = new Set<string>();
+    archivedWorkouts.forEach((w) => {
+      if (w.sets && Array.isArray(w.sets)) {
+        w.sets.forEach((s: any) => {
+          if (s && s.exerciseName) {
+            loggedSet.add(s.exerciseName.trim());
+          }
+        });
+      }
+    });
+    sessionSets.forEach((s) => {
+      if (s && s.exerciseName) {
+        loggedSet.add(s.exerciseName.trim());
+      }
+    });
+
+    const loggedList = Array.from(loggedSet).map((name) => ({
+      name,
+      hasLogs: true,
+    }));
+
+    // 2. Gather all library exercises to allow selecting from database
+    const librarySet = new Set<string>();
+    for (const poolList of Object.values(combinedPools)) {
+      poolList.forEach((ex) => {
+        if (ex && ex.name) {
+          librarySet.add(ex.name.trim());
+        }
+      });
+    }
+
+    const libraryList: typeof loggedList = [];
+    librarySet.forEach((name) => {
+      if (!loggedSet.has(name)) {
+        libraryList.push({
+          name,
+          hasLogs: false,
+        });
+      }
+    });
+
+    // Combine them, placing logged exercises first, then remaining library exercises
+    return [
+      ...loggedList.sort((a, b) => a.name.localeCompare(b.name)),
+      ...libraryList.sort((a, b) => a.name.localeCompare(b.name)),
+    ];
+  }, [archivedWorkouts, sessionSets, combinedPools]);
+
+  const getExerciseProgressDetails = (exName: string) => {
+    if (!exName) return null;
+    const searchName = exName.trim().toLowerCase();
+    const allSets: Array<{
+      weight: number;
+      reps: number;
+      date: string;
+      timestamp: number;
+      workoutName: string;
+      isCurrentSession?: boolean;
+      difficulty?: string;
+      notes?: string;
+    }> = [];
+
+    // 1. Accumulate from archives
+    archivedWorkouts.forEach((w) => {
+      if (w.sets && Array.isArray(w.sets)) {
+        w.sets.forEach((s: any) => {
+          if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === searchName) {
+            allSets.push({
+              weight: Number(s.weight) || 0,
+              reps: Number(s.reps) || 0,
+              date: w.date || "",
+              timestamp: new Date(w.date || 0).getTime() || 0,
+              workoutName: w.name || "Archived Workout",
+              difficulty: s.difficulty,
+              notes: s.notes,
+            });
+          }
+        });
+      }
+    });
+
+    // 2. Accumulate from current session
+    sessionSets.forEach((s) => {
+      if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === searchName) {
+        const sDate = s.date || new Date().toISOString().split("T")[0];
+        allSets.push({
+          weight: Number(s.weight) || 0,
+          reps: Number(s.reps) || 0,
+          date: sDate,
+          timestamp: new Date(sDate).getTime() || Date.now(),
+          workoutName: "Today's Active Workout",
+          isCurrentSession: true,
+          difficulty: s.difficulty,
+          notes: s.notes,
+        });
+      }
+    });
+
+    // Sort chronologically (earliest to latest)
+    allSets.sort((a, b) => a.timestamp - b.timestamp);
+
+    if (allSets.length === 0) return null;
+
+    // Group by Date to get the highest weight logged for that day
+    const groupedByDate: Record<string, typeof allSets[0]> = {};
+    allSets.forEach((s) => {
+      const dKey = s.date;
+      if (!groupedByDate[dKey] || s.weight > groupedByDate[dKey].weight || (s.weight === groupedByDate[dKey].weight && s.reps > groupedByDate[dKey].reps)) {
+        groupedByDate[dKey] = s;
+      }
+    });
+
+    const dailyHighestSets = Object.values(groupedByDate).sort((a, b) => a.timestamp - b.timestamp);
+
+    const firstSet = dailyHighestSets[0];
+    const lastSet = dailyHighestSets[dailyHighestSets.length - 1];
+    const weightDiff = lastSet.weight - firstSet.weight;
+    const percentDiff = firstSet.weight > 0 ? (weightDiff / firstSet.weight) * 100 : 0;
+
+    // Calculate peak weight
+    const weights = dailyHighestSets.map((s) => s.weight);
+    const maxWeight = Math.max(...weights);
+    const totalVolume = dailyHighestSets.reduce((acc, s) => acc + s.weight * s.reps, 0);
+
+    return {
+      allSets: dailyHighestSets,
+      firstSet,
+      lastSet,
+      weightDiff,
+      percentDiff,
+      maxWeight,
+      totalVolume,
+      count: dailyHighestSets.length,
+    };
   };
 
   const handleDeletePB = async (exName: string) => {
@@ -6225,16 +6373,16 @@ export default function App() {
                                     className="bg-black/60 border border-white/10 rounded-sm p-5 hover:border-white/35 transition-all group flex flex-col justify-between"
                                   >
                                     <div>
-                                      <div className="flex items-center justify-between mb-2">
-                                        <div className="flex flex-col gap-1">
+                                      <div className="flex items-center justify-between mb-4">
+                                        <div className="flex flex-col gap-1 min-w-0 flex-1">
                                           <div className="flex items-center gap-3">
-                                            <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors" />
-                                            <span className="font-medium text-sm text-white/90 group-hover:text-white transition-colors">
+                                            <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors shrink-0" />
+                                            <span className="font-semibold text-sm text-white/95 group-hover:text-white transition-colors truncate">
                                               {ex.name}
                                             </span>
                                           </div>
-                                          {ex.category && (
-                                            <div className="flex items-center gap-1.5 mt-0.5 ml-7">
+                                          <div className="flex items-center gap-2 mt-1 ml-7 flex-wrap">
+                                            {ex.category && (
                                               <span
                                                 className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-widest ${
                                                   ex.category === "compound"
@@ -6244,10 +6392,15 @@ export default function App() {
                                               >
                                                 {ex.category}
                                               </span>
-                                            </div>
-                                          )}
+                                            )}
+                                            {ex.pool && (
+                                              <span className="text-[7.5px] font-mono uppercase tracking-widest px-1.5 py-0.3 rounded-sm border border-white/5 text-white/30 bg-white/[0.01]">
+                                                {ex.pool}
+                                              </span>
+                                            )}
+                                          </div>
                                         </div>
-                                        <div className="flex items-center gap-2.5">
+                                        <div className="flex items-center gap-2.5 shrink-0 ml-3">
                                           {customExercises.some(
                                             (ce) =>
                                               ce.name.toLowerCase() ===
@@ -6259,7 +6412,7 @@ export default function App() {
                                                   ex.name,
                                                 )
                                               }
-                                              className="px-2 py-1 rounded-[1px] border border-red-500/35 bg-red-950/15 hover:bg-red-600 hover:text-white text-red-400 text-[8px] font-extrabold uppercase tracking-widest transition-all cursor-pointer mr-1"
+                                              className="px-2 py-1 rounded-[1px] border border-red-500/35 bg-red-950/15 hover:bg-red-600 hover:text-white text-red-400 text-[8px] font-extrabold uppercase tracking-widest transition-all cursor-pointer"
                                               title="Permanently Delete Movement"
                                             >
                                               Delete
@@ -6287,7 +6440,7 @@ export default function App() {
                                                   opacity: 0,
                                                   scale: 0.8,
                                                 }}
-                                                className="text-[8px] font-bold text-gym-accent uppercase tracking-widest"
+                                                className="text-[8px] font-bold text-gym-accent uppercase tracking-widest ml-1 animate-pulse"
                                               >
                                                 {flashMessage[ex.name]}
                                               </motion.span>
@@ -6295,311 +6448,34 @@ export default function App() {
                                           </AnimatePresence>
                                         </div>
                                       </div>
-
-                                      <div className="flex flex-col gap-3 mt-4 mb-2 bg-white/[0.02] border border-white/[0.04] p-3 rounded-sm w-full">
-                                        {/* Row 1: Weight & Reps side by side */}
-                                        <div className="grid grid-cols-2 gap-3 w-full">
-                                          <div className="flex flex-col">
-                                            <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                                              {ex.pool === "cardio" ? "Time (min)" : "Weight (kg)"}
-                                            </span>
-                                            <input
-                                              type="number"
-                                              inputMode="decimal"
-                                              placeholder="0"
-                                              id={`lib-w-${ex.name.replace(/\s+/g, "-")}`}
-                                              className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
-                                            />
-                                          </div>
-                                          <div className="flex flex-col">
-                                            <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                                              {ex.pool === "cardio" ? "Speed / Lvl" : "Reps"}
-                                            </span>
-                                            <input
-                                              type="number"
-                                              inputMode="numeric"
-                                              placeholder="0"
-                                              id={`lib-r-${ex.name.replace(/\s+/g, "-")}`}
-                                              className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
-                                            />
-                                          </div>
-                                        </div>
-
-                                        {/* Row 2: Set Notes */}
-                                        <div className="flex flex-col w-full">
-                                          <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                                            Set Notes
-                                          </span>
-                                          <input
-                                            type="text"
-                                            placeholder="Warmup, RPE 9, drop set, etc."
-                                            id={`lib-n-${ex.name.replace(/\s+/g, "-")}`}
-                                            className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
-                                          />
-                                        </div>
-
-                                        {/* Set Difficulty Rating Grid */}
-                                        <div className="flex flex-col w-full">
-                                          <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                                            Set Intensity (How'd it feel?)
-                                          </span>
-                                          <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-sm border border-white/5">
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                setSetDifficulties((prev) => ({
-                                                  ...prev,
-                                                  [ex.name]: "easy",
-                                                }))
-                                              }
-                                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
-                                                (setDifficulties[ex.name] || "moderate") === "easy"
-                                                  ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-black shadow-[0_0_8px_rgba(16,185,129,0.1)]"
-                                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
-                                              }`}
-                                            >
-                                              😊 Easy
-                                            </button>
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                setSetDifficulties((prev) => ({
-                                                  ...prev,
-                                                  [ex.name]: "moderate",
-                                                }))
-                                              }
-                                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
-                                                (setDifficulties[ex.name] || "moderate") === "moderate"
-                                                  ? "bg-amber-500/15 border-amber-500/35 text-amber-400 font-bold shadow-[0_0_8px_rgba(245,158,11,0.1)]"
-                                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
-                                              }`}
-                                            >
-                                              ⚡ Good
-                                            </button>
-                                            <button
-                                              type="button"
-                                              onClick={() =>
-                                                setSetDifficulties((prev) => ({
-                                                  ...prev,
-                                                  [ex.name]: "hard",
-                                                }))
-                                              }
-                                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
-                                                (setDifficulties[ex.name] || "moderate") === "hard"
-                                                  ? "bg-rose-500/15 border-rose-500/35 text-rose-400 font-black shadow-[0_0_8px_rgba(244,63,94,0.1)]"
-                                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
-                                              }`}
-                                            >
-                                              🔥 Struggle
-                                            </button>
-                                          </div>
-                                        </div>
-
-                                        {/* Ghost Set Target (Historical Overlay) */}
-                                        {(() => {
-                                          const loggedSetsForThisEx = sessionSets.filter(
-                                            (s) =>
-                                              s &&
-                                              s.exerciseName &&
-                                              s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()
-                                          );
-                                          const nextSetIndex = loggedSetsForThisEx.length;
-                                          const previousWorkouts = archivedWorkouts
-                                            .filter((w) =>
-                                              w.sets?.some(
-                                                (s: any) =>
-                                                  s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
-                                              )
-                                            )
-                                            .sort((a, b) => b.date.localeCompare(a.date));
-
-                                          const lastWorkout = previousWorkouts[0];
-                                          if (!lastWorkout) return null;
-
-                                          const lastSets = lastWorkout.sets.filter(
-                                            (s: any) =>
-                                              s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
-                                          );
-
-                                          const ghostSet = lastSets[nextSetIndex];
-                                          if (!ghostSet) return null;
-
-                                          const dateFormatted = new Date(lastWorkout.date).toLocaleDateString("en-GB", {
-                                            day: "numeric",
-                                            month: "short",
-                                          });
-
-                                          return (
-                                            <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-sm px-2.5 py-1.5 mt-1 text-[10px] w-full font-sans">
-                                              <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
-                                                <span className="relative flex h-1.5 w-1.5 shrink-0">
-                                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gym-accent/40 opacity-75"></span>
-                                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gym-accent/70"></span>
-                                                </span>
-                                                <span className="text-white/40 font-mono truncate">
-                                                  Ghost Set {nextSetIndex + 1} ({dateFormatted}):
-                                                </span>
-                                                <span className="text-gym-accent font-mono font-bold shrink-0">
-                                                  {ghostSet.weight}kg × {ghostSet.reps}
-                                                </span>
-                                              </div>
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  const idSafe = ex.name.replace(/\s+/g, "-");
-                                                  const wInput = document.getElementById(`lib-w-${idSafe}`) as HTMLInputElement;
-                                                  const rInput = document.getElementById(`lib-r-${idSafe}`) as HTMLInputElement;
-                                                  if (wInput) wInput.value = ghostSet.weight.toString();
-                                                  if (rInput) rInput.value = ghostSet.reps.toString();
-                                                }}
-                                                className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
-                                                title="Use ghost set target values"
-                                              >
-                                                Match
-                                              </button>
-                                            </div>
-                                          );
-                                        })()}
-
-                                        {/* Row 3: Log button */}
-                                        <button
-                                          onClick={() => {
-                                            const idSafe = ex.name.replace(/\s+/g, "-");
-                                            const wInput = document.getElementById(`lib-w-${idSafe}`) as HTMLInputElement;
-                                            const rInput = document.getElementById(`lib-r-${idSafe}`) as HTMLInputElement;
-                                            const nInput = document.getElementById(`lib-n-${idSafe}`) as HTMLInputElement;
-                                            const w = wInput?.value;
-                                            const r = rInput?.value;
-                                            const notes = nInput?.value || "";
-                                            const diff = setDifficulties[ex.name] || "moderate";
-                                            if (w && r) {
-                                              handleSaveSet(ex.name, w, r, notes, diff);
-                                              if (wInput) wInput.value = "";
-                                              if (rInput) rInput.value = "";
-                                              if (nInput) nInput.value = "";
-                                              // Reset difficulty back to moderate for next set
-                                              setSetDifficulties((prev) => ({
-                                                ...prev,
-                                                [ex.name]: "moderate",
-                                              }));
-                                            }
-                                          }}
-                                          className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
-                                        >
-                                          Log Set
-                                        </button>
-                                      </div>
                                     </div>
 
-                                    {/* Progression Suggestion Card */}
-                                    {(() => {
-                                      if (ex.pool === "cardio") return null;
-                                      const exSets = sessionSets.filter(
-                                        (s) =>
-                                          s &&
-                                          s.exerciseName &&
-                                          s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()
-                                      );
-                                      const weightGroups: Record<number, number[]> = {};
-                                      exSets.forEach((set) => {
-                                        const w = typeof set.weight === 'string' ? parseFloat(set.weight) : set.weight;
-                                        const r = typeof set.reps === 'string' ? parseInt(set.reps, 10) : set.reps;
-                                        if (!isNaN(w) && !isNaN(r)) {
-                                          if (!weightGroups[w]) weightGroups[w] = [];
-                                          weightGroups[w].push(r);
-                                        }
-                                      });
-
-                                      let recommendWeight = 0;
-                                      let targetWeight = 0;
-                                      let hasStruggled = false;
-                                      for (const [weightStr, repsList] of Object.entries(weightGroups)) {
-                                        const weight = parseFloat(weightStr);
-                                        const successfulSets = repsList.filter((r) => r >= 10).length;
-                                        if (successfulSets >= 3) {
-                                          targetWeight = weight;
-                                          recommendWeight = weight + 2.5;
-                                          hasStruggled = exSets.some((s) => {
-                                            const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
-                                            return sw === weight && s.difficulty === "hard";
-                                          });
-                                          break;
-                                        }
-                                      }
-
-                                      if (recommendWeight > 0) {
-                                        if (hasStruggled) {
-                                          return (
-                                            <motion.div
-                                              initial={{ opacity: 0, y: 10 }}
-                                              animate={{ opacity: 1, y: 0 }}
-                                              className="mt-3 p-3.5 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(245,158,11,0.08)]"
-                                            >
-                                              <div className="flex items-center gap-1.5 justify-between">
-                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-amber-400 flex items-center gap-1.5 animate-pulse">
-                                                  <Activity className="w-3.5 h-3.5" />
-                                                  STRENGTH CONSOLIDATION RECOMMENDED
-                                                </span>
-                                                <span className="text-[8px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
-                                                  Safety Loop Active
-                                                </span>
-                                              </div>
-                                              <p className="text-[10px] text-white/70 leading-relaxed font-sans">
-                                                You completed <strong className="text-white">3 sets of 10+ reps</strong> at <span className="text-amber-400 font-mono font-bold">{targetWeight}kg</span>! Since you noted that this was a struggle (🔥), our cybernetic engine recommends maintaining <strong className="text-white">{targetWeight}kg</strong> for another workout to solidify neural adaptation before loading further.
-                                              </p>
-                                            </motion.div>
-                                          );
-                                        }
-
-                                        return (
-                                          <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="mt-3 p-3.5 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
-                                          >
-                                            <div className="flex items-center gap-1.5 justify-between">
-                                              <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
-                                                <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
-                                                PROGRESSION TARGET ACQUIRED
-                                              </span>
-                                              <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
-                                                +{2.5}kg Target
-                                              </span>
-                                            </div>
-                                            <p className="text-[10px] text-white/70 leading-relaxed font-sans">
-                                              You completed <strong className="text-white">3 sets of 10+ reps</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span> today! Double-progression triggered. Upgrade your target weight.
-                                            </p>
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                const idSafe = ex.name.replace(/\s+/g, "-");
-                                                const wInput = document.getElementById(`lib-w-${idSafe}`) as HTMLInputElement;
-                                                const rInput = document.getElementById(`lib-r-${idSafe}`) as HTMLInputElement;
-                                                if (wInput) wInput.value = recommendWeight.toString();
-                                                if (rInput) rInput.value = "10";
-                                                setToast({
-                                                  message: `Set ${ex.name} target weight to ${recommendWeight}kg × 10 reps!`,
-                                                  type: "success",
-                                                });
-                                                setTimeout(() => setToast(null), 3000);
-                                              }}
-                                              className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-semibold rounded-sm text-[9px] font-black uppercase tracking-[0.15em] font-mono transition-all cursor-pointer shadow-md shadow-emerald-500/15 text-center"
-                                            >
-                                              Apply {recommendWeight}kg Recommendation
-                                            </button>
-                                          </motion.div>
-                                        );
-                                      }
-                                      return null;
-                                    })()}
-
-                                    <PBBlock
-                                      exName={ex.name}
-                                      pbs={personalBests}
-                                      showLatest={true}
-                                      sessionSets={sessionSets}
-                                      archivedWorkouts={archivedWorkouts}
-                                    />
+                                    {/* Action buttons row */}
+                                    <div className="flex items-center gap-2 mt-4 pt-1">
+                                      <button
+                                        onClick={() => setGuidanceEx(ex)}
+                                        className="p-2.5 px-3.5 bg-white/5 border border-white/10 text-white/60 hover:text-gym-accent hover:border-gym-accent/30 hover:bg-gym-accent/5 transition-all text-[9.5px] tracking-wider uppercase font-extrabold rounded-sm flex items-center justify-center gap-1.5 cursor-pointer basis-1/3"
+                                        title="Guidance & Execution Instructions"
+                                      >
+                                        <BookOpen className="w-3.5 h-3.5" />
+                                        <span>Guidance</span>
+                                      </button>
+                                      
+                                      <button
+                                        onClick={() => {
+                                          setLoggingEx(ex);
+                                          setPopupWeight("");
+                                          setPopupReps("");
+                                          setPopupNotes("");
+                                          setPopupDifficulty("moderate");
+                                        }}
+                                        className="p-2.5 bg-gym-accent hover:bg-gym-accent/95 text-black text-[9.5px] uppercase font-black tracking-widest transition-all rounded-sm flex-1 flex items-center justify-center gap-1.5 font-mono cursor-pointer shadow-md shadow-gym-accent/10 active:scale-[0.98]"
+                                        title="Log a new completed set"
+                                      >
+                                        <Plus className="w-3.5 h-3.5 text-black stroke-[3px]" />
+                                        <span>Log Set</span>
+                                      </button>
+                                    </div>
                                   </div>
                                 );
                               };
@@ -8751,6 +8627,302 @@ export default function App() {
                                     )}
                                   </>
                                 )}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Exercise Progression Tracker Section */}
+                <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                  <button
+                    onClick={() =>
+                      setExpandedProgressSections((prev) => ({
+                        ...prev,
+                        exercises: !prev.exercises,
+                      }))
+                    }
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                        <Dumbbell className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                          Exercise Progression Tracker
+                        </h3>
+                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                          Database search & visual progress benchmarking across historical sets
+                        </p>
+                      </div>
+                    </div>
+                    <ChevronDown
+                      className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.exercises ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {expandedProgressSections.exercises && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="px-6 pb-10 pt-4">
+                          {/* Search bar & selector */}
+                          <div className="relative mb-6">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+                            <input
+                              type="text"
+                              placeholder="Search exercise in database..."
+                              value={exerciseProgressSearchQuery}
+                              onChange={(e) => setExerciseProgressSearchQuery(e.target.value)}
+                              className="w-full bg-black/55 border border-white/10 rounded-sm pl-11 pr-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-gym-accent transition-all font-sans"
+                            />
+                          </div>
+
+                          {/* Matching exercises chips/list */}
+                          {(() => {
+                            const query = exerciseProgressSearchQuery.trim().toLowerCase();
+                            // Filter matches
+                            const matchedExercises = trackingExercises.filter((ex) =>
+                              ex.name.toLowerCase().includes(query)
+                            );
+
+                            // Active exercise
+                            const activeEx = selectedExerciseProgress || (matchedExercises.length > 0 ? matchedExercises[0].name : null);
+
+                            return (
+                              <div className="space-y-6">
+                                {/* Search results list */}
+                                {matchedExercises.length === 0 ? (
+                                  <div className="py-8 bg-white/[0.01] border border-dashed border-white/5 rounded-sm text-center">
+                                    <Dumbbell className="w-8 h-8 text-white/10 mx-auto mb-2.5 animate-pulse" />
+                                    <p className="text-white/45 text-[11px] font-mono">No matching exercise found in database</p>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto p-2 bg-black/40 border border-white/5 rounded-sm scrollbar-thin scrollbar-thumb-white/10">
+                                    {matchedExercises.map((ex) => {
+                                      const isSelected = activeEx === ex.name;
+                                      return (
+                                        <button
+                                          key={ex.name}
+                                          onClick={() => setSelectedExerciseProgress(ex.name)}
+                                          className={`px-2.5 py-1 rounded-sm text-[9px] font-mono uppercase tracking-wider transition-all border shrink-0 ${
+                                            isSelected
+                                              ? "bg-gym-accent/15 border-gym-accent/40 text-gym-accent font-black"
+                                              : ex.hasLogs
+                                              ? "bg-white/[0.02] border-white/10 text-white/80 hover:bg-white/5"
+                                              : "bg-white/[0.005] border-white/5 text-white/40 hover:bg-white/5 hover:text-white/70"
+                                          }`}
+                                        >
+                                          {ex.name}
+                                          {ex.hasLogs && (
+                                            <span className="ml-1.5 w-1.5 h-1.5 bg-gym-accent rounded-full inline-block animate-pulse" />
+                                          )}
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+
+                                {/* Progress stats & chart for active exercise */}
+                                {activeEx && (() => {
+                                  const stats = getExerciseProgressDetails(activeEx);
+
+                                  if (!stats) {
+                                    return (
+                                      <div className="p-8 border border-white/5 bg-[#070707]/30 text-center rounded-sm">
+                                        <Dumbbell className="w-10 h-10 text-white/10 mx-auto mb-3 animate-pulse" />
+                                        <p className="text-white/80 text-xs font-mono font-bold uppercase tracking-wider">
+                                          Database Entry Found: 0 Sessions
+                                        </p>
+                                        <p className="text-[10px] text-white/40 mt-1 max-w-[420px] mx-auto leading-relaxed font-sans">
+                                          "{activeEx}" is registered in the database, but you haven't recorded exercises for it yet. Complete and save a routine workout with sets of this exercise to populate this progress tracker!
+                                        </p>
+                                      </div>
+                                    );
+                                  }
+
+                                  const { firstSet, lastSet, weightDiff, percentDiff, maxWeight, count, allSets } = stats;
+
+                                  const isAssisted = activeEx.toLowerCase().includes("assisted");
+                                  const weights = allSets.map((s) => s.weight);
+                                  const displayWeightDiff = isAssisted ? (firstSet.weight - lastSet.weight) : weightDiff;
+                                  const displayPercentDiff = isAssisted 
+                                    ? (firstSet.weight > 0 ? (displayWeightDiff / firstSet.weight) * 100 : 0)
+                                    : percentDiff;
+
+                                  // Format data for chart
+                                  const chartPoints = allSets.map((s, index) => {
+                                    let label = "";
+                                    try {
+                                      const d = new Date(s.date);
+                                      label = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+                                    } catch {
+                                      label = s.date;
+                                    }
+                                    return {
+                                      index: index + 1,
+                                      weight: s.weight,
+                                      reps: s.reps,
+                                      date: label,
+                                      fullDate: s.date,
+                                      workout: s.workoutName,
+                                      volume: s.weight * s.reps
+                                    };
+                                  });
+
+                                  const trendColor = displayWeightDiff > 0 ? "text-gym-accent" : displayWeightDiff < 0 ? "text-rose-500" : "text-white/50";
+                                  const trendBg = displayWeightDiff > 0 ? "bg-gym-accent/5 border-gym-accent/15" : displayWeightDiff < 0 ? "bg-rose-500/5 border-rose-500/15" : "bg-white/5 border-white/10";
+
+                                  return (
+                                    <div className="space-y-6 animate-fade-in">
+                                      {/* Header for Active Exercise Tracker */}
+                                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-white/5 pt-5">
+                                        <div>
+                                          <span className="text-[9px] font-mono text-gym-accent tracking-widest uppercase font-black animate-pulse">
+                                            ACTIVE TARGET IN FOCUS
+                                          </span>
+                                          <h4 className="text-lg font-light text-white italic font-serif">
+                                            {activeEx}
+                                          </h4>
+                                        </div>
+                                        <div className="shrink-0 flex items-center gap-1.5">
+                                          <span className="text-[9px] font-mono bg-white/[0.04] border border-white/10 text-white/55 px-2 py-0.5 rounded-sm">
+                                            {count} sets logged
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      {/* Compare stats grid */}
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        {/* First Ever Set weight log */}
+                                        <div className="bg-black/30 border border-white/5 rounded-sm p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px]">
+                                          <div>
+                                            <span className="text-[8px] text-white/30 uppercase tracking-wider font-bold block mb-1">
+                                              First Ever Recorded Set
+                                            </span>
+                                            <span className="text-2xl font-light font-mono text-white/90">
+                                              {firstSet.weight} <span className="text-xs text-white/40">KG</span>
+                                            </span>
+                                          </div>
+                                          <div className="mt-2 text-[9px] text-white/50 font-mono tracking-tight flex items-center justify-between border-t border-white/[0.02] pt-1.5">
+                                            <span>{firstSet.reps} reps</span>
+                                            <span className="text-white/30 text-[8px]">{firstSet.date}</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Most Recent Set weight log */}
+                                        <div className="bg-black/30 border border-white/5 rounded-sm p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px]">
+                                          <div>
+                                            <span className="text-[8px] text-white/30 uppercase tracking-wider font-bold block mb-1">
+                                              Most Recent Recorded Set
+                                            </span>
+                                            <span className="text-2xl font-black font-mono text-white">
+                                              {lastSet.weight} <span className="text-xs text-white/40">KG</span>
+                                            </span>
+                                          </div>
+                                          <div className="mt-2 text-[9px] text-white/50 font-mono tracking-tight flex items-center justify-between border-t border-white/[0.02] pt-1.5">
+                                            <span>{lastSet.reps} reps</span>
+                                            <span className="text-[8px] text-gym-accent font-black">{lastSet.date}</span>
+                                          </div>
+                                        </div>
+
+                                        {/* Absolute & relative progress delta */}
+                                        <div className={`border rounded-sm p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px] ${trendBg}`}>
+                                          <div>
+                                            <span className="text-[8px] text-white/30 uppercase tracking-wider font-bold block mb-1">
+                                              {isAssisted ? "Assistance reduction adaptation" : "Progression adaptation Delta"}
+                                            </span>
+                                            <span className={`text-2xl font-black font-mono ${trendColor}`}>
+                                              {displayWeightDiff > 0 ? "+" : ""}{displayWeightDiff} <span className="text-xs font-normal font-sans">KG</span>
+                                            </span>
+                                          </div>
+                                          <div className={`mt-2 text-[9px] font-mono tracking-tight flex items-center justify-between border-t border-white/[0.02] pt-1.5`}>
+                                            <span className={trendColor}>
+                                              {displayWeightDiff > 0 ? "+" : ""}{displayPercentDiff.toFixed(1)}%
+                                            </span>
+                                            <span className="text-white/30 text-[8px]">
+                                              {isAssisted 
+                                                ? (displayWeightDiff > 0 ? "Assistance Reduced" : displayWeightDiff < 0 ? "Assistance Added" : "Neutral State")
+                                                : (displayWeightDiff > 0 ? "Overload Increase" : displayWeightDiff < 0 ? "Delift Adjustment" : "Neutral State")
+                                              }
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      {/* Chart Section - Visual line graph showing progress */}
+                                      <div className="bg-white/[0.005] border border-white/[0.03] p-4 rounded-sm">
+                                        <div className="flex justify-between items-center mb-3">
+                                          <span className="text-[9px] text-white/40 font-mono uppercase tracking-wider">
+                                            {isAssisted 
+                                              ? "Chronological Assistance timeline (Less weight is higher progression)" 
+                                              : "Chronological Load timeline (Daily Highest Weight)"}
+                                          </span>
+                                          <span className="text-[8px] text-white/20 font-mono uppercase">
+                                            {isAssisted ? "Min assistance" : "Peak lift"}: {isAssisted ? Math.min(...weights) : maxWeight} KG
+                                          </span>
+                                        </div>
+
+                                        {/* Chart plotting */}
+                                        <div className="w-full h-[180px] font-mono text-[9px] relative z-10">
+                                          <ResponsiveContainer width="100%" height="100%">
+                                            <RechartsLineChart
+                                              data={chartPoints}
+                                              margin={{ top: 10, right: 15, left: -25, bottom: 0 }}
+                                            >
+                                              <XAxis 
+                                                dataKey="date" 
+                                                tickLine={false}
+                                                axisLine={{ stroke: 'rgba(255, 255, 255, 0.05)' }}
+                                                tick={{ fill: 'rgba(255, 255, 255, 0.4)', fontSize: 8 }}
+                                              />
+                                              <YAxis 
+                                                tickLine={false}
+                                                axisLine={false}
+                                                tick={{ fill: 'rgba(255, 255, 255, 0.4)', fontSize: 8 }}
+                                                domain={[Math.max(0, Math.min(...chartPoints.map(c => c.weight)) - 5), Math.max(...chartPoints.map(c => c.weight)) + 5]}
+                                                reversed={isAssisted}
+                                              />
+                                              <Tooltip 
+                                                cursor={{ stroke: 'rgba(255, 255, 255, 0.1)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                                                content={({ active, payload }) => {
+                                                  if (active && payload && payload.length) {
+                                                    const d = payload[0].payload;
+                                                    return (
+                                                      <div className="bg-zinc-950/95 border border-white/10 px-2.5 py-1.5 rounded-sm font-mono text-[9px] shadow-xl">
+                                                        <span className="text-white/30 block text-[7.5px] uppercase">{d.workout}</span>
+                                                        <span className="text-white font-black block mt-0.5">{d.date}</span>
+                                                        <span className="text-gym-accent font-black block mt-1">{d.weight} KG &times; {d.reps} reps</span>
+                                                        <span className="text-white/45 block text-[8px] mt-0.5 font-sans">Vol: {d.volume} kg</span>
+                                                      </div>
+                                                    );
+                                                  }
+                                                  return null;
+                                                }}
+                                              />
+                                              <Line 
+                                                type="monotone"
+                                                dataKey="weight" 
+                                                stroke="#d4ff00" 
+                                                strokeWidth={2}
+                                                dot={{ r: 3, fill: '#0a0a0a', stroke: '#d4ff00', strokeWidth: 1.5 }}
+                                                activeDot={{ r: 5, fill: '#d4ff00', stroke: '#0a0a0a', strokeWidth: 1.5 }}
+                                              />
+                                            </RechartsLineChart>
+                                          </ResponsiveContainer>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })()}
                               </div>
                             );
                           })()}
@@ -13274,6 +13446,389 @@ export default function App() {
                         className="px-10 py-4 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-gym-accent hover:bg-gym-accent/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] cursor-pointer rounded-sm"
                       >
                         Close Archive
+                      </button>
+                    </div>
+                  </motion.div>
+                </div>
+              );
+            })()}
+        </AnimatePresence>
+
+        {/* Log Set Pop-Up Modal */}
+        <AnimatePresence>
+          {loggingEx &&
+            (() => {
+              const resolvedEx = findExerciseByName(loggingEx.name) || loggingEx;
+              const Icon = iconMap[resolvedEx.icon] || Dumbbell;
+              return (
+                <div className="fixed inset-0 z-[110] flex justify-center overflow-y-auto p-4 sm:p-10 font-sans">
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => {
+                      setLoggingEx(null);
+                      setPopupWeight("");
+                      setPopupReps("");
+                      setPopupNotes("");
+                      setPopupDifficulty("moderate");
+                    }}
+                    className="fixed inset-0 bg-black/90 backdrop-blur-md"
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                    className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-sm flex flex-col shadow-2xl my-auto z-10 overflow-hidden"
+                  >
+                    <div className="p-6 border-b border-white/15 relative overflow-hidden bg-white/[0.01]">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-2xl -mr-12 -mt-12" />
+                      <div className="relative z-10 flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center shrink-0">
+                            <Icon className="w-5 h-5 text-gym-accent" />
+                          </div>
+                          <div>
+                            <span className="text-[8px] text-gym-accent font-black uppercase tracking-[0.3em] block mb-0.5">
+                              Movement Entry Engine
+                            </span>
+                            <h3 className="text-lg font-light italic font-serif text-white tracking-tight leading-tight">
+                              {resolvedEx.name}
+                            </h3>
+                            {resolvedEx.category && (
+                              <span
+                                className={`inline-block text-[7.5px] px-1.5 py-0.2 rounded-sm font-black uppercase mt-1 tracking-widest ${
+                                  resolvedEx.category === "compound"
+                                    ? "bg-amber-500/10 text-amber-500/80 border border-amber-500/20"
+                                    : "bg-purple-500/15 text-purple-400 border border-purple-500/20"
+                                }`}
+                              >
+                                {resolvedEx.category}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 ml-4 shrink-0 font-mono">
+                          <Sparkline
+                            exName={resolvedEx.name}
+                            sessionSets={sessionSets}
+                            archivedWorkouts={archivedWorkouts}
+                            width={65}
+                            height={16}
+                          />
+                          <button
+                            onClick={() => {
+                              setLoggingEx(null);
+                              setPopupWeight("");
+                              setPopupReps("");
+                              setPopupNotes("");
+                              setPopupDifficulty("moderate");
+                            }}
+                            className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white rounded-sm transition-all cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                      {/* Form Inputs */}
+                      <div className="flex flex-col gap-3 bg-white/[0.01] border border-white/[0.04] p-4 rounded-sm w-full">
+                        <div className="grid grid-cols-2 gap-3 w-full">
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                              {resolvedEx.pool === "cardio" ? "Time (min)" : "Weight (kg)"}
+                            </span>
+                            <input
+                              type="number"
+                              inputMode="decimal"
+                              placeholder="0"
+                              value={popupWeight}
+                              onChange={(e) => setPopupWeight(e.target.value)}
+                              className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                            />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                              {resolvedEx.pool === "cardio" ? "Speed / Lvl" : "Reps"}
+                            </span>
+                            <input
+                              type="number"
+                              inputMode="numeric"
+                              placeholder="0"
+                              value={popupReps}
+                              onChange={(e) => setPopupReps(e.target.value)}
+                              className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col w-full">
+                          <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                            Set Notes
+                          </span>
+                          <input
+                            type="text"
+                            placeholder="Warmup, RPE 9, drop set, etc."
+                            value={popupNotes}
+                            onChange={(e) => setPopupNotes(e.target.value)}
+                            className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
+                          />
+                        </div>
+
+                        {/* Intensity Choice */}
+                        <div className="flex flex-col w-full">
+                          <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                            Set Intensity (How'd it feel?)
+                          </span>
+                          <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-sm border border-white/5">
+                            <button
+                              type="button"
+                              onClick={() => setPopupDifficulty("easy")}
+                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                                popupDifficulty === "easy"
+                                  ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-black shadow-[0_0_8px_rgba(16,185,129,0.1)]"
+                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                              }`}
+                            >
+                              😊 Easy
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPopupDifficulty("moderate")}
+                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                                popupDifficulty === "moderate"
+                                  ? "bg-amber-500/15 border-amber-500/35 text-amber-400 font-bold shadow-[0_0_8px_rgba(245,158,11,0.1)]"
+                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                              }`}
+                            >
+                              ⚡ Good
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPopupDifficulty("hard")}
+                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                                popupDifficulty === "hard"
+                                  ? "bg-rose-500/15 border-rose-500/35 text-rose-400 font-black shadow-[0_0_8px_rgba(244,63,94,0.1)]"
+                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                              }`}
+                            >
+                              🔥 Struggle
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Ghost set matcher */}
+                        {(() => {
+                          const loggedSetsForThisEx = sessionSets.filter(
+                            (s) =>
+                              s &&
+                              s.exerciseName &&
+                              s.exerciseName.trim().toLowerCase() === resolvedEx.name.trim().toLowerCase()
+                          );
+                          const nextSetIndex = loggedSetsForThisEx.length;
+                          const previousWorkouts = archivedWorkouts
+                            .filter((w) =>
+                              w.sets?.some(
+                                (s: any) =>
+                                  s.exerciseName?.trim().toLowerCase() === resolvedEx.name.trim().toLowerCase()
+                              )
+                            )
+                            .sort((a, b) => b.date.localeCompare(a.date));
+
+                          const lastWorkout = previousWorkouts[0];
+                          if (!lastWorkout) return null;
+
+                          const lastSets = lastWorkout.sets.filter(
+                            (s: any) =>
+                              s.exerciseName?.trim().toLowerCase() === resolvedEx.name.trim().toLowerCase()
+                          );
+
+                          const ghostSet = lastSets[nextSetIndex];
+                          if (!ghostSet) return null;
+
+                          const dateFormatted = new Date(lastWorkout.date).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "short",
+                          });
+
+                          return (
+                            <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-sm px-2.5 py-1.5 mt-1 text-[10px] w-full font-sans">
+                              <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
+                                <span className="relative flex h-1.5 w-1.5 shrink-0">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gym-accent/40 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gym-accent/70"></span>
+                                </span>
+                                <span className="text-white/40 font-mono truncate">
+                                  Ghost Set {nextSetIndex + 1} ({dateFormatted}):
+                                </span>
+                                <span className="text-gym-accent font-mono font-bold shrink-0">
+                                  {ghostSet.weight}kg × {ghostSet.reps}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPopupWeight(ghostSet.weight.toString());
+                                  setPopupReps(ghostSet.reps.toString());
+                                }}
+                                className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+                                title="Use ghost set target values"
+                              >
+                                Match
+                              </button>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Submit Button inside the popup */}
+                        <button
+                          onClick={async () => {
+                            if (popupWeight && popupReps) {
+                              await handleSaveSet(resolvedEx.name, popupWeight, popupReps, popupNotes, popupDifficulty);
+                              setPopupWeight("");
+                              setPopupReps("");
+                              setPopupNotes("");
+                              setPopupDifficulty("moderate");
+                              setToast({
+                                message: `Log Entry successfully submitted for ${resolvedEx.name}!`,
+                                type: "success",
+                              });
+                              setTimeout(() => setToast(null), 2500);
+                            } else {
+                              setToast({
+                                message: "Please input both load weight and training reps.",
+                                type: "error",
+                              });
+                              setTimeout(() => setToast(null), 3000);
+                            }
+                          }}
+                          className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2.5 rounded-sm text-[9.5px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
+                        >
+                          Submit entry Log set
+                        </button>
+                      </div>
+
+                      {/* Progression Suggestion Card */}
+                      {(() => {
+                        if (resolvedEx.pool === "cardio") return null;
+                        const exSets = sessionSets.filter(
+                          (s) =>
+                            s &&
+                            s.exerciseName &&
+                            s.exerciseName.trim().toLowerCase() === resolvedEx.name.trim().toLowerCase()
+                        );
+                        const weightGroups: Record<number, number[]> = {};
+                        exSets.forEach((set) => {
+                          const w = typeof set.weight === 'string' ? parseFloat(set.weight) : set.weight;
+                          const r = typeof set.reps === 'string' ? parseInt(set.reps, 10) : set.reps;
+                          if (!isNaN(w) && !isNaN(r)) {
+                            if (!weightGroups[w]) weightGroups[w] = [];
+                            weightGroups[w].push(r);
+                          }
+                        });
+
+                        let recommendWeight = 0;
+                        let targetWeight = 0;
+                        let hasStruggled = false;
+                        for (const [weightStr, repsList] of Object.entries(weightGroups)) {
+                          const weight = parseFloat(weightStr);
+                          const successfulSets = repsList.filter((r) => r >= 10).length;
+                          if (successfulSets >= 3) {
+                            targetWeight = weight;
+                            recommendWeight = weight + 2.5;
+                            hasStruggled = exSets.some((s) => {
+                              const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
+                              return sw === weight && s.difficulty === "hard";
+                            });
+                            break;
+                          }
+                        }
+
+                        if (recommendWeight > 0) {
+                          if (hasStruggled) {
+                            return (
+                              <div className="p-3.5 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(245,158,11,0.08)]">
+                                <div className="flex items-center gap-1.5 justify-between">
+                                  <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-amber-400 flex items-center gap-1.5">
+                                    <Activity className="w-3.5 h-3.5" />
+                                    STRENGTH CONSOLIDATION RECOMMENDED
+                                  </span>
+                                  <span className="text-[8px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
+                                    Safety Loop Active
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-white/70 leading-relaxed font-sans">
+                                  You completed <strong className="text-white">3 sets of 10+ reps</strong> at <span className="text-amber-400 font-mono font-bold">{targetWeight}kg</span>! Since you noted that this was a struggle (🔥), our cybernetic engine recommends maintaining <strong className="text-white">{targetWeight}kg</strong> for another workout to solidify neural adaptation before loading further.
+                                </p>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="p-3.5 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                              <div className="flex items-center gap-1.5 justify-between">
+                                <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
+                                  <TrendingUp className="w-3.5 h-3.5" />
+                                  PROGRESSION TARGET ACQUIRED
+                                </span>
+                                <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
+                                  +{2.5}kg Target
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-white/70 leading-relaxed font-sans">
+                                You completed <strong className="text-white">3 sets of 10+ reps</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span> today! Double-progression triggered. Upgrade your target weight.
+                              </p>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPopupWeight(recommendWeight.toString());
+                                  setPopupReps("10");
+                                  setToast({
+                                    message: `Set ${resolvedEx.name} target weight to ${recommendWeight}kg × 10 reps!`,
+                                    type: "success",
+                                  });
+                                  setTimeout(() => setToast(null), 2000);
+                                }}
+                                className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-semibold rounded-sm text-[9px] font-black uppercase tracking-[0.15em] font-mono transition-all cursor-pointer shadow-md shadow-emerald-500/15 text-center"
+                              >
+                                Apply {recommendWeight}kg Recommendation
+                              </button>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
+                      {/* Personal Bests & Submitted Sets History */}
+                      <div className="border-t border-white/5 pt-4">
+                        <span className="text-[8px] text-white/30 uppercase tracking-widest font-mono font-bold block mb-2">
+                          Performance & History Registry
+                        </span>
+                        <PBBlock
+                          exName={resolvedEx.name}
+                          pbs={personalBests}
+                          showLatest={true}
+                          sessionSets={sessionSets}
+                          archivedWorkouts={archivedWorkouts}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 border-t border-white/5 bg-white/[0.01] flex justify-end">
+                      <button
+                        onClick={() => {
+                          setLoggingEx(null);
+                          setPopupWeight("");
+                          setPopupReps("");
+                          setPopupNotes("");
+                          setPopupDifficulty("moderate");
+                        }}
+                        className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all text-[10px] font-black uppercase tracking-wider cursor-pointer rounded-sm"
+                      >
+                        Done / Close
                       </button>
                     </div>
                   </motion.div>
