@@ -530,6 +530,19 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
     }
   ],
   lower_back: [
+    {
+      name: "Barbell Deadlifts",
+      icon: "ArrowUp",
+      pool: "lower_back",
+      muscleGroup: "erector_spinae",
+      instructions: [
+        "Stand with your feet hip-width apart and the barbell over the mid-foot.",
+        "Hinge at your hips and bend your knees to grip the bar with a flat back.",
+        "Drive through your feet to push the floor away, pulling the bar up along your shins.",
+        "Keep your chest high and back straight as you stand up completely, locking out your hips.",
+        "Hinge at the hips first, then bend knees to lower the bar back to the floor under control."
+      ]
+    },
     { 
       name: "Rack Pulls", 
       icon: "ArrowUp", 
@@ -2150,6 +2163,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Barbell Bench Press": "CjHIKDQ4RQo",
   "Barbell Bent Over Row": "FsK19s8eGFs",
   "Barbell Bicep Curl": "N5x5M1x1Gd0",
+  "Barbell Deadlifts": "GxsLrTzyGUU",
   "Barbell Front Raise": "Ofo2DQdT7DA",
   "Barbell Incline Bench Press": "2jFFCy8JBU8",
   "Battle Rope Alternating Waves": "z4ySEjuaYh8",

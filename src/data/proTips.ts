@@ -26,6 +26,30 @@ const SPECIFIC_TIPS: Record<string, ProTips> = {
       "Don't transfer the weight entirely to your toes. Maintain equal pressure across the 'tripod' of your feet: heel, big toe, and outer foot."
     ]
   },
+  "barbell deadlift": {
+    tips: [
+      "Stance and Setup: Stand with feet hip-width apart and grip the bar slightly wider than your legs. The barbell should line up over the mid-foot.",
+      "Slack Pull and Lat Engagement: Pull the slack out of the barbell until you hear it click against the plates, and squeeze your armpits as if squeezing lemons to fully engage the lats and secure the spine.",
+      "Drive from the Floor: Initiate the lift by driving your feet into the floor like a leg press, keeping the barbell tight against your shins throughout the ascent.",
+      "Lockout: Stand tall by contracting your glutes and hamstrings. Do not over-arch or bend backward at the top."
+    ],
+    avoid: [
+      "Avoid pulling with a rounded back (lumbar spinal flexion), which places catastrophic shear load on your vertebral disks.",
+      "Do not jerk or yank the bar off the floor with slack in the line; always establish full tension and brace before lifting."
+    ]
+  },
+  "barbell deadlifts": {
+    tips: [
+      "Stance and Setup: Stand with feet hip-width apart and grip the bar slightly wider than your legs. The barbell should line up over the mid-foot.",
+      "Slack Pull and Lat Engagement: Pull the slack out of the barbell until you hear it click against the plates, and squeeze your armpits as if squeezing lemons to fully engage the lats and secure the spine.",
+      "Drive from the Floor: Initiate the lift by driving your feet into the floor like a leg press, keeping the barbell tight against your shins throughout the ascent.",
+      "Lockout: Stand tall by contracting your glutes and hamstrings. Do not over-arch or bend backward at the top."
+    ],
+    avoid: [
+      "Avoid pulling with a rounded back (lumbar spinal flexion), which places catastrophic shear load on your vertebral disks.",
+      "Do not jerk or yank the bar off the floor with slack in the line; always establish full tension and brace before lifting."
+    ]
+  },
   "barbell bench press": {
     tips: [
       "Retract and depress your scapula: squeeze your shoulder blades back and down tightly into the bench cushion before you even unrack the bar.",
