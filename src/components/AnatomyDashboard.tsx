@@ -18,6 +18,15 @@ import {
 } from 'lucide-react';
 import AnatomyChart from './AnatomyChart';
 import RadarChart from './RadarChart';
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Cell
+} from 'recharts';
 import { CyberneticClassPanel } from './CyberneticClassPanel';
 import { SynapticReplenishmentPlanner } from './SynapticReplenishmentPlanner';
 import { HypertrophicAdaptationPredictor } from './HypertrophicAdaptationPredictor';
@@ -134,6 +143,7 @@ export default function AnatomyDashboard({
 
   const [savingBodyweight, setSavingBodyweight] = useState(false);
   const [selectedRadarGroup, setSelectedRadarGroup] = useState<string>('chest');
+  const [selectedSubMuscle, setSelectedSubMuscle] = useState<string | null>(null);
 
   const handleSaveBodyweight = async () => {
     try {
@@ -1671,7 +1681,7 @@ export default function AnatomyDashboard({
                   <div className="lg:col-span-7 p-5 bg-[#050505]/60 border border-white/5 hover:border-white/8 transition-all rounded-sm relative overflow-hidden flex flex-col justify-between">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/5 rounded-full blur-2xl pointer-events-none" />
                     
-                    <div>
+                    <div className="w-full">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-2.5 mb-3.5 gap-2">
                         <div className="flex items-center gap-2">
                           <Activity className="w-3.5 h-3.5 text-gym-accent animate-pulse shrink-0" />
@@ -1685,82 +1695,200 @@ export default function AnatomyDashboard({
                           </div>
                         </div>
                         <span className="text-[8px] bg-gym-accent/5 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-sm font-mono uppercase tracking-widest font-black self-start sm:self-auto">
-                          Biomechanical Fiber Map
+                          Interactive Fiber Analytics
                         </span>
                       </div>
 
-                      <div className="space-y-3">
-                        {Object.entries((subMuscleBreakdown[selectedRadarGroup]?.subMuscles || {}) as Record<string, {
-                          label: string;
-                          count: number;
-                          exercises: Record<string, number>;
-                          description: string;
-                          recommends: string[];
-                        }>).map(([subKey, subData]) => {
-                          const totalGroupCount = Object.values((subMuscleBreakdown[selectedRadarGroup]?.subMuscles || {}) as Record<string, {
+                      {(() => {
+                        const filteredEntries = Object.entries(
+                          (subMuscleBreakdown[selectedRadarGroup]?.subMuscles || {}) as Record<string, {
+                            label: string;
                             count: number;
-                          }>).reduce((acc, curr) => acc + curr.count, 0) || 1;
-                          const subPercentage = Math.round((subData.count / totalGroupCount) * 100);
-                          const hasSets = subData.count > 0;
+                            description: string;
+                            exercises: Record<string, number>;
+                            recommends: string[];
+                          }>
+                        ).filter(([key]) => !(key === 'general' && selectedRadarGroup !== 'core'));
 
-                          return (
-                            <div key={subKey} className="p-3 bg-white/[0.005] border border-white/[0.02] hover:border-white/5 transition-all rounded-sm">
-                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2 font-mono">
-                                <div className="space-y-1">
-                                  <span className="text-[10px] font-black text-white/90 uppercase tracking-wide">
-                                    {subData.label}
-                                  </span>
-                                  <span className="block text-[11px] text-white/50 normal-case leading-relaxed font-sans max-w-[450px]">
-                                    {subData.description}
-                                  </span>
-                                </div>
-                                <div className="text-left sm:text-right shrink-0">
-                                  <span className="text-[10px] text-gym-accent font-bold font-mono bg-gym-accent/5 px-1.5 py-0.5 rounded-sm border border-gym-accent/10">
-                                    {subData.count} Sets
-                                  </span>
-                                  {hasSets && (
-                                    <span className="block text-[8px] text-white/30 uppercase tracking-widest mt-1">
-                                      {subPercentage}%
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
+                        const totalGroupCount = filteredEntries.reduce((acc, [_, curr]) => acc + curr.count, 0) || 1;
 
-                              {/* Progress bar */}
-                              <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden relative mb-2.5">
-                                <motion.div 
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${hasSets ? subPercentage : 0}%` }}
-                                  transition={{ duration: 0.6, ease: "easeOut" }}
-                                  className="h-full bg-gym-accent rounded-full relative"
-                                >
-                                  {hasSets && <span className="absolute inset-0 bg-white/20 animate-pulse" />}
-                                </motion.div>
-                              </div>
+                        const subMuscleDataList = filteredEntries.map(([key, data]) => {
+                          const percentage = Math.round((data.count / totalGroupCount) * 100);
 
-                              {/* Origin of Recruitment */}
-                              <div className="pt-1.5 border-t border-white/[0.02] flex flex-wrap gap-1.5 items-center">
-                                <span className="text-[7.5px] text-white/30 font-mono font-bold">
-                                  {hasSets ? "LOGGED:" : "RECOMMENDED:"}
+                          return {
+                            key,
+                            name: data.label.replace(/\s*\(.*\)/, ''),
+                            fullName: data.label,
+                            count: data.count,
+                            percentage: percentage,
+                            description: data.description,
+                            exercises: data.exercises,
+                            recommends: data.recommends
+                          };
+                        });
+
+                        const activeSubKey = (selectedSubMuscle && subMuscleDataList.some(item => item.key === selectedSubMuscle)) 
+                          ? selectedSubMuscle 
+                          : subMuscleDataList[0]?.key || '';
+                        
+                        const activeSubData = subMuscleDataList.find(item => item.key === activeSubKey);
+
+                        return (
+                          <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch min-h-[300px]">
+                            {/* Left part of the Right Column - Visual distribution BarChart */}
+                            <div className="md:col-span-6 flex flex-col justify-between space-y-3">
+                              <div className="p-3 bg-white/[0.005] border border-white/[0.02] rounded-sm flex-1 flex flex-col justify-between">
+                                <span className="text-[8px] text-white/30 uppercase tracking-widest font-mono font-bold block mb-2">
+                                  Volumetric Distribution (% of Group)
                                 </span>
-                                {hasSets ? (
-                                  Object.entries(subData.exercises).map(([exName, count]) => (
-                                    <span key={exName} className="text-[8px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded-sm text-white/70 font-mono">
-                                      {exName} ({count})
-                                    </span>
-                                  ))
-                                ) : (
-                                  subData.recommends.map((rec) => (
-                                    <span key={rec} className="text-[8px] bg-gym-accent/[0.01] border border-gym-accent/5 px-1.5 py-0.5 rounded-sm text-gym-accent/50 font-mono">
-                                      {rec}
-                                    </span>
-                                  ))
-                                )}
+                                
+                                {/* Recharts Bar Chart of sub-muscles */}
+                                <div className="w-full h-[180px] font-mono text-[9px]">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                      data={subMuscleDataList}
+                                      layout="vertical"
+                                      margin={{ top: 0, right: 10, left: -20, bottom: 0 }}
+                                      onClick={(state) => {
+                                        if (state && state.activeLabel !== undefined) {
+                                          const item = subMuscleDataList[state.activeTooltipIndex || 0];
+                                          if (item) setSelectedSubMuscle(item.key);
+                                        }
+                                      }}
+                                    >
+                                      <XAxis type="number" hide />
+                                      <YAxis
+                                        dataKey="name"
+                                        type="category"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tick={{ fill: 'rgba(255, 255, 255, 0.45)', fontSize: 8 }}
+                                        width={70}
+                                      />
+                                      <Tooltip
+                                        cursor={{ fill: 'rgba(255, 255, 255, 0.02)' }}
+                                        content={({ active, payload }) => {
+                                          if (active && payload && payload.length) {
+                                            const data = payload[0].payload;
+                                            return (
+                                              <div className="bg-zinc-950/95 border border-white/10 px-2 py-1.5 rounded-sm font-mono text-[9px] shadow-lg">
+                                                <span className="text-white font-bold block text-[8px]">{data.fullName}</span>
+                                                <span className="text-gym-accent font-black">{data.count} Sets ({data.percentage}%)</span>
+                                              </div>
+                                            );
+                                          }
+                                          return null;
+                                        }}
+                                      />
+                                      <Bar dataKey="percentage" radius={[0, 2, 2, 0]} cursor="pointer">
+                                        {subMuscleDataList.map((entry, index) => {
+                                          const isSelected = entry.key === activeSubKey;
+                                          return (
+                                            <Cell
+                                              key={`cell-${index}`}
+                                              fill={isSelected ? '#d4ff00' : 'rgba(212, 255, 0, 0.15)'}
+                                              stroke={isSelected ? '#d4ff00' : 'rgba(212, 255, 0, 0.05)'}
+                                              strokeWidth={1}
+                                              onClick={() => setSelectedSubMuscle(entry.key)}
+                                              className="transition-all duration-300"
+                                            />
+                                          );
+                                        })}
+                                      </Bar>
+                                    </BarChart>
+                                  </ResponsiveContainer>
+                                </div>
+
+                                {/* Mini buttons for selection fallback */}
+                                <div className="flex flex-wrap gap-1 mt-2 border-t border-white/[0.03] pt-2">
+                                  {subMuscleDataList.map((entry) => {
+                                    const isSelected = entry.key === activeSubKey;
+                                    return (
+                                      <button
+                                        key={entry.key}
+                                        onClick={() => setSelectedSubMuscle(entry.key)}
+                                        className={`px-1.5 py-0.5 rounded-sm text-[7px] font-mono uppercase tracking-wider transition-all border ${
+                                          isSelected
+                                            ? 'bg-gym-accent/10 border-gym-accent/35 text-gym-accent font-black'
+                                            : 'bg-white/[0.01] border-white/[0.03] text-white/50 hover:bg-white/[0.03] hover:text-white'
+                                        }`}
+                                      >
+                                        {entry.name}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
+
+                            {/* Right part of the Right Column - Selected Fiber Diagnostics */}
+                            <div className="md:col-span-6 flex flex-col justify-between">
+                              <AnimatePresence mode="wait">
+                                {activeSubData && (
+                                  <motion.div
+                                    key={activeSubKey}
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.98 }}
+                                    transition={{ duration: 0.12 }}
+                                    className="h-full flex flex-col justify-between p-3 bg-white/[0.01] border border-white/[0.03] rounded-sm"
+                                  >
+                                    <div className="space-y-3">
+                                      <div className="flex justify-between items-start gap-1 font-mono">
+                                        <div className="space-y-0.5">
+                                          <h6 className="text-[10px] font-black text-white uppercase tracking-wider">{activeSubData.fullName}</h6>
+                                          <span className="text-[7.5px] text-white/30 uppercase tracking-widest block">Selected Fiber Sector</span>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                          <span className="text-[9px] text-gym-accent font-bold font-mono bg-gym-accent/5 px-1.5 py-0.5 border border-gym-accent/10 rounded-sm">
+                                            {activeSubData.count} Sets
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <p className="text-[10.5px] text-white/60 leading-relaxed font-sans font-normal border-t border-white/[0.03] pt-2">
+                                        {activeSubData.description}
+                                      </p>
+                                    </div>
+
+                                    <div className="space-y-3 pt-3 border-t border-white/[0.03] mt-3">
+                                      {/* Logged/Recommended Exercises */}
+                                      <div className="space-y-1.5">
+                                        <span className="text-[7.5px] font-bold font-mono text-white/45 uppercase tracking-wider block">
+                                          {activeSubData.count > 0 ? "Targeted Workouts" : "Recommended Corrective Targets"}
+                                        </span>
+                                        <div className="flex flex-wrap gap-1">
+                                          {activeSubData.count > 0 ? (
+                                            Object.entries(activeSubData.exercises).map(([exName, count]) => (
+                                              <span key={exName} className="text-[8px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded-sm text-white/80 font-mono">
+                                                {exName} ({count})
+                                              </span>
+                                            ))
+                                          ) : (
+                                            activeSubData.recommends.map((rec) => (
+                                              <span key={rec} className="text-[8px] bg-gym-accent/[0.01] border border-gym-accent/5 px-1.5 py-0.5 rounded-sm text-gym-accent/70 font-mono">
+                                                {rec}
+                                              </span>
+                                            ))
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Status gauge bottom */}
+                                      <div className="bg-zinc-950/40 border border-white/[0.02] p-1.5 rounded-sm flex items-center justify-between text-[7.5px] font-mono uppercase tracking-wider">
+                                        <span className="text-white/30">RECIPROCAL RECRUITMENT:</span>
+                                        <span className={activeSubData.count > 0 ? "text-gym-accent font-bold" : "text-amber-400 font-bold"}>
+                                          {activeSubData.count > 0 ? `${activeSubData.percentage}% of Group` : 'Atrophy Danger'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
 
