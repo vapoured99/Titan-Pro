@@ -133,6 +133,7 @@ export default function AnatomyDashboard({
   }, [profile?.bodyweight]);
 
   const [savingBodyweight, setSavingBodyweight] = useState(false);
+  const [selectedRadarGroup, setSelectedRadarGroup] = useState<string>('chest');
 
   const handleSaveBodyweight = async () => {
     try {
@@ -272,6 +273,309 @@ export default function AnatomyDashboard({
       maxCount
     };
   }, [sessionSets, archivedWorkouts]);
+
+  // --- 2b. Dynamic Sub-Muscle Breakdown Calculation ---
+  const subMuscleBreakdown = useMemo(() => {
+    // We will initialize all sub-muscles for each major category with 0 count and empty exercises record.
+    const scheme: Record<string, {
+      label: string;
+      subMuscles: Record<string, {
+        label: string;
+        count: number;
+        exercises: Record<string, number>;
+        description: string;
+        recommends: string[];
+      }>;
+    }> = {
+      chest: {
+        label: 'Chest (Push)',
+        subMuscles: {
+          upper_chest: {
+            label: 'Upper Chest (Clavicular)',
+            count: 0,
+            exercises: {},
+            description: 'Upper fibers originating at the collarbone. Crucial for an upper-chest shelf and overall shoulder-to-chest transitions.',
+            recommends: ['Incline Dumbbell Press', 'Barbell Incline Bench Press', 'Decline Push Ups', 'Low-to-High Cable Flyes']
+          },
+          middle_chest: {
+            label: 'Mid Chest (Sternal)',
+            count: 0,
+            exercises: {},
+            description: 'The largest section of the chest. Builds pectoral mass, thickness, and standard horizontal pushing power.',
+            recommends: ['Flat Barbell Bench Press', 'Flat Dumbbell Press', 'Machine Chest Press', 'Push-ups']
+          },
+          lower_chest: {
+            label: 'Lower Chest (Costal)',
+            count: 0,
+            exercises: {},
+            description: 'Crucial for outlining the lower pec line and creating a defined pectoralis lower border.',
+            recommends: ['Chest Dips', 'Decline Dumbbell Press', 'High-to-Low Cable Flyes']
+          },
+          general: {
+            label: 'General Pectoralis',
+            count: 0,
+            exercises: {},
+            description: 'Recruited across general push patterns, peck flyes, and compound press variants.',
+            recommends: ['Dumbbell Flyes', 'Pec Deck Flyes', 'Deficit Push-ups']
+          }
+        }
+      },
+      back: {
+        label: 'Back (Pull)',
+        subMuscles: {
+          lats: {
+            label: 'Latissimus Dorsi (Lats)',
+            count: 0,
+            exercises: {},
+            description: 'Large wing-like muscles on your sides. Key for vertical pulling movements and creating a V-taper silhouette.',
+            recommends: ['Lat Pulldowns', 'Pull-ups', 'Chins', 'Straight Arm Pulldowns']
+          },
+          upper_back: {
+            label: 'Rhomboids & Traps',
+            count: 0,
+            exercises: {},
+            description: 'Muscles between and over the shoulder blades. Vital for scapular retraction, posturing, and overall back thickness.',
+            recommends: ['Barbell Rows', 'Face Pulls', 'Seated Cable Rows', 'Dumbbell Shrugs']
+          },
+          lower_back: {
+            label: 'Lower Back & Erectors',
+            count: 0,
+            exercises: {},
+            description: 'Erector spinae muscles supporting the spine. Provides structural posture maintenance and heavy spinal loading support.',
+            recommends: ['Deadlifts', 'Back Extensions', 'Good Mornings', 'Rack Pulls']
+          },
+          general: {
+            label: 'General Pull Coordinates',
+            count: 0,
+            exercises: {},
+            description: 'Balanced posterior pull movements that stimulate various areas of back musculature.',
+            recommends: ['Single Arm Dumbbell Row', 'T-Bar Rows', 'Machine Rows']
+          }
+        }
+      },
+      shoulders: {
+        label: 'Shoulders',
+        subMuscles: {
+          front_delts: {
+            label: 'Front Deltoids (Anterior)',
+            count: 0,
+            exercises: {},
+            description: 'Muscles on the front of the shoulders, responsible for raising arms forward. Heavily active in all press forms.',
+            recommends: ['Seated Dumbbell Shoulder Press', 'Military Overhead Press', 'Dumbbell Front Raises']
+          },
+          side_delts: {
+            label: 'Side Deltoids (Lateral)',
+            count: 0,
+            exercises: {},
+            description: 'Gives the shoulders a round, capped shape and broadens your frame. Vital for the optical V-taper appearance.',
+            recommends: ['Dumbbell Lateral Raises', 'Cable Lateral Raises', 'Upright Rows']
+          },
+          rear_delts: {
+            label: 'Rear Deltoids (Posterior)',
+            count: 0,
+            exercises: {},
+            description: 'Located at the back of the shoulder. Essential for shoulder joint health, alignment stability, and pulling posture.',
+            recommends: ['Rear Delt Flyes', 'Face Pulls', 'Reverse Pec Deck']
+          },
+          general: {
+            label: 'General Deltoid Volume',
+            count: 0,
+            exercises: {},
+            description: 'Overarching deltoid activation in heavy multi-joint overhead or dynamic shoulder stability drills.',
+            recommends: ['Arnold Press', 'Log Press', 'Kettlebell Halos']
+          }
+        }
+      },
+      legs: {
+        label: 'Legs / Lower Body',
+        subMuscles: {
+          quads: {
+            label: 'Quadriceps (Front Thigh)',
+            count: 0,
+            exercises: {},
+            description: 'Four large muscles on the front of the thigh, vital for knee extension, jumping, and deep squat power.',
+            recommends: ['Barbell Back Squats', 'Leg Press', 'Hack Squats', 'Quads Leg Extensions']
+          },
+          hamstrings: {
+            label: 'Hamstrings (Rear Thigh)',
+            count: 0,
+            exercises: {},
+            description: 'Muscles on the back of the thigh, key for bending knees, sprinting speeds, and hip articulation hinge loops.',
+            recommends: ['Romanian Deadlifts', 'Seated Leg Curls', 'Lying Hamstring Curls']
+          },
+          glutes: {
+            label: 'Gluteal Chain (Glutes)',
+            count: 0,
+            exercises: {},
+            description: 'The body\'s primary hip extensor and glute muscles. Responsible for explosive lower-body drive and athletic stability.',
+            recommends: ['Hip Thrusts', 'Bulgarian Split Squats', 'Sumo Deadlifts', 'Glute Bridges']
+          },
+          calves: {
+            label: 'Calves (Lower Leg)',
+            count: 0,
+            exercises: {},
+            description: 'Lower leg muscles (soleus and gastrocnemius), key for ankle extension, springiness, and foot stability.',
+            recommends: ['Standing Calf Raises', 'Seated Calf Raises', 'Donkey Calf Raises']
+          },
+          general: {
+            label: 'General Leg Coordinate',
+            count: 0,
+            exercises: {},
+            description: 'Assisting musculature active in large multi-joint leg exercises.',
+            recommends: ['Walking Lunges', 'Goblet Squats', 'Step-ups']
+          }
+        }
+      },
+      arms: {
+        label: 'Arms',
+        subMuscles: {
+          biceps: {
+            label: 'Biceps Brachii',
+            count: 0,
+            exercises: {},
+            description: 'The main upper arm pulling muscle. Includes long and short heads, active in elbow bending and forearm supination.',
+            recommends: ['Barbell Bicep Curls', 'Incline Dumbbell Curls', 'Hammer Curls']
+          },
+          brachialis: {
+            label: 'Brachialis (Outer Arm Peak)',
+            count: 0,
+            exercises: {},
+            description: 'Deep muscle under the lower biceps. Pushes the biceps outward, significantly broadening the arm width profile.',
+            recommends: ['Hammer Curls', 'Cable Rope Curls', 'Reverse Grip Curls']
+          },
+          triceps: {
+            label: 'Triceps Brachii',
+            count: 0,
+            exercises: {},
+            description: 'Accounts for nearly two-thirds of upper arm mass. Composed of lateral, long, and medial heads for elbow extension.',
+            recommends: ['Tricep Pushdowns', 'Overhead Tricep Extensions', 'Skull Crushers', 'Close-Grip Bench Press']
+          },
+          forearms: {
+            label: 'Forearms & Grip',
+            count: 0,
+            exercises: {},
+            description: 'Enhances wrist stability, absolute grip hold strength, and aesthetic beefiness of the forearm.',
+            recommends: ['Wrist Curls', 'Reverse Wrist Curls', 'Farmers Walks']
+          },
+          general: {
+            label: 'General Arms Volume',
+            count: 0,
+            exercises: {},
+            description: 'Involuntary arm activation across heavy row pulling or chest pushing sessions.',
+            recommends: ['Chin-ups', 'Dips', 'Close-Grip Pushups']
+          }
+        }
+      },
+      core: {
+        label: 'Core',
+        subMuscles: {
+          upper_core: {
+            label: 'Upper Abs',
+            count: 0,
+            exercises: {},
+            description: 'Fibers of the upper rectus abdominis, responsible for pulling the ribcage towards the hips during trunk flexion.',
+            recommends: ['Ab Crunches', 'Cable Kneeling Crunches', 'Decline Board Crunches']
+          },
+          lower_core: {
+            label: 'Lower Abs',
+            count: 0,
+            exercises: {},
+            description: 'Lower fibers of the rectus abdominis. Pivotal for pelvis tilt stability and lifting the legs/lower spine.',
+            recommends: ['Hanging Leg Raises', 'Reverse Crunches', 'Hanging Knee Raises']
+          },
+          obliques: {
+            label: 'Obliques & Rotation',
+            count: 0,
+            exercises: {},
+            description: 'Inter-twined side wall muscles. Vital for trunk rotation, lateral bending, and functional waist stability.',
+            recommends: ['Russian Twists', 'Woodchoppers', 'Side Planks', 'Bicycle Crunches']
+          },
+          general: {
+            label: 'Deep Core & Transverse',
+            count: 0,
+            exercises: {},
+            description: 'The internal corset muscles. Keeps intra-abdominal pressure stable, supporting the spine under heavy axial load.',
+            recommends: ['Planks', 'Ab Wheel Rollouts', 'Pallof Press']
+          }
+        }
+      }
+    };
+
+    const processSetDetailed = (exName: string) => {
+      const rawG = findMuscleGroup(exName);
+      if (!rawG) return;
+      const rg = rawG.toLowerCase();
+
+      let majorKey: string | null = null;
+      let subKey = 'general';
+
+      // Advanced sub-muscle assignment mapping
+      if (['chest', 'upper_chest', 'middle_chest', 'lower_chest'].includes(rg)) {
+        majorKey = 'chest';
+        if (['upper_chest', 'middle_chest', 'lower_chest'].includes(rg)) {
+          subKey = rg;
+        }
+      } else if (['back', 'upper_back', 'lower_back', 'lats', 'rhomboids_traps', 'erector_spinae'].includes(rg)) {
+        majorKey = 'back';
+        if (rg === 'lats') {
+          subKey = 'lats';
+        } else if (['upper_back', 'rhomboids_traps'].includes(rg)) {
+          subKey = 'upper_back';
+        } else if (['lower_back', 'erector_spinae'].includes(rg)) {
+          subKey = 'lower_back';
+        }
+      } else if (['shoulders', 'front_delts', 'side_delts', 'rear_delts'].includes(rg)) {
+        majorKey = 'shoulders';
+        if (['front_delts', 'side_delts', 'rear_delts'].includes(rg)) {
+          subKey = rg;
+        }
+      } else if (['quads', 'hamstrings', 'glutes', 'calves', 'legs'].includes(rg)) {
+        majorKey = 'legs';
+        if (['quads', 'hamstrings', 'glutes', 'calves'].includes(rg)) {
+          subKey = rg;
+        }
+      } else if (['biceps', 'triceps', 'forearms', 'arms', 'long_biceps', 'short_biceps', 'brachialis', 'long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rg)) {
+        majorKey = 'arms';
+        if (['biceps', 'long_biceps', 'short_biceps'].includes(rg)) {
+          subKey = 'biceps';
+        } else if (rg === 'brachialis') {
+          subKey = 'brachialis';
+        } else if (['triceps', 'long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rg)) {
+          subKey = 'triceps';
+        } else if (rg === 'forearms') {
+          subKey = 'forearms';
+        }
+      } else if (['core', 'upper_core', 'lower_core', 'obliques'].includes(rg)) {
+        majorKey = 'core';
+        if (['upper_core', 'lower_core', 'obliques'].includes(rg)) {
+          subKey = rg;
+        }
+      }
+
+      if (majorKey) {
+        const cat = scheme[majorKey];
+        if (cat) {
+          if (!cat.subMuscles[subKey]) {
+            subKey = 'general';
+          }
+          cat.subMuscles[subKey].count += 1;
+          cat.subMuscles[subKey].exercises[exName] = (cat.subMuscles[subKey].exercises[exName] || 0) + 1;
+        }
+      }
+    };
+
+    // Calculate from current active workout sets
+    sessionSets.forEach(s => processSetDetailed(s.exerciseName));
+
+    // Calculate from past archived workouts
+    archivedWorkouts.forEach(w => {
+      if (w?.sets && Array.isArray(w.sets)) {
+        w.sets.forEach((s: any) => processSetDetailed(s.exerciseName));
+      }
+    });
+
+    return scheme;
+  }, [sessionSets, archivedWorkouts, findMuscleGroup]);
 
   // Compute balance analysis based on count distributions
   const balanceAnalysis = useMemo(() => {
@@ -1236,300 +1540,230 @@ export default function AnatomyDashboard({
             >
               <div className="p-6 space-y-6">
                 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                {/* ROW 1: High-Level Symmetry & Diagnostics */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                   
-                  {/* Radar Chart Component (Left 5 cols) */}
-                  <div className="lg:col-span-5 flex flex-col items-center justify-center relative w-full pt-2">
-                    <div className="w-full max-w-[390px]">
-                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={350} />
-                    </div>
-                  </div>
-                  
-                  <div className="hidden lg:col-span-5">
-                    
-                    <div className="w-[365px] h-[365px] flex items-center justify-center relative bg-gradient-to-b from-white/[0.01] to-transparent p-4 rounded-full border border-white/[0.02]">
-                      <svg viewBox="0 0 365 365" className="w-full h-full">
-                        <defs>
-                          <radialGradient id="radar-glow" cx="50%" cy="50%" r="50%">
-                            <stop offset="0%" stopColor={accentColor} stopOpacity="0.22" />
-                            <stop offset="85%" stopColor={accentColor} stopOpacity="0.03" />
-                            <stop offset="100%" stopColor={accentColor} stopOpacity="0" />
-                          </radialGradient>
-                          <filter id="radar-line-glow" x="-20%" y="-20%" width="140%" height="140%">
-                            <feGaussianBlur stdDeviation="2.5" result="blur" />
-                            <feMerge>
-                              <feMergeNode in="blur" />
-                              <feMergeNode in="SourceGraphic" />
-                            </feMerge>
-                          </filter>
-                        </defs>
-
-                        {/* Concentric helper grids */}
-                        {radarChartSVG.rings.map((ringMulti, idx) => {
-                          const r = radarChartSVG.radius * ringMulti;
-                          // Draw hexagonal concentric polygon
-                          const points = radarChartSVG.vertices.map((v, i) => {
-                            const angle = -Math.PI / 2 + (i * Math.PI) / 3;
-                            const x = radarChartSVG.center + r * Math.cos(angle);
-                            const y = radarChartSVG.center + r * Math.sin(angle);
-                            return `${x},${y}`;
-                          }).join(' ');
-
-                          return (
-                            <motion.polygon
-                              key={idx}
-                              points={points}
-                              fill="none"
-                              stroke="rgba(255, 255, 255, 0.04)"
-                              strokeWidth="1"
-                              strokeDasharray={idx < 4 ? "3,3" : "none"}
-                              initial={{ scale: 0.96, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              transition={{
-                                delay: idx * 0.04,
-                                duration: 0.6,
-                                ease: [0.16, 1, 0.3, 1]
-                              }}
-                              style={{
-                                originX: `${radarChartSVG.center}px`,
-                                originY: `${radarChartSVG.center}px`
-                              }}
-                            />
-                          );
-                        })}
-
-                        {/* Axis Lines radiating out */}
-                        {radarChartSVG.vertices.map((v, i) => (
-                           <motion.line
-                            key={i}
-                            x1={radarChartSVG.center}
-                            y1={radarChartSVG.center}
-                            x2={v.x}
-                            y2={v.y}
-                            stroke="rgba(255, 255, 255, 0.08)"
-                            strokeWidth="1.2"
-                            initial={{ pathLength: 0, opacity: 0 }}
-                            animate={{ pathLength: 1, opacity: 1 }}
-                            transition={{
-                              delay: 0.1 + (i * 0.03),
-                              duration: 0.8,
-                              ease: [0.16, 1, 0.3, 1]
-                            }}
-                          />
-                        ))}
-
-                        {/* Ring Label Percentages */}
-                        {[40, 80, 100].map((perc, i) => {
-                          const r = radarChartSVG.radius * (perc / 100);
-                          return (
-                            <motion.text
-                              key={i}
-                              x={radarChartSVG.center + 5}
-                              y={radarChartSVG.center - r - 3}
-                              className="text-[7px] text-white/20 font-mono tracking-widest font-black uppercase"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 0.2 }}
-                              transition={{ delay: 0.4, duration: 0.4 }}
-                            >
-                              {perc}%
-                            </motion.text>
-                          );
-                        })}
-
-                        {/* Dynamic User Volume Web Polygon */}
-                        <motion.path
-                          d={radarChartSVG.vertices.map((v, i) => `${i === 0 ? 'M' : 'L'} ${v.valX} ${v.valY}`).join(' ') + ' Z'}
-                          fill="url(#radar-glow)"
-                          stroke={accentColor}
-                          strokeWidth="2"
-                          strokeLinejoin="round"
-                          filter="url(#radar-line-glow)"
-                          initial={{ pathLength: 0, fillOpacity: 0 }}
-                          animate={{ pathLength: 1, fillOpacity: 1 }}
-                          transition={{
-                            pathLength: {
-                              delay: 0.5,
-                              duration: 1.3,
-                              ease: "easeInOut"
-                            },
-                            fillOpacity: {
-                              delay: 1.6,
-                              duration: 0.6,
-                              ease: "easeOut"
-                            }
-                          }}
-                        />
-
-                        {/* Vertex Plot Points */}
-                        {radarChartSVG.vertices.map((v, i) => (
-                          <motion.circle
-                            key={i}
-                            cx={v.valX}
-                            cy={v.valY}
-                            r="3.5"
-                            fill="#000000"
-                            stroke={accentColor}
-                            strokeWidth="2"
-                            className="cursor-pointer"
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{
-                              delay: i * 0.08,
-                              type: "spring",
-                              stiffness: 350,
-                              damping: 11
-                            }}
-                            style={{
-                              originX: `${v.valX}px`,
-                              originY: `${v.valY}px`
-                            }}
-                          />
-                        ))}
-
-                        {/* Outer Labels */}
-                        {radarChartSVG.vertices.map((v, i) => {
-                          let textAnchor = "middle";
-                          if (Math.cos(v.angle) > 0.1) textAnchor = "start";
-                          else if (Math.cos(v.angle) < -0.1) textAnchor = "end";
-
-                          const labelMap: Record<string, string> = {
-                            chest: 'CHEST',
-                            back: 'BACK',
-                            shoulders: 'SHOULDERS',
-                            legs: 'LEGS',
-                            arms: 'ARMS',
-                            core: 'CORE'
-                          };
-                          const displayName = labelMap[v.key] || v.key.toUpperCase();
-
-                          return (
-                            <motion.text
-                              key={i}
-                              x={v.lblX}
-                              y={v.lblY + 3}
-                              textAnchor={textAnchor}
-                              className="text-[9px] text-white font-mono tracking-wider font-extrabold uppercase fill-white"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{
-                                delay: 0.35 + (i * 0.03),
-                                duration: 0.4,
-                                ease: "easeOut"
-                              }}
-                              style={{
-                                originX: `${v.lblX}px`,
-                                originY: `${v.lblY}px`
-                              }}
-                            >
-                              {displayName}
-                            </motion.text>
-                          );
-                        })}
-                      </svg>
-                    </div>
-
-                    <div className="absolute bottom-2 text-center">
-                      <span className="text-[9px] uppercase tracking-widest font-mono font-bold text-white/30">
-                        Volumetric Bio-Map
+                  {/* Radar Web Card */}
+                  <div className="lg:col-span-5 p-4 bg-zinc-950/40 border border-white/5 rounded-sm flex flex-col items-center justify-center relative w-full h-full min-h-[385px]">
+                    <div className="w-full max-w-[340px] flex flex-col items-center justify-center">
+                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={300} />
+                      <span className="text-[9px] uppercase tracking-[0.2em] font-mono font-bold text-white/30 mt-4 block text-center">
+                        Biomechanical Volume Web
                       </span>
                     </div>
-
                   </div>
-
-                  {/* Symmetry and Recommendations Column (Right 7 cols) */}
-                  <div className="lg:col-span-7 space-y-5">
-                    
-                    {/* Symmetry Performance Meter */}
-                    <div className="p-4 bg-zinc-950/70 border border-white/5 rounded-sm relative overflow-hidden">
-                      <div className="absolute right-4 top-4 text-4xl font-mono text-white/5 font-black uppercase tracking-tighter">
-                        TITAN
+                  
+                  {/* Symmetry Performance & Actionable Recommendations */}
+                  <div className="lg:col-span-7 flex flex-col justify-between p-5 bg-zinc-950/40 border border-white/5 rounded-sm min-h-[385px] space-y-4">
+                    <div>
+                      <div className="flex justify-between items-center border-b border-white/5 pb-2.5 mb-3.5">
+                        <span className="text-[9px] font-black font-mono text-white/50 uppercase tracking-widest">
+                          Symmetry & Balance Diagnostics
+                        </span>
+                        <span className="text-[8px] bg-gym-accent/10 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-sm font-mono uppercase tracking-widest font-black">
+                          Realtime Metric
+                        </span>
                       </div>
                       
-                      <div className="flex items-center gap-4 mb-3">
-                        <div className="text-3xl font-mono font-black text-gym-accent tracking-tight">
+                      <div className="flex items-center gap-4 mb-3.5">
+                        <div className="text-4xl font-mono font-black text-gym-accent tracking-tight">
                           {balanceAnalysis.score}%
                         </div>
                         <div>
                           <div className="text-xs font-bold text-white uppercase tracking-wider">
                             Muscular Symmetry Rating
                           </div>
-                          <div className="text-[9px] text-white/40 uppercase tracking-widest">
+                          <p className="text-[9px] text-white/40 uppercase tracking-widest mt-0.5">
                             Deviation spread against optimal standard
-                          </div>
+                          </p>
                         </div>
                       </div>
 
-                      {/* Score description band */}
-                      <div className="flex gap-2.5 items-start mt-4 pt-4 border-t border-white/5">
+                      {/* Diagnostic Status banner */}
+                      <div className="flex gap-2.5 items-start bg-[#050505]/40 border border-white/5 p-3 rounded-sm">
                         {balanceAnalysis.type === 'danger' || balanceAnalysis.type === 'warning' ? (
                           <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                         ) : (
                           <CheckCircle2 className="w-4 h-4 text-gym-accent shrink-0 mt-0.5" />
                         )}
                         <div>
-                          <span className="text-xs font-bold text-white uppercase font-mono block">
-                            Status: {balanceAnalysis.title}
+                          <span className="text-[10px] font-bold text-white uppercase font-mono block">
+                            Recommendation Status: {balanceAnalysis.title}
                           </span>
-                          <p className="text-xs text-white/60 leading-relaxed mt-1">
+                          <p className="text-[11px] text-white/60 leading-relaxed mt-0.5">
                             {balanceAnalysis.desc}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Zone volume bars breakdown */}
-                    <div className="space-y-3 pt-2">
-                      <h5 className="text-[9px] font-black text-white/40 uppercase tracking-[0.25em] font-mono">
-                        Volumetric Breakdown (Total Sets Logged)
-                      </h5>
-
+                    {/* Integrated Tips/Action items */}
+                    <div className="pt-2 border-t border-white/5">
+                      <h6 className="text-[8px] font-bold text-gym-accent uppercase tracking-widest font-mono flex items-center gap-1.5 mb-2.5">
+                        <Zap className="w-3.5 h-3.5" />
+                        Aesthetic & Symmetry Recommendations
+                      </h6>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {radarData.list.map((item) => (
-                          <div key={item.key} className="p-3 bg-white/[0.01] border border-white/[0.03] hover:border-white/5 transition-all rounded-sm flex flex-col justify-between">
-                            <div className="flex justify-between items-center mb-1.5 font-mono">
-                              <span className="text-[10px] uppercase font-bold text-white/85">
-                                {item.label}
-                              </span>
-                              <span className="text-[10px] text-gym-accent">
-                                {item.count} sets
-                              </span>
-                            </div>
-                            
-                            {/* Simple inline visual fill line */}
-                            <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                              <div 
-                                style={{ width: `${item.score}%` }}
-                                className="h-full bg-gym-accent rounded-full opacity-80"
-                              />
-                            </div>
-                            
-                            <div className="flex justify-between items-center mt-1 text-[8px] text-white/30 uppercase tracking-widest font-mono">
-                              <span>Symmetry Weight:</span>
-                              <span>{item.score}%</span>
-                            </div>
+                        {balanceAnalysis.tips.map((tip, i) => (
+                          <div key={i} className="text-[11px] text-white/70 flex items-start gap-2 leading-relaxed bg-white/[0.01] p-2 border border-white/[0.02] rounded-sm">
+                            <span className="text-gym-accent font-mono font-bold shrink-0">&bull;</span>
+                            <span>{tip}</span>
                           </div>
                         ))}
                       </div>
                     </div>
-
                   </div>
 
                 </div>
 
-                {/* Highly relevant actionable training suggestions - MOVED HERE UNDER BOTH SECTIONS */}
-                <div className="p-4 bg-gym-accent/5 border border-gym-accent/15 rounded-sm">
-                  <h6 className="text-[9px] font-bold text-gym-accent uppercase tracking-widest font-mono flex items-center gap-1.5 mb-2.5">
-                    <Zap className="w-3.5 h-3.5" />
-                    Aesthetic & Symmetry Recommendations
-                  </h6>
-                  <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-white/70">
-                    {balanceAnalysis.tips.map((tip, i) => (
-                      <li key={i} className="flex items-start gap-2.5 bg-[#050505]/40 p-3 rounded-sm border border-white/[0.02]">
-                        <span className="text-gym-accent text-[11px] font-mono font-bold shrink-0 mt-0.5">&bull;</span>
-                        <span className="leading-relaxed">{tip}</span>
-                      </li>
-                    ))}
-                  </ul>
+                {/* ROW 2: Muscle Group Selection & Sub-Muscle Coordinates (Master-Detail pattern) */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                  
+                  {/* Left: Volumetric List (Selectable Cards) */}
+                  <div className="lg:col-span-5 p-5 bg-zinc-950/40 border border-white/5 rounded-sm flex flex-col justify-between">
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center border-b border-white/5 pb-2.5">
+                        <h5 className="text-[9px] font-black text-white/50 uppercase tracking-[0.25em] font-mono">
+                          Muscle Groups
+                        </h5>
+                        <span className="text-[8px] text-white/40 uppercase tracking-widest font-mono">
+                          Select group to inspect fibers
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
+                        {radarData.list.map((item) => {
+                          const isActive = item.key === selectedRadarGroup;
+                          return (
+                            <div 
+                              key={item.key} 
+                              onClick={() => setSelectedRadarGroup(item.key)}
+                              className={`p-3 transition-all rounded-sm flex flex-col justify-between cursor-pointer select-none border ${
+                                isActive 
+                                  ? 'bg-gym-accent/[0.04] border-gym-accent/40 shadow-[0_0_8px_rgba(212,255,0,0.05)]' 
+                                  : 'bg-white/[0.01] border-white/[0.03] hover:border-white/10 hover:bg-white/[0.02]'
+                              }`}
+                            >
+                              <div className="flex justify-between items-center font-mono">
+                                <span className={`text-[10px] uppercase font-bold tracking-wider ${isActive ? 'text-gym-accent' : 'text-white/85'}`}>
+                                  {item.label}
+                                </span>
+                                <span className={`text-[10px] font-bold ${isActive ? 'text-white' : 'text-gym-accent'}`}>
+                                  {item.count} Sets
+                                </span>
+                              </div>
+                              
+                              {/* Inline mini percentage filled bar */}
+                              <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden mt-2.5">
+                                <div 
+                                  style={{ width: `${item.score}%` }}
+                                  className={`h-full rounded-full transition-all duration-500 ${isActive ? 'bg-white' : 'bg-gym-accent opacity-80'}`}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right: Sub-Muscle Interactive Coordinates */}
+                  <div className="lg:col-span-7 p-5 bg-[#050505]/60 border border-white/5 hover:border-white/8 transition-all rounded-sm relative overflow-hidden flex flex-col justify-between">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/5 rounded-full blur-2xl pointer-events-none" />
+                    
+                    <div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-2.5 mb-3.5 gap-2">
+                        <div className="flex items-center gap-2">
+                          <Activity className="w-3.5 h-3.5 text-gym-accent animate-pulse shrink-0" />
+                          <div>
+                            <h6 className="text-[10px] font-black text-white uppercase tracking-wider font-mono">
+                              Sub-Muscle Fiber Breakdown
+                            </h6>
+                            <span className="text-[8px] text-white/40 uppercase tracking-widest font-semibold block mt-1">
+                              {subMuscleBreakdown[selectedRadarGroup]?.label || selectedRadarGroup.toUpperCase()} Coordinates
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-[8px] bg-gym-accent/5 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-sm font-mono uppercase tracking-widest font-black self-start sm:self-auto">
+                          Biomechanical Fiber Map
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {Object.entries((subMuscleBreakdown[selectedRadarGroup]?.subMuscles || {}) as Record<string, {
+                          label: string;
+                          count: number;
+                          exercises: Record<string, number>;
+                          description: string;
+                          recommends: string[];
+                        }>).map(([subKey, subData]) => {
+                          const totalGroupCount = Object.values((subMuscleBreakdown[selectedRadarGroup]?.subMuscles || {}) as Record<string, {
+                            count: number;
+                          }>).reduce((acc, curr) => acc + curr.count, 0) || 1;
+                          const subPercentage = Math.round((subData.count / totalGroupCount) * 100);
+                          const hasSets = subData.count > 0;
+
+                          return (
+                            <div key={subKey} className="p-3 bg-white/[0.005] border border-white/[0.02] hover:border-white/5 transition-all rounded-sm">
+                              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2 font-mono">
+                                <div className="space-y-1">
+                                  <span className="text-[10px] font-black text-white/90 uppercase tracking-wide">
+                                    {subData.label}
+                                  </span>
+                                  <span className="block text-[11px] text-white/50 normal-case leading-relaxed font-sans max-w-[450px]">
+                                    {subData.description}
+                                  </span>
+                                </div>
+                                <div className="text-left sm:text-right shrink-0">
+                                  <span className="text-[10px] text-gym-accent font-bold font-mono bg-gym-accent/5 px-1.5 py-0.5 rounded-sm border border-gym-accent/10">
+                                    {subData.count} Sets
+                                  </span>
+                                  {hasSets && (
+                                    <span className="block text-[8px] text-white/30 uppercase tracking-widest mt-1">
+                                      {subPercentage}%
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Progress bar */}
+                              <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden relative mb-2.5">
+                                <motion.div 
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${hasSets ? subPercentage : 0}%` }}
+                                  transition={{ duration: 0.6, ease: "easeOut" }}
+                                  className="h-full bg-gym-accent rounded-full relative"
+                                >
+                                  {hasSets && <span className="absolute inset-0 bg-white/20 animate-pulse" />}
+                                </motion.div>
+                              </div>
+
+                              {/* Origin of Recruitment */}
+                              <div className="pt-1.5 border-t border-white/[0.02] flex flex-wrap gap-1.5 items-center">
+                                <span className="text-[7.5px] text-white/30 font-mono font-bold">
+                                  {hasSets ? "LOGGED:" : "RECOMMENDED:"}
+                                </span>
+                                {hasSets ? (
+                                  Object.entries(subData.exercises).map(([exName, count]) => (
+                                    <span key={exName} className="text-[8px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded-sm text-white/70 font-mono">
+                                      {exName} ({count})
+                                    </span>
+                                  ))
+                                ) : (
+                                  subData.recommends.map((rec) => (
+                                    <span key={rec} className="text-[8px] bg-gym-accent/[0.01] border border-gym-accent/5 px-1.5 py-0.5 rounded-sm text-gym-accent/50 font-mono">
+                                      {rec}
+                                    </span>
+                                  ))
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
 
               </div>
