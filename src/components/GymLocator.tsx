@@ -552,10 +552,10 @@ export default function GymLocator() {
         <div>
           <h2 className="text-sm font-black uppercase tracking-[0.25em] text-white flex items-center gap-2">
             <MapPin className="w-4 h-4 text-gym-accent animate-pulse" />
-            PUREGYM NETWORKS &bull; TELEMETRY LOCATOR
+            PUREGYM LOCATOR &bull; FIND YOUR BRANCH
           </h2>
           <p className="text-[10px] text-white/50 tracking-wider uppercase font-mono mt-0.5">
-            Realtime satellite alignment mapping puregym training coordinates and user nodes
+            Explore official PureGym club locations, view amenities, and manage your local gym entries
           </p>
         </div>
         
@@ -566,7 +566,7 @@ export default function GymLocator() {
             className="flex items-center gap-1.5 px-3 py-1.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-mono uppercase font-black tracking-wider rounded-sm cursor-pointer shadow-[0_0_15px_rgba(212,255,0,0.15)] transition-all active:scale-[0.98]"
           >
             <Plus className="w-3.5 h-3.5 stroke-[3]" />
-            Register Gym Node
+            Add Custom Gym
           </button>
         )}
       </div>
