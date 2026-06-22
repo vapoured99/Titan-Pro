@@ -42,6 +42,7 @@ import {
   Coins,
   Youtube,
   Compass,
+  MapPin,
   FlaskConical,
   Zap,
   Target,
@@ -78,6 +79,7 @@ import AvatarPanel, { OUTFITS, TITLES } from "./components/AvatarPanel";
 import { AvatarDisplayCard } from "./components/AvatarDisplayCard";
 import { TransparentCharacter } from "./components/TransparentCharacter";
 import TacticalMap from "./components/TacticalMap";
+import GymLocator from "./components/GymLocator";
 import WorkoutCalendarHeatmap from "./components/WorkoutCalendarHeatmap";
 import { SpinalDepletionWidget } from "./components/SpinalDepletionWidget";
 import {
@@ -1252,6 +1254,7 @@ export default function App() {
     | "session"
     | "routines"
     | "map"
+    | "gym_locator"
     | "profile"
     | "anatomy"
     | "avatar"
@@ -5031,7 +5034,7 @@ export default function App() {
 
         {/* Tabs / Navigation */}
         <nav className="flex items-center mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth w-full">
-          <div className="flex items-center gap-6 md:gap-8 flex-nowrap w-full">
+          <div className="flex items-center gap-6 md:gap-8 flex-nowrap w-full pr-8">
             {[
               { id: "console", label: "Console", icon: LayoutDashboard },
               { id: "workout", label: "Programming", icon: Dumbbell },
@@ -5041,6 +5044,7 @@ export default function App() {
               { id: "session", label: "Session", icon: History },
               { id: "routines", label: "Routines", icon: Repeat },
               { id: "map", label: "Tactical Map", icon: Compass },
+              { id: "gym_locator", label: "Gym Locator", icon: MapPin },
             ].map((nav) => (
               <button
                 key={nav.id}
@@ -5065,7 +5069,12 @@ export default function App() {
                     className={`w-4 h-4 shrink-0 ${activeView === "map" ? "text-gym-accent" : "text-theme-text-muted/65 hover:text-white"}`}
                   />
                 ) : null}
-                {nav.id !== "routines" && nav.id !== "map" && nav.label}
+                {nav.id === "gym_locator" ? (
+                  <MapPin
+                    className={`w-4 h-4 shrink-0 ${activeView === "gym_locator" ? "text-gym-accent" : "text-theme-text-muted/65 hover:text-white"}`}
+                  />
+                ) : null}
+                {nav.id !== "routines" && nav.id !== "map" && nav.id !== "gym_locator" && nav.label}
                 {activeView === nav.id && (
                   <motion.div
                     layoutId="nav-underline"
@@ -5076,7 +5085,7 @@ export default function App() {
             ))}
 
             {/* Flexible spacer to push Avatar to the right side on desktop while allowing elegant sliding */}
-            <div className="flex-grow min-w-[24px] md:min-w-[48px]" />
+            <div className="flex-grow min-w-[12px] md:min-w-[24px]" />
 
             {[
               { id: "avatar", label: "Avatar", icon: Crown, isAvatar: true },
@@ -5087,7 +5096,7 @@ export default function App() {
                   setActiveView(nav.id as any);
                   saveSettings({ activeView: nav.id });
                 }}
-                className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 shrink-0 select-none ${
+                className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 shrink-0 select-none mr-2 md:mr-4 ${
                   activeView === nav.id
                     ? "text-theme-text"
                     : "text-theme-text-muted hover:text-theme-text"
@@ -10688,6 +10697,16 @@ export default function App() {
                 className="space-y-3 pb-20"
               >
                 <TacticalMap />
+              </motion.div>
+            ) : activeView === "gym_locator" ? (
+              <motion.div
+                key="gym-locator-view"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-3 pb-20"
+              >
+                <GymLocator />
               </motion.div>
             ) : activeView === "avatar" ? (
               <motion.div
