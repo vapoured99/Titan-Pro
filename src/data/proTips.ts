@@ -250,6 +250,28 @@ const CATEGORIES: Record<string, ProTips> = {
       "Do not hold on to the treadmill handle bars when walking at an incline; this ruins natural posture and reduces caloric burn.",
       "Don't round your shoulders or slouch when using rowing machines or cycle bikes."
     ]
+  },
+  "hex bar deadlift": {
+    tips: [
+      "Stance and Grip: Stand inside the hex bar, matching your feet hip-to-shoulder width apart. Grip the handles in the exact center to keep the bar balanced.",
+      "Hinge and Squat Blend: Unlike a straight barbell, a hex bar deadlift allows you to drop your hips slightly lower and keep your torso more upright, sharing the load more evenly between quads, glutes, and lower back.",
+      "Drive and Lockout: Press your feet firmly into the floor as if pushing the ground away. Stand tall, locking out your hips, and squeeze your glutes at the peak of the contraction without hyper-arching your back."
+    ],
+    avoid: [
+      "Avoid letting your knees tunnel or cave inward (valgus collapse) during the drive off the floor.",
+      "Do not pull with a rounded lower back; maintain a static, flat spine with your core fully braced."
+    ]
+  },
+  "hexbar lift": {
+    tips: [
+      "Stance and Grip: Stand inside the hex bar, matching your feet hip-to-shoulder width apart. Grip the handles in the exact center to keep the bar balanced.",
+      "Hinge and Squat Blend: Unlike a straight barbell, a hex bar deadlift allows you to drop your hips slightly lower and keep your torso more upright, sharing the load more evenly between quads, glutes, and lower back.",
+      "Drive and Lockout: Press your feet firmly into the floor as if pushing the ground away. Stand tall, locking out your hips, and squeeze your glutes at the peak of the contraction without hyper-arching your back."
+    ],
+    avoid: [
+      "Avoid letting your knees tunnel or cave inward (valgus collapse) during the drive off the floor.",
+      "Do not pull with a rounded lower back; maintain a static, flat spine with your core fully braced."
+    ]
   }
 };
 

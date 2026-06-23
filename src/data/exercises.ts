@@ -531,6 +531,32 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
   ],
   lower_back: [
     {
+      name: "Hex Bar Deadlift",
+      icon: "ArrowUp",
+      pool: "lower_back",
+      muscleGroup: "erector_spinae",
+      instructions: [
+        "Step inside the hex bar (trap bar) with feet hip-to-shoulder width apart.",
+        "Bend at your hips and knees to grab the handles in the exact center.",
+        "Flatten your back, lift your chest high, and drop your hips slightly lower than in a conventional deadlift setup.",
+        "Engage your core and lats, drive your feet into the floor to lift the bar, and stand tall.",
+        "Lock out your hips and squeeze your glutes at the top, then lower the bar under control."
+      ]
+    },
+    {
+      name: "Hexbar Lift",
+      icon: "ArrowUp",
+      pool: "lower_back",
+      muscleGroup: "erector_spinae",
+      instructions: [
+        "Step inside the hex bar (trap bar) with feet hip-to-shoulder width apart.",
+        "Bend at your hips and knees to grab the handles in the exact center.",
+        "Flatten your back, lift your chest high, and drop your hips slightly lower than in a conventional deadlift setup.",
+        "Engage your core and lats, drive your feet into the floor to lift the bar, and stand tall.",
+        "Lock out your hips and squeeze your glutes at the top, then lower the bar under control."
+      ]
+    },
+    {
       name: "Barbell Deadlifts",
       icon: "ArrowUp",
       pool: "lower_back",
@@ -2210,6 +2236,8 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Hack Squat": "scs5XcsZuc8",
   "Hammer Curls": "B4RznoFvTl4",
   "Hanging Leg Raises": "Yrtvs-nEnk0",
+  "Hex Bar Deadlift": "ZJPZQklCSLs",
+  "Hexbar Lift": "ZJPZQklCSLs",
   "High to Low Cable Flys": "hhruLxo9yZU",
   "Hip Abductor": "G_8LItOiZ0Q",
   "Hip Adductor": "CjAVezAggkI",

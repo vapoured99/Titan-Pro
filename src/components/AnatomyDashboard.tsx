@@ -27,8 +27,7 @@ import {
   Tooltip,
   Cell
 } from 'recharts';
-import { CyberneticClassPanel } from './CyberneticClassPanel';
-import { SynapticReplenishmentPlanner } from './SynapticReplenishmentPlanner';
+import D3RadarChart from './D3RadarChart';
 import { HypertrophicAdaptationPredictor } from './HypertrophicAdaptationPredictor';
 import { POOLS } from '../data/exercises';
 
@@ -58,14 +57,9 @@ interface AnatomyDashboardProps {
   setToast: (toast: { message: string; type: 'success' | 'pb' | 'info' } | null) => void;
   setActiveView: (view: string) => void;
   routines?: any[];
+  muscleGroupStrengthData: any[];
+  activeTheme: any;
 }
-
-// 1-Rep Max Epley Calculation
-const calc1RM = (weight: number, reps: number): number => {
-  if (reps <= 0) return 0;
-  if (reps === 1) return weight;
-  return Math.round(weight * (1 + reps / 30));
-};
 
 export default function AnatomyDashboard({
   sessionSets = [],
@@ -74,7 +68,9 @@ export default function AnatomyDashboard({
   saveSettings,
   setToast,
   setActiveView,
-  routines = []
+  routines = [],
+  muscleGroupStrengthData = [],
+  activeTheme
 }: AnatomyDashboardProps) {
   // Add a local state for Anatomy Dashboard Mode
   const [anatomyMode, setAnatomyMode] = useState<'logged' | 'routine'>('logged');
@@ -119,9 +115,6 @@ export default function AnatomyDashboard({
     cnsFatigue: false
   });
 
-  const [barbellWeight, setBarbellWeight] = useState<number>(100);
-  const [selectedPercentageLift, setSelectedPercentageLift] = useState<'bench' | 'squat' | 'deadlift' | 'ohp'>('bench');
-
   const toggleSection = (section: string) => {
     setExpanded(prev => ({
       ...prev,
@@ -129,33 +122,8 @@ export default function AnatomyDashboard({
     }));
   };
 
-  // Local state for bodyweight (falls back to profile, can be saved to profile)
-  const [localBodyweight, setLocalBodyweight] = useState<number>(() => {
-    return profile?.bodyweight || 80;
-  });
-
-  // Sync bodyweight if profile loads
-  useEffect(() => {
-    if (profile?.bodyweight) {
-      setLocalBodyweight(profile.bodyweight);
-    }
-  }, [profile?.bodyweight]);
-
-  const [savingBodyweight, setSavingBodyweight] = useState(false);
   const [selectedRadarGroup, setSelectedRadarGroup] = useState<string>('chest');
   const [selectedSubMuscle, setSelectedSubMuscle] = useState<string | null>(null);
-
-  const handleSaveBodyweight = async () => {
-    try {
-      setSavingBodyweight(true);
-      await saveSettings({ bodyweight: localBodyweight });
-      setToast({ message: `Bodyweight successfully updated to ${localBodyweight} kg`, type: 'success' });
-    } catch (e) {
-      setToast({ message: 'Failed to update bodyweight in firebase cloud database', type: 'info' });
-    } finally {
-      setSavingBodyweight(false);
-    }
-  };
 
   // Muscle mapping helper
   const findMuscleGroup = (exerciseName: string): string | null => {
@@ -856,55 +824,6 @@ export default function AnatomyDashboard({
     };
   }, [biomechanicalData]);
 
-  // --- 4. Relative Strength Metrics Calculation ---
-  // Look for historical maximums of 4 major movements
-  const compoundMaxes = useMemo(() => {
-    const movements = {
-      bench: { name: "Bench Press", best: 0, reps: 0, est1RM: 0, date: "" },
-      squat: { name: "Back Squat", best: 0, reps: 0, est1RM: 0, date: "" },
-      deadlift: { name: "Deadlift", best: 0, reps: 0, est1RM: 0, date: "" },
-      ohp: { name: "Overhead Press", best: 0, reps: 0, est1RM: 0, date: "" }
-    };
-
-    const normalizeMatch = (name: string, target: string) => {
-      const n = name.toLowerCase().trim();
-      const t = target.toLowerCase();
-      // Look for matches in common compound variants
-      if (t === 'bench') return n.includes('bench press') && !n.includes('incline') && !n.includes('decline');
-      if (t === 'squat') return n.includes('squat') && (n.includes('barbell') || n.includes('back') || n.includes('safety bar'));
-      if (t === 'deadlift') return n.includes('deadlift') && !n.includes('romanian') && !n.includes('stiff-leg');
-      if (t === 'ohp') return n.includes('overhead press') || n.includes('military press') || (n.includes('shoulder press') && n.includes('barbell'));
-      return false;
-    };
-
-    const inspectSet = (set: any, dateString: string) => {
-      Object.keys(movements).forEach((key) => {
-        const mKey = key as keyof typeof movements;
-        if (normalizeMatch(set.exerciseName, mKey)) {
-          const current1RM = calc1RM(set.weight, set.reps);
-          if (current1RM > movements[mKey].est1RM) {
-            movements[mKey].best = set.weight;
-            movements[mKey].reps = set.reps;
-            movements[mKey].est1RM = current1RM;
-            movements[mKey].date = dateString || set.date || "Today";
-          }
-        }
-      });
-    };
-
-    // Parse active sets
-    sessionSets.forEach(s => inspectSet(s, "Active Today"));
-
-    // Parse archived workouts
-    archivedWorkouts.forEach(w => {
-      if (w?.sets) {
-        w.sets.forEach((s: any) => inspectSet(s, w.date));
-      }
-    });
-
-    return movements;
-  }, [sessionSets, archivedWorkouts]);
-
   const cnsFatigueAnalysis = useMemo(() => {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
@@ -1223,69 +1142,6 @@ export default function AnatomyDashboard({
       cervical: Math.min(100, Math.round((cervicalUnits / 15) * 100))
     };
   }, [sessionSets, archivedWorkouts]);
-
-  // Manual override values for 1RM inputs in case the user wants to test hypothetical weights
-  const [benchManual, setBenchManual] = useState<string>("");
-  const [squatManual, setSquatManual] = useState<string>("");
-  const [deadliftManual, setDeadliftManual] = useState<string>("");
-  const [ohpManual, setOhpManual] = useState<string>("");
-
-  const actualBenchMax = useMemo(() => {
-    return parseFloat(benchManual) || compoundMaxes.bench.est1RM || 0;
-  }, [benchManual, compoundMaxes.bench.est1RM]);
-
-  const actualSquatMax = useMemo(() => {
-    return parseFloat(squatManual) || compoundMaxes.squat.est1RM || 0;
-  }, [squatManual, compoundMaxes.squat.est1RM]);
-
-  const actualDeadliftMax = useMemo(() => {
-    return parseFloat(deadliftManual) || compoundMaxes.deadlift.est1RM || 0;
-  }, [deadliftManual, compoundMaxes.deadlift.est1RM]);
-
-  const actualOhpMax = useMemo(() => {
-    return parseFloat(ohpManual) || compoundMaxes.ohp.est1RM || 0;
-  }, [ohpManual, compoundMaxes.ohp.est1RM]);
-
-  // Retrieve sex from profile to customize multiplier standards
-  const sex = profile?.sex || 'male';
-
-  // Compute strength standards
-  const strengthStandards = useMemo(() => {
-    const isFemale = sex === 'female';
-    
-    // Bench standards as bw-multiple
-    const benchLevels = isFemale 
-      ? { novice: 0.45, intermediate: 0.65, advanced: 0.85, elite: 1.2 } 
-      : { novice: 0.75, intermediate: 1.1, advanced: 1.5, elite: 2.0 };
-
-    const squatLevels = isFemale
-      ? { novice: 0.65, intermediate: 1.0, advanced: 1.4, elite: 1.8 }
-      : { novice: 1.0, intermediate: 1.5, advanced: 2.0, elite: 2.5 };
-
-    const deadliftLevels = isFemale
-      ? { novice: 0.8, intermediate: 1.2, advanced: 1.6, elite: 2.1 }
-      : { novice: 1.2, intermediate: 1.75, advanced: 2.3, elite: 2.8 };
-
-    const ohpLevels = isFemale
-      ? { novice: 0.3, intermediate: 0.45, advanced: 0.65, elite: 0.85 }
-      : { novice: 0.5, intermediate: 0.75, advanced: 1.0, elite: 1.25 };
-
-    const getLevel = (maxVal: number, levels: typeof benchLevels) => {
-      const ratio = maxVal / (localBodyweight || 80);
-      if (ratio < levels.novice) return { text: "Untrained", ratio, next: "Novice", target: levels.novice, progress: Math.min(100, Math.round((ratio / levels.novice) * 100)), color: "text-zinc-500" };
-      if (ratio < levels.intermediate) return { text: "Novice", ratio, next: "Intermediate", target: levels.intermediate, progress: Math.min(100, Math.round(((ratio - levels.novice) / (levels.intermediate - levels.novice)) * 100)), color: "text-blue-400" };
-      if (ratio < levels.advanced) return { text: "Intermediate", ratio, next: "Advanced", target: levels.advanced, progress: Math.min(100, Math.round(((ratio - levels.intermediate) / (levels.advanced - levels.intermediate)) * 100)), color: "text-yellow-500" };
-      if (ratio < levels.elite) return { text: "Advanced", ratio, next: "Elite", target: levels.elite, progress: Math.min(100, Math.round(((ratio - levels.advanced) / (levels.elite - levels.advanced)) * 100)), color: "text-gym-accent" };
-      return { text: "Elite Veteran", ratio, next: "Max Level achieved", target: levels.elite, progress: 100, color: "text-purple-400 font-extrabold animate-pulse" };
-    };
-
-    return {
-      bench: getLevel(actualBenchMax, benchLevels),
-      squat: getLevel(actualSquatMax, squatLevels),
-      deadlift: getLevel(actualDeadliftMax, deadliftLevels),
-      ohp: getLevel(actualOhpMax, ohpLevels)
-    };
-  }, [sex, localBodyweight, actualBenchMax, actualSquatMax, actualDeadliftMax, actualOhpMax]);
 
 
   // Helper for rendering glowing radar axes
@@ -2249,7 +2105,7 @@ export default function AnatomyDashboard({
         </AnimatePresence>
       </div>
 
-      {/* ────────────────── DROP DOWN 4: RELATIVE STRENGTH METRICS ────────────────── */}
+      {/* ────────────────── DROP DOWN 4: RELATIVE STRENGTH RADAR ────────────────── */}
       <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
         <button
           onClick={() => toggleSection('strength')}
@@ -2262,19 +2118,14 @@ export default function AnatomyDashboard({
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                4 &mdash; Relative Strength Metrics
+                4 &mdash; Relative Strength Radar
               </h4>
               <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
-                Relative Compound Multipliers, 1RM Indexes & Strength Levels
+                D3 concentric muscle group development comparison against baseline 1RMs
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {!expanded.strength && (
-              <span className="hidden sm:inline-block text-[9px] bg-white/5 border border-white/10 px-2.5 py-1 text-white/50 uppercase tracking-widest font-mono">
-                Weight: {localBodyweight} kg ({sex === 'female' ? 'F' : 'M'})
-              </span>
-            )}
             {expanded.strength ? (
               <ChevronUp className="w-4 h-4 text-white/40 group-hover:text-white" />
             ) : (
@@ -2292,555 +2143,14 @@ export default function AnatomyDashboard({
               transition={{ duration: 0.25, ease: "easeInOut" }}
               className="overflow-hidden"
             >
-              <div className="p-6 space-y-6">
-                
-                {/* 🛡️ Strength-to-Weight "Cybernetic Class" Hierarchy Section */}
-                <CyberneticClassPanel
-                  sex={sex === "female" ? "female" : "male"}
-                  localBodyweight={localBodyweight}
-                  actualBenchMax={actualBenchMax}
-                  actualSquatMax={actualSquatMax}
-                  actualDeadliftMax={actualDeadliftMax}
-                  actualOhpMax={actualOhpMax}
+              <div className="p-6">
+                <D3RadarChart
+                  data={muscleGroupStrengthData}
+                  activeTheme={activeTheme}
+                  profile={profile}
+                  sessionSets={sessionSets}
+                  archivedWorkouts={archivedWorkouts}
                 />
-                
-                {/* Bodyweight Setup Bar */}
-                <div className="p-4 bg-[#0a0a0a] border border-white/5 rounded-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    <Scale className="w-5 h-5 text-white/40 shrink-0" />
-                    <div>
-                      <h5 className="text-xs font-bold text-white uppercase tracking-wider">
-                        Power-to-Weight Bio-Reference
-                      </h5>
-                      <p className="text-[10px] text-white/30 uppercase tracking-wider mt-0.5">
-                        Strength indicators map directly to your bodyweight standard
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Weight input and save */}
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center bg-zinc-950 border border-white/10 rounded-sm overflow-hidden px-2 relative">
-                      <input 
-                        type="number"
-                        min="30"
-                        max="250"
-                        value={localBodyweight}
-                        onChange={(e) => setLocalBodyweight(parseInt(e.target.value) || 0)}
-                        className="w-16 bg-transparent text-white text-xs text-center py-2 focus:outline-none focus:ring-0 font-mono font-bold"
-                      />
-                      <span className="text-[9px] font-black uppercase text-white/30 tracking-widest font-mono ml-1">
-                        KG
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={handleSaveBodyweight}
-                      disabled={savingBodyweight || localBodyweight === profile?.bodyweight}
-                      className="text-[9px] font-black uppercase tracking-widest px-4 py-2.5 bg-white/5 hover:bg-white/10 text-white rounded-sm disabled:opacity-20 transition-all cursor-pointer"
-                    >
-                      {savingBodyweight ? "Persisting..." : "Persist"}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Overrides / Hypotheses explanation */}
-                <div className="p-3 bg-white/[0.01] border border-white/5 rounded-sm text-[10px] text-white/40 uppercase tracking-widest flex items-center gap-2 font-mono">
-                  <TrendingUp className="w-4 h-4 text-gym-accent" />
-                  <span>The system auto-calculates 1RM from history. Use fields below to manually simulate new targets.</span>
-                </div>
-
-                {/* Compound Standards Grids */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  
-                  {/* BENCH PRESS CARD */}
-                  <div className="p-4 bg-zinc-950/80 border border-white/10 rounded-sm relative space-y-4">
-                    <div className="flex justify-between items-start border-b border-white/5 pb-3">
-                      <div>
-                        <span className="text-[9px] bg-gym-accent/10 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-sm uppercase tracking-widest font-mono font-bold mb-1 inline-block">
-                          CHEST / SHOULDER / TRICEPS
-                        </span>
-                        <h4 className="text-sm font-black text-white uppercase tracking-wider">
-                          1 &mdash; Flat Bench Press
-                        </h4>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs font-mono font-extrabold text-white">
-                          Calculated: {compoundMaxes.bench.est1RM || "none"} kg
-                        </span>
-                        <span className="text-[9px] text-white/30 font-mono uppercase">
-                          {compoundMaxes.bench.date ? `Log: ${compoundMaxes.bench.date}` : "No historical logged bench data"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Manual override input line */}
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-white/40 uppercase tracking-wider text-[10px]">Manual Input Target 1RM:</span>
-                      <div className="flex items-center bg-zinc-900 border border-white/5 px-2 py-1 rounded-sm">
-                        <input
-                          type="number"
-                          placeholder={`${compoundMaxes.bench.est1RM || 0}`}
-                          value={benchManual}
-                          onChange={(e) => setBenchManual(e.target.value)}
-                          className="w-16 bg-transparent text-white focus:outline-none text-[10px] font-mono text-right font-bold"
-                        />
-                        <span className="text-[8px] text-white/20 font-mono ml-1">KG</span>
-                      </div>
-                    </div>
-
-                    {/* Performance metrics breakdown */}
-                    <div className="space-y-2 pt-2">
-                      <div className="flex justify-between text-xs font-mono font-bold">
-                        <span className="text-white/60 uppercase">Relative Ratio:</span>
-                        <span className="text-white">
-                          {strengthStandards.bench.ratio.toFixed(2)}x Bodyweight
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-xs font-mono font-bold">
-                        <span className="text-white/60 uppercase">Tier Rank:</span>
-                        <span className={strengthStandards.bench.color}>
-                          {strengthStandards.bench.text}
-                        </span>
-                      </div>
-
-                      {/* Level standard visual progress gauge */}
-                      <div className="space-y-1 mt-3">
-                        <div className="flex justify-between text-[8px] text-white/30 uppercase tracking-widest font-mono">
-                          <span>Progress to {strengthStandards.bench.next}</span>
-                          <span>{strengthStandards.bench.progress}%</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                          <div 
-                            style={{ width: `${strengthStandards.bench.progress}%` }}
-                            className="h-full bg-gym-accent rounded-full transition-all duration-500"
-                          />
-                        </div>
-                        <div className="flex justify-between text-[7.5px] text-white/20 font-mono">
-                          <span>BW target: {(strengthStandards.bench.target * localBodyweight).toFixed(1)} kg ({strengthStandards.bench.target}x)</span>
-                          <span>Body weight indicator</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* SQUATS CARD */}
-                  <div className="p-4 bg-zinc-950/80 border border-white/10 rounded-sm relative space-y-4">
-                    <div className="flex justify-between items-start border-b border-white/5 pb-3">
-                      <div>
-                        <span className="text-[9px] bg-gym-accent/10 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-sm uppercase tracking-widest font-mono font-bold mb-1 inline-block">
-                          QUADS / HAMSTRINGS / GLUTES
-                        </span>
-                        <h4 className="text-sm font-black text-white uppercase tracking-wider">
-                          2 &mdash; Barbell Back Squats
-                        </h4>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs font-mono font-extrabold text-white">
-                          Calculated: {compoundMaxes.squat.est1RM || "none"} kg
-                        </span>
-                        <span className="text-[9px] text-white/30 font-mono uppercase">
-                          {compoundMaxes.squat.date ? `Log: ${compoundMaxes.squat.date}` : "No historical logged squat data"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-white/40 uppercase tracking-wider text-[10px]">Manual Input Target 1RM:</span>
-                      <div className="flex items-center bg-zinc-900 border border-white/5 px-2 py-1 rounded-sm">
-                        <input
-                          type="number"
-                          placeholder={`${compoundMaxes.squat.est1RM || 0}`}
-                          value={squatManual}
-                          onChange={(e) => setSquatManual(e.target.value)}
-                          className="w-16 bg-transparent text-white focus:outline-none text-[10px] font-mono text-right font-bold"
-                        />
-                        <span className="text-[8px] text-white/20 font-mono ml-1">KG</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-2">
-                      <div className="flex justify-between text-xs font-mono font-bold">
-                        <span className="text-white/60 uppercase">Relative Ratio:</span>
-                        <span className="text-white">
-                          {strengthStandards.squat.ratio.toFixed(2)}x Bodyweight
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-xs font-mono font-bold">
-                        <span className="text-white/60 uppercase">Tier Rank:</span>
-                        <span className={strengthStandards.squat.color}>
-                          {strengthStandards.squat.text}
-                        </span>
-                      </div>
-
-                      <div className="space-y-1 mt-3">
-                        <div className="flex justify-between text-[8px] text-white/30 uppercase tracking-widest font-mono">
-                          <span>Progress to {strengthStandards.squat.next}</span>
-                          <span>{strengthStandards.squat.progress}%</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                          <div 
-                            style={{ width: `${strengthStandards.squat.progress}%` }}
-                            className="h-full bg-gym-accent rounded-full transition-all duration-500"
-                          />
-                        </div>
-                        <div className="flex justify-between text-[7.5px] text-white/20 font-mono">
-                          <span>BW target: {(strengthStandards.squat.target * localBodyweight).toFixed(1)} kg ({strengthStandards.squat.target}x)</span>
-                          <span>Leg power standard</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* DEADLIFT CARD */}
-                  <div className="p-4 bg-zinc-950/80 border border-white/10 rounded-sm relative space-y-4">
-                    <div className="flex justify-between items-start border-b border-white/5 pb-3">
-                      <div>
-                        <span className="text-[9px] bg-gym-accent/10 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-sm uppercase tracking-widest font-mono font-bold mb-1 inline-block">
-                          POSTERIOR CHAIN / BACK / GRIP
-                        </span>
-                        <h4 className="text-sm font-black text-white uppercase tracking-wider">
-                          3 &mdash; Barbell Deadlifts
-                        </h4>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs font-mono font-extrabold text-white">
-                          Calculated: {compoundMaxes.deadlift.est1RM || "none"} kg
-                        </span>
-                        <span className="text-[9px] text-white/30 font-mono uppercase">
-                          {compoundMaxes.deadlift.date ? `Log: ${compoundMaxes.deadlift.date}` : "No historical logged deadlift data"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-white/40 uppercase tracking-wider text-[10px]">Manual Input Target 1RM:</span>
-                      <div className="flex items-center bg-zinc-900 border border-white/5 px-2 py-1 rounded-sm">
-                        <input
-                          type="number"
-                          placeholder={`${compoundMaxes.deadlift.est1RM || 0}`}
-                          value={deadliftManual}
-                          onChange={(e) => setDeadliftManual(e.target.value)}
-                          className="w-16 bg-transparent text-white focus:outline-none text-[10px] font-mono text-right font-bold"
-                        />
-                        <span className="text-[8px] text-white/20 font-mono ml-1">KG</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-2">
-                      <div className="flex justify-between text-xs font-mono font-bold">
-                        <span className="text-white/60 uppercase">Relative Ratio:</span>
-                        <span className="text-white">
-                          {strengthStandards.deadlift.ratio.toFixed(2)}x Bodyweight
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-xs font-mono font-bold">
-                        <span className="text-white/60 uppercase">Tier Rank:</span>
-                        <span className={strengthStandards.deadlift.color}>
-                          {strengthStandards.deadlift.text}
-                        </span>
-                      </div>
-
-                      <div className="space-y-1 mt-3">
-                        <div className="flex justify-between text-[8px] text-white/30 uppercase tracking-widest font-mono">
-                          <span>Progress to {strengthStandards.deadlift.next}</span>
-                          <span>{strengthStandards.deadlift.progress}%</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                          <div 
-                            style={{ width: `${strengthStandards.deadlift.progress}%` }}
-                            className="h-full bg-gym-accent rounded-full transition-all duration-500"
-                          />
-                        </div>
-                        <div className="flex justify-between text-[7.5px] text-white/20 font-mono">
-                          <span>BW target: {(strengthStandards.deadlift.target * localBodyweight).toFixed(1)} kg ({strengthStandards.deadlift.target}x)</span>
-                          <span>Spine safety metric</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* OVERHEAD PRESS CARD */}
-                  <div className="p-4 bg-zinc-950/80 border border-white/10 rounded-sm relative space-y-4">
-                    <div className="flex justify-between items-start border-b border-white/5 pb-3">
-                      <div>
-                        <span className="text-[9px] bg-gym-accent/10 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-sm uppercase tracking-widest font-mono font-bold mb-1 inline-block">
-                          CHRONIC SHOULDERS / ROTATOR SCAPS
-                        </span>
-                        <h4 className="text-sm font-black text-white uppercase tracking-wider">
-                          4 &mdash; Barbell Overhead Press
-                        </h4>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-xs font-mono font-extrabold text-white">
-                          Calculated: {compoundMaxes.ohp.est1RM || "none"} kg
-                        </span>
-                        <span className="text-[9px] text-white/30 font-mono uppercase">
-                          {compoundMaxes.ohp.date ? `Log: ${compoundMaxes.ohp.date}` : "No historical logged press data"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-white/40 uppercase tracking-wider text-[10px]">Manual Input Target 1RM:</span>
-                      <div className="flex items-center bg-zinc-900 border border-white/5 px-2 py-1 rounded-sm">
-                        <input
-                          type="number"
-                          placeholder={`${compoundMaxes.ohp.est1RM || 0}`}
-                          value={ohpManual}
-                          onChange={(e) => setOhpManual(e.target.value)}
-                          className="w-16 bg-transparent text-white focus:outline-none text-[10px] font-mono text-right font-bold"
-                        />
-                        <span className="text-[8px] text-white/20 font-mono ml-1">KG</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2 pt-2">
-                      <div className="flex justify-between text-xs font-mono font-bold">
-                        <span className="text-white/60 uppercase">Relative Ratio:</span>
-                        <span className="text-white">
-                          {strengthStandards.ohp.ratio.toFixed(2)}x Bodyweight
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-xs font-mono font-bold">
-                        <span className="text-white/60 uppercase">Tier Rank:</span>
-                        <span className={strengthStandards.ohp.color}>
-                          {strengthStandards.ohp.text}
-                        </span>
-                      </div>
-
-                      <div className="space-y-1 mt-3">
-                        <div className="flex justify-between text-[8px] text-white/30 uppercase tracking-widest font-mono">
-                          <span>Progress to {strengthStandards.ohp.next}</span>
-                          <span>{strengthStandards.ohp.progress}%</span>
-                        </div>
-                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-                          <div 
-                            style={{ width: `${strengthStandards.ohp.progress}%` }}
-                            className="h-full bg-gym-accent rounded-full transition-all duration-500"
-                          />
-                        </div>
-                        <div className="flex justify-between text-[7.5px] text-white/20 font-mono">
-                          <span>BW target: {(strengthStandards.ohp.target * localBodyweight).toFixed(1)} kg ({strengthStandards.ohp.target}x)</span>
-                          <span>Rotator force index</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* ────────────────── HIGH-CONTRAST INTERACTIVE WEIGHT-PLATE CALCULATOR ────────────────── */}
-                <div className="border-t border-white/5 pt-6 space-y-4">
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                    <div>
-                      <h5 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
-                        <Dumbbell className="w-4 h-4 text-gym-accent" />
-                        🏋️ Barbell Loading & Plate Visualizer
-                      </h5>
-                      <p className="text-[10px] text-white/30 uppercase tracking-wider mt-0.5">
-                        Select a lift percentage or input weight to visually load on-the-bar sleeves
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 bg-zinc-950 border border-white/10 rounded-sm overflow-hidden px-2 h-10 select-none">
-                      <span className="text-[9px] uppercase font-black text-white/30 tracking-widest font-mono">TARGET_LOAD:</span>
-                      <input 
-                        type="number"
-                        min="20"
-                        max="500"
-                        step="2.5"
-                        value={barbellWeight}
-                        onChange={(e) => setBarbellWeight(Math.max(20, Math.min(500, parseFloat(e.target.value) || 20)))}
-                        className="w-16 bg-transparent text-white text-xs text-center h-full focus:outline-none focus:ring-0 font-mono font-bold"
-                      />
-                      <span className="text-[9px] font-black uppercase text-gym-accent font-mono">KG</span>
-                    </div>
-                  </div>
-
-                  {/* Percentage Helper Bar linked to 1RM */}
-                  <div className="p-3.5 bg-white/[0.01] border border-white/5 rounded-sm flex flex-col md:flex-row md:items-center justify-between gap-4 font-mono text-[10px]">
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="text-white/40 uppercase tracking-widest font-bold">1RM Reference:</span>
-                      {(['bench', 'squat', 'deadlift', 'ohp'] as const).map((lift) => {
-                        const maxVal = lift === 'bench' ? actualBenchMax : lift === 'squat' ? actualSquatMax : lift === 'deadlift' ? actualDeadliftMax : actualOhpMax;
-                        return (
-                          <button
-                            key={lift}
-                            onClick={() => setSelectedPercentageLift(lift)}
-                            className={`px-2 py-1 uppercase text-[9px] font-bold border transition-all cursor-pointer ${
-                              selectedPercentageLift === lift
-                                ? 'bg-gym-accent/15 border-gym-accent text-gym-accent'
-                                : 'bg-black/40 border-white/5 text-white/60 hover:text-white hover:border-white/20'
-                            }`}
-                          >
-                            {lift} ({Math.round(maxVal)}k)
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="text-white/40 uppercase tracking-widest font-bold">Presets:</span>
-                      {[50, 60, 70, 80, 90, 100].map((perc) => {
-                        const refMax = selectedPercentageLift === 'bench' ? actualBenchMax : selectedPercentageLift === 'squat' ? actualSquatMax : selectedPercentageLift === 'deadlift' ? actualDeadliftMax : actualOhpMax;
-                        const targetPercWeight = refMax ? Math.round((refMax * (perc / 100)) / 2.5) * 2.5 : 0;
-                        const disabled = !refMax || targetPercWeight < 20;
-                        return (
-                          <button
-                            key={perc}
-                            onClick={() => {
-                              if (!disabled) {
-                                setBarbellWeight(targetPercWeight);
-                              }
-                            }}
-                            disabled={disabled}
-                            className="px-2 py-1 bg-white/5 border border-white/5 hover:bg-white/10 text-white/80 hover:text-white text-[9px] font-bold transition-all disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer"
-                          >
-                            {perc}% ({targetPercWeight > 0 ? `${targetPercWeight}k` : '—'})
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Render the Barbell and Plates! */}
-                  {(() => {
-                    let rem = (barbellWeight - 20) / 2;
-                    if (rem < 0) rem = 0;
-                    
-                    const specPlates = [
-                      { w: 25, color: '#ef4444', height: 115, width: 15, label: '25kg', textClass: 'text-[9px] fill-white font-bold font-mono' },
-                      { w: 20, color: '#3b82f6', height: 104, width: 15, label: '20kg', textClass: 'text-[9px] fill-white font-bold font-mono' },
-                      { w: 15, color: '#eab308', height: 95, width: 14, label: '15kg', textClass: 'text-[9px] fill-black font-bold font-mono' },
-                      { w: 10, color: '#22c55e', height: 84, width: 13, label: '10kg', textClass: 'text-[9px] fill-white font-bold font-mono' },
-                      { w: 5, color: '#e4e4e7', height: 64, width: 11, label: '5kg', textClass: 'text-[8px] fill-black font-bold font-mono' },
-                      { w: 2.5, color: '#52525b', height: 50, width: 9, label: '2.5', textClass: 'text-[7px] fill-white font-mono' },
-                      { w: 1.25, color: '#71717a', height: 42, width: 7, label: '1.25', textClass: 'text-[6px] fill-white font-mono' }
-                    ];
-
-                    const platesNeeded: { w: number; color: string; height: number; width: number; label: string; textClass: string }[] = [];
-                    specPlates.forEach(p => {
-                      while (rem >= p.w) {
-                        platesNeeded.push(p);
-                        rem -= p.w;
-                      }
-                    });
-
-                    let currentSleeveX = 115;
-                    const loadedPlatesRender = platesNeeded.map((p, i) => {
-                      const x = currentSleeveX;
-                      const y = 80 - p.height / 2;
-                      const width = p.width;
-                      const height = p.height;
-                      currentSleeveX += width + 2.5; 
-                      return (
-                        <g key={i}>
-                          <rect 
-                            x={x} 
-                            y={y} 
-                            width={width} 
-                            height={height} 
-                            fill={p.color} 
-                            rx={1.5}
-                            stroke="#050505"
-                            strokeWidth={0.5}
-                          />
-                          {p.height > 60 && (
-                            <text
-                              x={x + width / 2}
-                              y={80}
-                              textAnchor="middle"
-                              dominantBaseline="middle"
-                              className={p.textClass}
-                              transform={`rotate(-90 ${x + width / 2} 80)`}
-                            >
-                              {p.label}
-                            </text>
-                          )}
-                        </g>
-                      );
-                    });
-
-                    return (
-                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
-                        <div className="lg:col-span-8 bg-[#030303]/75 p-5 border border-white/5 rounded-sm flex flex-col items-center justify-center relative overflow-hidden h-[180px]">
-                          <div className="absolute top-2.5 left-3.5 flex items-center gap-1.5 font-mono text-[8px] text-white/30 tracking-widest uppercase">
-                            <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
-                            Right Sleeve Visual Vector
-                          </div>
-
-                          <svg className="w-full max-w-[440px] h-[130px]" viewBox="0 0 350 160">
-                            <rect x="0" y="76" width="350" height="8" fill="#4B5563" rx="1.5" />
-                            <line x1="20" y1="76" x2="80" y2="84" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
-                            <line x1="40" y1="76" x2="100" y2="84" stroke="rgba(255,255,255,0.15)" strokeWidth={1} />
-                            <rect x="102" y="62" width="10" height="36" fill="#D1D5DB" rx="1" stroke="#374151" strokeWidth={0.75} />
-                            <rect x="112" y="66" width="5" height="28" fill="#9CA3AF" rx="0.5" />
-                            <rect x="117" y="70" width="220" height="20" fill="#E5E7EB" rx="1" stroke="#4B5563" strokeWidth={0.75} />
-                            {loadedPlatesRender}
-                            {platesNeeded.length > 0 && (
-                              <rect x={currentSleeveX} y={67} width="4" height="26" fill="#3B82F6" rx="0.5" stroke="#1D4ED8" strokeWidth={0.5} />
-                            )}
-                          </svg>
-
-                          <div className="mt-1 flex justify-between w-full max-w-[400px] text-[8.5px] text-white/35 font-mono select-none">
-                            <span>Sleeve Center (Collar)</span>
-                            <span>Remaining Space: {Math.max(0, 220 - (currentSleeveX - 117)).toFixed(0)}px</span>
-                            <span>End Cap</span>
-                          </div>
-                        </div>
-
-                        <div className="lg:col-span-4 p-4 bg-zinc-940 border border-white/5 rounded-sm h-[180px] flex flex-col justify-between">
-                          <div>
-                            <span className="text-[8px] tracking-widest font-bold uppercase text-gym-accent font-mono block mb-1">
-                              Plate Loading Instruction
-                            </span>
-                            <h6 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                              Required Per Side:
-                            </h6>
-                          </div>
-
-                          {platesNeeded.length === 0 ? (
-                            <div className="text-center py-6 text-white/20 text-[10px] font-mono leading-relaxed">
-                              Bar is empty (20 kg).<br />Add weight load above to slide plates!
-                            </div>
-                          ) : (
-                            <div className="overflow-y-auto max-h-[85px] space-y-1.5 pr-2 custom-scrollbar my-2">
-                              {(() => {
-                                const counts: Record<number, number> = {};
-                                platesNeeded.forEach(p => {
-                                  counts[p.w] = (counts[p.w] || 0) + 1;
-                                });
-                                return Object.entries(counts).sort((a, b) => parseFloat(b[0]) - parseFloat(a[0])).map(([wt, c]) => {
-                                  const spec = specPlates.find(sp => sp.w === parseFloat(wt));
-                                  return (
-                                    <div key={wt} className="flex justify-between items-center text-[10.5px] font-mono border-b border-white/[0.02] pb-1">
-                                      <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full inline-block" style={{ backgroundColor: spec?.color }} />
-                                        <span className="text-white font-semibold">{wt} kg plate</span>
-                                      </div>
-                                      <span className="text-gym-accent font-bold">
-                                        &times; {c} {c > 1 ? 'plates' : 'plate'}
-                                      </span>
-                                    </div>
-                                  );
-                                });
-                              })()}
-                            </div>
-                          )}
-
-                          <div className="flex justify-between items-center bg-[#070707] p-2 rounded-sm border border-white/[0.04]">
-                            <span className="text-[8px] font-mono text-white/30 uppercase">Sleeve Weight:</span>
-                            <span className="text-xs font-bold text-white font-mono shrink-0">
-                              {((barbellWeight - 20) / 2).toFixed(2)} kg
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-
               </div>
             </motion.div>
           )}
@@ -3105,13 +2415,6 @@ export default function AnatomyDashboard({
                   </div>
 
                 </div>
-
-                {/* 🧪 Electrochemical Synaptic Replenishment Planner Section */}
-                <SynapticReplenishmentPlanner
-                  cnsScore={cnsFatigueAnalysis.score}
-                  sessionSetsCount={sessionSets.length}
-                  compoundSetsCount={cnsFatigueAnalysis.contributors.reduce((acc, contrib) => contrib.loadingPerSet >= 5 ? acc + contrib.setsCount : acc, 0)}
-                />
 
                 {/* 📊 Hypertrophic Adaptation & Stimulus Desensitization Predictor Section */}
                 <HypertrophicAdaptationPredictor

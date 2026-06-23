@@ -76,6 +76,7 @@ import AnatomyDashboard from "./components/AnatomyDashboard";
 import Sparkline from "./components/Sparkline";
 import AICoach from "./components/AICoach";
 import RadarChart from "./components/RadarChart";
+import D3RadarChart from "./components/D3RadarChart";
 import AvatarPanel, { OUTFITS, TITLES } from "./components/AvatarPanel";
 import { AvatarDisplayCard } from "./components/AvatarDisplayCard";
 import { TransparentCharacter } from "./components/TransparentCharacter";
@@ -1657,11 +1658,22 @@ export default function App() {
   }, [toast]);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const syncedProfile = useMemo(() => {
+    if (!profile) return null;
+    const latestWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : profile.bodyweight;
+    const latestBodyFat = bodyFatHistory.length > 0 ? bodyFatHistory[bodyFatHistory.length - 1].bodyFatPercent : profile.bodyFatPercent;
+    return {
+      ...profile,
+      bodyweight: latestWeight,
+      bodyFatPercent: latestBodyFat
+    };
+  }, [profile, weightHistory, bodyFatHistory]);
+
   const profileRef = useRef<UserProfile | null>(null);
   const [timerTick, setTimerTick] = useState<number>(0);
   useEffect(() => {
-    profileRef.current = profile;
-  }, [profile]);
+    profileRef.current = syncedProfile;
+  }, [syncedProfile]);
   useEffect(() => {
     let interval: any = null;
     if (profile?.timerActive) {
@@ -3916,6 +3928,105 @@ export default function App() {
     ];
   }, [archivedWorkouts, sessionSets, combinedPools]);
 
+  const muscleGroupStrengthData = useMemo(() => {
+    const muscleGroupExercises: Record<string, Record<string, number[]>> = {}; // group -> exercise -> array of peak 1RMs
+    
+    // Helper to extract 1RM
+    const calculate1RM = (weight: number, reps: number) => {
+      if (reps <= 0) return weight;
+      if (reps === 1) return weight;
+      return weight * (1 + reps / 30);
+    };
+
+    const allWorkouts = [...archivedWorkouts];
+    if (sessionSets.length > 0) {
+      allWorkouts.push({
+        date: new Date().toISOString().split("T")[0],
+        sets: sessionSets
+      });
+    }
+
+    const sortedWorkouts = [...allWorkouts].sort((a, b) => {
+      const dA = a.date || "";
+      const dB = b.date || "";
+      return dA.localeCompare(dB);
+    });
+
+    sortedWorkouts.forEach((workout) => {
+      if (!workout.sets || !Array.isArray(workout.sets)) return;
+      
+      const workoutExerciseMaxes: Record<string, number> = {};
+      workout.sets.forEach((set: any) => {
+        if (!set || !set.exerciseName) return;
+        const exName = set.exerciseName.trim();
+        const weight = Number(set.weight) || 0;
+        const reps = Number(set.reps) || 0;
+        const oneRM = calculate1RM(weight, reps);
+        
+        workoutExerciseMaxes[exName] = Math.max(workoutExerciseMaxes[exName] || 0, oneRM);
+      });
+
+      Object.entries(workoutExerciseMaxes).forEach(([exName, max1RM]) => {
+        if (max1RM <= 0) return;
+        
+        const resolvedEx = findExerciseByName(exName);
+        const poolName = resolvedEx ? resolvedEx.pool : "";
+        const groupName = mapPoolToMuscleGroup(poolName);
+        
+        // Skip unmapped categories like "Other", "Cardio", etc. if they aren't standard weight lifting
+        if (["Other", "Cardio", "Equipment"].includes(groupName)) return;
+        
+        if (!muscleGroupExercises[groupName]) {
+          muscleGroupExercises[groupName] = {};
+        }
+        if (!muscleGroupExercises[groupName][exName]) {
+          muscleGroupExercises[groupName][exName] = [];
+        }
+        
+        muscleGroupExercises[groupName][exName].push(max1RM);
+      });
+    });
+
+    const standardGroups = ["Chest", "Back", "Shoulders", "Legs", "Core", "Biceps", "Triceps"];
+    
+    return standardGroups.map((groupName) => {
+      const groupExercises = muscleGroupExercises[groupName] || {};
+      let totalRelativeGrowth = 0;
+      let exerciseCountWithMultipleLogs = 0;
+      let totalExerciseCount = 0;
+      const detailsList: { name: string; growth: number }[] = [];
+
+      Object.entries(groupExercises).forEach(([exName, oneRMs]) => {
+        totalExerciseCount++;
+        if (oneRMs.length >= 2) {
+          const baseline = oneRMs[0];
+          const latest = Math.max(...oneRMs);
+          if (baseline > 0) {
+            const ratio = (latest / baseline) * 100;
+            totalRelativeGrowth += ratio;
+            exerciseCountWithMultipleLogs++;
+            detailsList.push({ name: exName, growth: ratio - 100 });
+          }
+        } else if (oneRMs.length === 1) {
+          totalRelativeGrowth += 100;
+          exerciseCountWithMultipleLogs++;
+          detailsList.push({ name: exName, growth: 0 });
+        }
+      });
+
+      const averageStrengthRatio = exerciseCountWithMultipleLogs > 0
+        ? totalRelativeGrowth / exerciseCountWithMultipleLogs
+        : 100;
+
+      return {
+        axis: groupName,
+        value: Number(averageStrengthRatio.toFixed(1)),
+        loggedExercisesCount: totalExerciseCount,
+        details: detailsList.sort((a, b) => b.growth - a.growth)
+      };
+    });
+  }, [archivedWorkouts, sessionSets]);
+
   const getExerciseProgressDetails = (exName: string) => {
     if (!exName) return null;
     const searchName = exName.trim().toLowerCase();
@@ -4640,6 +4751,10 @@ export default function App() {
 
       await setDoc(doc(db, weightColPath, docId), entry);
 
+      // Persist in profile settings too!
+      await saveSettings({ bodyweight: w });
+      setProfile((prev) => prev ? { ...prev, bodyweight: w } : null);
+
       setNewWeight("");
       setNewWeightDate("");
       setWeightFlash("✓ SAVED");
@@ -4698,6 +4813,10 @@ export default function App() {
       const docId = `bf-${Date.now()}`;
 
       await setDoc(doc(db, bfColPath, docId), entry);
+
+      // Persist in profile settings too!
+      await saveSettings({ bodyFatPercent: bf });
+      setProfile((prev) => prev ? { ...prev, bodyFatPercent: bf } : null);
 
       setNewBodyFat("");
       setNewBodyFatDate("");
@@ -5639,9 +5758,9 @@ export default function App() {
                             <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">
                               Weight Density
                             </h4>
-                            <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">
-                              {profile?.bodyweight
-                                ? `${profile.bodyweight} KG`
+                             <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">
+                              {syncedProfile?.bodyweight
+                                ? `${syncedProfile.bodyweight} KG`
                                 : "N/A"}
                             </span>
                           </div>
@@ -8635,7 +8754,6 @@ export default function App() {
                     )}
                   </AnimatePresence>
                 </div>
-
                 {/* Exercise Progression Tracker Section */}
                 <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
                   <button
@@ -8943,14 +9061,18 @@ export default function App() {
                     }
                     className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
                   >
-                    <div>
-                      <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                        <Flame className="w-5 h-5 text-gym-accent animate-pulse" />
-                        Calorie Tracker
-                      </h3>
-                      <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                        Comprehensive metabolic & training energy output
-                      </p>
+                    <div className="flex items-center gap-4">
+                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                        <Flame className="w-5 h-5 animate-pulse" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                          Calorie Tracker
+                        </h3>
+                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                          Comprehensive metabolic & training energy output
+                        </p>
+                      </div>
                     </div>
                     <ChevronDown
                       className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.calorieTracker ? "rotate-180" : ""}`}
@@ -9011,9 +9133,7 @@ export default function App() {
                                 {/* Total Combined Display Card */}
                                 <div className="bg-[#0c0c0c] border border-white/5 rounded-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                                   <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-gym-accent/10 border border-gym-accent/20 rounded-sm">
-                                      <Flame className="w-8 h-8 text-gym-accent animate-pulse" />
-                                    </div>
+                                    <Flame className="w-8 h-8 text-gym-accent animate-pulse shrink-0" />
                                     <div>
                                       <h4 className="text-sm font-semibold text-white tracking-widest uppercase mb-1">
                                         Total Everyday Combined
@@ -9341,11 +9461,13 @@ export default function App() {
                 <AnatomyDashboard
                   sessionSets={sessionSets}
                   archivedWorkouts={archivedWorkouts}
-                  profile={profile}
+                  profile={syncedProfile || profile}
                   saveSettings={saveSettings}
                   setToast={setToast}
                   setActiveView={setActiveView}
                   routines={routines}
+                  muscleGroupStrengthData={muscleGroupStrengthData}
+                  activeTheme={activeTheme}
                 />
               </motion.div>
             ) : activeView === "session" ? (
@@ -10888,7 +11010,7 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
               >
                 <AvatarPanel
-                  profile={profile}
+                  profile={syncedProfile || profile}
                   setProfile={setProfile}
                   saveSettings={saveSettings}
                   setToast={setToast}
@@ -11132,7 +11254,8 @@ export default function App() {
                               <input
                                 type="number"
                                 step="0.1"
-                                defaultValue={profile?.bodyweight || ""}
+                                defaultValue={syncedProfile?.bodyweight || ""}
+                                key={`bw-${syncedProfile?.bodyweight || ""}`}
                                 placeholder="75"
                                 className="bg-transparent border-b border-white/10 py-1.5 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
                                 onBlur={(e) => {
@@ -11198,7 +11321,8 @@ export default function App() {
                               <input
                                 type="number"
                                 step="0.1"
-                                defaultValue={profile?.bodyFatPercent || ""}
+                                defaultValue={syncedProfile?.bodyFatPercent || ""}
+                                key={`bf-${syncedProfile?.bodyFatPercent || ""}`}
                                 placeholder="15"
                                 className="bg-transparent border-b border-white/10 py-1.5 text-xl font-light focus:outline-none focus:border-gym-accent transition-all text-white"
                                 onBlur={(e) => {
