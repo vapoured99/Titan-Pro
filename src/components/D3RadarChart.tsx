@@ -129,7 +129,7 @@ const QUALIFYING_EXERCISES: QualifyingExercise[] = [
     id: "hex_bar_deadlift",
     name: "Hex Bar Deadlift",
     category: "Posterior / Lower Pull",
-    keys: ["hex bar deadlift", "hexbar lift", "trap bar deadlift", "hex deallift"],
+    keys: ["hex bar deadlift", "trap bar deadlift", "hex deallift"],
     maleTiers: { novice: 1.3, intermediate: 1.85, advanced: 2.4, elite: 2.9 },
     femaleTiers: { novice: 1.0, intermediate: 1.4, advanced: 1.9, elite: 2.3 }
   },

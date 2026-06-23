@@ -1769,10 +1769,10 @@ export default function AnatomyDashboard({
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                3 &mdash; Biomechanical Load Alerter
+                3 &mdash; Muscle Balance & Joint Safety
               </h4>
               <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
-                Rolling 30-Day Agonist/Antagonist Ratios & Postural Risk Tracker
+                Rolling 30-Day Push/Pull Ratios & Postural Joint Safety
               </p>
             </div>
           </div>
@@ -1785,7 +1785,7 @@ export default function AnatomyDashboard({
               }`}>
                 {biomechanicalAnalysis.totalAlerts > 0
                   ? `❗ POSTURAL WARNINGS: ${biomechanicalAnalysis.totalAlerts}`
-                  : "● BIOMECHANICS: BALANCED"}
+                  : "● WORKLOAD: BALANCED"}
               </span>
             )}
             {expanded.biomechanical ? (
