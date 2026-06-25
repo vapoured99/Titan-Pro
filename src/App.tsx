@@ -84,6 +84,9 @@ import TacticalMap from "./components/TacticalMap";
 import GymLocator from "./components/GymLocator";
 import WorkoutCalendarHeatmap from "./components/WorkoutCalendarHeatmap";
 import { SpinalDepletionWidget } from "./components/SpinalDepletionWidget";
+import { LiveRestChronometer } from "./components/LiveRestChronometer";
+import { WeeklyVolumeTracker } from "./components/WeeklyVolumeTracker";
+import ConsoleIntelligencePanel from "./components/ConsoleIntelligencePanel";
 import {
   auth,
   db,
@@ -5757,6 +5760,12 @@ export default function App() {
                       </motion.div>
                     </motion.div>
 
+                    {/* Tactical Pacing & Volume Targets */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                      <LiveRestChronometer sessionSets={sessionSets} />
+                      <WeeklyVolumeTracker archivedWorkouts={archivedWorkouts} sessionSets={sessionSets} />
+                    </div>
+
                     {/* Spinal Depletion & CNS Fatigue Gauge widget */}
                     <SpinalDepletionWidget
                       cnsFatigueAnalysis={cnsFatigueAnalysis}
@@ -9655,6 +9664,15 @@ export default function App() {
                             ),
                           )}
                         </div>
+
+                        {/* Console Intelligence HUD Widgets */}
+                        <ConsoleIntelligencePanel
+                          sessionSets={sessionSets}
+                          archivedWorkouts={archivedWorkouts}
+                          findExerciseByName={findExerciseByName}
+                          currentDays={currentDays}
+                          lastLoadedDayIndex={lastLoadedDayIndex}
+                        />
 
                         {/* Dynamic Calorie Tracker progress bar under logged exercises */}
                         {(() => {
