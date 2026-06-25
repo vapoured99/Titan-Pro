@@ -619,6 +619,24 @@ const DAY_CONFIG = [
   },
 ];
 
+export function getStopwatchDurationMs(profile: UserProfile | null): number {
+  if (!profile) return 0;
+  let totalMs = profile.timerAccumulatedMs || 0;
+  if (profile.timerActive && profile.timerStartTime) {
+    const startMs = Date.parse(profile.timerStartTime);
+    if (!isNaN(startMs)) {
+      totalMs += Date.now() - startMs;
+    }
+  } else if (!profile.timerActive && profile.timerStartTime && profile.timerEndTime && totalMs === 0) {
+    const startMs = Date.parse(profile.timerStartTime);
+    const endMs = Date.parse(profile.timerEndTime);
+    if (!isNaN(startMs) && !isNaN(endMs) && endMs > startMs) {
+      totalMs = endMs - startMs;
+    }
+  }
+  return totalMs;
+}
+
 const calculateCaloriesBurned = (
   sets: SessionSet[],
   userProfile: UserProfile | null,
@@ -715,23 +733,18 @@ const calculateCaloriesBurned = (
     if (userProfile.timerManualDuration && userProfile.timerManualDuration > 0) {
       sessionDurationMin = userProfile.timerManualDuration;
       hasValidDuration = true;
-    } else if (userProfile.timerStartTime) {
-      const startMs = Date.parse(userProfile.timerStartTime);
-      if (!isNaN(startMs)) {
-        const endMs = userProfile.timerActive
-          ? Date.now()
-          : (userProfile.timerEndTime ? Date.parse(userProfile.timerEndTime) : Date.now());
-        if (!isNaN(endMs) && endMs > startMs) {
-          const rawDuration = (endMs - startMs) / 60000;
-          // Fail-safe: if timer has run for more than 4 hours (240 mins) because user forgot to click stop,
-          // we treat it as unstopped and cap it at 180 min, or let manual override correct it.
-          if (rawDuration > 240) {
-            sessionDurationMin = 180;
-          } else {
-            sessionDurationMin = rawDuration;
-          }
-          hasValidDuration = true;
+    } else {
+      const durationMs = getStopwatchDurationMs(userProfile);
+      if (durationMs > 0) {
+        const rawDuration = durationMs / 60000;
+        // Fail-safe: if timer has run for more than 4 hours (240 mins) because user forgot to click stop,
+        // we treat it as unstopped and cap it at 180 min, or let manual override correct it.
+        if (rawDuration > 240) {
+          sessionDurationMin = 180;
+        } else {
+          sessionDurationMin = rawDuration;
         }
+        hasValidDuration = true;
       }
     }
   }
@@ -1039,6 +1052,7 @@ interface UserProfile {
   timerEndTime?: string;
   timerActive?: boolean;
   timerManualDuration?: number;
+  timerAccumulatedMs?: number;
 }
 
 interface ProfileDisplayNameEditorProps {
@@ -3554,12 +3568,13 @@ export default function App() {
 
       // Automatically start the stopwatch if this is the first set logged and there's no active timer
       let timerUpdate = {};
-      if (isFirstSet && (!profile || !profile.timerActive)) {
+      if (isFirstSet && (!profile || (!profile.timerStartTime && !profile.timerActive && !(profile.timerAccumulatedMs && profile.timerAccumulatedMs > 0)))) {
         timerUpdate = {
           timerStartTime: new Date().toISOString(),
           timerEndTime: null,
           timerActive: true,
           timerManualDuration: 0,
+          timerAccumulatedMs: 0,
         };
       }
 
@@ -4228,6 +4243,12 @@ export default function App() {
         avatarXp: nextXp,
         avatarCredits: nextCredits,
         unassignedPoints: nextPoints,
+        // Reset stopwatch and manual timers so next session starts at 0
+        timerStartTime: null,
+        timerEndTime: null,
+        timerActive: false,
+        timerManualDuration: 0,
+        timerAccumulatedMs: 0,
       };
 
       setProfile((prev) => (prev ? { ...prev, ...avatarUpdate } : null));
@@ -4690,6 +4711,27 @@ export default function App() {
           batch.delete(doc(db, `users/${currentUser.uid}/sets/${s.id}`));
         }
       });
+
+      const timerResetUpdate = {
+        timerStartTime: null,
+        timerEndTime: null,
+        timerActive: false,
+        timerManualDuration: 0,
+        timerAccumulatedMs: 0,
+      };
+
+      setProfile((prev) => (prev ? { ...prev, ...timerResetUpdate } : null));
+
+      const settingsRef = doc(db, `users/${currentUser.uid}/profile/settings`);
+      batch.set(
+        settingsRef,
+        {
+          ...timerResetUpdate,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
       await batch.commit();
       console.log("Active performance log cleared.");
     } catch (error) {
@@ -9684,9 +9726,14 @@ export default function App() {
                                     {profile?.timerActive ? (
                                       <button
                                         onClick={async () => {
+                                          const startMs = profile?.timerStartTime ? Date.parse(profile.timerStartTime) : NaN;
+                                          const elapsed = !isNaN(startMs) ? (Date.now() - startMs) : 0;
+                                          const newAccumulated = (profile?.timerAccumulatedMs || 0) + elapsed;
                                           await saveSettings({
                                             timerActive: false,
                                             timerEndTime: new Date().toISOString(),
+                                            timerStartTime: null,
+                                            timerAccumulatedMs: newAccumulated,
                                           });
                                           setToast({ message: "Workout session timer stopped!", type: "success" });
                                           setTimeout(() => setToast(null), 3000);
@@ -9703,17 +9750,18 @@ export default function App() {
                                             timerStartTime: new Date().toISOString(),
                                             timerEndTime: null,
                                             timerManualDuration: 0,
+                                            timerAccumulatedMs: profile?.timerAccumulatedMs || 0,
                                           });
                                           setToast({ message: "Workout session timer started!", type: "success" });
                                           setTimeout(() => setToast(null), 3000);
                                         }}
                                         className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gym-accent hover:bg-gym-accent-light text-black rounded-sm text-[9px] font-mono font-bold uppercase tracking-wider cursor-pointer transition-colors"
                                       >
-                                        <Play className="w-2.5 h-2.5 fill-current animate-pulse" /> Start Stopwatch
+                                        <Play className="w-2.5 h-2.5 fill-current animate-pulse" /> {profile?.timerAccumulatedMs && profile.timerAccumulatedMs > 0 ? "Resume Stopwatch" : "Start Stopwatch"}
                                       </button>
                                     )}
                                     
-                                    {(profile?.timerStartTime || (profile?.timerManualDuration && profile.timerManualDuration > 0)) && (
+                                    {(profile?.timerStartTime || (profile?.timerManualDuration && profile.timerManualDuration > 0) || (profile?.timerAccumulatedMs && profile.timerAccumulatedMs > 0)) && (
                                       <button
                                         onClick={async () => {
                                           await saveSettings({
@@ -9721,6 +9769,7 @@ export default function App() {
                                             timerEndTime: null,
                                             timerActive: false,
                                             timerManualDuration: 0,
+                                            timerAccumulatedMs: 0,
                                           });
                                           setToast({ message: "Workout session timing reset!", type: "info" });
                                           setTimeout(() => setToast(null), 3000);
@@ -9748,28 +9797,23 @@ export default function App() {
                                             </>
                                           );
                                         }
-                                        if (profile?.timerStartTime) {
-                                          const startMs = Date.parse(profile.timerStartTime);
-                                          if (!isNaN(startMs)) {
-                                            const endMs = profile.timerActive
-                                              ? Date.now()
-                                              : (profile.timerEndTime ? Date.parse(profile.timerEndTime) : Date.now());
-                                            const rawSecs = Math.max(0, Math.floor((endMs - startMs) / 1000));
-                                            const mins = Math.floor(rawSecs / 60);
-                                            const secs = rawSecs % 60;
-                                            const formatMins = mins > 0 ? `${mins}m ` : "";
-                                            const displayTime = `${formatMins}${secs}s`;
-                                            return (
-                                              <>
-                                                <span className={`text-lg font-mono font-bold ${profile.timerActive ? "text-gym-accent animate-pulse" : "text-white/85"}`}>
-                                                  {displayTime}
-                                                </span>
-                                                <span className="text-[8px] text-white/40 font-mono">
-                                                  ({profile.timerActive ? "Stopwatch Active" : "Final stopwatch duration"})
-                                                </span>
-                                              </>
-                                            );
-                                          }
+                                        const durationMs = getStopwatchDurationMs(profile);
+                                        if (durationMs > 0) {
+                                          const rawSecs = Math.max(0, Math.floor(durationMs / 1000));
+                                          const mins = Math.floor(rawSecs / 60);
+                                          const secs = rawSecs % 60;
+                                          const formatMins = mins > 0 ? `${mins}m ` : "";
+                                          const displayTime = `${formatMins}${secs}s`;
+                                          return (
+                                            <>
+                                              <span className={`text-lg font-mono font-bold ${profile?.timerActive ? "text-gym-accent animate-pulse" : "text-white/85"}`}>
+                                                {displayTime}
+                                              </span>
+                                              <span className="text-[8px] text-white/40 font-mono">
+                                                ({profile?.timerActive ? "Stopwatch Active" : "Stopwatch Paused"})
+                                              </span>
+                                            </>
+                                          );
                                         }
                                         return (
                                           <>
