@@ -1243,6 +1243,16 @@ export default function App() {
   ]);
   const [workoutInnerTab, setWorkoutInnerTab] = useState<"builder" | "program">("builder");
   const [formattedProgram, setFormattedProgram] = useState<{ dayIndex: number; dayName: string; exercises: Exercise[] }[]>([]);
+  const [sessionSummary, setSessionSummary] = useState<{
+    totalVolume: number;
+    peakWeight: number;
+    peakExercise: string;
+    totalSets: number;
+    caloriesBurned: number;
+    muscleGroups: { name: string; count: number; percentage: number }[];
+    exercisesList: { name: string; setsCount: number; maxWeight: number; volume: number }[];
+    date: string;
+  } | null>(null);
 
 
   const [personalBests, setPersonalBests] = useState<Record<string, PB>>({});
@@ -4654,6 +4664,75 @@ export default function App() {
         ? [...(existingWorkoutForDay.sets || []), ...sessionSets]
         : sessionSets;
 
+      // Compute session metrics for the active performance summary modal
+      const sessionVolume = sessionSets.reduce((sum, s) => {
+        const searchName = s.exerciseName?.trim().toLowerCase();
+        let isCardio = false;
+        for (const pool of Object.values(combinedPools)) {
+          const found = pool.find(
+            (e) => e.name.trim().toLowerCase() === searchName,
+          );
+          if (found && found.pool === "cardio") {
+            isCardio = true;
+            break;
+          }
+        }
+        return sum + (isCardio ? 0 : s.weight * s.reps);
+      }, 0);
+
+      let peakWt = 0;
+      let peakEx = "";
+      sessionSets.forEach((s) => {
+        if (s.weight > peakWt) {
+          peakWt = s.weight;
+          peakEx = s.exerciseName;
+        }
+      });
+
+      const rawMuscleCounts: Record<string, number> = {};
+      const rawExerciseMap: Record<string, { setsCount: number; maxWeight: number; volume: number }> = {};
+
+      sessionSets.forEach((s) => {
+        const ex = findExerciseByName(s.exerciseName);
+        const rawMuscle = ex?.muscleGroup || ex?.pool || "Other";
+        const muscleName = rawMuscle.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        rawMuscleCounts[muscleName] = (rawMuscleCounts[muscleName] || 0) + 1;
+
+        if (!rawExerciseMap[s.exerciseName]) {
+          rawExerciseMap[s.exerciseName] = { setsCount: 0, maxWeight: 0, volume: 0 };
+        }
+        const ref = rawExerciseMap[s.exerciseName];
+        ref.setsCount += 1;
+        if (s.weight > ref.maxWeight) ref.maxWeight = s.weight;
+        const sVolume = (ex && ex.pool === "cardio") ? 0 : s.weight * s.reps;
+        ref.volume += sVolume;
+      });
+
+      const totalSetsInSession = sessionSets.length;
+      const mGroups = Object.entries(rawMuscleCounts).map(([name, count]) => ({
+        name,
+        count,
+        percentage: Math.round((count / totalSetsInSession) * 100),
+      })).sort((a, b) => b.count - a.count);
+
+      const eList = Object.entries(rawExerciseMap).map(([name, data]) => ({
+        name,
+        ...data,
+      }));
+
+      const calsBurned = calculateCaloriesBurned(sessionSets, profile);
+
+      const computedSummary = {
+        totalVolume: sessionVolume,
+        peakWeight: peakWt,
+        peakExercise: peakEx || "None",
+        totalSets: totalSetsInSession,
+        caloriesBurned: calsBurned,
+        muscleGroups: mGroups,
+        exercisesList: eList,
+        date: targetDate,
+      };
+
       const totalVolume = combinedSets.reduce((sum, s) => {
         const searchName = s.exerciseName?.trim().toLowerCase();
         let isCardio = false;
@@ -4767,13 +4846,11 @@ export default function App() {
       // Update local state for instant feedback
       setCurrentDays([[], [], [], [], [], []]);
 
+      // Trigger the Session Summary Modal
+      setSessionSummary(computedSummary);
+
       // sessionSets will be cleared via onSnapshot
       setSelectedWorkoutId(workoutRef.id);
-      if (existingWorkoutForDay) {
-        alert(`Workout session from ${targetDate} appended and merged with the existing session! Calories combined!`);
-      } else {
-        alert(`Workout session from ${targetDate} captured and archived!`);
-      }
     } catch (error) {
       handleFirestoreError(
         error,
@@ -16220,6 +16297,255 @@ export default function App() {
                 {toast.message}
               </span>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Session Summary Modal */}
+        <AnimatePresence>
+          {sessionSummary && (
+            <div
+              className="fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto p-4 sm:p-10 bg-black/90 backdrop-blur-md"
+              onClick={() => setSessionSummary(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 40 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 40 }}
+                transition={{ type: "spring", damping: 25, stiffness: 180 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative w-full max-w-3xl bg-[#080808] border border-gym-accent/20 rounded-sm flex flex-col shadow-2xl my-auto z-10 overflow-hidden"
+              >
+                {/* Visual Top Glow and Accent lines */}
+                <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-cyan-500 via-gym-accent to-purple-600" />
+                <div className="absolute top-0 right-0 w-48 h-48 bg-gym-accent/5 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
+
+                {/* Header */}
+                <div className="p-8 border-b border-white/5 relative z-10 flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gym-accent/10 border border-gym-accent/30 rounded-sm flex items-center justify-center shadow-[0_0_15px_rgba(235,255,0,0.1)]">
+                      <Award className="w-6 h-6 text-gym-accent" />
+                    </div>
+                    <div>
+                      <span className="text-[9px] text-gym-accent font-black uppercase tracking-[0.3em] block mb-1">
+                        Evolution Achieved
+                      </span>
+                      <h3 className="text-2xl font-light italic font-serif text-white leading-none">
+                        Workout Session Completed!
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest block">
+                      Session Date
+                    </span>
+                    <span className="text-xs font-bold text-white/90 uppercase tracking-widest font-mono">
+                      {sessionSummary.date}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Scrollable Body */}
+                <div className="p-8 overflow-y-auto max-h-[70vh] space-y-8 relative z-10 custom-scrollbar">
+                  {/* Grid of Key Performance Indicators */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* Volume KPI */}
+                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-sm hover:border-gym-accent/20 transition-all flex flex-col justify-between">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[8px] text-white/40 uppercase tracking-widest font-black">
+                          Total Volume
+                        </span>
+                        <Zap className="w-4 h-4 text-gym-accent/80" />
+                      </div>
+                      <div>
+                        <span className="text-2xl font-bold font-mono text-white tracking-tight">
+                          {sessionSummary.totalVolume.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">
+                          kg
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Peak Lift KPI */}
+                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-sm hover:border-gym-accent/20 transition-all flex flex-col justify-between">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[8px] text-white/40 uppercase tracking-widest font-black">
+                          Peak Lift
+                        </span>
+                        <Trophy className="w-4 h-4 text-yellow-500/80" />
+                      </div>
+                      <div>
+                        <span className="text-2xl font-bold font-mono text-white tracking-tight">
+                          {sessionSummary.peakWeight.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">
+                          kg
+                        </span>
+                        <span className="text-[8px] text-white/50 block truncate uppercase tracking-widest mt-1" title={sessionSummary.peakExercise}>
+                          {sessionSummary.peakExercise}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Total Sets KPI */}
+                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-sm hover:border-gym-accent/20 transition-all flex flex-col justify-between">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[8px] text-white/40 uppercase tracking-widest font-black">
+                          Completed Sets
+                        </span>
+                        <Activity className="w-4 h-4 text-cyan-400/80" />
+                      </div>
+                      <div>
+                        <span className="text-2xl font-bold font-mono text-white tracking-tight">
+                          {sessionSummary.totalSets}
+                        </span>
+                        <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">
+                          sets
+                        </span>
+                        <span className="text-[8px] text-white/50 block uppercase tracking-widest mt-1">
+                          Across {sessionSummary.exercisesList.length} movements
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Energy Output KPI */}
+                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-sm hover:border-gym-accent/20 transition-all flex flex-col justify-between">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[8px] text-white/40 uppercase tracking-widest font-black">
+                          Energy Output
+                        </span>
+                        <Flame className="w-4 h-4 text-orange-500/80" />
+                      </div>
+                      <div>
+                        <span className="text-2xl font-bold font-mono text-white tracking-tight">
+                          {sessionSummary.caloriesBurned}
+                        </span>
+                        <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">
+                          kcal
+                        </span>
+                        <span className="text-[8px] text-white/50 block uppercase tracking-widest mt-1">
+                          Estimated Burn
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Muscle Groups Breakdown & Detailed Exercise list side-by-side */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                    {/* Left Panel: Muscle Groups targeted (visual horizontal bars) */}
+                    <div className="space-y-6">
+                      <div>
+                        <h4 className="text-[9px] font-black text-white/60 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                          <Target className="w-3.5 h-3.5 text-gym-accent" />
+                          Targeted Muscle Profiles
+                        </h4>
+                        
+                        {sessionSummary.muscleGroups.length === 0 ? (
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest py-4">
+                            No muscle data logged for this session.
+                          </p>
+                        ) : (
+                          <div className="space-y-4">
+                            {sessionSummary.muscleGroups.map((muscle) => (
+                              <div key={muscle.name} className="space-y-1.5">
+                                <div className="flex items-center justify-between text-[10px] uppercase font-bold tracking-widest">
+                                  <span className="text-white/80">{muscle.name}</span>
+                                  <span className="text-gym-accent font-mono">{muscle.percentage}% ({muscle.count} sets)</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${muscle.percentage}%` }}
+                                    transition={{ duration: 0.8, ease: "easeOut" }}
+                                    className="h-full rounded-full bg-gradient-to-r from-gym-accent/60 to-gym-accent shadow-[0_0_8px_rgba(235,255,0,0.3)]"
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Pure Rewards Section */}
+                      <div className="bg-gym-accent/[0.02] border border-gym-accent/15 p-4 rounded-sm space-y-3">
+                        <h5 className="text-[8px] font-black text-gym-accent uppercase tracking-[0.25em] flex items-center gap-1.5">
+                          <Award className="w-3.5 h-3.5" />
+                          Session Loot & Rewards
+                        </h5>
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="bg-black/40 border border-white/5 p-2.5 rounded-sm flex items-center gap-2">
+                            <span className="text-gym-accent font-mono font-bold">+400</span>
+                            <span className="text-[9px] text-white/40 uppercase font-black tracking-widest font-sans">XP GAINED</span>
+                          </div>
+                          <div className="bg-black/40 border border-white/5 p-2.5 rounded-sm flex items-center gap-2">
+                            <span className="text-gym-accent font-mono font-bold">+250</span>
+                            <span className="text-[9px] text-white/40 uppercase font-black tracking-widest font-sans">CREDITS</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Panel: Detailed Exercises List */}
+                    <div className="space-y-4">
+                      <h4 className="text-[9px] font-black text-white/60 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Dumbbell className="w-3.5 h-3.5 text-gym-accent" />
+                        Movement Performance Breakdown
+                      </h4>
+
+                      <div className="space-y-3 overflow-y-auto max-h-[320px] pr-2 custom-scrollbar">
+                        {sessionSummary.exercisesList.map((exItem) => (
+                          <div
+                            key={exItem.name}
+                            className="bg-white/[0.01] border border-white/5 hover:border-white/10 p-3.5 rounded-sm space-y-2 transition-all"
+                          >
+                            <div className="flex items-start justify-between gap-4 font-sans">
+                              <span className="text-xs font-bold text-white/90 leading-snug break-words max-w-[70%]">
+                                {exItem.name}
+                              </span>
+                              <span className="text-[9px] font-mono text-gym-accent border border-gym-accent/20 px-2 py-0.5 rounded-sm uppercase tracking-widest bg-gym-accent/5 shrink-0">
+                                {exItem.setsCount} Sets
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-6 text-[10px] uppercase font-mono tracking-wider text-white/40">
+                              <div>
+                                <span className="block text-[8px] font-black tracking-widest text-white/20 uppercase mb-0.5">Peak Weight</span>
+                                <span className="text-white/80 font-bold">{exItem.maxWeight} kg</span>
+                              </div>
+                              <div className="h-4 w-px bg-white/5" />
+                              <div>
+                                <span className="block text-[8px] font-black tracking-widest text-white/20 uppercase mb-0.5">Volume</span>
+                                <span className="text-white/80 font-bold">{exItem.volume.toLocaleString()} kg</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Controls */}
+                <div className="p-8 border-t border-white/5 bg-black/40 flex items-center justify-between gap-4 z-10">
+                  <div className="hidden sm:block text-left">
+                    <p className="text-[9px] text-white/20 uppercase tracking-widest font-black leading-normal">
+                      PureGym Performance Engine
+                    </p>
+                    <p className="text-[8px] text-white/40 uppercase tracking-widest font-bold font-mono">
+                      Evolution logged to database successfully.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSessionSummary(null)}
+                    className="w-full sm:w-auto px-10 py-4 bg-gym-accent text-black hover:bg-white font-black uppercase tracking-[0.25em] text-[10px] cursor-pointer rounded-sm transition-all duration-300 shadow-lg shadow-gym-accent/10 active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    <Check className="w-4 h-4 stroke-[3px]" />
+                    Acknowledge Evolution
+                  </button>
+                </div>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
 
