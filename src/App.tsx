@@ -57,6 +57,8 @@ import {
   LineChart,
   Volume2,
   VolumeX,
+  FileText,
+  ClipboardList,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -536,6 +538,7 @@ interface SessionSet {
   timestamp: any;
   notes?: string;
   difficulty?: "easy" | "moderate" | "hard";
+  source?: string;
 }
 
 interface WeightEntry {
@@ -706,70 +709,104 @@ const calculateCaloriesBurned = (
     const isCardio = ex?.pool === "cardio";
     const isEquipment = ex?.pool === "equipment";
 
-    const activeMET = isCardio ? 8.0 : isEquipment ? 6.5 : 5.5;
+    exSets.forEach((s) => {
+      // Use intensity-based MET if available
+      let activeMET = isCardio ? 8.5 : isEquipment ? 6.5 : 5.5;
+      if (s.difficulty === "hard") {
+        activeMET += 1.0; // higher burn for struggle sets
+      } else if (s.difficulty === "easy") {
+        activeMET -= 1.0; // lower burn for easy sets
+      }
 
-    if (isCardio) {
-      exSets.forEach((s) => {
+      if (isCardio) {
         const durationMin = s.weight || 0;
         const activeCalPerMin = (activeMET * 3.5 * bodyweight) / 200;
         totalActiveCalories += durationMin * activeCalPerMin;
         totalActiveTimeMin += durationMin;
-      });
-    } else {
-      exSets.forEach((s) => {
+      } else {
         const reps = s.reps || 0;
-        const activeTimeSec = reps * 4;
+        const activeTimeSec = reps * 4; // average 4 seconds per rep
         const activeTimeMin = activeTimeSec / 60;
         const activeCalPerMin = (activeMET * 3.5 * bodyweight) / 200;
 
         totalActiveCalories += activeTimeMin * activeCalPerMin;
         totalActiveTimeMin += activeTimeMin;
-      });
-    }
+      }
+    });
   });
 
-  // Calculate total session duration in minutes based on active timer or manual overrides
+  // Calculate total session duration in minutes
   let sessionDurationMin = 0;
   let hasValidDuration = false;
 
-  if (userProfile) {
-    if (userProfile.timerManualDuration && userProfile.timerManualDuration > 0) {
-      sessionDurationMin = userProfile.timerManualDuration;
+  if (userProfile?.timerManualDuration && userProfile.timerManualDuration > 0) {
+    sessionDurationMin = userProfile.timerManualDuration;
+    hasValidDuration = true;
+  } else {
+    const durationMs = getStopwatchDurationMs(userProfile);
+    if (durationMs > 0) {
+      const rawDuration = durationMs / 60000;
+      if (rawDuration > 240) {
+        sessionDurationMin = 180;
+      } else {
+        sessionDurationMin = rawDuration;
+      }
       hasValidDuration = true;
     } else {
-      const durationMs = getStopwatchDurationMs(userProfile);
-      if (durationMs > 0) {
-        const rawDuration = durationMs / 60000;
-        // Fail-safe: if timer has run for more than 4 hours (240 mins) because user forgot to click stop,
-        // we treat it as unstopped and cap it at 180 min, or let manual override correct it.
-        if (rawDuration > 240) {
-          sessionDurationMin = 180;
-        } else {
-          sessionDurationMin = rawDuration;
+      // Fallback 1: If stopwatch is not active, calculate time elapsed since the first logged exercise set!
+      const validTimestamps = sets
+        .map((s) => getRestSetTimestamp(s))
+        .filter((ts) => ts > 0);
+      if (validTimestamps.length > 0) {
+        const firstSetTimeMs = Math.min(...validTimestamps);
+        const lastSetTimeMs = Math.max(...validTimestamps);
+        // Add a 3-minute padding after the last set, capped between first set and Date.now()
+        const endTimeMs = Math.min(Date.now(), lastSetTimeMs + 180000);
+        const elapsedMin = (endTimeMs - firstSetTimeMs) / 60000;
+        if (elapsedMin > 0.5) {
+          sessionDurationMin = Math.min(240, elapsedMin);
+          hasValidDuration = true;
         }
-        hasValidDuration = true;
       }
     }
   }
 
-  // Estimate rest/transition time
+  // Calculate rest period between consecutive sets and baseline/transition time
   let restTimeMin = 0;
   if (hasValidDuration && sessionDurationMin > 0) {
-    // recalibrate: rest/baseline overhead is total duration minus the actual active lifting/running duration
     restTimeMin = Math.max(0, sessionDurationMin - totalActiveTimeMin);
   } else {
-    // fallback: proportional estimation based on logged sets to prevent large baseline errors
-    let estimatedRestTimeMin = 0;
-    Object.entries(setsByExercise).forEach(([exName, exSets]) => {
-      const ex = findExByName(exName);
-      const isCardio = ex?.pool === "cardio";
-      if (!isCardio) {
-        estimatedRestTimeMin += exSets.length * 1.5;
-      } else {
-        estimatedRestTimeMin += 1.0;
+    // Fallback 2: Estimate based on actual logged set timestamp gaps plus default rest period per set
+    const sortedSets = [...sets].sort(
+      (a, b) => getRestSetTimestamp(a) - getRestSetTimestamp(b),
+    );
+    let measuredRestMs = 0;
+    for (let i = 0; i < sortedSets.length - 1; i++) {
+      const currentTs = getRestSetTimestamp(sortedSets[i]);
+      const nextTs = getRestSetTimestamp(sortedSets[i + 1]);
+      const diffMs = nextTs - currentTs;
+      // Normal rest interval is between 10 seconds and 15 minutes
+      if (diffMs >= 10000 && diffMs <= 900000) {
+        measuredRestMs += diffMs;
       }
-    });
-    restTimeMin = estimatedRestTimeMin;
+    }
+
+    if (measuredRestMs > 0) {
+      restTimeMin = measuredRestMs / 60000;
+    } else {
+      // Fallback 3: Standard proportional rest time
+      let estimatedRestTimeMin = 0;
+      Object.entries(setsByExercise).forEach(([exName, exSets]) => {
+        const ex = findExByName(exName);
+        const isCardio = ex?.pool === "cardio";
+        if (!isCardio) {
+          estimatedRestTimeMin += exSets.length * 1.5; // average 1.5 minutes rest per set
+        } else {
+          estimatedRestTimeMin += 1.0;
+        }
+      });
+      restTimeMin = estimatedRestTimeMin;
+    }
   }
 
   const restMET = 1.5;
@@ -803,6 +840,17 @@ const iconMap: Record<string, any> = {
 };
 
 // --- Helpers ---
+const getRestSetTimestamp = (set: SessionSet) => {
+  if (set && set.timestamp) {
+    if (typeof set.timestamp.toMillis === "function") return set.timestamp.toMillis();
+    if (set.timestamp.seconds) return set.timestamp.seconds * 1000;
+  }
+  if (set && set.date) {
+    const parsed = Date.parse(set.date);
+    if (!isNaN(parsed)) return parsed;
+  }
+  return Date.now();
+};
 
 // --- Components ---
 const PBBlock = ({
@@ -1193,6 +1241,10 @@ export default function App() {
     [],
     [],
   ]);
+  const [workoutInnerTab, setWorkoutInnerTab] = useState<"builder" | "program">("builder");
+  const [formattedProgram, setFormattedProgram] = useState<{ dayIndex: number; dayName: string; exercises: Exercise[] }[]>([]);
+
+
   const [personalBests, setPersonalBests] = useState<Record<string, PB>>({});
   const [workoutsLoaded, setWorkoutsLoaded] = useState(false);
   const [pbsLoaded, setPbsLoaded] = useState(false);
@@ -1209,6 +1261,11 @@ export default function App() {
   const [manualRestActive, setManualRestActive] = useState<boolean>(false);
   const [manualRestTarget, setManualRestTarget] = useState<number>(90);
   const [autoRestSeconds, setAutoRestSeconds] = useState<number>(0);
+  const [autoRestPaused, setAutoRestPaused] = useState<boolean>(false);
+  const [autoRestPauseTime, setAutoRestPauseTime] = useState<number | null>(null);
+  const [autoRestAccumulatedPauseDuration, setAutoRestAccumulatedPauseDuration] = useState<number>(0);
+  const [restTrackerResetTimestamp, setRestTrackerResetTimestamp] = useState<number>(0);
+  const [restTrackerStartTime, setRestTrackerStartTime] = useState<number | null>(null);
   // State for session view selection
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
     null,
@@ -1649,25 +1706,38 @@ export default function App() {
     }
   };
 
-  const getRestSetTimestamp = (set: SessionSet) => {
-    if (set.timestamp) {
-      if (typeof set.timestamp.toMillis === "function") return set.timestamp.toMillis();
-      if (set.timestamp.seconds) return set.timestamp.seconds * 1000;
+  const formattedProgramSets = useMemo(() => {
+    return sessionSets.filter(s => s && s.source === "formatted_program");
+  }, [sessionSets]);
+
+  const hasInitializedRestTrackerRef = useRef(false);
+
+  // Initialize restTrackerStartTime once from the database if there is existing sessionSets
+  useEffect(() => {
+    if (!hasInitializedRestTrackerRef.current && sessionSets.length > 0) {
+      const sorted = [...sessionSets].sort((a, b) => getRestSetTimestamp(a) - getRestSetTimestamp(b));
+      const latest = sorted[sorted.length - 1];
+      if (latest) {
+        const ts = getRestSetTimestamp(latest);
+        if (ts > 0 && ts > restTrackerResetTimestamp) {
+          setRestTrackerStartTime(ts);
+        }
+      }
+      hasInitializedRestTrackerRef.current = true;
     }
-    if (set.date) {
-      const parsed = Date.parse(set.date);
-      if (!isNaN(parsed)) return parsed;
-    }
-    return Date.now();
-  };
+  }, [sessionSets, restTrackerResetTimestamp]);
 
   const prevRestSetsLengthRef = useRef(sessionSets.length);
 
-  // Sound chime and reset rest timer on new set
+  // Sound chime and reset/start rest timer on new set logged (any source)
   useEffect(() => {
     if (sessionSets.length > prevRestSetsLengthRef.current) {
+      setRestTrackerStartTime(Date.now());
       playRestBeep(1200, 0.1);
       setAutoRestSeconds(0);
+      setAutoRestPaused(false);
+      setAutoRestPauseTime(null);
+      setAutoRestAccumulatedPauseDuration(0);
       if (restMode === "manual") {
         setManualRestActive(false);
         setManualRestTime(manualRestTarget);
@@ -1676,20 +1746,58 @@ export default function App() {
     prevRestSetsLengthRef.current = sessionSets.length;
   }, [sessionSets.length, restMode, manualRestTarget]);
 
-  const latestRestSet = useMemo(() => {
-    const sorted = [...sessionSets].sort((a, b) => getRestSetTimestamp(a) - getRestSetTimestamp(b));
-    return sorted.length > 0 ? sorted[sorted.length - 1] : null;
-  }, [sessionSets]);
+  const handlePauseAutoRest = () => {
+    if (!autoRestPaused) {
+      setAutoRestPaused(true);
+      setAutoRestPauseTime(Date.now());
+      playRestBeep(880, 0.05);
+    }
+  };
+
+  const handleResumeAutoRest = () => {
+    if (autoRestPaused) {
+      const pausedAt = autoRestPauseTime || Date.now();
+      const currentPauseSession = Date.now() - pausedAt;
+      setAutoRestAccumulatedPauseDuration(prev => prev + currentPauseSession);
+      setAutoRestPaused(false);
+      setAutoRestPauseTime(null);
+      playRestBeep(980, 0.05);
+    }
+  };
+
+  const handleResetAutoRest = () => {
+    if (restTrackerStartTime) {
+      setAutoRestPaused(true);
+      setAutoRestPauseTime(Date.now());
+      setAutoRestAccumulatedPauseDuration(Date.now() - restTrackerStartTime);
+      setAutoRestSeconds(0);
+      playRestBeep(440, 0.08);
+    } else {
+      setAutoRestSeconds(0);
+      setAutoRestPaused(false);
+      setAutoRestPauseTime(null);
+      setAutoRestAccumulatedPauseDuration(0);
+    }
+  };
 
   // Sync auto rest seconds since latest set
   useEffect(() => {
-    if (latestRestSet) {
+    const totalExercises = formattedProgram.reduce((sum, item) => sum + item.exercises.length, 0);
+    if (totalExercises > 0 && restTrackerStartTime) {
       const updateAutoSeconds = () => {
-        const lastTs = getRestSetTimestamp(latestRestSet);
-        const diff = Math.max(0, Math.floor((Date.now() - lastTs) / 1000));
+        const lastTs = restTrackerStartTime;
+        let diff = 0;
+        if (autoRestPaused) {
+          const pausedAt = autoRestPauseTime || Date.now();
+          const currentPauseSession = Date.now() - pausedAt;
+          const totalPause = autoRestAccumulatedPauseDuration + currentPauseSession;
+          diff = Math.max(0, Math.floor((Date.now() - lastTs - totalPause) / 1000));
+        } else {
+          diff = Math.max(0, Math.floor((Date.now() - lastTs - autoRestAccumulatedPauseDuration) / 1000));
+        }
         setAutoRestSeconds(diff);
 
-        if (diff === restTarget) {
+        if (!autoRestPaused && diff === restTarget) {
           playRestBeep(660, 0.3);
           setTimeout(() => playRestBeep(880, 0.2), 150);
         }
@@ -1701,7 +1809,7 @@ export default function App() {
     } else {
       setAutoRestSeconds(0);
     }
-  }, [latestRestSet, restTarget]);
+  }, [restTrackerStartTime, restTarget, autoRestPaused, autoRestPauseTime, autoRestAccumulatedPauseDuration, formattedProgram]);
 
   // Manual timer countdown ticker
   useEffect(() => {
@@ -1724,6 +1832,20 @@ export default function App() {
       if (timer) clearInterval(timer);
     };
   }, [manualRestActive, manualRestTime]);
+
+  // Reset/wipe Active Rest Tracker completely if formattedProgram is empty
+  useEffect(() => {
+    const totalExercises = formattedProgram.reduce((sum, item) => sum + item.exercises.length, 0);
+    if (totalExercises === 0) {
+      setAutoRestSeconds(0);
+      setAutoRestPaused(false);
+      setAutoRestPauseTime(null);
+      setAutoRestAccumulatedPauseDuration(0);
+      setManualRestTime(0);
+      setManualRestActive(false);
+      setRestTrackerStartTime(null);
+    }
+  }, [formattedProgram]);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const syncedProfile = useMemo(() => {
@@ -1774,7 +1896,7 @@ export default function App() {
         }).catch((err) => console.error("Error resetting stopwatch on empty session sets:", err));
       }
     }
-  }, [sessionSets.length, currentUser, profile]);
+  }, [sessionSets, currentUser, profile]);
   const [currentThemeId, setCurrentThemeId] = useState<string>(() => {
     return localStorage.getItem("gym-theme-id") || "default";
   });
@@ -1838,6 +1960,17 @@ export default function App() {
   const [reportCardHeight, setReportCardHeight] = useState<number | null>(null);
   const [avatarImgBase64, setAvatarImgBase64] = useState<string | null>(null);
   const [setDifficulties, setSetDifficulties] = useState<Record<string, "easy" | "moderate" | "hard">>({});
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   useEffect(() => {
     if (!showProgressReport) {
@@ -3496,6 +3629,19 @@ export default function App() {
     setCurrentDays(nextCurrentDays);
     saveWorkout(nextCurrentDays);
 
+    // Also swap in formattedProgram
+    const nextFormattedProgram = formattedProgram.map(item => {
+      if (item.dayIndex === dayIndex) {
+        const nextExercises = [...item.exercises];
+        if (nextExercises[exIndex]) {
+          nextExercises[exIndex] = newEx;
+        }
+        return { ...item, exercises: nextExercises };
+      }
+      return item;
+    });
+    setFormattedProgram(nextFormattedProgram);
+
     // Provide immediate visual feedback
     setFlashMessage((prev) => ({ ...prev, [newEx.name]: "SWAPPED" }));
     setTimeout(() => {
@@ -3647,28 +3793,80 @@ export default function App() {
     saveWorkout(nextDays);
   };
 
+  const handleRemoveExerciseFromFormattedProgram = (dayIndex: number, exIndex: number) => {
+    const targetDay = formattedProgram.find(item => item.dayIndex === dayIndex);
+    const targetEx = targetDay?.exercises[exIndex];
+    const targetExName = targetEx?.name;
+
+    const nextProgram = formattedProgram.map((item) => {
+      if (item.dayIndex === dayIndex) {
+        return {
+          ...item,
+          exercises: item.exercises.filter((_, i) => i !== exIndex)
+        };
+      }
+      return item;
+    }).filter(item => item.exercises.length > 0);
+    setFormattedProgram(nextProgram);
+
+    // Filter out formatted_program sets for this deleted exercise from sessionSets
+    if (targetExName) {
+      setSessionSets(prev => prev.filter(s => !(s.exerciseName === targetExName && s.source === "formatted_program")));
+    }
+
+    // Wipe/reset rest tracker
+    setAutoRestSeconds(0);
+    setAutoRestPaused(false);
+    setAutoRestPauseTime(null);
+    setAutoRestAccumulatedPauseDuration(0);
+    setManualRestTime(0);
+    setManualRestActive(false);
+    setRestTrackerResetTimestamp(Date.now());
+    setRestTrackerStartTime(null);
+
+    setToast({ message: "Exercise deleted from plan. Rest tracker reset to 0.", type: "success" });
+  };
+
   const handleOrganizeMovementOrder = () => {
-    const totalExercises = currentDays.reduce(
-      (acc, val) => acc + val.length,
-      0,
-    );
-    if (totalExercises === 0) {
+    const totalBuilder = currentDays.reduce((acc, val) => acc + val.length, 0);
+    const totalFormatted = formattedProgram.reduce((acc, item) => acc + item.exercises.length, 0);
+
+    if (totalBuilder === 0 && totalFormatted === 0) {
       setToast({ message: "No exercises selected to organize.", type: "info" });
       return;
     }
 
-    const nextDays = currentDays.map((day) => {
-      return [...day].sort((a, b) => {
-        const catA = a.category || "isolation";
-        const catB = b.category || "isolation";
-        if (catA === "compound" && catB !== "compound") return -1;
-        if (catA !== "compound" && catB === "compound") return 1;
-        return 0;
+    if (totalBuilder > 0) {
+      const nextDays = currentDays.map((day) => {
+        return [...day].sort((a, b) => {
+          const catA = a.category || "isolation";
+          const catB = b.category || "isolation";
+          if (catA === "compound" && catB !== "compound") return -1;
+          if (catA !== "compound" && catB === "compound") return 1;
+          return 0;
+        });
       });
-    });
+      setCurrentDays(nextDays);
+      saveWorkout(nextDays);
+    }
 
-    setCurrentDays(nextDays);
-    saveWorkout(nextDays);
+    if (totalFormatted > 0) {
+      const nextFormatted = formattedProgram.map((item) => {
+        const sortedExercises = [...item.exercises].sort((a, b) => {
+          const catA = a.category || "isolation";
+          const catB = b.category || "isolation";
+          if (catA === "compound" && catB !== "compound") return -1;
+          if (catA !== "compound" && catB === "compound") return 1;
+          return 0;
+        });
+        return {
+          ...item,
+          exercises: sortedExercises
+        };
+      });
+      setFormattedProgram(nextFormatted);
+    }
+
     setToast({
       message: "Exercises reorganized: Compounds first, then Isolations!",
       type: "success",
@@ -3676,12 +3874,16 @@ export default function App() {
   };
 
   const handleClearAllExercises = () => {
-    const totalExercises = currentDays.reduce(
+    const totalBuilder = currentDays.reduce(
       (acc, val) => acc + (val ? val.length : 0),
       0,
     );
-    if (totalExercises === 0) {
-      setToast({ message: "No exercises selected to remove.", type: "info" });
+    const totalPlan = formattedProgram.reduce(
+      (sum, item) => sum + item.exercises.length,
+      0,
+    );
+    if (totalBuilder === 0 && totalPlan === 0) {
+      setToast({ message: "No exercises in plan builder or plan to remove.", type: "info" });
       return;
     }
 
@@ -3689,10 +3891,60 @@ export default function App() {
     setCurrentDays(clearedDays);
     setExpandedDays({});
     saveWorkout(clearedDays);
+    setFormattedProgram([]);
     setToast({
-      message: "All exercises have been cleared from weekly programming!",
+      message: "All exercises have been cleared from plan builder and plan!",
       type: "success",
     });
+  };
+
+  const handleFormatProgram = () => {
+    // 1. Merge exercises from currentDays (plan builder) into formattedProgram
+    const mergedProgram = DAY_CONFIG.map((day, idx) => {
+      const existingItem = formattedProgram.find(item => item.dayIndex === idx);
+      const existingExercises = existingItem ? [...existingItem.exercises] : [];
+      const existingNames = new Set(existingExercises.map(ex => ex.name.toLowerCase()));
+
+      const planExercises = currentDays[idx] || [];
+      const newExercises = planExercises.filter(ex => !existingNames.has(ex.name.toLowerCase()));
+
+      return {
+        dayIndex: idx,
+        dayName: day.name,
+        exercises: [...existingExercises, ...newExercises],
+      };
+    }).filter(item => item.exercises.length > 0);
+
+    const totalSelected = mergedProgram.reduce((sum, item) => sum + item.exercises.length, 0);
+    if (totalSelected === 0) {
+      setToast({ message: "No exercises currently selected in programming.", type: "info" });
+      return;
+    }
+
+    // Count how many new exercises were actually added
+    let newlyAddedCount = 0;
+    DAY_CONFIG.forEach((day, idx) => {
+      const existingItem = formattedProgram.find(item => item.dayIndex === idx);
+      const existingCount = existingItem ? existingItem.exercises.length : 0;
+      const mergedItem = mergedProgram.find(item => item.dayIndex === idx);
+      const mergedCount = mergedItem ? mergedItem.exercises.length : 0;
+      newlyAddedCount += Math.max(0, mergedCount - existingCount);
+    });
+
+    setFormattedProgram(mergedProgram);
+    setWorkoutInnerTab("program");
+
+    if (newlyAddedCount > 0) {
+      setToast({
+        message: `Successfully added ${newlyAddedCount} new exercise(s) to your program! Total: ${totalSelected}.`,
+        type: "success",
+      });
+    } else {
+      setToast({
+        message: "No new exercises to add. Duplicates were ignored, and existing exercises were preserved.",
+        type: "info",
+      });
+    }
   };
 
   const handleSaveSet = async (
@@ -3701,6 +3953,7 @@ export default function App() {
     reps: string,
     notes: string = "",
     difficulty?: "easy" | "moderate" | "hard",
+    source?: "formatted_program" | "session",
   ) => {
     if (!weight || !currentUser) return;
     const nWeight = parseFloat(weight) || 0;
@@ -3758,18 +4011,23 @@ export default function App() {
       date: fullDate,
       timestamp: { seconds: Math.floor(Date.now() / 1000) },
       notes: notes.trim(),
+      source: source || "session",
       ...(difficulty ? { difficulty } : {}),
     };
 
     // Optimistic Update
     setSessionSets((prev) => [...prev, newSet]);
 
-    const isFirstSet = sessionSets.length === 0;
+    const stopwatchWasInactive = !profile || !profile.timerActive;
+    const isFirstStopwatchStart = stopwatchWasInactive && !(profile?.timerAccumulatedMs && profile.timerAccumulatedMs > 0);
+    const stopwatchToastSuffix = stopwatchWasInactive 
+      ? (isFirstStopwatchStart ? " (Stopwatch Started)" : " (Stopwatch Resumed)") 
+      : "";
 
     setToast({
       message: isNewPB
-        ? `New PB: ${exName}!${isFirstSet ? " (Stopwatch Started)" : ""}`
-        : `Logged ${exName}: ${nWeight}kg × ${nReps}${isFirstSet ? " — Stopwatch Started" : ""}`,
+        ? `New PB: ${exName}!${stopwatchToastSuffix}`
+        : `Logged ${exName}: ${nWeight}kg × ${nReps}${stopwatchToastSuffix}`,
       type: isNewPB ? "pb" : "success",
     });
     setTimeout(() => setToast(null), 3000);
@@ -3795,15 +4053,15 @@ export default function App() {
         streakUpdate = { streakCount: newStreak, lastWorkoutDate: today };
       }
 
-      // Automatically start the stopwatch if this is the first set logged and there's no active timer
+      // Automatically start/resume the stopwatch if it's not currently active/running
       let timerUpdate = {};
-      if (isFirstSet && (!profile || (!profile.timerStartTime && !profile.timerActive && !(profile.timerAccumulatedMs && profile.timerAccumulatedMs > 0)))) {
+      if (stopwatchWasInactive) {
         timerUpdate = {
           timerStartTime: new Date().toISOString(),
           timerEndTime: null,
           timerActive: true,
           timerManualDuration: 0,
-          timerAccumulatedMs: 0,
+          timerAccumulatedMs: profile?.timerAccumulatedMs || 0,
         };
       }
 
@@ -4886,25 +5144,82 @@ export default function App() {
         );
       });
 
-      const categoryIndex =
+      const defaultCategory =
         typeof routine.categoryIndex === "number" ? routine.categoryIndex : 0;
       const nextCurrentDays = [...currentDays];
-      nextCurrentDays[categoryIndex] = exercisesToSet;
+
+      // Group loaded exercises by their target day index based on the pool they belong to
+      const routineExercisesByDay: { [key: number]: Exercise[] } = {};
+      exercisesToSet.forEach((ex) => {
+        let targetIndex = defaultCategory;
+        if (ex.pool) {
+          const matchedIdx = DAY_CONFIG.findIndex(day => day.pools.includes(ex.pool!));
+          if (matchedIdx !== -1) {
+            targetIndex = matchedIdx;
+          }
+        }
+        if (!routineExercisesByDay[targetIndex]) {
+          routineExercisesByDay[targetIndex] = [];
+        }
+        if (!routineExercisesByDay[targetIndex].some(e => e.name.toLowerCase() === ex.name.toLowerCase())) {
+          routineExercisesByDay[targetIndex].push(ex);
+        }
+      });
+
+      // Update nextCurrentDays
+      DAY_CONFIG.forEach((_, idx) => {
+        const newExsForDay = routineExercisesByDay[idx] || [];
+        if (idx === defaultCategory) {
+          // Replace exercises on the primary category day
+          nextCurrentDays[idx] = newExsForDay;
+        } else if (newExsForDay.length > 0) {
+          // Merge/append into other days to prevent overwriting existing work
+          const existing = nextCurrentDays[idx] || [];
+          const existingNames = new Set(existing.map(e => e.name.toLowerCase()));
+          const toAdd = newExsForDay.filter(e => !existingNames.has(e.name.toLowerCase()));
+          nextCurrentDays[idx] = [...existing, ...toAdd];
+        }
+      });
 
       setCurrentDays(nextCurrentDays);
       await saveWorkout(nextCurrentDays);
 
-      setExpandedDays((prev) => ({ ...prev, [categoryIndex]: true }));
-      setLastLoadedDayIndex(categoryIndex);
+      // Expand all days where routine exercises were loaded
+      const updatedExpandedDays = { ...expandedDays };
+      Object.keys(routineExercisesByDay).forEach((key) => {
+        updatedExpandedDays[Number(key)] = true;
+      });
+      setExpandedDays(updatedExpandedDays);
+
+      setLastLoadedDayIndex(defaultCategory);
       setTimeout(() => {
         setLastLoadedDayIndex(null);
       }, 5000);
+
+      // Instantly load and format exercises into Plan tab (merging them cleanly without duplicate names)
+      const mergedProgram = DAY_CONFIG.map((day, idx) => {
+        const existingItem = formattedProgram.find(item => item.dayIndex === idx);
+        const existingExercises = existingItem ? [...existingItem.exercises] : [];
+        const existingNames = new Set(existingExercises.map(ex => ex.name.toLowerCase()));
+
+        const planExercises = nextCurrentDays[idx] || [];
+        const newExercises = planExercises.filter(ex => !existingNames.has(ex.name.toLowerCase()));
+
+        return {
+          dayIndex: idx,
+          dayName: day.name,
+          exercises: [...existingExercises, ...newExercises]
+        };
+      }).filter(item => item.exercises.length > 0);
+
+      setFormattedProgram(mergedProgram);
+      setWorkoutInnerTab("program");
 
       setActiveView("workout");
       await saveSettings({ activeView: "workout" });
 
       setToast({
-        message: `Loaded ${exercisesToSet.length} exercises into ${DAY_CONFIG[categoryIndex].name}!`,
+        message: `Loaded ${exercisesToSet.length} exercises into your Programming and Plan!`,
         type: "success",
       });
     } catch (err) {
@@ -5400,6 +5715,501 @@ export default function App() {
         opacity: "opacity-0",
       }
     : rawTheme;
+
+  const renderFullExerciseCard = (ex: Exercise, di: number, ei: number) => {
+    const IconComponent = iconMap[ex.icon] || Dumbbell;
+    return (
+      <motion.div
+        key={`${ei}-${ex.name}`}
+        layout
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: ei * 0.05 }}
+        className="bg-black/75 border border-white/15 rounded-sm p-6 flex flex-col group/card backdrop-blur-md"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-gym-accent font-bold uppercase tracking-widest">
+                Exercise {ei + 1}
+              </span>
+              {ex.category && (
+                <span
+                  className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-[0.1em] ${
+                    ex.category === "compound"
+                      ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                      : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
+                  }`}
+                  title={
+                    ex.category === "compound"
+                      ? "Compound movement engaging multiple muscle groups"
+                      : "Isolation movement focusing on a specific muscle"
+                  }
+                >
+                  {ex.category}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-1.5 mt-1">
+              <h4 className="text-2xl font-light italic font-serif text-gym-accent pt-0.5 pb-1 leading-snug drop-shadow-sm break-words">
+                {ex.name}
+              </h4>
+              <div>
+                <Sparkline
+                  exName={ex.name}
+                  sessionSets={sessionSets}
+                  archivedWorkouts={archivedWorkouts}
+                  width={80}
+                  height={18}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5 shrink-0">
+            <button
+              onClick={() => setGuidanceEx(ex)}
+              className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+              title="Guidance & Instructions"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => handleSwap(di, ei)}
+              className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+              title="Swap Exercise"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() =>
+                handleRemoveExerciseFromFormattedProgram(di, ei)
+              }
+              className="p-2.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-sm"
+              title="Remove"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-red-500" />
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-auto flex flex-col w-full">
+          {/* Sub-muscle Category Label */}
+          {(() => {
+            const resolvedEx = findExerciseByName(ex.name);
+            const poolKey = resolvedEx?.pool || ex.pool;
+            if (!poolKey) return null;
+            const label = poolKey
+              .split('_')
+              .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+              .join(' ');
+            return (
+              <div className="mb-1.5 text-[9px] font-mono font-bold uppercase tracking-wider text-gym-accent/80">
+                {label}
+              </div>
+            );
+          })()}
+
+          <div className="flex flex-col gap-3 mb-4 bg-white/[0.02] border border-white/[0.04] p-3 rounded-sm w-full">
+            {/* Row 1: Weight & Reps side by side */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col">
+                <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                  {ex.pool === "cardio"
+                    ? "Time (min)"
+                    : "Weight (kg)"}
+                </span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  placeholder="0"
+                  id={`w-${di}-${ei}`}
+                  className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                  {ex.pool === "cardio"
+                    ? "Speed / Lvl"
+                    : "Reps"}
+                </span>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="0"
+                  id={`r-${di}-${ei}`}
+                  className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                />
+              </div>
+            </div>
+
+            {/* Row 2: Set Notes */}
+            <div className="flex flex-col">
+              <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                Set Notes
+              </span>
+              <input
+                type="text"
+                placeholder="Warmup, RPE 9, drop set, etc."
+                id={`notes-${di}-${ei}`}
+                className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
+              />
+            </div>
+
+            {/* Set Difficulty Rating Grid */}
+            <div className="flex flex-col">
+              <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                Set Intensity (How'd it feel?)
+              </span>
+              <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-sm border border-white/5">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSetDifficulties((prev) => ({
+                      ...prev,
+                      [ex.name]: "easy",
+                    }))
+                  }
+                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                    (setDifficulties[ex.name] || "moderate") === "easy"
+                      ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-black shadow-[0_0_8px_rgba(16,185,129,0.1)]"
+                      : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                  }`}
+                >
+                  😊 Easy
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSetDifficulties((prev) => ({
+                      ...prev,
+                      [ex.name]: "moderate",
+                    }))
+                  }
+                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                    (setDifficulties[ex.name] || "moderate") === "moderate"
+                      ? "bg-amber-500/15 border-amber-500/35 text-amber-400 font-bold shadow-[0_0_8px_rgba(245,158,11,0.1)]"
+                      : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                  }`}
+                >
+                  ⚡ Good
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSetDifficulties((prev) => ({
+                      ...prev,
+                      [ex.name]: "hard",
+                    }))
+                  }
+                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                    (setDifficulties[ex.name] || "moderate") === "hard"
+                      ? "bg-rose-500/15 border-rose-500/35 text-rose-400 font-black shadow-[0_0_8px_rgba(244,63,94,0.1)]"
+                      : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                  }`}
+                >
+                  🔥 Struggle
+                </button>
+              </div>
+            </div>
+
+            {/* Ghost Set Target (Historical Overlay) */}
+            {(() => {
+              const loggedSetsForThisEx = sessionSets.filter(
+                (s) =>
+                  s &&
+                  s.exerciseName &&
+                  s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()
+              );
+              const nextSetIndex = loggedSetsForThisEx.length;
+              const previousWorkouts = archivedWorkouts
+                .filter((w) =>
+                  w.sets?.some(
+                    (s: any) =>
+                      s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                  )
+                )
+                .sort((a, b) => b.date.localeCompare(a.date));
+
+              const lastWorkout = previousWorkouts[0];
+              if (!lastWorkout) return null;
+
+              const lastSets = lastWorkout.sets.filter(
+                (s: any) =>
+                  s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
+              );
+
+              const ghostSet = lastSets[nextSetIndex];
+              if (!ghostSet) return null;
+
+              const dateFormatted = new Date(lastWorkout.date).toLocaleDateString("en-GB", {
+                day: "numeric",
+                month: "short",
+              });
+
+              return (
+                <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-sm px-2.5 py-1.5 mt-1 text-[10px]">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
+                    <span className="relative flex h-1.5 w-1.5 shrink-0">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gym-accent/40 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gym-accent/70"></span>
+                    </span>
+                    <span className="text-white/40 font-mono truncate">
+                      Ghost Set {nextSetIndex + 1} ({dateFormatted}):
+                    </span>
+                    <span className="text-gym-accent font-mono font-bold shrink-0">
+                      {ghostSet.weight}kg × {ghostSet.reps}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const wInput = document.getElementById(`w-${di}-${ei}`) as HTMLInputElement;
+                      const rInput = document.getElementById(`r-${di}-${ei}`) as HTMLInputElement;
+                      if (wInput) wInput.value = ghostSet.weight.toString();
+                      if (rInput) rInput.value = ghostSet.reps.toString();
+                    }}
+                    className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+                    title="Use ghost set target values"
+                  >
+                    Match
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Row 3: Log button */}
+            <button
+              onClick={() => {
+                const wInput = document.getElementById(
+                  `w-${di}-${ei}`,
+                ) as HTMLInputElement;
+                const rInput = document.getElementById(
+                  `r-${di}-${ei}`,
+                ) as HTMLInputElement;
+                const nInput = document.getElementById(
+                  `notes-${di}-${ei}`,
+                ) as HTMLInputElement;
+                const w = wInput?.value;
+                const r = rInput?.value;
+                const notes = nInput?.value || "";
+                const diff = setDifficulties[ex.name] || "moderate";
+                if (w && r) {
+                  handleSaveSet(ex.name, w, r, notes, diff, "formatted_program");
+                  if (wInput) wInput.value = "";
+                  if (rInput) rInput.value = "";
+                  if (nInput) nInput.value = "";
+                  // Reset difficulty back to moderate for next set
+                  setSetDifficulties((prev) => ({
+                    ...prev,
+                    [ex.name]: "moderate",
+                  }));
+                }
+              }}
+              className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
+            >
+              Log Set
+            </button>
+          </div>
+        </div>
+
+        {(() => {
+          const loggedSetsForThisEx =
+            sessionSets.filter(
+              (s) =>
+                s &&
+                s.exerciseName &&
+                s.exerciseName
+                  .trim()
+                  .toLowerCase() ===
+                  ex.name.trim().toLowerCase(),
+            );
+          if (loggedSetsForThisEx.length === 0)
+            return null;
+
+          // Check weight progression
+          const weightGroups: Record<number, number[]> = {};
+          loggedSetsForThisEx.forEach((set) => {
+            const w = typeof set.weight === 'string' ? parseFloat(set.weight) : set.weight;
+            const r = typeof set.reps === 'string' ? parseInt(set.reps, 10) : set.reps;
+            if (!isNaN(w) && !isNaN(r)) {
+              if (!weightGroups[w]) weightGroups[w] = [];
+              weightGroups[w].push(r);
+            }
+          });
+
+          let recommendWeight = 0;
+          let targetWeight = 0;
+          let hasStruggled = false;
+          for (const [weightStr, repsList] of Object.entries(weightGroups)) {
+            const weight = parseFloat(weightStr);
+            const successfulSets = repsList.filter((r) => r >= 10).length;
+            if (successfulSets >= 3) {
+              targetWeight = weight;
+              recommendWeight = weight + 2.5;
+              hasStruggled = loggedSetsForThisEx.some((s) => {
+                const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
+                return sw === weight && s.difficulty === "hard";
+              });
+              break;
+            }
+          }
+
+          return (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="mb-4 p-3 rounded-sm bg-gym-accent/5 border border-gym-accent/20 overflow-hidden"
+            >
+              {recommendWeight > 0 && (
+                hasStruggled ? (
+                  <div className="mb-3.5 p-3 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2">
+                    <div className="flex items-center gap-1.5 justify-between">
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-amber-400 flex items-center gap-1.5 animate-pulse">
+                        <Activity className="w-3.5 h-3.5" />
+                        STRENGTH CONSOLIDATION RECOMMENDED
+                      </span>
+                      <span className="text-[8px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
+                        Safety Loop Active
+                      </span>
+                    </div>
+                    <p className="text-[9px] text-white/70 leading-relaxed font-sans">
+                      You completed <strong className="text-white font-bold">3 sets of 10+ reps</strong> at <span className="text-amber-400 font-mono font-bold">{targetWeight}kg</span>! Since you noted that this was a struggle (🔥), our cybernetic engine recommends maintaining <strong className="text-white">{targetWeight}kg</strong> for another workout to solidify neural adaptation before loading further.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mb-3.5 p-3 rounded-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 flex flex-col gap-2">
+                    <div className="flex items-center gap-1.5 justify-between">
+                      <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
+                        <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
+                        PROGRESSION UPGRADE AVAILABLE
+                      </span>
+                      <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
+                        +{2.5}kg Target
+                      </span>
+                    </div>
+                    <p className="text-[9px] text-white/70 leading-relaxed font-sans">
+                      You mastered <strong className="text-white font-bold">3 sets of 10+ reps</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span>. Apply recommendations below to stimulate higher hypertrophic output.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const wInput = document.getElementById(`w-${di}-${ei}`) as HTMLInputElement;
+                        const rInput = document.getElementById(`r-${di}-${ei}`) as HTMLInputElement;
+                        if (wInput) wInput.value = recommendWeight.toString();
+                        if (rInput) rInput.value = "10";
+                        setToast({
+                          message: `Target set to ${recommendWeight}kg × 10 reps!`,
+                          type: "success",
+                        });
+                        setTimeout(() => setToast(null), 3000);
+                      }}
+                      className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold uppercase tracking-[0.15em] font-mono text-[8px] transition-all cursor-pointer shadow-sm rounded-sm text-center"
+                    >
+                      Apply {recommendWeight}kg Next-Set Target
+                    </button>
+                  </div>
+                )
+              )}
+
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-[9px] font-black text-gym-accent uppercase tracking-wider flex items-center gap-1.5">
+                  <Activity className="w-3 h-3 text-gym-accent animate-pulse" />{" "}
+                  Today's Sets
+                </span>
+                <span className="text-[8px] text-white/50 font-bold bg-white/10 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                  {loggedSetsForThisEx.length}{" "}
+                  {loggedSetsForThisEx.length === 1
+                    ? "Set"
+                    : "Sets"}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-1">
+                {loggedSetsForThisEx.map(
+                  (set, sIdx) => (
+                    <div
+                      key={set.id || sIdx}
+                      className="flex items-center justify-between bg-black/55 border border-white/5 px-2.5 py-1.5 rounded-sm hover:border-white/15 transition-colors group/setrow"
+                    >
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <span className="text-[9px] font-bold text-white/30 tracking-wider">
+                          SET {sIdx + 1}
+                        </span>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-xs font-semibold text-white/95">
+                            {set.weight}
+                          </span>
+                          <span className="text-[8px] text-white/40">
+                            {ex.pool === "cardio"
+                              ? "min"
+                              : "kg"}
+                          </span>
+                        </div>
+                        <span className="text-[9px] text-white/20">
+                          ×
+                        </span>
+                        <div className="flex items-baseline gap-0.5">
+                          <span className="text-xs font-semibold text-white/95">
+                            {set.reps}
+                          </span>
+                          <span className="text-[8px] text-white/40">
+                            {ex.pool === "cardio"
+                              ? "lvl"
+                              : "reps"}
+                          </span>
+                        </div>
+                        {set.notes && (
+                          <span
+                            onClick={() => setViewingNote(set.notes)}
+                            className="ml-1 px-1.5 py-0.5 bg-gym-accent/11 border border-gym-accent/20 text-gym-accent text-[8px] font-bold rounded-sm uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
+                            title="Click to view full note"
+                          >
+                            {set.notes}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[8px] font-mono text-white/30 hidden sm:inline">
+                          {set.timestamp?.seconds
+                            ? new Date(
+                                set.timestamp
+                                  .seconds * 1000,
+                              ).toLocaleTimeString(
+                                [],
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                },
+                              )
+                            : "Just now"}
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (set.id)
+                              handleDeleteSet(set.id);
+                          }}
+                          className="p-1 text-red-500/50 hover:text-red-500 hover:bg-neutral-950 rounded transition-colors"
+                          title="Delete set"
+                        >
+                          <Trash2 className="w-2.5 h-2.5 text-red-500" />
+                        </button>
+                      </div>
+                    </div>
+                  ),
+                )}
+              </div>
+            </motion.div>
+          );
+        })()}
+
+        <PBBlock
+          exName={ex.name}
+          pbs={personalBests}
+          sessionSets={sessionSets}
+          archivedWorkouts={archivedWorkouts}
+        />
+      </motion.div>
+    );
+  };
 
   const dynamicStyles = {
     "--gym-accent": activeTheme.accent,
@@ -6746,86 +7556,92 @@ export default function App() {
                             {(() => {
                               const renderCard = (ex: Exercise) => {
                                 const Icon = iconMap[ex.icon] || Dumbbell;
+                                const isCustom = customExercises.some(
+                                  (ce) => ce.name.toLowerCase() === ex.name.toLowerCase()
+                                );
                                 return (
                                   <div
                                     key={ex.name}
                                     className="bg-black/60 border border-white/10 rounded-sm p-5 hover:border-white/35 transition-all group flex flex-col justify-between"
                                   >
                                     <div>
-                                      <div className="flex items-center justify-between mb-4">
-                                        <div className="flex flex-col gap-1 min-w-0 flex-1">
-                                          <div className="flex items-center gap-3">
-                                            <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors shrink-0" />
-                                            <span className="font-semibold text-sm text-white/95 group-hover:text-white transition-colors truncate">
+                                      {/* Title Row - full width, wraps nicely, no truncation cutoff */}
+                                      <div className="flex items-start justify-between gap-3 mb-2.5">
+                                        <div className="flex items-start gap-2.5 min-w-0">
+                                          <div className="w-8 h-8 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center shrink-0 mt-0.5 group-hover:border-gym-accent/30 transition-colors">
+                                            <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors" />
+                                          </div>
+                                          <div className="flex flex-col min-w-0">
+                                            <span className="font-semibold text-sm text-white/95 group-hover:text-white transition-colors leading-snug break-words">
                                               {ex.name}
                                             </span>
                                           </div>
-                                          <div className="flex items-center gap-2 mt-1 ml-7 flex-wrap">
-                                            {ex.category && (
-                                              <span
-                                                className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-widest ${
-                                                  ex.category === "compound"
-                                                    ? "bg-amber-500/10 text-amber-500/80 border border-amber-500/20"
-                                                    : "bg-purple-500/15 text-purple-400 border border-purple-500/20"
-                                                }`}
-                                              >
-                                                {ex.category}
-                                              </span>
-                                            )}
-                                            {ex.pool && (
-                                              <span className="text-[7.5px] font-mono uppercase tracking-widest px-1.5 py-0.3 rounded-sm border border-white/5 text-white/30 bg-white/[0.01]">
-                                                {ex.pool}
-                                              </span>
-                                            )}
-                                          </div>
                                         </div>
-                                        <div className="flex items-center gap-2.5 shrink-0 ml-3">
-                                          {customExercises.some(
-                                            (ce) =>
-                                              ce.name.toLowerCase() ===
-                                              ex.name.toLowerCase(),
-                                          ) && (
-                                            <button
-                                              onClick={() =>
-                                                handlePermanentlyDeleteCustomExercise(
-                                                  ex.name,
-                                                )
-                                              }
-                                              className="px-2 py-1 rounded-[1px] border border-red-500/35 bg-red-950/15 hover:bg-red-600 hover:text-white text-red-400 text-[8px] font-extrabold uppercase tracking-widest transition-all cursor-pointer"
-                                              title="Permanently Delete Movement"
+                                        {isCustom && (
+                                          <button
+                                            onClick={() =>
+                                              handlePermanentlyDeleteCustomExercise(
+                                                ex.name,
+                                              )
+                                            }
+                                            className="px-2 py-1 rounded-[1px] border border-red-500/35 bg-red-950/15 hover:bg-red-600 hover:text-white text-red-400 text-[8px] font-extrabold uppercase tracking-widest transition-all cursor-pointer shrink-0"
+                                            title="Permanently Delete Movement"
+                                          >
+                                            Delete
+                                          </button>
+                                        )}
+                                      </div>
+
+                                      {/* Badges Row - separated below the title */}
+                                      <div className="flex items-center gap-2 mb-3.5 ml-10 flex-wrap">
+                                        {ex.category && (
+                                          <span
+                                            className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-widest ${
+                                              ex.category === "compound"
+                                                ? "bg-amber-500/10 text-amber-500/80 border border-amber-500/20"
+                                                : "bg-purple-500/15 text-purple-400 border border-purple-500/20"
+                                            }`}
+                                          >
+                                            {ex.category}
+                                          </span>
+                                        )}
+                                        {ex.pool && (
+                                          <span className="text-[7.5px] font-mono uppercase tracking-widest px-1.5 py-0.3 rounded-sm border border-white/5 text-white/30 bg-white/[0.01]">
+                                            {ex.pool}
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      {/* Dedicated Sparkline and Trend Panel */}
+                                      <div className="ml-10 mb-2">
+                                        <Sparkline
+                                          exName={ex.name}
+                                          sessionSets={sessionSets}
+                                          archivedWorkouts={archivedWorkouts}
+                                          width={75}
+                                          height={16}
+                                        />
+                                        <AnimatePresence>
+                                          {flashMessage[ex.name] && (
+                                            <motion.span
+                                              initial={{
+                                                opacity: 0,
+                                                scale: 0.8,
+                                              }}
+                                              animate={{
+                                                opacity: 1,
+                                                scale: 1,
+                                              }}
+                                              exit={{
+                                                opacity: 0,
+                                                scale: 0.8,
+                                              }}
+                                              className="text-[8px] font-bold text-gym-accent uppercase tracking-widest ml-1 animate-pulse block mt-1"
                                             >
-                                              Delete
-                                            </button>
+                                              {flashMessage[ex.name]}
+                                            </motion.span>
                                           )}
-                                          <Sparkline
-                                            exName={ex.name}
-                                            sessionSets={sessionSets}
-                                            archivedWorkouts={archivedWorkouts}
-                                            width={65}
-                                            height={16}
-                                          />
-                                          <AnimatePresence>
-                                            {flashMessage[ex.name] && (
-                                              <motion.span
-                                                initial={{
-                                                  opacity: 0,
-                                                  scale: 0.8,
-                                                }}
-                                                animate={{
-                                                  opacity: 1,
-                                                  scale: 1,
-                                                }}
-                                                exit={{
-                                                  opacity: 0,
-                                                  scale: 0.8,
-                                                }}
-                                                className="text-[8px] font-bold text-gym-accent uppercase tracking-widest ml-1 animate-pulse"
-                                              >
-                                                {flashMessage[ex.name]}
-                                              </motion.span>
-                                            )}
-                                          </AnimatePresence>
-                                        </div>
+                                        </AnimatePresence>
                                       </div>
                                     </div>
 
@@ -11217,22 +12033,24 @@ export default function App() {
                                               key={exName}
                                               className="flex justify-between items-center gap-4 pb-2 border-b border-white/5 last:border-0 last:pb-0"
                                             >
-                                              <div className="flex items-center gap-2 w-full min-w-0">
+                                              <div className="flex flex-col gap-1 w-full min-w-0">
                                                 <span
-                                                  className="text-[10px] text-white/70 font-semibold uppercase tracking-wider truncate"
+                                                  className="text-[10px] text-white/70 font-semibold uppercase tracking-wider break-words"
                                                   title={exName}
                                                 >
                                                   {exName}
                                                 </span>
-                                                <Sparkline
-                                                  exName={exName}
-                                                  sessionSets={sessionSets}
-                                                  archivedWorkouts={
-                                                    archivedWorkouts
-                                                  }
-                                                  width={55}
-                                                  height={12}
-                                                />
+                                                <div>
+                                                  <Sparkline
+                                                    exName={exName}
+                                                    sessionSets={sessionSets}
+                                                    archivedWorkouts={
+                                                      archivedWorkouts
+                                                    }
+                                                    width={55}
+                                                    height={12}
+                                                  />
+                                                </div>
                                               </div>
                                               
                                             </div>
@@ -11939,6 +12757,14 @@ export default function App() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <button
+                      onClick={handleFormatProgram}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-md shadow-gym-accent/20 font-bold"
+                      title="Format and capture all selected exercises into a clean list view"
+                    >
+                      <ClipboardList className="w-3.5 h-3.5" />
+                      BUILD
+                    </button>
+                    <button
                       onClick={handleOrganizeMovementOrder}
                       className="flex items-center gap-2 px-4 py-2.5 bg-gym-accent/10 border border-gym-accent/25 hover:border-gym-accent/50 hover:bg-gym-accent/20 text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-gym-accent/5"
                       title="Prioritise compound exercises and move isolation movements to the end"
@@ -11956,6 +12782,291 @@ export default function App() {
                     </button>
                   </div>
                 </div>
+
+                {/* Programming Page Sub-Tabs */}
+                <div className="flex items-center gap-3 border-b border-white/5 pb-2 mb-6">
+                  <button
+                    onClick={() => setWorkoutInnerTab("builder")}
+                    className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer ${
+                      workoutInnerTab === "builder"
+                        ? "border-gym-accent text-gym-accent"
+                        : "border-transparent text-white/45 hover:text-white/75"
+                    }`}
+                  >
+                    <Dumbbell className="w-3.5 h-3.5" />
+                    1. Plan Builder
+                  </button>
+                  <button
+                    onClick={() => setWorkoutInnerTab("program")}
+                    className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer ${
+                      workoutInnerTab === "program"
+                        ? "border-gym-accent text-gym-accent"
+                        : "border-transparent text-white/45 hover:text-white/75"
+                    }`}
+                  >
+                    <ClipboardList className="w-3.5 h-3.5" />
+                    2. Plan
+                  </button>
+                </div>
+
+                {workoutInnerTab === "program" ? (
+                  <motion.div
+                    key="formatted-program-tab"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-6"
+                  >
+                    {/* Active Rest Chronometer Widget */}
+                    <div className="bg-black/60 border border-gym-accent/20 rounded-sm p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative overflow-hidden backdrop-blur-md">
+                      <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-gym-accent" />
+                      
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-sm bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center shrink-0">
+                          <Clock className={`w-6 h-6 ${
+                            restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-gym-accent"
+                          }`} />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-[10px] font-black uppercase text-gym-accent tracking-[0.2em] font-mono leading-none">
+                              Active Rest Chronometer
+                            </h4>
+                            <span className="text-white/20 font-mono text-[9px]">|</span>
+                            <span className={`text-[9px] font-mono font-bold uppercase tracking-wider ${
+                              restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-white/40"
+                            }`}>
+                              {restMode === "auto" 
+                                ? (autoRestSeconds > restTarget ? "OVER-RESTING" : "RESTING") 
+                                : (manualRestActive ? "COUNTDOWN ACTIVE" : "STANDBY")}
+                            </span>
+                          </div>
+                          <div className="flex items-baseline gap-2 mt-1.5">
+                            <span className={`text-4xl font-black font-mono tracking-tight tabular-nums leading-none ${
+                              restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-white"
+                            }`}>
+                              {(() => {
+                                const secs = restMode === "auto" ? autoRestSeconds : manualRestTime;
+                                const m = Math.floor(secs / 60);
+                                const s = secs % 60;
+                                return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+                              })()}
+                            </span>
+                            <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest leading-none font-bold">
+                              {restMode === "auto" ? `target ${restTarget}s` : `target ${manualRestTarget}s`}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 lg:self-center shrink-0">
+                        {/* Mode selectors */}
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-[8px] font-mono font-bold text-white/35 uppercase tracking-widest">Tracking Mode</span>
+                          <div className="grid grid-cols-2 gap-1 p-0.5 bg-black/40 rounded-sm border border-white/5">
+                            <button
+                              type="button"
+                              onClick={() => setRestMode("auto")}
+                              className={`px-3 py-1 text-[9px] font-mono font-black uppercase tracking-wider rounded-sm transition-all cursor-pointer ${
+                                restMode === "auto"
+                                  ? "bg-gym-accent text-black"
+                                  : "bg-transparent text-white/40 hover:text-white/70"
+                              }`}
+                            >
+                              Auto
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRestMode("manual")}
+                              className={`px-3 py-1 text-[9px] font-mono font-black uppercase tracking-wider rounded-sm transition-all cursor-pointer ${
+                                restMode === "manual"
+                                  ? "bg-gym-accent text-black"
+                                  : "bg-transparent text-white/40 hover:text-white/70"
+                              }`}
+                            >
+                              Manual
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Target config based on mode */}
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-[8px] font-mono font-bold text-white/35 uppercase tracking-widest">
+                            {restMode === "auto" ? "Interval Targets" : "Manual Countdown"}
+                          </span>
+                          {restMode === "auto" ? (
+                            <div className="flex items-center gap-1.5 bg-black/40 p-0.5 rounded-sm border border-white/5 h-[26px]">
+                              <div className="flex gap-1 border-r border-white/10 pr-1.5">
+                                {[45, 60, 90, 120].map((sec) => (
+                                  <button
+                                    key={sec}
+                                    type="button"
+                                    onClick={() => {
+                                      setRestTarget(sec);
+                                      playRestBeep(980, 0.05);
+                                    }}
+                                    className={`px-1.5 py-0.5 text-[8.5px] font-mono font-bold rounded-sm border transition-all cursor-pointer ${
+                                      restTarget === sec
+                                        ? "bg-gym-accent border-gym-accent text-black font-black"
+                                        : "bg-white/[0.02] border-white/5 text-white/50 hover:border-white/15"
+                                    }`}
+                                  >
+                                    {sec}s
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (autoRestPaused) {
+                                    handleResumeAutoRest();
+                                  } else {
+                                    handlePauseAutoRest();
+                                  }
+                                }}
+                                className={`px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none h-full ${
+                                  autoRestPaused
+                                    ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25"
+                                    : "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25"
+                                }`}
+                              >
+                                {autoRestPaused ? "Start" : "Pause"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleResetAutoRest}
+                                className="px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none h-full"
+                              >
+                                Reset
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 bg-black/40 p-0.5 rounded-sm border border-white/5 h-[26px]">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setManualRestActive(!manualRestActive);
+                                  playRestBeep(880, 0.05);
+                                }}
+                                className={`px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none h-full ${
+                                  manualRestActive
+                                    ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25"
+                                    : "bg-cyan-500/15 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25"
+                                }`}
+                              >
+                                {manualRestActive ? "Pause" : "Start"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setManualRestTime(manualRestTarget);
+                                  setManualRestActive(false);
+                                  playRestBeep(440, 0.08);
+                                }}
+                                className="px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none h-full"
+                              >
+                                Reset
+                              </button>
+                              <select
+                                value={manualRestTarget}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  setManualRestTarget(val);
+                                  setManualRestTime(val);
+                                  setManualRestActive(false);
+                                }}
+                                className="bg-black/80 border border-white/10 text-white/70 rounded-sm text-[9px] px-1 py-0.5 font-mono focus:outline-none cursor-pointer h-full"
+                              >
+                                {[30, 45, 60, 90, 120, 180].map((sec) => (
+                                  <option key={sec} value={sec}>
+                                    {sec}s
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Audio controls */}
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-[8px] font-mono font-bold text-white/35 uppercase tracking-widest">Audio Alerts</span>
+                          <button
+                            type="button"
+                            onClick={() => setRestAudioEnabled(!restAudioEnabled)}
+                            className={`h-[26px] px-2.5 rounded-sm border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                              restAudioEnabled
+                                ? "bg-gym-accent/15 border-gym-accent/25 text-gym-accent animate-none"
+                                : "bg-white/5 border-white/10 text-white/40 hover:text-white/60"
+                            }`}
+                            title={restAudioEnabled ? "Mute chimes" : "Unmute chimes"}
+                          >
+                            {restAudioEnabled ? (
+                              <>
+                                <Volume2 className="w-3.5 h-3.5" />
+                                <span className="text-[8px] font-mono uppercase tracking-wider font-extrabold">On</span>
+                              </>
+                            ) : (
+                              <>
+                                <VolumeX className="w-3.5 h-3.5" />
+                                <span className="text-[8px] font-mono uppercase tracking-wider font-extrabold">Muted</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {formattedProgram.length === 0 ? (
+                      <div className="text-center py-12 bg-black/40 border border-white/5 rounded-sm">
+                        <Dumbbell className="w-8 h-8 text-white/10 mx-auto mb-3" />
+                        <p className="text-sm text-white/40 mb-4">No exercises selected.</p>
+                        <button
+                          onClick={() => setWorkoutInnerTab("builder")}
+                          className="px-4 py-2 bg-gym-accent text-black text-xs font-black uppercase tracking-widest rounded-sm cursor-pointer hover:bg-gym-accent/90 transition-all"
+                        >
+                          Go to Plan Builder
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-8">
+                        {formattedProgram.map((item, idx) => (
+                          <div key={idx} className="space-y-4">
+                            {/* Day Title Section */}
+                            <div className="flex items-center gap-3 border-b border-white/10 pb-2 pl-1">
+                              <div className="w-6 h-6 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent text-xs">
+                                {DAY_CONFIG[item.dayIndex]?.icon || <Dumbbell className="w-3.5 h-3.5" />}
+                              </div>
+                              <h3 className="text-lg font-light italic font-serif text-white/95">
+                                {item.dayName}
+                              </h3>
+                              <span className="text-[9px] font-mono bg-gym-accent/10 text-gym-accent border border-gym-accent/20 px-2 py-0.5 rounded-full uppercase font-black tracking-wider ml-auto">
+                                {item.exercises.length} Exercises
+                              </span>
+                            </div>
+
+                            {/* Full widgets grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                              {item.exercises.map((ex, exIdx) => 
+                                renderFullExerciseCard(ex, item.dayIndex, exIdx)
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex justify-start gap-3 pt-4">
+                      <button
+                        onClick={() => setWorkoutInnerTab("builder")}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white/85 rounded-sm text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer"
+                      >
+                        <Dumbbell className="w-3.5 h-3.5" />
+                        Modify Program in Builder
+                      </button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <>
 
                 {/* Progression Recognition Banner */}
                 {(() => {
@@ -12095,73 +13206,57 @@ export default function App() {
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6"
                           >
                             {currentDays[di]?.map((ex, ei) => {
-                              const Icon = iconMap[ex.icon] || Dumbbell;
                               return (
                                 <motion.div
                                   key={`${ei}-${ex.name}`}
                                   layout
                                   initial={{ opacity: 0, y: 10 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  transition={{ delay: ei * 0.05 }}
-                                  className="bg-black/75 border border-white/15 rounded-sm p-6 flex flex-col group/card backdrop-blur-md"
+                                  className="bg-black/45 border border-white/10 hover:border-white/20 rounded-sm p-4 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group/card"
                                 >
-                                  <div className="flex items-center justify-between mb-6">
-                                    <div className="flex flex-col">
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-[10px] text-gym-accent font-bold uppercase tracking-widest">
-                                          Exercise {ei + 1}
+                                  {/* Accent indicator line on left */}
+                                  <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-gym-accent opacity-40 group-hover/card:opacity-100 transition-opacity" />
+
+                                  <div className="flex items-start justify-between gap-4 pl-1">
+                                    <div className="flex flex-col min-w-0">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="text-[9px] text-gym-accent font-bold uppercase tracking-widest font-mono">
+                                          #{ei + 1}
                                         </span>
                                         {ex.category && (
-                                          <span
-                                            className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-[0.1em] ${
-                                              ex.category === "compound"
-                                                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                                : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
-                                            }`}
-                                            title={
-                                              ex.category === "compound"
-                                                ? "Compound movement engaging multiple muscle groups"
-                                                : "Isolation movement focusing on a specific muscle"
-                                            }
-                                          >
+                                          <span className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-[0.1em] ${
+                                            ex.category === "compound"
+                                              ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                              : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
+                                          }`}>
                                             {ex.category}
                                           </span>
                                         )}
                                       </div>
-                                      <div className="flex items-center gap-3 mt-1 flex-wrap">
-                                        <h4 className="text-2xl font-light italic font-serif text-gym-accent pt-0.5 pb-1 leading-none drop-shadow-sm">
-                                          {ex.name}
-                                        </h4>
-                                        <Sparkline
-                                          exName={ex.name}
-                                          sessionSets={sessionSets}
-                                          archivedWorkouts={archivedWorkouts}
-                                          width={65}
-                                          height={16}
-                                        />
-                                      </div>
-                                      {/* Sub-muscle Category Badge removed from title header */}
+                                      <h4 className="text-base font-light italic font-serif text-white/90 mt-1.5 break-words leading-tight" title={ex.name}>
+                                        {ex.name}
+                                      </h4>
                                     </div>
-                                    <div className="flex flex-col gap-1.5 shrink-0">
+
+                                    {/* Action buttons */}
+                                    <div className="flex gap-1 shrink-0">
                                       <button
                                         onClick={() => setGuidanceEx(ex)}
-                                        className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+                                        className="p-1.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
                                         title="Guidance & Instructions"
                                       >
                                         <BookOpen className="w-3.5 h-3.5" />
                                       </button>
                                       <button
                                         onClick={() => handleSwap(di, ei)}
-                                        className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+                                        className="p-1.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
                                         title="Swap Exercise"
                                       >
                                         <RefreshCw className="w-3.5 h-3.5" />
                                       </button>
                                       <button
-                                        onClick={() =>
-                                          handleRemoveExerciseFromPlan(di, ei)
-                                        }
-                                        className="p-2.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-sm"
+                                        onClick={() => handleRemoveExerciseFromPlan(di, ei)}
+                                        className="p-1.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-sm"
                                         title="Remove"
                                       >
                                         <Trash2 className="w-3.5 h-3.5 text-red-500" />
@@ -12169,545 +13264,30 @@ export default function App() {
                                     </div>
                                   </div>
 
-                                  <div className="mt-auto flex flex-col w-full">
-                                    {/* Sub-muscle Category Label */}
+                                  <div className="mt-4 flex items-center justify-between pl-1">
                                     {(() => {
                                       const resolvedEx = findExerciseByName(ex.name);
                                       const poolKey = resolvedEx?.pool || ex.pool;
-                                      if (!poolKey) return null;
+                                      if (!poolKey) return <div />;
                                       const label = poolKey
                                         .split('_')
                                         .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
                                         .join(' ');
                                       return (
-                                        <div className="mb-1.5 text-[9px] font-mono font-bold uppercase tracking-wider text-gym-accent/80">
+                                        <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest font-bold">
                                           {label}
-                                        </div>
+                                        </span>
                                       );
                                     })()}
-
-                                    <div className="flex flex-col gap-3 mb-4 bg-white/[0.02] border border-white/[0.04] p-3 rounded-sm w-full">
-                                    {/* Row 1: Weight & Reps side by side */}
-                                    <div className="grid grid-cols-2 gap-3">
-                                      <div className="flex flex-col">
-                                        <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                                          {ex.pool === "cardio"
-                                            ? "Time (min)"
-                                            : "Weight (kg)"}
-                                        </span>
-                                        <input
-                                          type="number"
-                                          inputMode="decimal"
-                                          placeholder="0"
-                                          id={`w-${di}-${ei}`}
-                                          className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
-                                        />
-                                      </div>
-                                      <div className="flex flex-col">
-                                        <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                                          {ex.pool === "cardio"
-                                            ? "Speed / Lvl"
-                                            : "Reps"}
-                                        </span>
-                                        <input
-                                          type="number"
-                                          inputMode="numeric"
-                                          placeholder="0"
-                                          id={`r-${di}-${ei}`}
-                                          className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
-                                        />
-                                      </div>
-                                    </div>
-
-                                    {/* Row 2: Set Notes */}
-                                    <div className="flex flex-col">
-                                      <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                                        Set Notes
-                                      </span>
-                                      <input
-                                        type="text"
-                                        placeholder="Warmup, RPE 9, drop set, etc."
-                                        id={`notes-${di}-${ei}`}
-                                        className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
-                                      />
-                                    </div>
-
-                                    {/* Set Difficulty Rating Grid */}
-                                    <div className="flex flex-col">
-                                      <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                                        Set Intensity (How'd it feel?)
-                                      </span>
-                                      <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-sm border border-white/5">
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            setSetDifficulties((prev) => ({
-                                              ...prev,
-                                              [ex.name]: "easy",
-                                            }))
-                                          }
-                                          className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
-                                            (setDifficulties[ex.name] || "moderate") === "easy"
-                                              ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-black shadow-[0_0_8px_rgba(16,185,129,0.1)]"
-                                              : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
-                                          }`}
-                                        >
-                                          😊 Easy
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            setSetDifficulties((prev) => ({
-                                              ...prev,
-                                              [ex.name]: "moderate",
-                                            }))
-                                          }
-                                          className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
-                                            (setDifficulties[ex.name] || "moderate") === "moderate"
-                                              ? "bg-amber-500/15 border-amber-500/35 text-amber-400 font-bold shadow-[0_0_8px_rgba(245,158,11,0.1)]"
-                                              : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
-                                          }`}
-                                        >
-                                          ⚡ Good
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() =>
-                                            setSetDifficulties((prev) => ({
-                                              ...prev,
-                                              [ex.name]: "hard",
-                                            }))
-                                          }
-                                          className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
-                                            (setDifficulties[ex.name] || "moderate") === "hard"
-                                              ? "bg-rose-500/15 border-rose-500/35 text-rose-400 font-black shadow-[0_0_8px_rgba(244,63,94,0.1)]"
-                                              : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
-                                          }`}
-                                        >
-                                          🔥 Struggle
-                                        </button>
-                                      </div>
-                                    </div>
-
-                                    {/* Ghost Set Target (Historical Overlay) */}
-                                    {(() => {
-                                      const loggedSetsForThisEx = sessionSets.filter(
-                                        (s) =>
-                                          s &&
-                                          s.exerciseName &&
-                                          s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()
-                                      );
-                                      const nextSetIndex = loggedSetsForThisEx.length;
-                                      const previousWorkouts = archivedWorkouts
-                                        .filter((w) =>
-                                          w.sets?.some(
-                                            (s: any) =>
-                                              s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
-                                          )
-                                        )
-                                        .sort((a, b) => b.date.localeCompare(a.date));
-
-                                      const lastWorkout = previousWorkouts[0];
-                                      if (!lastWorkout) return null;
-
-                                      const lastSets = lastWorkout.sets.filter(
-                                        (s: any) =>
-                                          s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
-                                      );
-
-                                      const ghostSet = lastSets[nextSetIndex];
-                                      if (!ghostSet) return null;
-
-                                      const dateFormatted = new Date(lastWorkout.date).toLocaleDateString("en-GB", {
-                                        day: "numeric",
-                                        month: "short",
-                                      });
-
-                                      return (
-                                        <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-sm px-2.5 py-1.5 mt-1 text-[10px]">
-                                          <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
-                                            <span className="relative flex h-1.5 w-1.5 shrink-0">
-                                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gym-accent/40 opacity-75"></span>
-                                              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gym-accent/70"></span>
-                                            </span>
-                                            <span className="text-white/40 font-mono truncate">
-                                              Ghost Set {nextSetIndex + 1} ({dateFormatted}):
-                                            </span>
-                                            <span className="text-gym-accent font-mono font-bold shrink-0">
-                                              {ghostSet.weight}kg × {ghostSet.reps}
-                                            </span>
-                                          </div>
-                                          <button
-                                            type="button"
-                                            onClick={() => {
-                                              const wInput = document.getElementById(`w-${di}-${ei}`) as HTMLInputElement;
-                                              const rInput = document.getElementById(`r-${di}-${ei}`) as HTMLInputElement;
-                                              if (wInput) wInput.value = ghostSet.weight.toString();
-                                              if (rInput) rInput.value = ghostSet.reps.toString();
-                                            }}
-                                            className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
-                                            title="Use ghost set target values"
-                                          >
-                                            Match
-                                          </button>
-                                        </div>
-                                      );
-                                    })()}
-
-                                    {/* Inline Relocated Rest Chronometer */}
-                                    <div className="bg-black/40 rounded-sm p-2 border border-white/5 flex flex-col gap-1.5 mt-2 mb-1">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-1.5">
-                                          <Clock className={`w-3 h-3 ${
-                                            restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-gym-accent"
-                                          }`} />
-                                          <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-white/50">
-                                            Rest Tracker
-                                          </span>
-                                        </div>
-                                        
-                                        <div className="flex items-center gap-1.5">
-                                          {/* Audio Toggle */}
-                                          <button
-                                            type="button"
-                                            onClick={() => setRestAudioEnabled(!restAudioEnabled)}
-                                            className="text-white/40 hover:text-white/80 transition-colors cursor-pointer"
-                                            title={restAudioEnabled ? "Mute chimes" : "Unmute chimes"}
-                                          >
-                                            {restAudioEnabled ? <Volume2 className="w-3 h-3 text-gym-accent" /> : <VolumeX className="w-3 h-3" />}
-                                          </button>
-
-                                          {/* Mode Toggle (Auto / Manual) */}
-                                          <span className="text-[8px] font-mono text-white/20 select-none">|</span>
-                                          <button
-                                            type="button"
-                                            onClick={() => setRestMode(restMode === "auto" ? "manual" : "auto")}
-                                            className="text-[8px] font-mono font-black text-gym-accent/80 hover:text-gym-accent uppercase tracking-wider cursor-pointer"
-                                          >
-                                            {restMode}
-                                          </button>
-                                        </div>
-                                      </div>
-
-                                      <div className="flex items-center justify-between gap-2">
-                                        {/* Timer Value */}
-                                        <div className="flex items-baseline gap-1.5">
-                                          <span className={`text-sm font-black font-mono tracking-tight tabular-nums leading-none ${
-                                            restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-white"
-                                          }`}>
-                                            {(() => {
-                                              const secs = restMode === "auto" ? autoRestSeconds : manualRestTime;
-                                              const m = Math.floor(secs / 60);
-                                              const s = secs % 60;
-                                              return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-                                            })()}
-                                          </span>
-                                          <span className="text-[8px] font-mono font-bold text-white/30 uppercase tracking-widest leading-none">
-                                            {restMode === "auto" 
-                                              ? (autoRestSeconds > restTarget ? "OVER-REST" : "RESTING") 
-                                              : (manualRestActive ? "COUNTDOWN" : "STANDBY")}
-                                          </span>
-                                        </div>
-
-                                        {/* Controls based on mode */}
-                                        {restMode === "auto" ? (
-                                          <div className="flex gap-1">
-                                            {[45, 60, 90, 120].map((sec) => (
-                                              <button
-                                                key={sec}
-                                                type="button"
-                                                onClick={() => {
-                                                  setRestTarget(sec);
-                                                  playRestBeep(980, 0.05);
-                                                }}
-                                                className={`px-1 py-0.5 text-[8px] font-mono font-bold rounded-sm border transition-all cursor-pointer ${
-                                                  restTarget === sec
-                                                    ? "bg-gym-accent border-gym-accent text-black font-black"
-                                                    : "bg-white/[0.02] border-white/5 text-white/50 hover:border-white/15"
-                                                }`}
-                                              >
-                                                {sec}s
-                                              </button>
-                                            ))}
-                                          </div>
-                                        ) : (
-                                          <div className="flex items-center gap-1.5">
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                setManualRestActive(!manualRestActive);
-                                                playRestBeep(880, 0.05);
-                                              }}
-                                              className={`px-1.5 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none ${
-                                                manualRestActive
-                                                  ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
-                                                  : "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
-                                              }`}
-                                            >
-                                              {manualRestActive ? "Pause" : "Start"}
-                                            </button>
-                                            <button
-                                              type="button"
-                                              onClick={() => {
-                                                setManualRestTime(manualRestTarget);
-                                                setManualRestActive(false);
-                                                playRestBeep(440, 0.08);
-                                              }}
-                                              className="px-1 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none"
-                                            >
-                                              Reset
-                                            </button>
-                                            <select
-                                              value={manualRestTarget}
-                                              onChange={(e) => {
-                                                const val = Number(e.target.value);
-                                                setManualRestTarget(val);
-                                                setManualRestTime(val);
-                                                setManualRestActive(false);
-                                              }}
-                                              className="bg-black border border-white/10 text-white/70 rounded-sm text-[8px] px-0.5 py-0.2 font-mono focus:outline-none"
-                                            >
-                                              {[30, 45, 60, 90, 120, 180].map((sec) => (
-                                                <option key={sec} value={sec}>
-                                                  {sec}s
-                                                </option>
-                                              ))}
-                                            </select>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Row 3: Log button */}
-                                    <button
-                                      onClick={() => {
-                                        const wInput = document.getElementById(
-                                          `w-${di}-${ei}`,
-                                        ) as HTMLInputElement;
-                                        const rInput = document.getElementById(
-                                          `r-${di}-${ei}`,
-                                        ) as HTMLInputElement;
-                                        const nInput = document.getElementById(
-                                          `notes-${di}-${ei}`,
-                                        ) as HTMLInputElement;
-                                        const w = wInput?.value;
-                                        const r = rInput?.value;
-                                        const notes = nInput?.value || "";
-                                        const diff = setDifficulties[ex.name] || "moderate";
-                                        if (w && r) {
-                                          handleSaveSet(ex.name, w, r, notes, diff);
-                                          if (wInput) wInput.value = "";
-                                          if (rInput) rInput.value = "";
-                                          if (nInput) nInput.value = "";
-                                          // Reset difficulty back to moderate for next set
-                                          setSetDifficulties((prev) => ({
-                                            ...prev,
-                                            [ex.name]: "moderate",
-                                          }));
-                                        }
-                                      }}
-                                      className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
-                                    >
-                                      Log Set
-                                    </button>
+                                    
+                                    <Sparkline
+                                      exName={ex.name}
+                                      sessionSets={sessionSets}
+                                      archivedWorkouts={archivedWorkouts}
+                                      width={50}
+                                      height={12}
+                                    />
                                   </div>
-                                </div>
-
-                                  {(() => {
-                                    const loggedSetsForThisEx =
-                                      sessionSets.filter(
-                                        (s) =>
-                                          s &&
-                                          s.exerciseName &&
-                                          s.exerciseName
-                                            .trim()
-                                            .toLowerCase() ===
-                                            ex.name.trim().toLowerCase(),
-                                      );
-                                    if (loggedSetsForThisEx.length === 0)
-                                      return null;
-
-                                    // Check weight progression
-                                    const weightGroups: Record<number, number[]> = {};
-                                    loggedSetsForThisEx.forEach((set) => {
-                                      const w = typeof set.weight === 'string' ? parseFloat(set.weight) : set.weight;
-                                      const r = typeof set.reps === 'string' ? parseInt(set.reps, 10) : set.reps;
-                                      if (!isNaN(w) && !isNaN(r)) {
-                                        if (!weightGroups[w]) weightGroups[w] = [];
-                                        weightGroups[w].push(r);
-                                      }
-                                    });
-
-                                    let recommendWeight = 0;
-                                    let targetWeight = 0;
-                                    let hasStruggled = false;
-                                    for (const [weightStr, repsList] of Object.entries(weightGroups)) {
-                                      const weight = parseFloat(weightStr);
-                                      const successfulSets = repsList.filter((r) => r >= 10).length;
-                                      if (successfulSets >= 3) {
-                                        targetWeight = weight;
-                                        recommendWeight = weight + 2.5;
-                                        hasStruggled = loggedSetsForThisEx.some((s) => {
-                                          const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
-                                          return sw === weight && s.difficulty === "hard";
-                                        });
-                                        break;
-                                      }
-                                    }
-
-                                    return (
-                                      <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: "auto" }}
-                                        className="mb-4 p-3 rounded-sm bg-gym-accent/5 border border-gym-accent/20 overflow-hidden"
-                                      >
-                                        {recommendWeight > 0 && (
-                                          hasStruggled ? (
-                                            <div className="mb-3.5 p-3 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2">
-                                              <div className="flex items-center gap-1.5 justify-between">
-                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-amber-400 flex items-center gap-1.5 animate-pulse">
-                                                  <Activity className="w-3.5 h-3.5" />
-                                                  STRENGTH CONSOLIDATION RECOMMENDED
-                                                </span>
-                                                <span className="text-[8px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
-                                                  Safety Loop Active
-                                                </span>
-                                              </div>
-                                              <p className="text-[9px] text-white/70 leading-relaxed font-sans">
-                                                You completed <strong className="text-white font-bold">3 sets of 10+ reps</strong> at <span className="text-amber-400 font-mono font-bold">{targetWeight}kg</span>! Since you noted that this was a struggle (🔥), our cybernetic engine recommends maintaining <strong className="text-white">{targetWeight}kg</strong> for another workout to solidify neural adaptation before loading further.
-                                              </p>
-                                            </div>
-                                          ) : (
-                                            <div className="mb-3.5 p-3 rounded-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 flex flex-col gap-2">
-                                              <div className="flex items-center gap-1.5 justify-between">
-                                                <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
-                                                  <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
-                                                  PROGRESSION UPGRADE AVAILABLE
-                                                </span>
-                                                <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
-                                                  +{2.5}kg Target
-                                                </span>
-                                              </div>
-                                              <p className="text-[9px] text-white/70 leading-relaxed font-sans">
-                                                You mastered <strong className="text-white font-bold">3 sets of 10+ reps</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span>. Apply recommendations below to stimulate higher hypertrophic output.
-                                              </p>
-                                              <button
-                                                type="button"
-                                                onClick={() => {
-                                                  const wInput = document.getElementById(`w-${di}-${ei}`) as HTMLInputElement;
-                                                  const rInput = document.getElementById(`r-${di}-${ei}`) as HTMLInputElement;
-                                                  if (wInput) wInput.value = recommendWeight.toString();
-                                                  if (rInput) rInput.value = "10";
-                                                  setToast({
-                                                    message: `Target set to ${recommendWeight}kg × 10 reps!`,
-                                                    type: "success",
-                                                  });
-                                                  setTimeout(() => setToast(null), 3000);
-                                                }}
-                                                className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold uppercase tracking-[0.15em] font-mono text-[8px] transition-all cursor-pointer shadow-sm rounded-sm text-center"
-                                              >
-                                                Apply {recommendWeight}kg Next-Set Target
-                                              </button>
-                                            </div>
-                                          )
-                                        )}
-
-                                        <div className="flex justify-between items-center mb-2">
-                                          <span className="text-[9px] font-black text-gym-accent uppercase tracking-wider flex items-center gap-1.5">
-                                            <Activity className="w-3 h-3 text-gym-accent animate-pulse" />{" "}
-                                            Today's Sets
-                                          </span>
-                                          <span className="text-[8px] text-white/50 font-bold bg-white/10 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                                            {loggedSetsForThisEx.length}{" "}
-                                            {loggedSetsForThisEx.length === 1
-                                              ? "Set"
-                                              : "Sets"}
-                                          </span>
-                                        </div>
-                                        <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-1">
-                                          {loggedSetsForThisEx.map(
-                                            (set, sIdx) => (
-                                              <div
-                                                key={set.id || sIdx}
-                                                className="flex items-center justify-between bg-black/55 border border-white/5 px-2.5 py-1.5 rounded-sm hover:border-white/15 transition-colors group/setrow"
-                                              >
-                                                <div className="flex items-center gap-2 flex-wrap min-w-0">
-                                                  <span className="text-[9px] font-bold text-white/30 tracking-wider">
-                                                    SET {sIdx + 1}
-                                                  </span>
-                                                  <div className="flex items-baseline gap-1">
-                                                    <span className="text-xs font-semibold text-white/95">
-                                                      {set.weight}
-                                                    </span>
-                                                    <span className="text-[8px] text-white/40">
-                                                      {ex.pool === "cardio"
-                                                        ? "min"
-                                                        : "kg"}
-                                                    </span>
-                                                  </div>
-                                                  <span className="text-[9px] text-white/20">
-                                                    ×
-                                                  </span>
-                                                  <div className="flex items-baseline gap-0.5">
-                                                    <span className="text-xs font-semibold text-white/95">
-                                                      {set.reps}
-                                                    </span>
-                                                    <span className="text-[8px] text-white/40">
-                                                      {ex.pool === "cardio"
-                                                        ? "lvl"
-                                                        : "reps"}
-                                                    </span>
-                                                  </div>
-                                                  {set.notes && (
-                                                    <span
-                                                      onClick={() => setViewingNote(set.notes)}
-                                                      className="ml-1 px-1.5 py-0.5 bg-gym-accent/11 border border-gym-accent/20 text-gym-accent text-[8px] font-bold rounded-sm uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
-                                                      title="Click to view full note"
-                                                    >
-                                                      {set.notes}
-                                                    </span>
-                                                  )}
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                  <span className="text-[8px] font-mono text-white/30 hidden sm:inline">
-                                                    {set.timestamp?.seconds
-                                                      ? new Date(
-                                                          set.timestamp
-                                                            .seconds * 1000,
-                                                        ).toLocaleTimeString(
-                                                          [],
-                                                          {
-                                                            hour: "2-digit",
-                                                            minute: "2-digit",
-                                                          },
-                                                        )
-                                                      : "Just now"}
-                                                  </span>
-                                                  <button
-                                                    onClick={() => {
-                                                      if (set.id)
-                                                        handleDeleteSet(set.id);
-                                                    }}
-                                                    className="p-1 text-red-500/50 hover:text-red-500 hover:bg-neutral-950 rounded transition-colors"
-                                                    title="Delete set"
-                                                  >
-                                                    <Trash2 className="w-2.5 h-2.5 text-red-500" />
-                                                  </button>
-                                                </div>
-                                              </div>
-                                            ),
-                                          )}
-                                        </div>
-                                      </motion.div>
-                                    );
-                                  })()}
-
-                                  <PBBlock
-                                    exName={ex.name}
-                                    pbs={personalBests}
-                                    sessionSets={sessionSets}
-                                    archivedWorkouts={archivedWorkouts}
-                                  />
                                 </motion.div>
                               );
                             })}
@@ -12715,12 +13295,10 @@ export default function App() {
                             {/* Add Exercise Slot */}
                             <button
                               onClick={() => setAddingToDay(di)}
-                              className="bg-black/45 border border-white/10 border-dashed rounded-sm p-8 flex flex-col items-center justify-center gap-3 hover:bg-black/60 hover:border-gym-accent/30 transition-all cursor-pointer group/add min-h-[280px]"
+                              className="bg-black/30 border border-white/10 border-dashed rounded-sm p-4 flex flex-col items-center justify-center gap-2 hover:bg-black/50 hover:border-gym-accent/30 transition-all cursor-pointer group/add min-h-[105px]"
                             >
-                              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center group-hover/add:bg-gym-accent group-hover/add:text-black transition-all">
-                                <Plus className="w-4 h-4" />
-                              </div>
-                              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/30 group-hover/add:text-white transition-all">
+                              <Plus className="w-4 h-4 text-white/40 group-hover/add:text-gym-accent transition-all" />
+                              <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 group-hover/add:text-white transition-all">
                                 Add Exercise
                               </span>
                             </button>
@@ -12730,6 +13308,8 @@ export default function App() {
                     </AnimatePresence>
                   </div>
                 ))}
+                  </>
+                )}
               </motion.div>
             ) : (
               <motion.div
@@ -14206,7 +14786,7 @@ export default function App() {
                         <button
                           onClick={async () => {
                             if (popupWeight && popupReps) {
-                              await handleSaveSet(resolvedEx.name, popupWeight, popupReps, popupNotes, popupDifficulty);
+                              await handleSaveSet(resolvedEx.name, popupWeight, popupReps, popupNotes, popupDifficulty, "session");
                               setPopupWeight("");
                               setPopupReps("");
                               setPopupNotes("");
@@ -15476,6 +16056,125 @@ export default function App() {
                 </div>
               );
             })()}
+        </AnimatePresence>
+
+        {/* Floating Sticky Rest Timer Banner */}
+        <AnimatePresence>
+          {activeView === "workout" &&
+            workoutInnerTab === "program" &&
+            formattedProgram.length > 0 &&
+            scrollY > 350 && (
+              <motion.div
+                initial={{ opacity: 0, y: 50, x: "-50%" }}
+                animate={{ opacity: 1, y: 0, x: "-50%" }}
+                exit={{ opacity: 0, y: 50, x: "-50%" }}
+                className="fixed bottom-6 left-1/2 z-[150] bg-black/90 border border-gym-accent/30 rounded-full py-1.5 pl-3.5 pr-2.5 flex items-center gap-3.5 shadow-[0_8px_32px_rgba(0,0,0,0.85)] shadow-gym-accent/10 backdrop-blur-md"
+              >
+                {/* Visual state indicator dot */}
+                <div className="relative flex h-2 w-2 shrink-0">
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                    restMode === "auto" && autoRestSeconds > restTarget ? "bg-red-500" : "bg-gym-accent"
+                  }`}></span>
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                    restMode === "auto" && autoRestSeconds > restTarget ? "bg-red-500" : "bg-gym-accent"
+                  }`}></span>
+                </div>
+
+                {/* Timer text */}
+                <div className="flex items-center gap-2">
+                  <span className={`text-base font-black font-mono tracking-tight tabular-nums leading-none ${
+                    restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-white"
+                  }`}>
+                    {(() => {
+                      const secs = restMode === "auto" ? autoRestSeconds : manualRestTime;
+                      const m = Math.floor(secs / 60);
+                      const s = secs % 60;
+                      return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+                    })()}
+                  </span>
+                  
+                  <span className="text-[8px] font-mono font-bold text-white/40 uppercase tracking-widest leading-none">
+                    {restMode === "auto" 
+                      ? (autoRestSeconds > restTarget ? "OVER-REST" : "RESTING") 
+                      : (manualRestActive ? "COUNTDOWN" : "STANDBY")}
+                  </span>
+                </div>
+
+                {/* Separator line */}
+                <div className="h-4 w-[1px] bg-white/10" />
+
+                {/* Minimal context/controls */}
+                <div className="flex items-center gap-1.5">
+                  {restMode === "auto" ? (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          // Toggle rest target easily
+                          const nextTargets = [45, 60, 90, 120];
+                          const currentIdx = nextTargets.indexOf(restTarget);
+                          const nextTarget = nextTargets[(currentIdx + 1) % nextTargets.length];
+                          setRestTarget(nextTarget);
+                          playRestBeep(980, 0.05);
+                        }}
+                        className="px-2 py-0.5 rounded-full border border-white/10 bg-white/5 hover:border-gym-accent/30 text-[8px] font-mono font-bold text-white/60 transition-all cursor-pointer"
+                        title="Change Target Interval"
+                      >
+                        {restTarget}s ⟳
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (autoRestPaused) {
+                            handleResumeAutoRest();
+                          } else {
+                            handlePauseAutoRest();
+                          }
+                        }}
+                        className={`px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase transition-all cursor-pointer ${
+                          autoRestPaused
+                            ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                            : "bg-red-500/20 text-red-400 border border-red-500/30"
+                        }`}
+                      >
+                        {autoRestPaused ? "Start" : "Pause"}
+                      </button>
+                      <button
+                        onClick={handleResetAutoRest}
+                        className="px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setManualRestActive(!manualRestActive);
+                        playRestBeep(880, 0.05);
+                      }}
+                      className={`px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase transition-all cursor-pointer ${
+                        manualRestActive
+                          ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                          : "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                      }`}
+                    >
+                      {manualRestActive ? "Pause" : "Start"}
+                    </button>
+                  )}
+
+                  {/* Audio toggler icon button */}
+                  <button
+                    onClick={() => setRestAudioEnabled(!restAudioEnabled)}
+                    className="p-1 hover:text-white transition-colors cursor-pointer"
+                    title={restAudioEnabled ? "Mute" : "Unmute"}
+                  >
+                    {restAudioEnabled ? (
+                      <Volume2 className="w-3.5 h-3.5 text-gym-accent" />
+                    ) : (
+                      <VolumeX className="w-3.5 h-3.5 text-white/30" />
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            )}
         </AnimatePresence>
 
         {/* Toast Notification */}

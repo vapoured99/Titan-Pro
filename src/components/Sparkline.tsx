@@ -141,7 +141,7 @@ export default function Sparkline({
   const displayDiff = isAssisted ? -diffVal : diffVal;
 
   return (
-    <div className="flex items-center gap-2 group/sparkline relative shrink-0" title={isAssisted ? `Assisted Pull-up resistance progression from ${firstVal}kg to ${lastVal}kg (lower is stronger) across ${trendData.length} records` : `Est. 1RM progression from ${firstVal}kg to ${lastVal}kg across ${trendData.length} records`}>
+    <div className="flex items-center gap-2 group/sparkline relative shrink-0">
       <svg width={width} height={height} className="overflow-visible">
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -185,14 +185,10 @@ export default function Sparkline({
         )}
       </svg>
       {maxVal > 0 && (
-        <span className="text-[10px] font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/15 px-1.5 py-0.5 rounded-sm select-none shrink-0" title={`Peak Estimated 1-Rep Max: ${maxVal.toFixed(1)}kg`}>
+        <span className="text-[10px] font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/15 px-1.5 py-0.5 rounded-sm select-none shrink-0">
           Est. 1RM: {maxVal.toFixed(1)}kg
         </span>
       )}
-      {/* Absolute micro statistics tag shown on hover */}
-      <span className="hidden group-hover/sparkline:inline-flex absolute -bottom-6 right-0 z-50 bg-[#0c0c0c] border border-white/20 px-1.5 py-0.5 rounded-[2px] text-[8px] font-mono font-bold leading-none uppercase tracking-widest text-white/95 whitespace-nowrap shadow-xl">
-        {isUpward ? '▲' : '▼'} {Math.abs(Math.round(displayDiff))}kg Δ ({lastVal}kg)
-      </span>
     </div>
   );
 }
