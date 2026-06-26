@@ -57,20 +57,6 @@ export default function Sparkline({
       });
     });
 
-    // 2. Process active session sets of today
-    sessionSets.forEach((s: any) => {
-      if (s.exerciseName && s.exerciseName.trim().toLowerCase() === cleanName) {
-        const val = calc1RM(Number(s.weight) || 0, Number(s.reps) || 0);
-        if (val > 0) {
-          const todayStr = s.date || new Date().toISOString().split('T')[0];
-          const existing = pointsMap[todayStr];
-          if (!existing || val > existing.val) {
-            pointsMap[todayStr] = { val, date: todayStr };
-          }
-        }
-      }
-    });
-
     // Convert map to chronological array
     const chronologicalPoints = Object.entries(pointsMap)
       .map(([date, item]) => ({
@@ -80,13 +66,25 @@ export default function Sparkline({
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     return chronologicalPoints;
-  }, [exName, sessionSets, archivedWorkouts]);
+  }, [exName, archivedWorkouts]);
 
+  const maxVal = useMemo(() => {
+    if (trendData.length === 0) return 0;
+    return Math.max(...trendData.map(d => d.val));
+  }, [trendData]);
+
+  const isAssisted = exName.trim().toLowerCase().includes("assisted pull");
+
+  // If we have no data points at all
+  if (trendData.length === 0) {
+    return null;
+  }
+
+  // If we only have 1 point, we can't draw a line, but we can display the 1RM value and a subtle placeholder
   if (trendData.length < 2) {
-    // Return subtle minimal indicator if not enough historical data points
     return (
-      <div className="flex items-center gap-1.5 opacity-30 select-none">
-        <svg width={width} height={height} className="overflow-visible">
+      <div className="flex items-center gap-2 select-none">
+        <svg width={width} height={height} className="overflow-visible opacity-30 shrink-0">
           <line 
             x1={0} 
             y1={height / 2} 
@@ -97,16 +95,19 @@ export default function Sparkline({
             strokeDasharray="2,2" 
           />
         </svg>
+        {maxVal > 0 && (
+          <span className="text-[10px] font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/15 px-1.5 py-0.5 rounded-sm shrink-0">
+            Est. 1RM: {maxVal.toFixed(1)}kg
+          </span>
+        )}
       </div>
     );
   }
 
-  const isAssisted = exName.trim().toLowerCase().includes("assisted pull");
-
   // Calculate coordinates for SVG
   const minVal = Math.min(...trendData.map(d => d.val));
-  const maxVal = Math.max(...trendData.map(d => d.val));
-  const valRange = maxVal - minVal || 1;
+  const maxValActual = Math.max(...trendData.map(d => d.val));
+  const valRange = maxValActual - minVal || 1;
 
   // Add small padding to top and bottom of sparkline
   const padding = 2;
@@ -140,7 +141,7 @@ export default function Sparkline({
   const displayDiff = isAssisted ? -diffVal : diffVal;
 
   return (
-    <div className="flex items-center gap-2 group/sparkline relative" title={isAssisted ? `Assisted Pull-up resistance progression from ${firstVal}kg to ${lastVal}kg (lower is stronger) across ${trendData.length} records` : `Est. 1RM progression from ${firstVal}kg to ${lastVal}kg across ${trendData.length} records`}>
+    <div className="flex items-center gap-2 group/sparkline relative shrink-0" title={isAssisted ? `Assisted Pull-up resistance progression from ${firstVal}kg to ${lastVal}kg (lower is stronger) across ${trendData.length} records` : `Est. 1RM progression from ${firstVal}kg to ${lastVal}kg across ${trendData.length} records`}>
       <svg width={width} height={height} className="overflow-visible">
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -183,6 +184,11 @@ export default function Sparkline({
           </>
         )}
       </svg>
+      {maxVal > 0 && (
+        <span className="text-[10px] font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/15 px-1.5 py-0.5 rounded-sm select-none shrink-0" title={`Peak Estimated 1-Rep Max: ${maxVal.toFixed(1)}kg`}>
+          Est. 1RM: {maxVal.toFixed(1)}kg
+        </span>
+      )}
       {/* Absolute micro statistics tag shown on hover */}
       <span className="hidden group-hover/sparkline:inline-flex absolute -bottom-6 right-0 z-50 bg-[#0c0c0c] border border-white/20 px-1.5 py-0.5 rounded-[2px] text-[8px] font-mono font-bold leading-none uppercase tracking-widest text-white/95 whitespace-nowrap shadow-xl">
         {isUpward ? '▲' : '▼'} {Math.abs(Math.round(displayDiff))}kg Δ ({lastVal}kg)

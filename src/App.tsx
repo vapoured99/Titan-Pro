@@ -55,6 +55,8 @@ import {
   Timer,
   Clock,
   LineChart,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -84,8 +86,6 @@ import TacticalMap from "./components/TacticalMap";
 import GymLocator from "./components/GymLocator";
 import WorkoutCalendarHeatmap from "./components/WorkoutCalendarHeatmap";
 import { SpinalDepletionWidget } from "./components/SpinalDepletionWidget";
-import { LiveRestChronometer } from "./components/LiveRestChronometer";
-import { WeeklyVolumeTracker } from "./components/WeeklyVolumeTracker";
 import ConsoleIntelligencePanel from "./components/ConsoleIntelligencePanel";
 import {
   auth,
@@ -823,18 +823,7 @@ const PBBlock = ({
   // Gather previous logged data
   const exerciseSets: { weight: number; reps: number; date?: string }[] = [];
 
-  // 1. From active session
-  sessionSets.forEach((s) => {
-    if (
-      s &&
-      s.exerciseName &&
-      s.exerciseName.trim().toLowerCase() === exName.trim().toLowerCase()
-    ) {
-      exerciseSets.push({ weight: s.weight, reps: s.reps, date: s.date });
-    }
-  });
-
-  // 2. From archived sessions
+  // 1. From archived sessions (completed and saved)
   archivedWorkouts.forEach((w) => {
     if (w && Array.isArray(w.sets)) {
       w.sets.forEach((s: any) => {
@@ -977,57 +966,6 @@ const PBBlock = ({
         </div>
       )}
 
-      {max1RM >= 0 && (maxBaseSet !== null) && (
-        <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-[10px] opacity-40 uppercase tracking-widest flex items-center gap-1">
-              <Flame className="w-3 h-3 text-gym-accent animate-pulse" /> {isAssisted ? "Est. 1RM Assistance" : "Est. 1 Rep Max"}
-            </span>
-            <div className="flex items-baseline gap-1 mt-1">
-              <span className="text-xl font-semibold text-gym-accent">
-                {max1RM.toFixed(1)}
-              </span>
-              <span className="text-[10px] text-gym-accent-light uppercase font-medium">
-                kg
-              </span>
-            </div>
-          </div>
-          {maxBaseSet && (
-            <div className="text-right flex flex-col justify-end items-end">
-              <span className="text-[9px] text-white/20 uppercase tracking-tighter">
-                Based on
-              </span>
-              <span className="text-[10px] text-white/50 font-mono">
-                {maxBaseSet.weight}kg × {maxBaseSet.reps}
-              </span>
-              {maxBaseSet.date && (
-                <span className="text-[8px] text-white/30">
-                  (
-                  {(() => {
-                    if (maxBaseSet.date.includes("-")) {
-                      const parts = maxBaseSet.date.split("-").map(Number);
-                      if (parts.length === 3) {
-                        const d = new Date(parts[0], parts[1] - 1, parts[2]);
-                        return d.toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                        });
-                      }
-                    }
-                    return maxBaseSet.date;
-                  })()}
-                  )
-                </span>
-              )}
-              {completed3SetsOf10 && (
-                <span className="mt-1 font-mono text-[9px] text-[#34d399] font-black uppercase tracking-wide">
-                  🚀 Increase by 2.5 kg
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
@@ -1256,10 +1194,21 @@ export default function App() {
     [],
   ]);
   const [personalBests, setPersonalBests] = useState<Record<string, PB>>({});
+  const [workoutsLoaded, setWorkoutsLoaded] = useState(false);
+  const [pbsLoaded, setPbsLoaded] = useState(false);
   const [weightHistory, setWeightHistory] = useState<WeightEntry[]>([]);
   const [bodyFatHistory, setBodyFatHistory] = useState<BodyFatEntry[]>([]);
   const [sessionSets, setSessionSets] = useState<SessionSet[]>([]);
   const [archivedWorkouts, setArchivedWorkouts] = useState<any[]>([]);
+
+  // Global Rest Tracker state
+  const [restMode, setRestMode] = useState<"auto" | "manual">("auto");
+  const [restTarget, setRestTarget] = useState<number>(90);
+  const [restAudioEnabled, setRestAudioEnabled] = useState<boolean>(true);
+  const [manualRestTime, setManualRestTime] = useState<number>(90);
+  const [manualRestActive, setManualRestActive] = useState<boolean>(false);
+  const [manualRestTarget, setManualRestTarget] = useState<number>(90);
+  const [autoRestSeconds, setAutoRestSeconds] = useState<number>(0);
   // State for session view selection
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
     null,
@@ -1674,6 +1623,108 @@ export default function App() {
     }
   }, [toast]);
 
+  // Global Rest Tracker audio helper
+  const playRestBeep = (frequency = 880, duration = 0.15) => {
+    if (!restAudioEnabled) return;
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(frequency, ctx.currentTime);
+      
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+      
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch (e) {
+      console.warn("Audio Context not allowed or supported yet.", e);
+    }
+  };
+
+  const getRestSetTimestamp = (set: SessionSet) => {
+    if (set.timestamp) {
+      if (typeof set.timestamp.toMillis === "function") return set.timestamp.toMillis();
+      if (set.timestamp.seconds) return set.timestamp.seconds * 1000;
+    }
+    if (set.date) {
+      const parsed = Date.parse(set.date);
+      if (!isNaN(parsed)) return parsed;
+    }
+    return Date.now();
+  };
+
+  const prevRestSetsLengthRef = useRef(sessionSets.length);
+
+  // Sound chime and reset rest timer on new set
+  useEffect(() => {
+    if (sessionSets.length > prevRestSetsLengthRef.current) {
+      playRestBeep(1200, 0.1);
+      setAutoRestSeconds(0);
+      if (restMode === "manual") {
+        setManualRestActive(false);
+        setManualRestTime(manualRestTarget);
+      }
+    }
+    prevRestSetsLengthRef.current = sessionSets.length;
+  }, [sessionSets.length, restMode, manualRestTarget]);
+
+  const latestRestSet = useMemo(() => {
+    const sorted = [...sessionSets].sort((a, b) => getRestSetTimestamp(a) - getRestSetTimestamp(b));
+    return sorted.length > 0 ? sorted[sorted.length - 1] : null;
+  }, [sessionSets]);
+
+  // Sync auto rest seconds since latest set
+  useEffect(() => {
+    if (latestRestSet) {
+      const updateAutoSeconds = () => {
+        const lastTs = getRestSetTimestamp(latestRestSet);
+        const diff = Math.max(0, Math.floor((Date.now() - lastTs) / 1000));
+        setAutoRestSeconds(diff);
+
+        if (diff === restTarget) {
+          playRestBeep(660, 0.3);
+          setTimeout(() => playRestBeep(880, 0.2), 150);
+        }
+      };
+
+      updateAutoSeconds();
+      const interval = setInterval(updateAutoSeconds, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setAutoRestSeconds(0);
+    }
+  }, [latestRestSet, restTarget]);
+
+  // Manual timer countdown ticker
+  useEffect(() => {
+    let timer: any = null;
+    if (manualRestActive && manualRestTime > 0) {
+      timer = setInterval(() => {
+        setManualRestTime((prev) => {
+          if (prev <= 1) {
+            setManualRestActive(false);
+            playRestBeep(523.25, 0.3); // C5 alert
+            setTimeout(() => playRestBeep(659.25, 0.2), 150); // E5
+            setTimeout(() => playRestBeep(783.99, 0.4), 300); // G5
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [manualRestActive, manualRestTime]);
+
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const syncedProfile = useMemo(() => {
     if (!profile) return null;
@@ -1704,6 +1755,26 @@ export default function App() {
       if (interval) clearInterval(interval);
     };
   }, [profile?.timerActive]);
+
+  // Reset stopwatch timer when there are no exercises in the active session
+  useEffect(() => {
+    if (currentUser && sessionSets.length === 0 && profile) {
+      const hasActiveTimer = profile.timerActive || 
+                             profile.timerStartTime || 
+                             (profile.timerAccumulatedMs && profile.timerAccumulatedMs > 0) || 
+                             (profile.timerManualDuration && profile.timerManualDuration > 0);
+      
+      if (hasActiveTimer) {
+        saveSettings({
+          timerStartTime: null,
+          timerEndTime: null,
+          timerActive: false,
+          timerManualDuration: 0,
+          timerAccumulatedMs: 0,
+        }).catch((err) => console.error("Error resetting stopwatch on empty session sets:", err));
+      }
+    }
+  }, [sessionSets.length, currentUser, profile]);
   const [currentThemeId, setCurrentThemeId] = useState<string>(() => {
     return localStorage.getItem("gym-theme-id") || "default";
   });
@@ -2216,6 +2287,8 @@ export default function App() {
   useEffect(() => {
     setCurrentDays([[], [], [], [], [], []]);
     setPersonalBests({});
+    setWorkoutsLoaded(false);
+    setPbsLoaded(false);
     setWeightHistory([]);
     setBodyFatHistory([]);
     setSessionSets([]);
@@ -2436,6 +2509,7 @@ export default function App() {
         });
 
         setArchivedWorkouts(mergedWorkouts);
+        setWorkoutsLoaded(true);
       },
       (err) => console.error("Workouts listener error:", err),
     );
@@ -2448,6 +2522,7 @@ export default function App() {
           pbs[d.id] = d.data() as PB;
         });
         setPersonalBests(pbs);
+        setPbsLoaded(true);
       },
       (err) => console.error("PBs listener error:", err),
     );
@@ -2569,6 +2644,158 @@ export default function App() {
       unsubscribeCustomExercises();
     };
   }, [currentUser]);
+
+  // Background Automatic Rebuild of PBs from Captured Sessions
+  useEffect(() => {
+    if (!currentUser || !workoutsLoaded || !pbsLoaded) return;
+
+    // 1. Compute correct PBs from raw archived workouts
+    const computedPBs: Record<string, PB> = {};
+
+    const sortedWorkouts = [...archivedWorkouts].sort((a, b) => {
+      const dateA = a.date || "";
+      const dateB = b.date || "";
+      return dateA.localeCompare(dateB);
+    });
+
+    const exerciseData: Record<string, {
+      allSets: Array<{ weight: number; reps: number; date: string; dateStrForPB: string }>;
+    }> = {};
+
+    sortedWorkouts.forEach((w) => {
+      if (!w.sets || !Array.isArray(w.sets)) return;
+      const wDate = w.date || "";
+
+      let dateStrForPB = "";
+      try {
+        if (wDate) {
+          const dateObj = new Date(wDate);
+          dateStrForPB = dateObj.toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+          });
+        }
+      } catch (e) {
+        dateStrForPB = wDate;
+      }
+      if (!dateStrForPB) {
+        dateStrForPB = new Date().toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+        });
+      }
+
+      w.sets.forEach((s: any) => {
+        if (!s || !s.exerciseName) return;
+        const exName = s.exerciseName.trim();
+        if (!exName) return;
+
+        if (!exerciseData[exName]) {
+          exerciseData[exName] = { allSets: [] };
+        }
+
+        exerciseData[exName].allSets.push({
+          weight: Number(s.weight) || 0,
+          reps: Number(s.reps) || 0,
+          date: wDate,
+          dateStrForPB,
+        });
+      });
+    });
+
+    Object.entries(exerciseData).forEach(([exName, data]) => {
+      const sets = data.allSets;
+      if (sets.length === 0) return;
+
+      const isAssisted = exName.toLowerCase().includes("assisted pull");
+      const lastSet = sets[sets.length - 1];
+      let bestSet = sets[0];
+
+      for (let i = 1; i < sets.length; i++) {
+        const current = sets[i];
+        let isBetter = false;
+
+        if (isAssisted) {
+          if (current.weight < bestSet.weight) {
+            isBetter = true;
+          } else if (current.weight === bestSet.weight && current.reps > bestSet.reps) {
+            isBetter = true;
+          }
+        } else {
+          if (current.weight > bestSet.weight) {
+            isBetter = true;
+          } else if (current.weight === bestSet.weight && current.reps > bestSet.reps) {
+            isBetter = true;
+          }
+        }
+
+        if (isBetter) {
+          bestSet = current;
+        }
+      }
+
+      computedPBs[exName] = {
+        exerciseName: exName,
+        lastWeight: lastSet.weight,
+        lastReps: lastSet.reps,
+        lastDate: lastSet.dateStrForPB,
+        bestWeight: bestSet.weight,
+        bestReps: bestSet.reps,
+        bestDate: bestSet.dateStrForPB,
+      };
+    });
+
+    // 2. Identify differences between computedPBs and loaded personalBests
+    const toUpdate: Record<string, PB> = {};
+    const toDelete: string[] = [];
+
+    // Check what to update or add
+    Object.entries(computedPBs).forEach(([name, compPb]) => {
+      const existing = personalBests[name];
+      if (!existing ||
+          existing.bestWeight !== compPb.bestWeight ||
+          existing.bestReps !== compPb.bestReps ||
+          existing.lastWeight !== compPb.lastWeight ||
+          existing.lastReps !== compPb.lastReps) {
+        toUpdate[name] = compPb;
+      }
+    });
+
+    // Check what to delete (exists in Firestore but not in computed)
+    Object.keys(personalBests).forEach((name) => {
+      if (!computedPBs[name]) {
+        toDelete.push(name);
+      }
+    });
+
+    // 3. Execute batch write if changes exist
+    if (Object.keys(toUpdate).length > 0 || toDelete.length > 0) {
+      console.log("Auto-correcting/Syncing Personal Bests with captured sessions. Updates:", Object.keys(toUpdate), "Deletes:", toDelete);
+      const batch = writeBatch(db);
+      let hasChanges = false;
+
+      Object.entries(toUpdate).forEach(([name, pb]) => {
+        const pbRef = doc(db, `users/${currentUser.uid}/pbs/${name}`);
+        batch.set(pbRef, {
+          ...pb,
+          updatedAt: serverTimestamp(),
+        });
+        hasChanges = true;
+      });
+
+      toDelete.forEach((name) => {
+        const pbRef = doc(db, `users/${currentUser.uid}/pbs/${name}`);
+        batch.delete(pbRef);
+        hasChanges = true;
+      });
+
+      if (hasChanges) {
+        batch.commit().catch((err) => {
+          console.error("Failed to automatically sync PBs:", err);
+        });
+      }
+    }
+  }, [currentUser, workoutsLoaded, pbsLoaded, archivedWorkouts, personalBests]);
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -3516,7 +3743,6 @@ export default function App() {
       bestDate: isNewPB ? dateStr : existing?.bestDate || dateStr,
     };
 
-    setPersonalBests((prev) => ({ ...prev, [exName]: updatedPB }));
     setFlashMessage((prev) => ({
       ...prev,
       [exName]: isNewPB ? "🏆 NEW PB!" : "✓ SAVED",
@@ -3634,11 +3860,6 @@ export default function App() {
         setTimeout(() => setToast(null), 3000);
       }
 
-      const p1 = setDoc(doc(db, pbsPath), {
-        ...updatedPB,
-        updatedAt: serverTimestamp(),
-      });
-
       const p2 = setDoc(doc(db, setsPath), {
         exerciseName: exName,
         weight: nWeight,
@@ -3660,7 +3881,7 @@ export default function App() {
         { merge: true },
       );
 
-      await Promise.all([p1, p2, p3]);
+      await Promise.all([p2, p3]);
     } catch (err) {
       // Revert optimistic update if needed, but for now just log
       handleFirestoreError(
@@ -3957,12 +4178,6 @@ export default function App() {
     };
 
     const allWorkouts = [...archivedWorkouts];
-    if (sessionSets.length > 0) {
-      allWorkouts.push({
-        date: new Date().toISOString().split("T")[0],
-        sets: sessionSets
-      });
-    }
 
     const sortedWorkouts = [...allWorkouts].sort((a, b) => {
       const dA = a.date || "";
@@ -5759,12 +5974,6 @@ export default function App() {
                         </div>
                       </motion.div>
                     </motion.div>
-
-                    {/* Tactical Pacing & Volume Targets */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <LiveRestChronometer sessionSets={sessionSets} />
-                      <WeeklyVolumeTracker archivedWorkouts={archivedWorkouts} sessionSets={sessionSets} />
-                    </div>
 
                     {/* Spinal Depletion & CNS Fatigue Gauge widget */}
                     <SpinalDepletionWidget
@@ -12144,6 +12353,130 @@ export default function App() {
                                         </div>
                                       );
                                     })()}
+
+                                    {/* Inline Relocated Rest Chronometer */}
+                                    <div className="bg-black/40 rounded-sm p-2 border border-white/5 flex flex-col gap-1.5 mt-2 mb-1">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5">
+                                          <Clock className={`w-3 h-3 ${
+                                            restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-gym-accent"
+                                          }`} />
+                                          <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-white/50">
+                                            Rest Tracker
+                                          </span>
+                                        </div>
+                                        
+                                        <div className="flex items-center gap-1.5">
+                                          {/* Audio Toggle */}
+                                          <button
+                                            type="button"
+                                            onClick={() => setRestAudioEnabled(!restAudioEnabled)}
+                                            className="text-white/40 hover:text-white/80 transition-colors cursor-pointer"
+                                            title={restAudioEnabled ? "Mute chimes" : "Unmute chimes"}
+                                          >
+                                            {restAudioEnabled ? <Volume2 className="w-3 h-3 text-gym-accent" /> : <VolumeX className="w-3 h-3" />}
+                                          </button>
+
+                                          {/* Mode Toggle (Auto / Manual) */}
+                                          <span className="text-[8px] font-mono text-white/20 select-none">|</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => setRestMode(restMode === "auto" ? "manual" : "auto")}
+                                            className="text-[8px] font-mono font-black text-gym-accent/80 hover:text-gym-accent uppercase tracking-wider cursor-pointer"
+                                          >
+                                            {restMode}
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center justify-between gap-2">
+                                        {/* Timer Value */}
+                                        <div className="flex items-baseline gap-1.5">
+                                          <span className={`text-sm font-black font-mono tracking-tight tabular-nums leading-none ${
+                                            restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-white"
+                                          }`}>
+                                            {(() => {
+                                              const secs = restMode === "auto" ? autoRestSeconds : manualRestTime;
+                                              const m = Math.floor(secs / 60);
+                                              const s = secs % 60;
+                                              return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+                                            })()}
+                                          </span>
+                                          <span className="text-[8px] font-mono font-bold text-white/30 uppercase tracking-widest leading-none">
+                                            {restMode === "auto" 
+                                              ? (autoRestSeconds > restTarget ? "OVER-REST" : "RESTING") 
+                                              : (manualRestActive ? "COUNTDOWN" : "STANDBY")}
+                                          </span>
+                                        </div>
+
+                                        {/* Controls based on mode */}
+                                        {restMode === "auto" ? (
+                                          <div className="flex gap-1">
+                                            {[45, 60, 90, 120].map((sec) => (
+                                              <button
+                                                key={sec}
+                                                type="button"
+                                                onClick={() => {
+                                                  setRestTarget(sec);
+                                                  playRestBeep(980, 0.05);
+                                                }}
+                                                className={`px-1 py-0.5 text-[8px] font-mono font-bold rounded-sm border transition-all cursor-pointer ${
+                                                  restTarget === sec
+                                                    ? "bg-gym-accent border-gym-accent text-black font-black"
+                                                    : "bg-white/[0.02] border-white/5 text-white/50 hover:border-white/15"
+                                                }`}
+                                              >
+                                                {sec}s
+                                              </button>
+                                            ))}
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center gap-1.5">
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setManualRestActive(!manualRestActive);
+                                                playRestBeep(880, 0.05);
+                                              }}
+                                              className={`px-1.5 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none ${
+                                                manualRestActive
+                                                  ? "bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+                                                  : "bg-cyan-500/10 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20"
+                                              }`}
+                                            >
+                                              {manualRestActive ? "Pause" : "Start"}
+                                            </button>
+                                            <button
+                                              type="button"
+                                              onClick={() => {
+                                                setManualRestTime(manualRestTarget);
+                                                setManualRestActive(false);
+                                                playRestBeep(440, 0.08);
+                                              }}
+                                              className="px-1 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none"
+                                            >
+                                              Reset
+                                            </button>
+                                            <select
+                                              value={manualRestTarget}
+                                              onChange={(e) => {
+                                                const val = Number(e.target.value);
+                                                setManualRestTarget(val);
+                                                setManualRestTime(val);
+                                                setManualRestActive(false);
+                                              }}
+                                              className="bg-black border border-white/10 text-white/70 rounded-sm text-[8px] px-0.5 py-0.2 font-mono focus:outline-none"
+                                            >
+                                              {[30, 45, 60, 90, 120, 180].map((sec) => (
+                                                <option key={sec} value={sec}>
+                                                  {sec}s
+                                                </option>
+                                              ))}
+                                            </select>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
 
                                     {/* Row 3: Log button */}
                                     <button

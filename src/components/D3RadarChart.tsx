@@ -288,9 +288,6 @@ export default function D3RadarChart({
       });
     };
 
-    // Scan active sets
-    sessionSets.forEach(s => inspectSet(s, "Active Today"));
-
     // Scan archiving records
     archivedWorkouts.forEach(w => {
       if (w?.sets) {
