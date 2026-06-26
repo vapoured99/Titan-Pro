@@ -10583,11 +10583,22 @@ export default function App() {
                         animate={{ opacity: 1 }}
                         className="mb-12"
                       >
-                        <div className="flex items-center justify-between mb-6">
+                        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                           <h4 className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] flex items-center gap-3">
                             <Activity className="w-4 h-4" />
                             Active Performance Log
                           </h4>
+                          <button
+                            onClick={() => {
+                              setActiveView("workout");
+                              setWorkoutInnerTab("program");
+                              saveSettings({ activeView: "workout" });
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gym-accent/10 hover:bg-gym-accent/20 border border-gym-accent/30 hover:border-gym-accent/60 text-gym-accent text-[9px] font-bold uppercase tracking-wider rounded-sm transition-all cursor-pointer"
+                          >
+                            <ClipboardList className="w-3.5 h-3.5" />
+                            Back to Plan
+                          </button>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -12806,6 +12817,16 @@ export default function App() {
                   >
                     <ClipboardList className="w-3.5 h-3.5" />
                     2. Plan
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveView("session");
+                      saveSettings({ activeView: "session" });
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 border-transparent text-white/45 hover:text-white/75 transition-all cursor-pointer"
+                  >
+                    <History className="w-3.5 h-3.5 text-gym-accent/70" />
+                    3. Session
                   </button>
                 </div>
 
