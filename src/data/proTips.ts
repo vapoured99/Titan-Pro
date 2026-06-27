@@ -61,7 +61,7 @@ const SPECIFIC_TIPS: Record<string, ProTips> = {
       "Never flare your elbows outwards at a 90-degree angle, as this places exceptionally high friction and sheer force on your shoulder joints."
     ]
   },
-  "dumbell bench press": {
+  "dumbbell bench press": {
     tips: [
       "Squeeze your shoulder blades together of the bench to build a sturdy foundational platform.",
       "Bring the weights slightly inward at the top to complete a strong chest squeeze, but stop just short of clashing them together to maintain tension.",
@@ -136,6 +136,138 @@ const SPECIFIC_TIPS: Record<string, ProTips> = {
     avoid: [
       "Avoid turning this into a triceps pushdown. If your elbows are bending and extending, your triceps are taking over the movement.",
       "Do not hunch or round your shoulders forward at the bottom. Keep your chest elevated and your shoulder blades pinned down."
+    ]
+  },
+  "passive dead hang": {
+    tips: [
+      "Keep your shoulders active: pull your shoulder blades down and back slightly (depressed scapula) rather than letting your ears sink into your shoulders.",
+      "Focus on a strong, deep grip on the bar, wrapping your thumbs fully around for maximum grip security.",
+      "Keep your core braced and legs slightly tensioned to prevent excess body swing."
+    ],
+    avoid: [
+      "Avoid relaxing your shoulders completely (passive shrug), which puts unsafe structural load on the shoulder joints and ligaments.",
+      "Do not hold your breath; maintain calm, deep diaphragmatic breathing throughout the duration of the hang."
+    ]
+  },
+  "dead hang": {
+    tips: [
+      "Keep your shoulders active: pull your shoulder blades down and back slightly (depressed scapula) rather than letting your ears sink into your shoulders.",
+      "Focus on a strong, deep grip on the bar, wrapping your thumbs fully around for maximum grip security.",
+      "Keep your core braced and legs slightly tensioned to prevent excess body swing."
+    ],
+    avoid: [
+      "Avoid relaxing your shoulders completely (passive shrug), which puts unsafe structural load on the shoulder joints and ligaments.",
+      "Do not hold your breath; maintain calm, deep diaphragmatic breathing throughout the duration of the hang."
+    ]
+  },
+  "farmer's hand walk carry": {
+    tips: [
+      "Keep your shoulders packed down and back (retracted and depressed) to protect your neck and rotator cuffs.",
+      "Take short, quick, deliberate steps to maintain balance and prevent the weights from swinging.",
+      "Maintain a perfectly tall spine and neutral neck, looking straight ahead."
+    ],
+    avoid: [
+      "Avoid rounding your upper back or letting your shoulders roll forward under the weight.",
+      "Do not let the dumbbells or kettlebells bump against your thighs, which disrupts your gait and grip."
+    ]
+  },
+  "farmer's walk": {
+    tips: [
+      "Keep your shoulders packed down and back (retracted and depressed) to protect your neck and rotator cuffs.",
+      "Take short, quick, deliberate steps to maintain balance and prevent the weights from swinging.",
+      "Maintain a perfectly tall spine and neutral neck, looking straight ahead."
+    ],
+    avoid: [
+      "Avoid rounding your upper back or letting your shoulders roll forward under the weight.",
+      "Do not let the dumbbells or kettlebells bump against your thighs, which disrupts your gait and grip."
+    ]
+  },
+  "farmer's carry": {
+    tips: [
+      "Keep your shoulders packed down and back (retracted and depressed) to protect your neck and rotator cuffs.",
+      "Take short, quick, deliberate steps to maintain balance and prevent the weights from swinging.",
+      "Maintain a perfectly tall spine and neutral neck, looking straight ahead."
+    ],
+    avoid: [
+      "Avoid rounding your upper back or letting your shoulders roll forward under the weight.",
+      "Do not let the dumbbells or kettlebells bump against your thighs, which disrupts your gait and grip."
+    ]
+  },
+  "farmers carry": {
+    tips: [
+      "Keep your shoulders packed down and back (retracted and depressed) to protect your neck and rotator cuffs.",
+      "Take short, quick, deliberate steps to maintain balance and prevent the weights from swinging.",
+      "Maintain a perfectly tall spine and neutral neck, looking straight ahead."
+    ],
+    avoid: [
+      "Avoid rounding your upper back or letting your shoulders roll forward under the weight.",
+      "Do not let the dumbbells or kettlebells bump against your thighs, which disrupts your gait and grip."
+    ]
+  },
+  "plate pinch carry": {
+    tips: [
+      "Pinch the plates tightly using only the pads of your fingers and thumb, keeping them fully vertical.",
+      "Maintain a braced core and upright posture, keeping your chest open and shoulders packed.",
+      "Take small, controlled steps to avoid excessive swaying."
+    ],
+    avoid: [
+      "Avoid letting the plates slide apart; if they start to slip, reset safely.",
+      "Do not curl your fingers under the bottom of the plates; rely entirely on pinch grip strength."
+    ]
+  },
+  "plate pinch": {
+    tips: [
+      "Pinch the plates tightly using only the pads of your fingers and thumb, keeping them fully vertical.",
+      "Maintain a braced core and upright posture, keeping your chest open and shoulders packed.",
+      "Take small, controlled steps to avoid excessive swaying."
+    ],
+    avoid: [
+      "Avoid letting the plates slide apart; if they start to slip, reset safely.",
+      "Do not curl your fingers under the bottom of the plates; rely entirely on pinch grip strength."
+    ]
+  },
+  "towel grip pull-ups": {
+    tips: [
+      "Squeeze the towels as tightly as possible to maximize grip recruitment throughout the entire range of motion.",
+      "Drive your elbows down towards your sides to lift your chest toward the bar, engaging your lats.",
+      "Maintain a braced core to prevent swinging or using momentum."
+    ],
+    avoid: [
+      "Avoid using momentum or kicking your legs to pull yourself up.",
+      "Do not let your grip loosen; if you feel your hands slipping, lower yourself under control."
+    ]
+  },
+  "towel grip pullups": {
+    tips: [
+      "Squeeze the towels as tightly as possible to maximize grip recruitment throughout the entire range of motion.",
+      "Drive your elbows down towards your sides to lift your chest toward the bar, engaging your lats.",
+      "Maintain a braced core to prevent swinging or using momentum."
+    ],
+    avoid: [
+      "Avoid using momentum or kicking your legs to pull yourself up.",
+      "Do not let your grip loosen; if you feel your hands slipping, lower yourself under control."
+    ]
+  },
+  "reverse barbell curls": {
+    tips: [
+      "Maintain a strict pronated (overhand) grip, keeping your wrists straight and locked to fully engage the brachioradialis.",
+      "Keep your elbows pinned to your sides to prevent shoulder elevation or forward movement.",
+      "Control the lowering (eccentric) phase strictly to keep constant tension on the forearms and biceps."
+    ],
+    avoid: [
+      "Avoid letting your wrists bend backward or flex dynamically, which strains the wrist joints.",
+      "Do not swing your torso or use momentum to lift the bar."
+    ]
+  },
+  "reverse barbell curl": {
+    tips: [
+      "Maintain a strict pronated (overhand) grip, keeping your wrists straight and locked to fully engage the brachioradialis.",
+      "Keep your elbows pinned to your sides to prevent shoulder elevation or forward movement.",
+      "Control the lowering (eccentric) phase strictly to keep constant tension on the forearms and biceps."
+    ],
+    avoid: [
+      "Avoid letting your wrists bend backward or flex dynamically, which strains the wrist joints.",
+      "Do not swing your torso or use momentum to lift the bar."
     ]
   }
 };
@@ -379,7 +511,10 @@ export function getProTipsForExercise(
   if (normName.includes("fly") || normName.includes("flye") || normName.includes("cable crossover")) {
     return CATEGORIES.chest_fly;
   }
-  if (normName.includes("row") || normName.includes("pullup") || normName.includes("pull up") || normName.includes("chin up") || normName.includes("chin-up")) {
+  if (normName.includes("pullup") || normName.includes("pull up") || normName.includes("pull-up") || normName.includes("chin up") || normName.includes("chin-up")) {
+    return SPECIFIC_TIPS["pull ups"];
+  }
+  if (normName.includes("row")) {
     return CATEGORIES.rows;
   }
   if (normName.includes("pulldown")) {

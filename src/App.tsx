@@ -59,6 +59,7 @@ import {
   VolumeX,
   FileText,
   ClipboardList,
+  Star,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -117,7 +118,6 @@ import {
   onSnapshot,
 } from "./lib/firebase";
 import { Exercise, POOLS, getSecondaryMusclesForExercise } from "./data/exercises";
-import { getProTipsForExercise } from "./data/proTips";
 
 // --- Background Images ---
 import ironTempleBg from "./assets/images/iron_temple_bg_1779282140548.png";
@@ -1337,6 +1337,27 @@ export default function App() {
     }
     return [];
   });
+
+  const [favoriteExercises, setFavoriteExercises] = useState<string[]>(() => {
+    const saved = localStorage.getItem("gym_favorite_exercises");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        console.error("Failed to parse local favorite exercises:", e);
+      }
+    }
+    return [];
+  });
+  const [libraryShowFavoritesOnly, setLibraryShowFavoritesOnly] = useState(false);
+  const [builderShowFavoritesOnly, setBuilderShowFavoritesOnly] = useState(false);
+  const [builderFavDropdownOpen, setBuilderFavDropdownOpen] = useState(false);
+  const [favoritesDropdownOpen, setFavoritesDropdownOpen] = useState(false);
+  const [selectedFavorites, setSelectedFavorites] = useState<Record<string, boolean>>({});
+  const [favoritesModalOpen, setFavoritesModalOpen] = useState(false);
   const [showAddCustomModal, setShowAddCustomModal] = useState(false);
   const [customExName, setCustomExName] = useState("");
   const [customExPool, setCustomExPool] = useState<
@@ -1575,6 +1596,112 @@ export default function App() {
     });
     return merged;
   }, [customExercises]);
+
+  const toggleFavoriteExercise = async (exName: string) => {
+    const isFav = favoriteExercises.includes(exName);
+    let updated: string[];
+    if (isFav) {
+      updated = favoriteExercises.filter((name) => name !== exName);
+    } else {
+      updated = [...favoriteExercises, exName];
+    }
+    setFavoriteExercises(updated);
+    localStorage.setItem("gym_favorite_exercises", JSON.stringify(updated));
+
+    if (currentUser) {
+      try {
+        const idSafe = exName.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+        const docRef = doc(db, `users/${currentUser.uid}/favorite_exercises`, idSafe);
+        if (isFav) {
+          await deleteDoc(docRef);
+        } else {
+          await setDoc(docRef, { name: exName, isFavorite: true });
+        }
+      } catch (err) {
+        console.error("Error toggling favorite in firestore:", err);
+      }
+    }
+  };
+
+  const getFavoriteExercisesByCategory = (): { categoryTitle: string; list: Exercise[] }[] => {
+    const categoryOrder = [
+      "chest",
+      "triceps",
+      "back",
+      "biceps",
+      "shoulders",
+      "forearms",
+      "legs",
+      "core",
+      "cardio",
+      "equipment",
+    ];
+
+    return categoryOrder.map((catKey) => {
+      let list: Exercise[] = [];
+      if (catKey === "chest") {
+        list = [
+          ...(combinedPools["upper_chest"] || []),
+          ...(combinedPools["middle_chest"] || []),
+          ...(combinedPools["lower_chest"] || []),
+        ];
+      } else if (catKey === "back") {
+        list = [
+          ...(combinedPools["upper_back"] || []),
+          ...(combinedPools["lower_back"] || []),
+        ];
+      } else if (catKey === "shoulders") {
+        list = [
+          ...(combinedPools["front_delts"] || []),
+          ...(combinedPools["side_delts"] || []),
+          ...(combinedPools["rear_delts"] || []),
+        ];
+      } else if (catKey === "biceps") {
+        list = [
+          ...(combinedPools["long_biceps"] || []),
+          ...(combinedPools["short_biceps"] || []),
+          ...(combinedPools["brachialis"] || []),
+        ];
+      } else if (catKey === "triceps") {
+        list = [
+          ...(combinedPools["long_triceps"] || []),
+          ...(combinedPools["lateral_triceps"] || []),
+          ...(combinedPools["medial_triceps"] || []),
+        ];
+      } else if (catKey === "legs") {
+        list = [
+          ...(combinedPools["quads"] || []),
+          ...(combinedPools["hamstrings"] || []),
+          ...(combinedPools["calves"] || []),
+        ];
+      } else if (catKey === "core") {
+        list = [
+          ...(combinedPools["upper_core"] || []),
+          ...(combinedPools["lower_core"] || []),
+          ...(combinedPools["obliques"] || []),
+        ];
+      } else {
+        list = combinedPools[catKey] || [];
+      }
+
+      const favorited = list.filter((ex) =>
+        favoriteExercises.some(
+          (favName) => favName.toLowerCase() === ex.name.toLowerCase()
+        )
+      );
+
+      return {
+        categoryTitle: catKey.charAt(0).toUpperCase() + catKey.slice(1),
+        list: favorited.sort((a, b) => a.name.localeCompare(b.name)),
+      };
+    }).filter((cat) => cat.list.length > 0);
+  };
+
+  const getTargetDayForExercise = (ex: Exercise): number => {
+    const pool = ex.pool || "";
+    const idx = DAY_CONFIG.findIndex(day => day.pools.includes(pool));
+    return idx !== -1 ? idx : 4; // default to equipment/extra (Day 5)
+  };
 
   const getExercisesForDay = (categoryIdx: number): Exercise[] => {
     const config = DAY_CONFIG[categoryIdx];
@@ -2673,6 +2800,22 @@ export default function App() {
       (err) => console.error("Custom exercises listener error:", err),
     );
 
+    const unsubscribeFavoriteExercises = onSnapshot(
+      collection(db, `users/${currentUser.uid}/favorite_exercises`),
+      (snapshot) => {
+        const list: string[] = [];
+        snapshot.forEach((d) => {
+          const data = d.data();
+          if (data && data.name) {
+            list.push(data.name);
+          }
+        });
+        setFavoriteExercises(list);
+        localStorage.setItem("gym_favorite_exercises", JSON.stringify(list));
+      },
+      (err) => console.error("Favorite exercises listener error:", err),
+    );
+
     return () => {
       unsubscribeWorkout();
       unsubscribeSettings();
@@ -2683,6 +2826,7 @@ export default function App() {
       unsubscribeBodyFat();
       unsubscribeRoutines();
       unsubscribeCustomExercises();
+      unsubscribeFavoriteExercises();
     };
   }, [currentUser]);
 
@@ -3801,13 +3945,48 @@ export default function App() {
   };
 
   const handleFormatProgram = () => {
-    // 1. Merge exercises from currentDays (plan builder) into formattedProgram
+    // 0. Incorporate any selected favorites into the plan builder
+    let nextCurrentDays = [...currentDays];
+    let favoritesAddedCount = 0;
+
+    favoriteExercises.forEach(exName => {
+      if (selectedFavorites[exName]) {
+        const resolvedEx = findExerciseByName(exName);
+        if (resolvedEx) {
+          const pool = resolvedEx.pool || "";
+          // Find which DAY_CONFIG index matches this pool
+          const targetDayIdx = DAY_CONFIG.findIndex(day => day.pools.includes(pool));
+          const dayIdx = targetDayIdx !== -1 ? targetDayIdx : 4; // default to equipment/extra (Day 5)
+
+          if (!nextCurrentDays[dayIdx]) {
+            nextCurrentDays[dayIdx] = [];
+          }
+
+          const alreadyAdded = nextCurrentDays[dayIdx].some(
+            p => p.name.toLowerCase() === resolvedEx.name.toLowerCase()
+          );
+
+          if (!alreadyAdded) {
+            nextCurrentDays[dayIdx] = [...nextCurrentDays[dayIdx], resolvedEx];
+            favoritesAddedCount++;
+          }
+        }
+      }
+    });
+
+    if (favoritesAddedCount > 0) {
+      setCurrentDays(nextCurrentDays);
+      saveWorkout(nextCurrentDays);
+      setSelectedFavorites({}); // clear selection
+    }
+
+    // 1. Merge exercises from nextCurrentDays (plan builder) into formattedProgram
     const mergedProgram = DAY_CONFIG.map((day, idx) => {
       const existingItem = formattedProgram.find(item => item.dayIndex === idx);
       const existingExercises = existingItem ? [...existingItem.exercises] : [];
       const existingNames = new Set(existingExercises.map(ex => ex.name.toLowerCase()));
 
-      const planExercises = currentDays[idx] || [];
+      const planExercises = nextCurrentDays[idx] || [];
       const newExercises = planExercises.filter(ex => !existingNames.has(ex.name.toLowerCase()));
 
       return {
@@ -7189,6 +7368,19 @@ export default function App() {
                     </div>
 
                     <button
+                      onClick={() => setLibraryShowFavoritesOnly((prev) => !prev)}
+                      className={`flex items-center justify-center gap-2 px-4 py-3 border transition-all cursor-pointer rounded-md text-xs font-bold uppercase tracking-widest ${
+                        libraryShowFavoritesOnly
+                          ? "bg-amber-400 border-amber-400 text-black shadow-[0_0_12px_rgba(251,191,36,0.25)]"
+                          : "border-white/15 bg-white/5 text-white/60 hover:text-white hover:bg-white/10"
+                      }`}
+                      title="Filter Library by Favorites"
+                    >
+                      <Star className={`w-3.5 h-3.5 ${libraryShowFavoritesOnly ? "fill-black" : ""}`} />
+                      <span>Favorites ({favoriteExercises.length})</span>
+                    </button>
+
+                    <button
                       onClick={() => {
                         setCustomExName("");
                         setCustomExVideoUrl("");
@@ -7471,30 +7663,39 @@ export default function App() {
                       list = combinedPools[catKey] || [];
                     }
 
+                    let filteredList = list.filter(
+                      (ex) =>
+                        ex.name
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase()) ||
+                        ex.pool
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase()) ||
+                        (ex.category &&
+                          ex.category
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase())),
+                    );
+
+                    if (libraryShowFavoritesOnly) {
+                      filteredList = filteredList.filter((ex) =>
+                        favoriteExercises.some(
+                          (favName) => favName.toLowerCase() === ex.name.toLowerCase()
+                        )
+                      );
+                    }
+
                     return {
                       key: catKey,
                       title: catKey.charAt(0).toUpperCase() + catKey.slice(1),
-                      list: list
-                        .filter(
-                          (ex) =>
-                            ex.name
-                              .toLowerCase()
-                              .includes(searchQuery.toLowerCase()) ||
-                            ex.pool
-                              .toLowerCase()
-                              .includes(searchQuery.toLowerCase()) ||
-                            (ex.category &&
-                              ex.category
-                                .toLowerCase()
-                                .includes(searchQuery.toLowerCase())),
-                        )
-                        .sort((a, b) => a.name.localeCompare(b.name)),
+                      list: filteredList.sort((a, b) => a.name.localeCompare(b.name)),
                     };
                   });
 
                   if (
                     searchQuery.trim().length > 0 ||
-                    libraryViewMode === "list"
+                    libraryViewMode === "list" ||
+                    libraryShowFavoritesOnly
                   ) {
                     return sectionsList.filter((s) => s.list.length > 0);
                   } else {
@@ -7573,14 +7774,29 @@ export default function App() {
                                     <div>
                                       {/* Title Row - full width, wraps nicely, no truncation cutoff */}
                                       <div className="flex items-start justify-between gap-3 mb-2.5">
-                                        <div className="flex items-start gap-2.5 min-w-0">
+                                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
                                           <div className="w-8 h-8 bg-white/5 border border-white/10 rounded-md flex items-center justify-center shrink-0 mt-0.5 group-hover:border-gym-accent/30 transition-colors">
                                             <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors" />
                                           </div>
-                                          <div className="flex flex-col min-w-0">
-                                            <span className="font-semibold text-sm text-white/95 group-hover:text-white transition-colors leading-snug break-words">
-                                              {ex.name}
-                                            </span>
+                                          <div className="flex flex-col min-w-0 flex-1">
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                              <span className="font-semibold text-sm text-white/95 group-hover:text-white transition-colors leading-snug break-words">
+                                                {ex.name}
+                                              </span>
+                                              <button
+                                                onClick={() => toggleFavoriteExercise(ex.name)}
+                                                className="p-1 hover:bg-white/10 rounded-full transition-colors cursor-pointer shrink-0"
+                                                title={favoriteExercises.includes(ex.name) ? "Remove from Favorites" : "Add to Favorites"}
+                                              >
+                                                <Star
+                                                  className={`w-3.5 h-3.5 transition-colors ${
+                                                    favoriteExercises.includes(ex.name)
+                                                      ? "text-amber-400 fill-amber-400"
+                                                      : "text-white/20 hover:text-white/60"
+                                                  }`}
+                                                />
+                                              </button>
+                                            </div>
                                           </div>
                                         </div>
                                         {isCustom && (
@@ -11458,11 +11674,172 @@ export default function App() {
                           />
                         </div>
 
+                        {/* Favorites Dropdown Select */}
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setBuilderFavDropdownOpen(!builderFavDropdownOpen)}
+                            className="w-full flex items-center justify-between gap-2 px-3 py-2.5 bg-black/40 border border-white/10 rounded-md text-xs text-white/80 hover:bg-white/[0.02] hover:border-white/20 transition-all cursor-pointer select-none"
+                            id="builder-favorites-dropdown-btn"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Star className={`w-3.5 h-3.5 ${favoriteExercises.length > 0 ? "text-amber-400 fill-amber-400/20" : "text-white/30"}`} />
+                              <span className="font-medium text-white/90">
+                                Favorites Quick-Add ({favoriteExercises.length})
+                              </span>
+                            </div>
+                            <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-300 ${builderFavDropdownOpen ? "rotate-180" : ""}`} />
+                          </button>
+
+                          {builderFavDropdownOpen && (
+                            <>
+                              {/* Overlay for dismissing dropdown */}
+                              <div 
+                                className="fixed inset-0 z-40 cursor-default" 
+                                onClick={() => setBuilderFavDropdownOpen(false)} 
+                              />
+                              <div className="absolute left-0 right-0 mt-1 bg-[#0f0f0f] border border-white/10 rounded-md shadow-[0_10px_30px_rgba(0,0,0,0.8)] max-h-[280px] overflow-y-auto z-50 p-2 space-y-3 custom-scrollbar">
+                                {(() => {
+                                  const groupedFavs = getFavoriteExercisesByCategory();
+                                  if (groupedFavs.length === 0) {
+                                    return (
+                                      <div className="text-center py-5 text-white/30 text-[10px] font-mono">
+                                        No favorites saved yet.<br />
+                                        <span className="text-[9px] text-white/15">Star exercises in the Library first.</span>
+                                      </div>
+                                    );
+                                  }
+                                  return groupedFavs.map((group) => (
+                                    <div key={group.categoryTitle} className="space-y-1">
+                                      <div className="flex items-center gap-1.5 border-b border-white/5 pb-1 ml-1 mt-1.5">
+                                        <div className="w-1 h-2.5 bg-gym-accent rounded-[1px]" />
+                                        <span className="text-[9px] font-black uppercase tracking-wider text-white/40 font-mono">
+                                          {group.categoryTitle}
+                                        </span>
+                                      </div>
+                                      <div className="space-y-0.5">
+                                        {group.list.map((ex) => {
+                                          const isAdded = newRoutineExercises.some(r => r.exerciseName.toLowerCase() === ex.name.toLowerCase());
+                                          return (
+                                            <button
+                                              key={ex.name}
+                                              type="button"
+                                              onClick={() => {
+                                                handleAddExercise(ex.name);
+                                                setBuilderFavDropdownOpen(false);
+                                              }}
+                                              disabled={isAdded}
+                                              className={`w-full text-left px-2 py-1.5 rounded-md text-[11px] transition-all flex items-center justify-between gap-3 ${
+                                                isAdded 
+                                                  ? "bg-emerald-500/5 text-emerald-400 opacity-60 cursor-not-allowed" 
+                                                  : "hover:bg-white/5 text-white/80 cursor-pointer"
+                                              }`}
+                                            >
+                                              <span className="truncate">{ex.name}</span>
+                                              {isAdded ? (
+                                                <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-400">
+                                                  Added
+                                                </span>
+                                              ) : (
+                                                <Plus className="w-3 h-3 text-white/20" />
+                                              )}
+                                            </button>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  ));
+                                })()}
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Filter Toggle tabs: All vs Favorites */}
+                        <div className="flex bg-black/60 border border-white/10 rounded-md p-0.5 inline-flex w-full">
+                          <button
+                            type="button"
+                            onClick={() => setBuilderShowFavoritesOnly(false)}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer ${!builderShowFavoritesOnly ? "bg-gym-accent text-black" : "text-white/40 hover:text-white"}`}
+                          >
+                            All Split Movements
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setBuilderShowFavoritesOnly(true)}
+                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer ${builderShowFavoritesOnly ? "bg-gym-accent text-black" : "text-white/40 hover:text-white"}`}
+                          >
+                            <Star className={`w-3 h-3 ${builderShowFavoritesOnly ? "fill-current text-black" : "text-amber-400/85"}`} />
+                            Favorites ({favoriteExercises.length})
+                          </button>
+                        </div>
+
                         {/* List exercises matching category pools or search */}
                         <div className="max-h-[350px] overflow-y-auto space-y-1.5 pr-1.5 custom-scrollbar">
                           {(() => {
-                            const availableExercises = getExercisesForDay(newRoutineCategory);
                             const searchClean = builderSearch.trim().toLowerCase();
+
+                            if (builderShowFavoritesOnly) {
+                              const groupedFavs = getFavoriteExercisesByCategory();
+                              const filteredGrouped = groupedFavs.map(group => {
+                                const filteredList = group.list.filter(ex => 
+                                  ex.name.toLowerCase().includes(searchClean)
+                                );
+                                return {
+                                  categoryTitle: group.categoryTitle,
+                                  list: filteredList
+                                };
+                              }).filter(group => group.list.length > 0);
+
+                              if (filteredGrouped.length === 0) {
+                                return (
+                                  <div className="text-center py-6 text-white/20 text-xs font-mono">
+                                    No favorited exercises found{searchClean ? " matching search" : ""}.
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div className="space-y-4">
+                                  {filteredGrouped.map((group) => (
+                                    <div key={group.categoryTitle} className="space-y-1.5">
+                                      <div className="flex items-center gap-1.5 border-b border-white/5 pb-1 ml-1 mt-2">
+                                        <div className="w-1 h-2.5 bg-gym-accent rounded-[1px]" />
+                                        <span className="text-[9px] font-black uppercase tracking-wider text-white/40 font-mono">
+                                          {group.categoryTitle}
+                                        </span>
+                                      </div>
+                                      {group.list.map((ex) => {
+                                        const isAdded = newRoutineExercises.some(r => r.exerciseName.toLowerCase() === ex.name.toLowerCase());
+                                        return (
+                                          <button
+                                            key={ex.name}
+                                            onClick={() => handleAddExercise(ex.name)}
+                                            disabled={isAdded}
+                                            className={`w-full text-left p-2.5 rounded-md border transition-all flex items-center justify-between gap-3 ${
+                                              isAdded 
+                                                ? "border-emerald-500/10 bg-emerald-500/5 text-emerald-400 opacity-60 cursor-not-allowed" 
+                                                : "border-white/5 bg-black/40 hover:bg-white/[0.04] hover:border-white/10 text-white/80 cursor-pointer"
+                                            }`}
+                                          >
+                                            <span className="text-xs font-medium truncate">{ex.name}</span>
+                                            {isAdded ? (
+                                              <span className="text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded-md text-emerald-400">
+                                                Added
+                                              </span>
+                                            ) : (
+                                              <Plus className="w-3.5 h-3.5 text-white/30 animate-none" />
+                                            )}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            }
+
+                            const availableExercises = getExercisesForDay(newRoutineCategory);
                             
                             // Filter by search text
                             let filtered = availableExercises;
@@ -13098,6 +13475,219 @@ export default function App() {
                   );
                 })()}
 
+                {/* 🌟 Dedicated Starred Favorites Category Dropdown 🌟 */}
+                <div className="group mb-4">
+                  <button
+                    onClick={() => setFavoritesDropdownOpen(!favoritesDropdownOpen)}
+                    className={`w-full flex items-center justify-between p-6 rounded-md border transition-all cursor-pointer group backdrop-blur-md ${
+                      favoritesDropdownOpen
+                        ? "bg-amber-500/[0.04] border-amber-500 shadow-md shadow-amber-500/10"
+                        : "bg-black/70 border-white/15 hover:bg-white/[0.04] hover:border-white/25"
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-8 h-8 rounded-md bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 text-amber-400 group-hover:bg-amber-500/20 group-hover:border-amber-500/40 transition-all">
+                        <Star className="w-4 h-4 fill-amber-500/20" />
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-lg font-light italic font-serif text-white/90">
+                          Favourites
+                        </h3>
+                        <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
+                          {favoriteExercises.length} Ex.
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      {!favoritesDropdownOpen && favoriteExercises.length === 0 && (
+                        <span className="text-[9px] text-amber-400 font-bold uppercase tracking-widest opacity-60 group-hover:opacity-100">
+                          No Favorites Stored
+                        </span>
+                      )}
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform duration-500 ${favoritesDropdownOpen ? "rotate-180" : ""} text-white/20 group-hover:text-amber-400`}
+                      />
+                    </div>
+                  </button>
+
+                  <AnimatePresence>
+                    {favoritesDropdownOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                        animate={{
+                          height: "auto",
+                          opacity: 1,
+                          marginTop: 12,
+                        }}
+                        exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <motion.div
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, ease: "easeOut" }}
+                          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6"
+                        >
+                          {(() => {
+                            const addedFavs = favoriteExercises
+                              .filter(exName => selectedFavorites[exName])
+                              .map(exName => findExerciseByName(exName))
+                              .filter((ex): ex is Exercise => !!ex);
+
+                            return (
+                              <>
+                                {addedFavs.map((ex, ei) => {
+                                  const resolvedEx = findExerciseByName(ex.name);
+                                  const poolKey = resolvedEx?.pool || ex.pool;
+                                  const label = poolKey
+                                    ? poolKey
+                                        .split('_')
+                                        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                                        .join(' ')
+                                    : "";
+
+                                  const peakWeight = (() => {
+                                    const weights: number[] = [];
+                                    sessionSets?.forEach((s) => {
+                                      if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()) {
+                                        const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
+                                        if (w && !isNaN(w)) weights.push(w);
+                                      }
+                                    });
+                                    archivedWorkouts?.forEach((w) => {
+                                      w.sets?.forEach((s) => {
+                                        if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()) {
+                                          const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
+                                          if (w && !isNaN(w)) weights.push(w);
+                                        }
+                                      });
+                                    });
+                                    return weights.length > 0 ? Math.max(...weights) : null;
+                                  })();
+
+                                  return (
+                                    <motion.div
+                                      key={`fav-card-${ex.name}`}
+                                      layout
+                                      initial={{ opacity: 0, y: 15 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      className="bg-black/35 border border-white/10 hover:border-amber-400/30 rounded-xl p-5 flex flex-col justify-between backdrop-blur-xl relative overflow-hidden group/card transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] hover:bg-black/55"
+                                    >
+                                      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                                      <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-amber-400 opacity-35 group-hover/card:opacity-100 transition-opacity duration-300" />
+
+                                      <div className="space-y-4 pl-1">
+                                        <div className="flex items-start justify-between gap-4">
+                                          <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-[10px] text-amber-400 font-black tracking-widest font-mono bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
+                                              #{String(ei + 1).padStart(2, '0')}
+                                            </span>
+                                            {ex.category && (
+                                              <span className={`text-[8px] px-2 py-0.5 rounded-md font-black uppercase tracking-[0.12em] border ${
+                                                ex.category === "compound"
+                                                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                                  : "bg-purple-500/10 text-purple-300 border-purple-500/20"
+                                              }`}>
+                                                {ex.category}
+                                              </span>
+                                            )}
+                                            {label && (
+                                              <span className="text-[8px] px-2 py-0.5 rounded-md font-bold uppercase tracking-[0.12em] bg-white/[0.03] text-white/50 border border-white/5">
+                                                {label}
+                                              </span>
+                                            )}
+                                          </div>
+
+                                          <div className="flex gap-1.5 shrink-0 opacity-40 group-hover/card:opacity-100 transition-opacity duration-300">
+                                            <button
+                                              onClick={() => setGuidanceEx(ex)}
+                                              className="p-1.5 bg-white/[0.03] border border-white/5 text-white/40 hover:text-gym-accent hover:bg-gym-accent/10 hover:border-gym-accent/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
+                                              title="Guidance & Instructions"
+                                            >
+                                              <BookOpen className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
+                                              onClick={() => {
+                                                setSelectedFavorites(prev => ({
+                                                  ...prev,
+                                                  [ex.name]: false
+                                                }));
+                                              }}
+                                              className="p-1.5 bg-red-500/[0.01] border border-red-500/10 text-red-500/50 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
+                                              title="Remove from favorites list"
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                          </div>
+                                        </div>
+
+                                        <div>
+                                          <h4 className="text-base font-bold font-sans text-white tracking-tight leading-snug group-hover/card:text-amber-400 transition-colors duration-300" title={ex.name}>
+                                            {ex.name}
+                                          </h4>
+                                        </div>
+
+                                        <div className="pt-1 border-t border-white/5">
+                                          <div className="flex flex-col">
+                                            <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider">PRIMARY TARGET</span>
+                                            <span className="text-[10px] font-semibold text-white/80 mt-0.5 truncate">
+                                              {resolvedEx?.muscleGroup ? resolvedEx.muscleGroup.toUpperCase() : label || "N/A"}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="mt-5 pt-3.5 border-t border-white/5 flex items-center justify-between pl-1">
+                                        <div className="flex flex-col">
+                                          <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider">PERSONAL BEST</span>
+                                          <span className="text-[10.5px] font-bold font-mono text-amber-400 mt-0.5 flex items-center gap-1">
+                                            {peakWeight ? (
+                                              <>
+                                                <Trophy className="w-3 h-3 text-amber-400 shrink-0" />
+                                                <span>{peakWeight}kg</span>
+                                              </>
+                                            ) : (
+                                              <span className="text-white/20 font-medium">Unrecorded</span>
+                                            )}
+                                          </span>
+                                        </div>
+
+                                        <div className="flex flex-col items-end">
+                                          <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider mb-1">PROG. TREND</span>
+                                          <div className="bg-black/40 border border-white/5 px-2 py-1 rounded-md flex items-center justify-center min-h-[22px]">
+                                            <Sparkline
+                                              exName={ex.name}
+                                              sessionSets={sessionSets}
+                                              archivedWorkouts={archivedWorkouts}
+                                              width={65}
+                                              height={14}
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  );
+                                })}
+
+                                {/* Add Exercise Slot */}
+                                <button
+                                  onClick={() => setFavoritesModalOpen(true)}
+                                  className="bg-black/30 border border-white/10 border-dashed rounded-md p-4 flex flex-col items-center justify-center gap-2 hover:bg-black/50 hover:border-amber-400/30 transition-all cursor-pointer group/add min-h-[105px]"
+                                >
+                                  <Plus className="w-4 h-4 text-white/40 group-hover/add:text-amber-400 transition-all animate-none" />
+                                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 group-hover/add:text-white transition-all">
+                                    Add Exercise
+                                  </span>
+                                </button>
+                              </>
+                            );
+                          })()}
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
                 {DAY_CONFIG.map((day, di) => (
                   <div key={di} className="group">
                     <button
@@ -13310,7 +13900,7 @@ export default function App() {
                               onClick={() => setAddingToDay(di)}
                               className="bg-black/30 border border-white/10 border-dashed rounded-md p-4 flex flex-col items-center justify-center gap-2 hover:bg-black/50 hover:border-gym-accent/30 transition-all cursor-pointer group/add min-h-[105px]"
                             >
-                              <Plus className="w-4 h-4 text-white/40 group-hover/add:text-gym-accent transition-all" />
+                              <Plus className="w-4 h-4 text-white/40 group-hover/add:text-gym-accent transition-all animate-none" />
                               <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 group-hover/add:text-white transition-all">
                                 Add Exercise
                               </span>
@@ -13343,6 +13933,151 @@ export default function App() {
             )}
           </AnimatePresence>
         </main>
+
+        {/* Add Favorite Exercise Modal */}
+        <AnimatePresence>
+          {favoritesModalOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-12 font-sans">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => {
+                  setFavoritesModalOpen(false);
+                  setModalSearch("");
+                }}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-md overflow-hidden flex flex-col max-h-[80vh] shadow-2xl"
+              >
+                <div className="p-8 border-b border-white/5">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-amber-400 font-bold uppercase tracking-[0.3em] mb-1">
+                        Select Favorite
+                      </span>
+                      <h3 className="text-xl font-light italic font-serif text-white">
+                        Add from Favorites
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setFavoritesModalOpen(false);
+                        setModalSearch("");
+                      }}
+                      className="p-2 text-white/20 hover:text-white transition-all cursor-pointer text-sm font-semibold uppercase tracking-wider text-[10px]"
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                    <input
+                      type="text"
+                      placeholder="Search favorite exercises..."
+                      autoFocus
+                      value={modalSearch}
+                      onChange={(e) => setModalSearch(e.target.value)}
+                      className="w-full bg-black/60 border border-white/20 rounded-md pl-12 pr-4 py-4 text-sm font-light focus:outline-none focus:border-amber-400 transition-all text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                  {(() => {
+                    const groupedFavs = getFavoriteExercisesByCategory()
+                      .map(group => ({
+                        ...group,
+                        list: group.list.filter(ex => ex.name.toLowerCase().includes(modalSearch.toLowerCase()))
+                      }))
+                      .filter(group => group.list.length > 0);
+
+                    const totalFilteredCount = groupedFavs.reduce((sum, g) => sum + g.list.length, 0);
+
+                    if (totalFilteredCount === 0) {
+                      return (
+                        <div className="text-center py-12 text-white/30 text-sm flex flex-col items-center justify-center">
+                          <Star className="w-8 h-8 text-white/10 mb-3" />
+                          <p className="font-light">No matching favorites found.</p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-6">
+                        {groupedFavs.map((group) => (
+                          <div key={group.categoryTitle} className="space-y-3">
+                            <h4 className="text-[9px] font-black text-white/30 uppercase tracking-[0.4em] mb-4 ml-2 border-l border-amber-400/40 pl-3">
+                              {group.categoryTitle}
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {group.list.map((ex) => {
+                                const isAdded = !!selectedFavorites[ex.name];
+                                const subcatLabel = ex.pool
+                                  ? ex.pool
+                                      .split('_')
+                                      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                                      .join(' ')
+                                  : "";
+
+                                return (
+                                  <div key={ex.name} className="relative group">
+                                    <button
+                                      onClick={() => {
+                                        setSelectedFavorites(prev => ({
+                                          ...prev,
+                                          [ex.name]: !prev[ex.name]
+                                        }));
+                                      }}
+                                      className={`w-full flex items-center justify-between p-4 bg-black/65 border rounded-md hover:bg-black/85 transition-all text-left cursor-pointer group/inner ${
+                                        isAdded
+                                          ? "border-amber-500/30 text-amber-400 bg-amber-500/5"
+                                          : "border-white/10 text-white/70 hover:border-amber-400/30"
+                                      }`}
+                                    >
+                                      <div className="flex flex-col gap-1.5 min-w-0 pr-12">
+                                        <span className={`text-xs font-semibold truncate transition-colors ${isAdded ? 'text-amber-400' : 'text-white/70 group-hover/inner:text-amber-400'}`}>
+                                          {ex.name}
+                                        </span>
+                                        {subcatLabel && (
+                                          <div className="flex items-center gap-1.5">
+                                            <span className="text-[8px] px-2 py-0.5 rounded font-bold uppercase tracking-[0.08em] bg-white/[0.04] text-white/40 border border-white/5">
+                                              {subcatLabel}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                      
+                                      <div className="flex items-center shrink-0">
+                                        {isAdded ? (
+                                          <span className="text-[9px] font-black uppercase tracking-wider bg-amber-500/15 border border-amber-500/20 px-2.5 py-1 rounded-md text-amber-400 flex items-center gap-1">
+                                            <Check className="w-2.5 h-2.5" /> Added
+                                          </span>
+                                        ) : (
+                                          <div className="p-1 rounded bg-white/5 border border-white/10 group-hover/inner:border-amber-400/40 group-hover/inner:bg-amber-500/10 text-white/30 group-hover/inner:text-amber-400 transition-all">
+                                            <Plus className="w-3.5 h-3.5 animate-none" />
+                                          </div>
+                                        )}
+                                      </div>
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* Add Exercise Modal */}
         <AnimatePresence>
@@ -13415,6 +14150,8 @@ export default function App() {
                       className="w-full bg-black/60 border border-white/20 rounded-md pl-12 pr-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
                     />
                   </div>
+
+
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
@@ -14448,58 +15185,6 @@ export default function App() {
                         )}
                       </div>
                     </div>
-
-                    {/* Pro Tips Section */}
-                    {(() => {
-                      const proTipsObj = getProTipsForExercise(resolvedEx.name, resolvedEx.pool, resolvedEx.muscleGroup, resolvedEx.instructions);
-                      return (
-                        <div className="p-10 bg-[#070707] border-t border-b border-white/5 text-left">
-                          <h4 className="text-[9px] font-black text-gym-accent uppercase tracking-[0.4em] mb-8 flex items-center gap-3">
-                            <div className="h-px flex-1 bg-gym-accent/20" />
-                            Elite Performance Guide
-                            <div className="h-px flex-1 bg-gym-accent/20" />
-                          </h4>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Pro Tips (What to do) */}
-                            <div className="space-y-4">
-                              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-emerald-500/10">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest font-mono">
-                                  Pro Tips (Max Effectiveness)
-                                </span>
-                              </div>
-                              <ul className="space-y-3">
-                                {proTipsObj.tips.map((tip, idx) => (
-                                  <li key={idx} className="flex gap-3 items-start text-xs font-light text-white/80 leading-relaxed">
-                                    <span className="text-emerald-500 select-none font-bold font-mono">✓</span>
-                                    <span>{tip}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-
-                            {/* What to Avoid (Pitfalls) */}
-                            <div className="space-y-4">
-                              <div className="flex items-center gap-2 mb-2 pb-2 border-b border-rose-500/10">
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
-                                <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest font-mono">
-                                  Mistakes to Avoid
-                                </span>
-                              </div>
-                              <ul className="space-y-3">
-                                {proTipsObj.avoid.map((dont, idx) => (
-                                  <li key={idx} className="flex gap-3 items-start text-xs font-light text-white/80 leading-relaxed">
-                                    <span className="text-rose-500 select-none font-bold font-mono">✕</span>
-                                    <span>{dont}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
 
                     {/* Video Demonstration Section */}
                     <div className="p-10 pb-5 bg-white/[0.01] border-t border-b border-white/5">

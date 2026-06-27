@@ -2269,6 +2269,8 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Push Ups": "Env8gAr_QnE",
   "Rack Pulls": "9vYBWV5OeKg",
   "Rear Delt Flyes": "nlkF7_2O_Lw",
+  "Reverse Barbell Curls": "2MnC2_WJKkA",
+  "Reverse Crunches": "XY8KzdDcMFg",
   "Reverse Hyperextensions": "NAPMNd9RRxM",
   "Reverse Wrist Curls": "_tcLwn78rSw",
   "Romanian Deadlift": "zU-f6DMCdAI",
