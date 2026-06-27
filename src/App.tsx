@@ -1959,6 +1959,7 @@ export default function App() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [addingToDay, setAddingToDay] = useState<number | null>(null);
   const [modalSearch, setModalSearch] = useState("");
+  const [selectedModalExercises, setSelectedModalExercises] = useState<Exercise[]>([]);
   const [expandedProgressSections, setExpandedProgressSections] = useState<
     Record<string, boolean>
   >({
@@ -3784,6 +3785,25 @@ export default function App() {
     setCustomGuidanceSteps([]);
     setGuidanceStepInput("");
     setShowAddCustomModal(false);
+  };
+
+  const handleAddMultipleExercisesToPlan = (dayIndex: number, exercises: Exercise[]) => {
+    if (exercises.length === 0) return;
+    const nextDays = [...currentDays];
+    const existingNames = new Set(nextDays[dayIndex].map((e) => e.name.toLowerCase()));
+    const toAdd = exercises.filter((ex) => !existingNames.has(ex.name.toLowerCase()));
+
+    if (toAdd.length === 0) {
+      alert("All selected exercises are already in the plan for this day.");
+      return;
+    }
+
+    nextDays[dayIndex] = [...nextDays[dayIndex], ...toAdd];
+    setCurrentDays(nextDays);
+    saveWorkout(nextDays);
+    setAddingToDay(null);
+    setModalSearch("");
+    setSelectedModalExercises([]);
   };
 
   const handleAddExerciseToPlan = (dayIndex: number, ex: Exercise) => {
@@ -13475,219 +13495,6 @@ export default function App() {
                   );
                 })()}
 
-                {/* 🌟 Dedicated Starred Favorites Category Dropdown 🌟 */}
-                <div className="group mb-4">
-                  <button
-                    onClick={() => setFavoritesDropdownOpen(!favoritesDropdownOpen)}
-                    className={`w-full flex items-center justify-between p-6 rounded-md border transition-all cursor-pointer group backdrop-blur-md ${
-                      favoritesDropdownOpen
-                        ? "bg-amber-500/[0.04] border-amber-500 shadow-md shadow-amber-500/10"
-                        : "bg-black/70 border-white/15 hover:bg-white/[0.04] hover:border-white/25"
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-8 h-8 rounded-md bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 text-amber-400 group-hover:bg-amber-500/20 group-hover:border-amber-500/40 transition-all">
-                        <Star className="w-4 h-4 fill-amber-500/20" />
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-lg font-light italic font-serif text-white/90">
-                          Favourites
-                        </h3>
-                        <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
-                          {favoriteExercises.length} Ex.
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      {!favoritesDropdownOpen && favoriteExercises.length === 0 && (
-                        <span className="text-[9px] text-amber-400 font-bold uppercase tracking-widest opacity-60 group-hover:opacity-100">
-                          No Favorites Stored
-                        </span>
-                      )}
-                      <ChevronDown
-                        className={`w-4 h-4 transition-transform duration-500 ${favoritesDropdownOpen ? "rotate-180" : ""} text-white/20 group-hover:text-amber-400`}
-                      />
-                    </div>
-                  </button>
-
-                  <AnimatePresence>
-                    {favoritesDropdownOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                        animate={{
-                          height: "auto",
-                          opacity: 1,
-                          marginTop: 12,
-                        }}
-                        exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                        className="overflow-hidden"
-                      >
-                        <motion.div
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.5, ease: "easeOut" }}
-                          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6"
-                        >
-                          {(() => {
-                            const addedFavs = favoriteExercises
-                              .filter(exName => selectedFavorites[exName])
-                              .map(exName => findExerciseByName(exName))
-                              .filter((ex): ex is Exercise => !!ex);
-
-                            return (
-                              <>
-                                {addedFavs.map((ex, ei) => {
-                                  const resolvedEx = findExerciseByName(ex.name);
-                                  const poolKey = resolvedEx?.pool || ex.pool;
-                                  const label = poolKey
-                                    ? poolKey
-                                        .split('_')
-                                        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-                                        .join(' ')
-                                    : "";
-
-                                  const peakWeight = (() => {
-                                    const weights: number[] = [];
-                                    sessionSets?.forEach((s) => {
-                                      if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()) {
-                                        const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
-                                        if (w && !isNaN(w)) weights.push(w);
-                                      }
-                                    });
-                                    archivedWorkouts?.forEach((w) => {
-                                      w.sets?.forEach((s) => {
-                                        if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()) {
-                                          const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
-                                          if (w && !isNaN(w)) weights.push(w);
-                                        }
-                                      });
-                                    });
-                                    return weights.length > 0 ? Math.max(...weights) : null;
-                                  })();
-
-                                  return (
-                                    <motion.div
-                                      key={`fav-card-${ex.name}`}
-                                      layout
-                                      initial={{ opacity: 0, y: 15 }}
-                                      animate={{ opacity: 1, y: 0 }}
-                                      className="bg-black/35 border border-white/10 hover:border-amber-400/30 rounded-xl p-5 flex flex-col justify-between backdrop-blur-xl relative overflow-hidden group/card transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] hover:bg-black/55"
-                                    >
-                                      <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
-                                      <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-amber-400 opacity-35 group-hover/card:opacity-100 transition-opacity duration-300" />
-
-                                      <div className="space-y-4 pl-1">
-                                        <div className="flex items-start justify-between gap-4">
-                                          <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-[10px] text-amber-400 font-black tracking-widest font-mono bg-amber-400/10 px-2 py-0.5 rounded-md border border-amber-400/20">
-                                              #{String(ei + 1).padStart(2, '0')}
-                                            </span>
-                                            {ex.category && (
-                                              <span className={`text-[8px] px-2 py-0.5 rounded-md font-black uppercase tracking-[0.12em] border ${
-                                                ex.category === "compound"
-                                                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                                                  : "bg-purple-500/10 text-purple-300 border-purple-500/20"
-                                              }`}>
-                                                {ex.category}
-                                              </span>
-                                            )}
-                                            {label && (
-                                              <span className="text-[8px] px-2 py-0.5 rounded-md font-bold uppercase tracking-[0.12em] bg-white/[0.03] text-white/50 border border-white/5">
-                                                {label}
-                                              </span>
-                                            )}
-                                          </div>
-
-                                          <div className="flex gap-1.5 shrink-0 opacity-40 group-hover/card:opacity-100 transition-opacity duration-300">
-                                            <button
-                                              onClick={() => setGuidanceEx(ex)}
-                                              className="p-1.5 bg-white/[0.03] border border-white/5 text-white/40 hover:text-gym-accent hover:bg-gym-accent/10 hover:border-gym-accent/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
-                                              title="Guidance & Instructions"
-                                            >
-                                              <BookOpen className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button
-                                              onClick={() => {
-                                                setSelectedFavorites(prev => ({
-                                                  ...prev,
-                                                  [ex.name]: false
-                                                }));
-                                              }}
-                                              className="p-1.5 bg-red-500/[0.01] border border-red-500/10 text-red-500/50 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
-                                              title="Remove from favorites list"
-                                            >
-                                              <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                          </div>
-                                        </div>
-
-                                        <div>
-                                          <h4 className="text-base font-bold font-sans text-white tracking-tight leading-snug group-hover/card:text-amber-400 transition-colors duration-300" title={ex.name}>
-                                            {ex.name}
-                                          </h4>
-                                        </div>
-
-                                        <div className="pt-1 border-t border-white/5">
-                                          <div className="flex flex-col">
-                                            <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider">PRIMARY TARGET</span>
-                                            <span className="text-[10px] font-semibold text-white/80 mt-0.5 truncate">
-                                              {resolvedEx?.muscleGroup ? resolvedEx.muscleGroup.toUpperCase() : label || "N/A"}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      <div className="mt-5 pt-3.5 border-t border-white/5 flex items-center justify-between pl-1">
-                                        <div className="flex flex-col">
-                                          <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider">PERSONAL BEST</span>
-                                          <span className="text-[10.5px] font-bold font-mono text-amber-400 mt-0.5 flex items-center gap-1">
-                                            {peakWeight ? (
-                                              <>
-                                                <Trophy className="w-3 h-3 text-amber-400 shrink-0" />
-                                                <span>{peakWeight}kg</span>
-                                              </>
-                                            ) : (
-                                              <span className="text-white/20 font-medium">Unrecorded</span>
-                                            )}
-                                          </span>
-                                        </div>
-
-                                        <div className="flex flex-col items-end">
-                                          <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider mb-1">PROG. TREND</span>
-                                          <div className="bg-black/40 border border-white/5 px-2 py-1 rounded-md flex items-center justify-center min-h-[22px]">
-                                            <Sparkline
-                                              exName={ex.name}
-                                              sessionSets={sessionSets}
-                                              archivedWorkouts={archivedWorkouts}
-                                              width={65}
-                                              height={14}
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </motion.div>
-                                  );
-                                })}
-
-                                {/* Add Exercise Slot */}
-                                <button
-                                  onClick={() => setFavoritesModalOpen(true)}
-                                  className="bg-black/30 border border-white/10 border-dashed rounded-md p-4 flex flex-col items-center justify-center gap-2 hover:bg-black/50 hover:border-amber-400/30 transition-all cursor-pointer group/add min-h-[105px]"
-                                >
-                                  <Plus className="w-4 h-4 text-white/40 group-hover/add:text-amber-400 transition-all animate-none" />
-                                  <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 group-hover/add:text-white transition-all">
-                                    Add Exercise
-                                  </span>
-                                </button>
-                              </>
-                            );
-                          })()}
-                        </motion.div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
                 {DAY_CONFIG.map((day, di) => (
                   <div key={di} className="group">
                     <button
@@ -14090,6 +13897,7 @@ export default function App() {
                 onClick={() => {
                   setAddingToDay(null);
                   setModalSearch("");
+                  setSelectedModalExercises([]);
                 }}
                 className="absolute inset-0 bg-black/80 backdrop-blur-sm"
               />
@@ -14103,7 +13911,7 @@ export default function App() {
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex flex-col">
                       <span className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] mb-1">
-                        Select Exercise
+                        Select Exercises (Multi-select)
                       </span>
                       <h3 className="text-xl font-light italic font-serif">
                         Add to {DAY_CONFIG[addingToDay].name}
@@ -14132,6 +13940,7 @@ export default function App() {
                         onClick={() => {
                           setAddingToDay(null);
                           setModalSearch("");
+                          setSelectedModalExercises([]);
                         }}
                         className="p-2 text-white/20 hover:text-white transition-all cursor-pointer text-sm"
                       >
@@ -14151,7 +13960,6 @@ export default function App() {
                     />
                   </div>
 
-
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
@@ -14169,45 +13977,71 @@ export default function App() {
 
                     if (filtered.length === 0) return null;
 
-                    const renderExercise = (ex: Exercise) => (
-                      <div key={ex.name} className="relative group">
-                        <button
-                          onClick={() =>
-                            handleAddExerciseToPlan(addingToDay, ex)
-                          }
-                          className="w-full flex items-center justify-between p-4 bg-black/65 border border-white/10 rounded-md hover:bg-black/85 hover:border-gym-accent/30 transition-all text-left cursor-pointer group/inner"
-                        >
-                          <div className="flex flex-col gap-1">
-                            <span className="text-xs font-medium text-white/70 group-hover/inner:text-gym-accent transition-colors">
-                              {ex.name}
-                            </span>
-                            {ex.category && (
-                              <span
-                                className={`text-[8px] font-bold tracking-wider uppercase ${
-                                  ex.category === "compound"
-                                    ? "text-amber-500/80"
-                                    : "text-purple-400/80"
-                                }`}
-                              >
-                                {ex.category === "compound" ? "C" : "I"} —{" "}
-                                {ex.category}
+                    const renderExercise = (ex: Exercise) => {
+                      const isSelected = selectedModalExercises.some(e => e.name === ex.name);
+                      return (
+                        <div key={ex.name} className="relative group">
+                          <button
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedModalExercises(prev => prev.filter(e => e.name !== ex.name));
+                              } else {
+                                setSelectedModalExercises(prev => [...prev, ex]);
+                              }
+                            }}
+                            className={`w-full flex items-center justify-between p-4 bg-black/65 border rounded-md hover:bg-black/85 transition-all text-left cursor-pointer group/inner ${
+                              isSelected
+                                ? "border-gym-accent bg-gym-accent/5"
+                                : "border-white/10 text-white/70 hover:border-gym-accent/30"
+                            }`}
+                          >
+                            <div className="flex flex-col gap-1.5 min-w-0 pr-12">
+                              <span className={`text-xs font-semibold truncate transition-colors ${isSelected ? 'text-gym-accent' : 'text-white/70 group-hover/inner:text-gym-accent'}`}>
+                                {ex.name}
                               </span>
-                            )}
-                          </div>
-                          <Plus className="w-3 h-3 text-white/10 group-hover/inner:text-gym-accent" />
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setGuidanceEx(ex);
-                          }}
-                          className="absolute right-12 top-1/2 -translate-y-1/2 p-2 text-white/10 hover:text-gym-accent transition-all cursor-pointer"
-                          title="View Guidance"
-                        >
-                          <BookOpen className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    );
+                              {ex.category && (
+                                <span
+                                  className={`text-[8px] font-bold tracking-wider uppercase ${
+                                    isSelected
+                                      ? "text-gym-accent"
+                                      : ex.category === "compound"
+                                        ? "text-amber-500/80"
+                                        : "text-purple-400/80"
+                                  }`}
+                                >
+                                  {ex.category === "compound" ? "C" : "I"} —{" "}
+                                  {ex.category}
+                                </span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center shrink-0">
+                              {isSelected ? (
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-gym-accent/15 border border-gym-accent/20 px-2.5 py-1 rounded-md text-gym-accent flex items-center gap-1">
+                                  <Check className="w-2.5 h-2.5" /> Selected
+                                </span>
+                              ) : (
+                                <div className="p-1 rounded bg-white/5 border border-white/10 group-hover/inner:border-gym-accent/40 group-hover/inner:bg-gym-accent/10 text-white/30 group-hover/inner:text-gym-accent transition-all">
+                                  <Plus className="w-3.5 h-3.5 animate-none" />
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setGuidanceEx(ex);
+                            }}
+                            className={`absolute right-12 top-1/2 -translate-y-1/2 p-2 transition-all cursor-pointer z-10 ${
+                              isSelected ? "text-gym-accent/40 hover:text-gym-accent" : "text-white/10 hover:text-gym-accent"
+                            }`}
+                            title="View Guidance"
+                          >
+                            <BookOpen className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    };
 
                     if (poolKey === "upper_back") {
                       const groups = [
@@ -14396,6 +14230,32 @@ export default function App() {
                     );
                   })}
                 </div>
+
+                {selectedModalExercises.length > 0 && (
+                  <div className="p-6 border-t border-white/5 bg-[#080808] flex items-center justify-between gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] text-white/30 uppercase tracking-[0.2em] font-mono">Multiselected</span>
+                      <span className="text-xs font-bold text-gym-accent">
+                        {selectedModalExercises.length} exercise{selectedModalExercises.length > 1 ? "s" : ""} selected
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setSelectedModalExercises([])}
+                        className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-white/40 hover:text-white transition-all cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={() => handleAddMultipleExercisesToPlan(addingToDay, selectedModalExercises)}
+                        className="px-5 py-2.5 bg-gym-accent text-black hover:bg-white transition-all rounded-md text-[10px] font-bold uppercase tracking-widest cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Plus className="w-3.5 h-3.5 text-black animate-none" />
+                        Add Selected ({selectedModalExercises.length})
+                      </button>
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </div>
           )}
