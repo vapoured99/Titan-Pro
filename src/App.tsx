@@ -6092,79 +6092,89 @@ export default function App() {
                     : "Sets"}
                 </span>
               </div>
-              <div className="grid grid-cols-1 gap-1.5 max-h-36 overflow-y-auto pr-1">
-                {loggedSetsForThisEx.map(
-                  (set, sIdx) => (
-                    <div
-                      key={set.id || sIdx}
-                      className="flex items-center justify-between bg-black/55 border border-white/5 px-2.5 py-1.5 rounded-md hover:border-white/15 transition-colors group/setrow"
-                    >
-                      <div className="flex items-center gap-2 flex-wrap min-w-0">
-                        <span className="text-[9px] font-bold text-white/30 tracking-wider">
-                          SET {sIdx + 1}
-                        </span>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-xs font-semibold text-white/95">
-                            {set.weight}
-                          </span>
-                          <span className="text-[8px] text-white/40">
-                            {ex.pool === "cardio"
-                              ? "min"
-                              : "kg"}
-                          </span>
-                        </div>
-                        <span className="text-[9px] text-white/20">
-                          ×
-                        </span>
-                        <div className="flex items-baseline gap-0.5">
-                          <span className="text-xs font-semibold text-white/95">
-                            {set.reps}
-                          </span>
-                          <span className="text-[8px] text-white/40">
-                            {ex.pool === "cardio"
-                              ? "lvl"
-                              : "reps"}
-                          </span>
-                        </div>
-                        {set.notes && (
-                          <span
-                            onClick={() => setViewingNote(set.notes)}
-                            className="ml-1 px-1.5 py-0.5 bg-gym-accent/11 border border-gym-accent/20 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
-                            title="Click to view full note"
-                          >
-                            {set.notes}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[8px] font-mono text-white/30 hidden sm:inline">
-                          {set.timestamp?.seconds
-                            ? new Date(
-                                set.timestamp
-                                  .seconds * 1000,
-                              ).toLocaleTimeString(
-                                [],
-                                {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                },
-                              )
-                            : "Just now"}
-                        </span>
-                        <button
-                          onClick={() => {
-                            if (set.id)
-                              handleDeleteSet(set.id);
-                          }}
-                          className="p-1 text-red-500/50 hover:text-red-500 hover:bg-neutral-950 rounded transition-colors"
-                          title="Delete set"
+              <div className="max-h-36 overflow-y-auto pr-1 flex flex-col">
+                <AnimatePresence initial={false}>
+                  {loggedSetsForThisEx.map(
+                    (set, sIdx) => (
+                      <motion.div
+                        key={set.id || `temp-${sIdx}`}
+                        initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                        animate={{ height: "auto", opacity: 1, marginBottom: 6 }}
+                        exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                        transition={{ duration: 0.2 }}
+                        style={{ overflow: "hidden" }}
+                      >
+                        <div
+                          className="flex items-center justify-between bg-black/55 border border-white/5 px-2.5 py-1.5 rounded-md hover:border-white/15 transition-colors group/setrow"
                         >
-                          <Trash2 className="w-2.5 h-2.5 text-red-500" />
-                        </button>
-                      </div>
-                    </div>
-                  ),
-                )}
+                          <div className="flex items-center gap-2 flex-wrap min-w-0">
+                            <span className="text-[9px] font-bold text-white/30 tracking-wider">
+                              SET {sIdx + 1}
+                            </span>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-xs font-semibold text-white/95">
+                                {set.weight}
+                              </span>
+                              <span className="text-[8px] text-white/40">
+                                {ex.pool === "cardio"
+                                  ? "min"
+                                  : "kg"}
+                              </span>
+                            </div>
+                            <span className="text-[9px] text-white/20">
+                              ×
+                            </span>
+                            <div className="flex items-baseline gap-0.5">
+                              <span className="text-xs font-semibold text-white/95">
+                                {set.reps}
+                              </span>
+                              <span className="text-[8px] text-white/40">
+                                {ex.pool === "cardio"
+                                  ? "lvl"
+                                  : "reps"}
+                              </span>
+                            </div>
+                            {set.notes && (
+                              <span
+                                onClick={() => setViewingNote(set.notes)}
+                                className="ml-1 px-1.5 py-0.5 bg-gym-accent/11 border border-gym-accent/20 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
+                                title="Click to view full note"
+                              >
+                                {set.notes}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[8px] font-mono text-white/30 hidden sm:inline">
+                              {set.timestamp?.seconds
+                                ? new Date(
+                                    set.timestamp
+                                      .seconds * 1000,
+                                  ).toLocaleTimeString(
+                                    [],
+                                    {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  )
+                                : "Just now"}
+                            </span>
+                            <button
+                              onClick={() => {
+                                if (set.id)
+                                  handleDeleteSet(set.id);
+                              }}
+                              className="p-1 text-red-500/50 hover:text-red-500 hover:bg-neutral-950 rounded transition-colors"
+                              title="Delete set"
+                            >
+                              <Trash2 className="w-2.5 h-2.5 text-red-500" />
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ),
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           );
@@ -10607,63 +10617,73 @@ export default function App() {
                                     {exerciseSets.length} Sets
                                   </span>
                                 </div>
-                                <div className="space-y-2">
-                                  {exerciseSets.map((s, idx) => {
-                                    const ex = findExerciseByName(name);
-                                    const isCardio = ex?.pool === "cardio";
-                                    return (
-                                      <div
-                                        key={idx}
-                                        className="flex items-center justify-between group/set"
-                                      >
-                                        <div className="flex items-center gap-3 flex-wrap min-w-0">
-                                          {isCardio ? (
-                                            <>
-                                              <span className="text-[11px] tabular-nums text-white/90">
-                                                {s.weight} min
-                                              </span>
-                                              <span className="text-[11px] tabular-nums text-white/40">
-                                                @
-                                              </span>
-                                              <span className="text-[11px] tabular-nums text-white/90">
-                                                Lvl {s.reps}
-                                              </span>
-                                            </>
-                                          ) : (
-                                            <>
-                                              <span className="text-[11px] tabular-nums text-white/90">
-                                                {s.weight}kg
-                                              </span>
-                                              <span className="text-[11px] tabular-nums text-white/40">
-                                                ×
-                                              </span>
-                                              <span className="text-[11px] tabular-nums text-white/90">
-                                                {s.reps}
-                                              </span>
-                                            </>
-                                          )}
-                                          {s.notes && (
-                                            <span
-                                              onClick={() => setViewingNote(s.notes)}
-                                              className="px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/35 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
-                                              title="Click to view full note"
-                                            >
-                                              {s.notes}
-                                            </span>
-                                          )}
-                                        </div>
-                                        <button
-                                          onClick={() =>
-                                            s.id && handleDeleteSet(s.id)
-                                          }
-                                          className="opacity-80 hover:opacity-100 p-1 text-red-500 hover:text-red-400 transition-all cursor-pointer"
-                                          title="Delete set"
+                                <div className="flex flex-col">
+                                  <AnimatePresence initial={false}>
+                                    {exerciseSets.map((s, idx) => {
+                                      const ex = findExerciseByName(name);
+                                      const isCardio = ex?.pool === "cardio";
+                                      return (
+                                        <motion.div
+                                          key={s.id || `session-${idx}`}
+                                          initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                                          animate={{ height: "auto", opacity: 1, marginBottom: 8 }}
+                                          exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                                          transition={{ duration: 0.2 }}
+                                          style={{ overflow: "hidden" }}
                                         >
-                                          <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                                        </button>
-                                      </div>
-                                    );
-                                  })}
+                                          <div
+                                            className="flex items-center justify-between group/set"
+                                          >
+                                            <div className="flex items-center gap-3 flex-wrap min-w-0">
+                                              {isCardio ? (
+                                                <>
+                                                  <span className="text-[11px] tabular-nums text-white/90">
+                                                    {s.weight} min
+                                                  </span>
+                                                  <span className="text-[11px] tabular-nums text-white/40">
+                                                    @
+                                                  </span>
+                                                  <span className="text-[11px] tabular-nums text-white/90">
+                                                    Lvl {s.reps}
+                                                  </span>
+                                                </>
+                                              ) : (
+                                                <>
+                                                  <span className="text-[11px] tabular-nums text-white/90">
+                                                    {s.weight}kg
+                                                  </span>
+                                                  <span className="text-[11px] tabular-nums text-white/40">
+                                                    ×
+                                                  </span>
+                                                  <span className="text-[11px] tabular-nums text-white/90">
+                                                    {s.reps}
+                                                  </span>
+                                                </>
+                                              )}
+                                              {s.notes && (
+                                                <span
+                                                  onClick={() => setViewingNote(s.notes)}
+                                                  className="px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/35 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
+                                                  title="Click to view full note"
+                                                >
+                                                  {s.notes}
+                                                </span>
+                                              )}
+                                            </div>
+                                            <button
+                                              onClick={() =>
+                                                s.id && handleDeleteSet(s.id)
+                                              }
+                                              className="opacity-80 hover:opacity-100 p-1 text-red-500 hover:text-red-400 transition-all cursor-pointer"
+                                              title="Delete set"
+                                            >
+                                              <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                            </button>
+                                          </div>
+                                        </motion.div>
+                                      );
+                                    })}
+                                  </AnimatePresence>
                                 </div>
                               </div>
                             ),
