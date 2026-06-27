@@ -5687,64 +5687,74 @@ export default function App() {
 
   const renderFullExerciseCard = (ex: Exercise, di: number, ei: number) => {
     const IconComponent = iconMap[ex.icon] || Dumbbell;
+    const resolvedEx = findExerciseByName(ex.name);
+    const poolKey = resolvedEx?.pool || ex.pool;
+    const label = poolKey
+      ? poolKey
+          .split('_')
+          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(' ')
+      : "";
+
+    // Fetch first pro tip if available
+    const proTipsObj = resolvedEx ? getProTipsForExercise(resolvedEx.name, resolvedEx.pool, resolvedEx.muscleGroup) : null;
+    const firstTip = proTipsObj?.tips?.[0];
+
     return (
       <motion.div
         key={`${ei}-${ex.name}`}
         layout
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: ei * 0.05 }}
-        className="bg-black/75 border border-white/15 rounded-md p-6 flex flex-col group/card backdrop-blur-md"
+        transition={{ delay: ei * 0.04 }}
+        className="bg-black/35 border border-white/10 hover:border-gym-accent/30 rounded-2xl p-6 flex flex-col group/card backdrop-blur-xl relative overflow-hidden transition-all duration-300 hover:shadow-[0_12px_40px_rgba(0,0,0,0.6)] hover:bg-black/55"
       >
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-gym-accent font-bold uppercase tracking-widest">
-                Exercise {ei + 1}
+        {/* Top gradient glow line */}
+        <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-gym-accent/50 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+        
+        {/* Left brand indicator bar */}
+        <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-gym-accent opacity-30 group-hover/card:opacity-100 transition-opacity duration-300" />
+
+        {/* Header Block: Badges & Premium Utility Action Tray */}
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[10px] text-gym-accent font-black tracking-widest font-mono bg-gym-accent/10 px-2 py-0.5 rounded-md border border-gym-accent/20">
+              #{String(ei + 1).padStart(2, '0')}
+            </span>
+            {ex.category && (
+              <span
+                className={`text-[8px] px-2 py-0.5 rounded-md font-black uppercase tracking-[0.12em] border ${
+                  ex.category === "compound"
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    : "bg-purple-500/10 text-purple-300 border-purple-500/20"
+                }`}
+                title={
+                  ex.category === "compound"
+                    ? "Compound movement engaging multiple muscle groups"
+                    : "Isolation movement focusing on a specific muscle"
+                }
+              >
+                {ex.category}
               </span>
-              {ex.category && (
-                <span
-                  className={`text-[8px] px-1.5 py-0.2 rounded-md font-black uppercase tracking-[0.1em] ${
-                    ex.category === "compound"
-                      ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                      : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
-                  }`}
-                  title={
-                    ex.category === "compound"
-                      ? "Compound movement engaging multiple muscle groups"
-                      : "Isolation movement focusing on a specific muscle"
-                  }
-                >
-                  {ex.category}
-                </span>
-              )}
-            </div>
-            <div className="flex flex-col gap-1.5 mt-1">
-              <h4 className="text-2xl font-light italic font-serif text-gym-accent pt-0.5 pb-1 leading-snug drop-shadow-sm break-words">
-                {ex.name}
-              </h4>
-              <div>
-                <Sparkline
-                  exName={ex.name}
-                  sessionSets={sessionSets}
-                  archivedWorkouts={archivedWorkouts}
-                  width={80}
-                  height={18}
-                />
-              </div>
-            </div>
+            )}
+            {label && (
+              <span className="text-[8px] px-2 py-0.5 rounded-md font-bold uppercase tracking-[0.12em] bg-white/[0.03] text-white/50 border border-white/5">
+                {label}
+              </span>
+            )}
           </div>
-          <div className="flex flex-col gap-1.5 shrink-0">
+
+          <div className="flex gap-1.5 shrink-0 opacity-40 group-hover/card:opacity-100 transition-opacity duration-300">
             <button
               onClick={() => setGuidanceEx(ex)}
-              className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-md"
+              className="p-1.5 bg-white/[0.03] border border-white/5 text-white/40 hover:text-gym-accent hover:bg-gym-accent/10 hover:border-gym-accent/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
               title="Guidance & Instructions"
             >
               <BookOpen className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => handleSwap(di, ei)}
-              className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-md"
+              className="p-1.5 bg-white/[0.03] border border-white/5 text-white/40 hover:text-gym-accent hover:bg-gym-accent/10 hover:border-gym-accent/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
               title="Swap Exercise"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -5753,36 +5763,62 @@ export default function App() {
               onClick={() =>
                 handleRemoveExerciseFromFormattedProgram(di, ei)
               }
-              className="p-2.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-md"
+              className="p-1.5 bg-red-500/[0.01] border border-red-500/10 text-red-500/50 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
               title="Remove"
             >
-              <Trash2 className="w-3.5 h-3.5 text-red-500" />
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
 
-        <div className="mt-auto flex flex-col w-full">
-          {/* Sub-muscle Category Label */}
-          {(() => {
-            const resolvedEx = findExerciseByName(ex.name);
-            const poolKey = resolvedEx?.pool || ex.pool;
-            if (!poolKey) return null;
-            const label = poolKey
-              .split('_')
-              .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-              .join(' ');
-            return (
-              <div className="mb-1.5 text-[9px] font-mono font-bold uppercase tracking-wider text-gym-accent/80">
-                {label}
-              </div>
-            );
-          })()}
+        {/* Title & Sparkline Segment */}
+        <div className="flex flex-col gap-2.5 mb-4 pl-1">
+          <h4 className="text-xl font-bold font-sans text-white tracking-tight leading-snug group-hover/card:text-gym-accent transition-colors duration-300 break-words">
+            {ex.name}
+          </h4>
+          
+          {/* Sparkline & Trend section */}
+          <div className="flex items-center gap-3">
+            <Sparkline
+              exName={ex.name}
+              sessionSets={sessionSets}
+              archivedWorkouts={archivedWorkouts}
+              width={75}
+              height={15}
+            />
+            <span className="text-[8px] font-mono text-white/30 uppercase tracking-wider">progression trend</span>
+          </div>
+        </div>
 
-          <div className="flex flex-col gap-3 mb-4 bg-white/[0.02] border border-white/[0.04] p-3 rounded-md w-full">
-            {/* Row 1: Weight & Reps side by side */}
+        {/* Coach/Pro Tips Snippet */}
+        {firstTip && (
+          <div className="bg-white/[0.01] border-l-2 border-gym-accent/20 p-2.5 rounded-r-md mb-4 pl-3">
+            <span className="text-[7.5px] font-black uppercase text-gym-accent/60 tracking-wider block mb-0.5 font-mono">Coach Advice</span>
+            <div className="max-h-14 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
+              <p className="text-[10.5px] text-white/50 leading-normal italic">
+                "{firstTip}"
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Muscle Specs & Info Breakdown Grid */}
+        <div className="pb-4 mb-4 border-b border-white/5 pl-1">
+          <div className="flex flex-col">
+            <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider">PRIMARY TARGET</span>
+            <span className="text-[10px] font-semibold text-white/85 mt-0.5 truncate">
+              {resolvedEx?.muscleGroup ? resolvedEx.muscleGroup.toUpperCase() : label || "N/A"}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-auto flex flex-col w-full">
+          {/* Training Console Box */}
+          <div className="flex flex-col gap-3.5 mb-4 bg-white/[0.02] border border-white/[0.06] p-4 rounded-xl w-full hover:bg-white/[0.04] transition-all duration-300">
+            {/* Input Row: Weight & Reps */}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col">
-                <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
                   {ex.pool === "cardio"
                     ? "Time (min)"
                     : "Weight (kg)"}
@@ -5792,11 +5828,11 @@ export default function App() {
                   inputMode="decimal"
                   placeholder="0"
                   id={`w-${di}-${ei}`}
-                  className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                  className="w-full bg-black/20 border border-white/10 hover:border-white/20 focus:border-gym-accent focus:bg-black/40 rounded-xl py-2 px-3 text-sm font-semibold focus:outline-none transition-all text-white font-mono text-center"
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
                   {ex.pool === "cardio"
                     ? "Speed / Lvl"
                     : "Reps"}
@@ -5806,30 +5842,30 @@ export default function App() {
                   inputMode="numeric"
                   placeholder="0"
                   id={`r-${di}-${ei}`}
-                  className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                  className="w-full bg-black/20 border border-white/10 hover:border-white/20 focus:border-gym-accent focus:bg-black/40 rounded-xl py-2 px-3 text-sm font-semibold focus:outline-none transition-all text-white font-mono text-center"
                 />
               </div>
             </div>
 
-            {/* Row 2: Set Notes */}
+            {/* Input Row: Set Notes */}
             <div className="flex flex-col">
-              <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+              <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
                 Set Notes
               </span>
               <input
                 type="text"
                 placeholder="Warmup, RPE 9, drop set, etc."
                 id={`notes-${di}-${ei}`}
-                className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
+                className="w-full bg-black/20 border border-white/10 hover:border-white/20 focus:border-gym-accent focus:bg-black/40 rounded-xl py-2 px-3 text-xs font-normal focus:outline-none transition-all text-white"
               />
             </div>
 
-            {/* Set Difficulty Rating Grid */}
+            {/* Difficulty Rating Grid */}
             <div className="flex flex-col">
-              <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+              <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
                 Set Intensity (How'd it feel?)
               </span>
-              <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-md border border-white/5">
+              <div className="grid grid-cols-3 gap-1 p-1 bg-black/40 rounded-xl border border-white/5">
                 <button
                   type="button"
                   onClick={() =>
@@ -5838,7 +5874,7 @@ export default function App() {
                       [ex.name]: "easy",
                     }))
                   }
-                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
+                  className={`py-1.5 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-lg border transition-all cursor-pointer text-center ${
                     (setDifficulties[ex.name] || "moderate") === "easy"
                       ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-black shadow-[0_0_8px_rgba(16,185,129,0.1)]"
                       : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
@@ -5854,7 +5890,7 @@ export default function App() {
                       [ex.name]: "moderate",
                     }))
                   }
-                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
+                  className={`py-1.5 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-lg border transition-all cursor-pointer text-center ${
                     (setDifficulties[ex.name] || "moderate") === "moderate"
                       ? "bg-amber-500/15 border-amber-500/35 text-amber-400 font-bold shadow-[0_0_8px_rgba(245,158,11,0.1)]"
                       : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
@@ -5870,7 +5906,7 @@ export default function App() {
                       [ex.name]: "hard",
                     }))
                   }
-                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
+                  className={`py-1.5 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-lg border transition-all cursor-pointer text-center ${
                     (setDifficulties[ex.name] || "moderate") === "hard"
                       ? "bg-rose-500/15 border-rose-500/35 text-rose-400 font-black shadow-[0_0_8px_rgba(244,63,94,0.1)]"
                       : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
@@ -5916,7 +5952,7 @@ export default function App() {
               });
 
               return (
-                <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-md px-2.5 py-1.5 mt-1 text-[10px]">
+                <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-xl px-3 py-2 mt-1 text-[10px]">
                   <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
                     <span className="relative flex h-1.5 w-1.5 shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gym-accent/40 opacity-75"></span>
@@ -5946,7 +5982,7 @@ export default function App() {
               );
             })()}
 
-            {/* Row 3: Log button */}
+            {/* Log Set Action Button */}
             <button
               onClick={() => {
                 const wInput = document.getElementById(
@@ -5974,13 +6010,14 @@ export default function App() {
                   }));
                 }
               }}
-              className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2 rounded-md text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
+              className="w-full bg-gym-accent hover:bg-gym-accent-light text-black py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:shadow-[0_4px_20px_rgba(255,231,101,0.25)] active:scale-[0.98] cursor-pointer text-center font-bold mt-1"
             >
               Log Set
             </button>
           </div>
         </div>
 
+        {/* Dynamic Progression Advisory Segment */}
         {(() => {
           const loggedSetsForThisEx =
             sessionSets.filter(
@@ -6027,11 +6064,11 @@ export default function App() {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="mb-4 p-3 rounded-md bg-gym-accent/5 border border-gym-accent/20 overflow-hidden"
+              className="mb-4 p-3 rounded-xl bg-gym-accent/5 border border-gym-accent/20 overflow-hidden"
             >
               {recommendWeight > 0 && (
                 hasStruggled ? (
-                  <div className="mb-3.5 p-3 rounded-md bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2">
+                  <div className="mb-3.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2">
                     <div className="flex items-center gap-1.5 justify-between">
                       <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-amber-400 flex items-center gap-1.5 animate-pulse">
                         <Activity className="w-3.5 h-3.5" />
@@ -6046,7 +6083,7 @@ export default function App() {
                     </p>
                   </div>
                 ) : (
-                  <div className="mb-3.5 p-3 rounded-md bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 flex flex-col gap-2">
+                  <div className="mb-3.5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 flex flex-col gap-2">
                     <div className="flex items-center gap-1.5 justify-between">
                       <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
                         <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
@@ -6080,6 +6117,7 @@ export default function App() {
                 )
               )}
 
+              {/* Today's Logged Sets List header */}
               <div className="flex justify-between items-center mb-2">
                 <span className="text-[9px] font-black text-gym-accent uppercase tracking-wider flex items-center gap-1.5">
                   <Activity className="w-3 h-3 text-gym-accent animate-pulse" />{" "}
@@ -6092,6 +6130,8 @@ export default function App() {
                     : "Sets"}
                 </span>
               </div>
+
+              {/* Sets Log Feed with smooth exit animation */}
               <div className="max-h-36 overflow-y-auto pr-1 flex flex-col">
                 <AnimatePresence initial={false}>
                   {loggedSetsForThisEx.map(
@@ -6180,6 +6220,7 @@ export default function App() {
           );
         })()}
 
+        {/* Historical Peak & Last Logged PR Indicator block */}
         <PBBlock
           exName={ex.name}
           pbs={personalBests}
@@ -13131,87 +13172,162 @@ export default function App() {
                             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6"
                           >
                             {currentDays[di]?.map((ex, ei) => {
+                              const resolvedEx = findExerciseByName(ex.name);
+                              const poolKey = resolvedEx?.pool || ex.pool;
+                              const label = poolKey
+                                ? poolKey
+                                    .split('_')
+                                    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                                    .join(' ')
+                                : "";
+
+                              // Fetch peak weight dynamically for this exercise
+                              const peakWeight = (() => {
+                                const weights: number[] = [];
+                                sessionSets?.forEach((s) => {
+                                  if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()) {
+                                    const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
+                                    if (w && !isNaN(w)) weights.push(w);
+                                  }
+                                });
+                                archivedWorkouts?.forEach((w) => {
+                                  w.sets?.forEach((s) => {
+                                    if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()) {
+                                      const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
+                                      if (w && !isNaN(w)) weights.push(w);
+                                    }
+                                  });
+                                });
+                                return weights.length > 0 ? Math.max(...weights) : null;
+                              })();
+
+                              // Fetch first pro tip if available
+                              const proTipsObj = resolvedEx ? getProTipsForExercise(resolvedEx.name, resolvedEx.pool, resolvedEx.muscleGroup) : null;
+                              const firstTip = proTipsObj?.tips?.[0];
+
                               return (
                                 <motion.div
                                   key={`${ei}-${ex.name}`}
                                   layout
-                                  initial={{ opacity: 0, y: 10 }}
+                                  initial={{ opacity: 0, y: 15 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  className="bg-black/45 border border-white/10 hover:border-white/20 rounded-md p-4 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group/card"
+                                  className="bg-black/35 border border-white/10 hover:border-gym-accent/30 rounded-xl p-5 flex flex-col justify-between backdrop-blur-xl relative overflow-hidden group/card transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] hover:bg-black/55"
                                 >
-                                  {/* Accent indicator line on left */}
-                                  <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-gym-accent opacity-40 group-hover/card:opacity-100 transition-opacity" />
+                                  {/* Top accent glow line */}
+                                  <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-gym-accent/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                                  
+                                  {/* Left subtle indicator bar */}
+                                  <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-gym-accent opacity-35 group-hover/card:opacity-100 transition-opacity duration-300" />
 
-                                  <div className="flex items-start justify-between gap-4 pl-1">
-                                    <div className="flex flex-col min-w-0">
-                                      <div className="flex items-center gap-1.5 flex-wrap">
-                                        <span className="text-[9px] text-gym-accent font-bold uppercase tracking-widest font-mono">
-                                          #{ei + 1}
+                                  <div className="space-y-4 pl-1">
+                                    {/* Row 1: Badges & Actions */}
+                                    <div className="flex items-start justify-between gap-4">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-[10px] text-gym-accent font-black tracking-widest font-mono bg-gym-accent/10 px-2 py-0.5 rounded-md border border-gym-accent/20">
+                                          #{String(ei + 1).padStart(2, '0')}
                                         </span>
                                         {ex.category && (
-                                          <span className={`text-[8px] px-1.5 py-0.2 rounded-md font-black uppercase tracking-[0.1em] ${
+                                          <span className={`text-[8px] px-2 py-0.5 rounded-md font-black uppercase tracking-[0.12em] border ${
                                             ex.category === "compound"
-                                              ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                              : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
+                                              ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                              : "bg-purple-500/10 text-purple-300 border-purple-500/20"
                                           }`}>
                                             {ex.category}
                                           </span>
                                         )}
+                                        {label && (
+                                          <span className="text-[8px] px-2 py-0.5 rounded-md font-bold uppercase tracking-[0.12em] bg-white/[0.03] text-white/50 border border-white/5">
+                                            {label}
+                                          </span>
+                                        )}
                                       </div>
-                                      <h4 className="text-base font-light italic font-serif text-white/90 mt-1.5 break-words leading-tight" title={ex.name}>
+
+                                      {/* Premium Utility Action Tray */}
+                                      <div className="flex gap-1.5 shrink-0 opacity-40 group-hover/card:opacity-100 transition-opacity duration-300">
+                                        <button
+                                          onClick={() => setGuidanceEx(ex)}
+                                          className="p-1.5 bg-white/[0.03] border border-white/5 text-white/40 hover:text-gym-accent hover:bg-gym-accent/10 hover:border-gym-accent/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
+                                          title="Guidance & Instructions"
+                                        >
+                                          <BookOpen className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          onClick={() => handleSwap(di, ei)}
+                                          className="p-1.5 bg-white/[0.03] border border-white/5 text-white/40 hover:text-gym-accent hover:bg-gym-accent/10 hover:border-gym-accent/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
+                                          title="Swap Exercise"
+                                        >
+                                          <RefreshCw className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                          onClick={() => handleRemoveExerciseFromPlan(di, ei)}
+                                          className="p-1.5 bg-red-500/[0.01] border border-red-500/10 text-red-500/50 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/20 transition-all cursor-pointer rounded-lg hover:scale-105 active:scale-95 animate-none"
+                                          title="Remove from schedule"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    {/* Row 2: Exercise Name */}
+                                    <div>
+                                      <h4 className="text-base font-bold font-sans text-white tracking-tight leading-snug group-hover/card:text-gym-accent transition-colors duration-300" title={ex.name}>
                                         {ex.name}
                                       </h4>
                                     </div>
 
-                                    {/* Action buttons */}
-                                    <div className="flex gap-1 shrink-0">
-                                      <button
-                                        onClick={() => setGuidanceEx(ex)}
-                                        className="p-1.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-md"
-                                        title="Guidance & Instructions"
-                                      >
-                                        <BookOpen className="w-3.5 h-3.5" />
-                                      </button>
-                                      <button
-                                        onClick={() => handleSwap(di, ei)}
-                                        className="p-1.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-md"
-                                        title="Swap Exercise"
-                                      >
-                                        <RefreshCw className="w-3.5 h-3.5" />
-                                      </button>
-                                      <button
-                                        onClick={() => handleRemoveExerciseFromPlan(di, ei)}
-                                        className="p-1.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-md"
-                                        title="Remove"
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                                      </button>
+                                    {/* Row 3: Coach/Pro Tips Snippet if available */}
+                                    {firstTip && (
+                                      <div className="bg-white/[0.01] border-l-2 border-gym-accent/20 p-2.5 rounded-r-md">
+                                        <span className="text-[7.5px] font-black uppercase text-gym-accent/60 tracking-wider block mb-0.5 font-mono">Coach Tip</span>
+                                        <div className="max-h-14 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
+                                          <p className="text-[10px] text-white/50 leading-normal italic">
+                                            "{firstTip}"
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Row 4: Specifications & Live Stats */}
+                                    <div className="pt-1 border-t border-white/5">
+                                      {/* Secondary Target Badge */}
+                                      <div className="flex flex-col">
+                                        <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider">PRIMARY TARGET</span>
+                                        <span className="text-[10px] font-semibold text-white/80 mt-0.5 truncate">
+                                          {resolvedEx?.muscleGroup ? resolvedEx.muscleGroup.toUpperCase() : label || "N/A"}
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
 
-                                  <div className="mt-4 flex items-center justify-between pl-1">
-                                    {(() => {
-                                      const resolvedEx = findExerciseByName(ex.name);
-                                      const poolKey = resolvedEx?.pool || ex.pool;
-                                      if (!poolKey) return <div />;
-                                      const label = poolKey
-                                        .split('_')
-                                        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-                                        .join(' ');
-                                      return (
-                                        <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest font-bold">
-                                          {label}
-                                        </span>
-                                      );
-                                    })()}
-                                    
-                                    <Sparkline
-                                      exName={ex.name}
-                                      sessionSets={sessionSets}
-                                      archivedWorkouts={archivedWorkouts}
-                                      width={50}
-                                      height={12}
-                                    />
+                                  {/* Footer: Dynamic Peak Record & Trend Micro-sparkline */}
+                                  <div className="mt-5 pt-3.5 border-t border-white/5 flex items-center justify-between pl-1">
+                                    <div className="flex flex-col">
+                                      <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider">PERSONAL BEST</span>
+                                      <span className="text-[10.5px] font-bold font-mono text-gym-accent mt-0.5 flex items-center gap-1">
+                                        {peakWeight ? (
+                                          <>
+                                            <Trophy className="w-3 h-3 text-gym-accent shrink-0" />
+                                            <span>{peakWeight}kg</span>
+                                          </>
+                                        ) : (
+                                          <span className="text-white/20 font-medium">Unrecorded</span>
+                                        )}
+                                      </span>
+                                    </div>
+
+                                    {/* High Tech Trend Sparkline Block */}
+                                    <div className="flex flex-col items-end">
+                                      <span className="text-[7.5px] font-mono text-white/35 uppercase tracking-wider mb-1">PROG. TREND</span>
+                                      <div className="bg-black/40 border border-white/5 px-2 py-1 rounded-md flex items-center justify-center min-h-[22px]">
+                                        <Sparkline
+                                          exName={ex.name}
+                                          sessionSets={sessionSets}
+                                          archivedWorkouts={archivedWorkouts}
+                                          width={65}
+                                          height={14}
+                                        />
+                                      </div>
+                                    </div>
                                   </div>
                                 </motion.div>
                               );
