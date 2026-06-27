@@ -5696,10 +5696,6 @@ export default function App() {
           .join(' ')
       : "";
 
-    // Fetch first pro tip if available
-    const proTipsObj = resolvedEx ? getProTipsForExercise(resolvedEx.name, resolvedEx.pool, resolvedEx.muscleGroup) : null;
-    const firstTip = proTipsObj?.tips?.[0];
-
     return (
       <motion.div
         key={`${ei}-${ex.name}`}
@@ -5790,17 +5786,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Coach/Pro Tips Snippet */}
-        {firstTip && (
-          <div className="bg-white/[0.01] border-l-2 border-gym-accent/20 p-2.5 rounded-r-md mb-4 pl-3">
-            <span className="text-[7.5px] font-black uppercase text-gym-accent/60 tracking-wider block mb-0.5 font-mono">Coach Advice</span>
-            <div className="max-h-14 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
-              <p className="text-[10.5px] text-white/50 leading-normal italic">
-                "{firstTip}"
-              </p>
-            </div>
-          </div>
-        )}
+
 
         {/* Muscle Specs & Info Breakdown Grid */}
         <div className="pb-4 mb-4 border-b border-white/5 pl-1">
@@ -13201,10 +13187,6 @@ export default function App() {
                                 return weights.length > 0 ? Math.max(...weights) : null;
                               })();
 
-                              // Fetch first pro tip if available
-                              const proTipsObj = resolvedEx ? getProTipsForExercise(resolvedEx.name, resolvedEx.pool, resolvedEx.muscleGroup) : null;
-                              const firstTip = proTipsObj?.tips?.[0];
-
                               return (
                                 <motion.div
                                   key={`${ei}-${ex.name}`}
@@ -13275,17 +13257,7 @@ export default function App() {
                                       </h4>
                                     </div>
 
-                                    {/* Row 3: Coach/Pro Tips Snippet if available */}
-                                    {firstTip && (
-                                      <div className="bg-white/[0.01] border-l-2 border-gym-accent/20 p-2.5 rounded-r-md">
-                                        <span className="text-[7.5px] font-black uppercase text-gym-accent/60 tracking-wider block mb-0.5 font-mono">Coach Tip</span>
-                                        <div className="max-h-14 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-white/10">
-                                          <p className="text-[10px] text-white/50 leading-normal italic">
-                                            "{firstTip}"
-                                          </p>
-                                        </div>
-                                      </div>
-                                    )}
+
 
                                     {/* Row 4: Specifications & Live Stats */}
                                     <div className="pt-1 border-t border-white/5">
@@ -14479,7 +14451,7 @@ export default function App() {
 
                     {/* Pro Tips Section */}
                     {(() => {
-                      const proTipsObj = getProTipsForExercise(resolvedEx.name, resolvedEx.pool, resolvedEx.muscleGroup);
+                      const proTipsObj = getProTipsForExercise(resolvedEx.name, resolvedEx.pool, resolvedEx.muscleGroup, resolvedEx.instructions);
                       return (
                         <div className="p-10 bg-[#070707] border-t border-b border-white/5 text-left">
                           <h4 className="text-[9px] font-black text-gym-accent uppercase tracking-[0.4em] mb-8 flex items-center gap-3">

@@ -126,6 +126,17 @@ const SPECIFIC_TIPS: Record<string, ProTips> = {
       "Do not stand too upright. If your torso is at a 45-degree angle or higher, you are working your upper traps instead of your mid-back.",
       "Don't yank the bar with your hands first; lead the motion from your elbows to prevent forearm and bicep dominance."
     ]
+  },
+  "straight arm lat pulldowns": {
+    tips: [
+      "Keep your arms straight with only a very slight, locked bend in your elbows throughout the entire movement. Your shoulder joint should be the sole moving pivot point.",
+      "Pull the bar or rope in a wide arc down to your thighs, actively squeezing your lower lats at the bottom of the range.",
+      "Maintain a proud chest and keep your shoulders depressed (down and back) to ensure your lats are doing the work instead of your traps or triceps."
+    ],
+    avoid: [
+      "Avoid turning this into a triceps pushdown. If your elbows are bending and extending, your triceps are taking over the movement.",
+      "Do not hunch or round your shoulders forward at the bottom. Keep your chest elevated and your shoulder blades pinned down."
+    ]
   }
 };
 
@@ -251,6 +262,66 @@ const CATEGORIES: Record<string, ProTips> = {
       "Don't round your shoulders or slouch when using rowing machines or cycle bikes."
     ]
   },
+  "calves": {
+    tips: [
+      "Get a full, deep stretch at the bottom of the movement. Hold the stretch for 1-2 seconds to eliminate the Achilles tendon's elastic rebound.",
+      "Drive up through the ball of your foot, specifically the big toe, to fully contract the gastrocnemius."
+    ],
+    avoid: [
+      "Do not bounce at the bottom. Bouncing uses the Achilles tendon elasticity instead of forcing calf muscle fibers to work.",
+      "Avoid turning your ankles outward or inward excessively during the press."
+    ]
+  },
+  "forearms": {
+    tips: [
+      "Use a complete range of motion: let the bar or dumbbell roll down to your fingertips on wrist curls, then curl up completely.",
+      "Keep your forearms flat and secured on a bench or your thighs to isolate the wrist flexors and extensors."
+    ],
+    avoid: [
+      "Do not use your biceps or shoulders to lift the weight; your wrists should be the only moving joints.",
+      "Avoid using excessively heavy weight that causes wrist discomfort or pain."
+    ]
+  },
+  "rear_delts": {
+    tips: [
+      "Lead the movement with your elbows and pull them outward and back, not down, to isolate the rear delts.",
+      "Keep your shoulders depressed and avoid squeezing your shoulder blades together, which shifts tension to the traps and rhomboids."
+    ],
+    avoid: [
+      "Avoid using too much weight which forces the larger mid-back muscles (traps, rhomboids) to dominate.",
+      "Do not swing or yank the weight back."
+    ]
+  },
+  "shoulders_press": {
+    tips: [
+      "Keep your elbows slightly tucked forward in the scapular plane (about 30 degrees) to protect your shoulder joints.",
+      "Brace your core and squeeze your glutes to create a rock-solid foundation and prevent lower back arching."
+    ],
+    avoid: [
+      "Avoid flaring your elbows completely out to the sides, which pinches the shoulder tendons.",
+      "Do not arch your lower back excessively to complete the lift."
+    ]
+  },
+  "quads_isolation": {
+    tips: [
+      "Squeeze your quadriceps hard at the top of the movement and hold the peak contraction for a split second.",
+      "Adjust the machine's roller pad to rest comfortably just above your ankles, and keep your hips pinned down."
+    ],
+    avoid: [
+      "Do not swing the weights or use momentum to kick up. Control both the positive and negative phases.",
+      "Avoid letting your buttocks lift off the seat during the movement."
+    ]
+  },
+  "hamstrings_isolation": {
+    tips: [
+      "Keep your hips firmly pressed down into the bench or pad to prevent your lower back from taking over.",
+      "Squeeze your hamstrings at peak contraction and control the eccentric return slowly to a fully extended stretch."
+    ],
+    avoid: [
+      "Do not let the weight stack slam on the return; maintain active hamstring tension throughout.",
+      "Avoid hyper-extending your knees or lifting your lower back."
+    ]
+  },
   "hex bar deadlift": {
     tips: [
       "Stance and Grip: Stand inside the hex bar, matching your feet hip-to-shoulder width apart. Grip the handles in the exact center to keep the bar balanced.",
@@ -267,7 +338,8 @@ const CATEGORIES: Record<string, ProTips> = {
 export function getProTipsForExercise(
   name: any,
   pool?: string,
-  muscleGroup?: string
+  muscleGroup?: string,
+  instructions?: string[]
 ): ProTips {
   const normName = typeof name === 'string' ? name.toLowerCase().trim() : '';
 
@@ -277,10 +349,31 @@ export function getProTipsForExercise(
   }
 
   // 2. Keyword matching in the name
-  if (normName.includes("squat") || normName.includes("leg press") || normName.includes("lunges")) {
+  if (normName.includes("straight arm") && (normName.includes("pulldown") || normName.includes("pull down") || normName.includes("pull"))) {
+    return SPECIFIC_TIPS["straight arm lat pulldowns"];
+  }
+  if (normName.includes("calf raise") || normName.includes("calves")) {
+    return CATEGORIES.calves;
+  }
+  if (normName.includes("wrist curl") || normName.includes("forearm") || normName.includes("wrist roller") || normName.includes("reverse curl")) {
+    return CATEGORIES.forearms;
+  }
+  if (normName.includes("rear delt") || normName.includes("face pull") || normName.includes("face-pull")) {
+    return CATEGORIES.rear_delts;
+  }
+  if (normName.includes("leg extension")) {
+    return CATEGORIES.quads_isolation;
+  }
+  if (normName.includes("leg curl") || normName.includes("hamstring curl")) {
+    return CATEGORIES.hamstrings_isolation;
+  }
+  if (normName.includes("shoulder press") || normName.includes("overhead press") || normName.includes("military press") || normName.includes("arnold press")) {
+    return CATEGORIES.shoulders_press;
+  }
+  if (normName.includes("squat") || normName.includes("leg press") || normName.includes("lunges") || normName.includes("hack squat")) {
     return CATEGORIES.squats_and_presses;
   }
-  if (normName.includes("bench press") || normName.includes("chest press") || normName.includes("incline press") || normName.includes("decline press") || normName.includes("push up") || normName.includes("push-up") || normName.includes("military press") || normName.includes("shoulder press")) {
+  if (normName.includes("bench press") || normName.includes("chest press") || normName.includes("incline press") || normName.includes("decline press") || normName.includes("push up") || normName.includes("push-up")) {
     return CATEGORIES.chest_press;
   }
   if (normName.includes("fly") || normName.includes("flye") || normName.includes("cable crossover")) {
@@ -293,7 +386,6 @@ export function getProTipsForExercise(
     return CATEGORIES.pulldowns;
   }
   if (normName.includes("bicep") || normName.includes("curl")) {
-    // Calf raises also use "raise", so check if curl is present or bicep
     if (normName.includes("curl") || normName.includes("bicep")) {
       return CATEGORIES.bicep_curls;
     }
@@ -322,7 +414,22 @@ export function getProTipsForExercise(
   if (activePool.includes("back") || activePool.includes("lats") || activePool.includes("rhomboids")) {
     return activePool.includes("lat") || normName.includes("pulldown") ? CATEGORIES.pulldowns : CATEGORIES.rows;
   }
-  if (activePool.includes("legs") || activePool.includes("quads") || activePool.includes("hamstring") || activePool.includes("glute")) {
+  if (activePool.includes("calf") || activePool.includes("calves")) {
+    return CATEGORIES.calves;
+  }
+  if (activePool.includes("forearm")) {
+    return CATEGORIES.forearms;
+  }
+  if (activePool.includes("rear_delt")) {
+    return CATEGORIES.rear_delts;
+  }
+  if (activePool.includes("quad")) {
+    return normName.includes("extension") ? CATEGORIES.quads_isolation : CATEGORIES.squats_and_presses;
+  }
+  if (activePool.includes("hamstring")) {
+    return normName.includes("curl") ? CATEGORIES.hamstrings_isolation : CATEGORIES.deadlifts_posterior;
+  }
+  if (activePool.includes("legs") || activePool.includes("glute")) {
     return normName.includes("dead") || normName.includes("morning") ? CATEGORIES.deadlifts_posterior : CATEGORIES.squats_and_presses;
   }
   if (activePool.includes("biceps") || activePool.includes("brachialis")) {
@@ -332,7 +439,10 @@ export function getProTipsForExercise(
     return CATEGORIES.tricep_extensions;
   }
   if (activePool.includes("delts") || activePool.includes("shoulder")) {
-    return normName.includes("press") ? CATEGORIES.chest_press : CATEGORIES.shoulder_raises;
+    if (normName.includes("press")) {
+      return CATEGORIES.shoulders_press;
+    }
+    return normName.includes("rear") ? CATEGORIES.rear_delts : CATEGORIES.shoulder_raises;
   }
   if (activePool.includes("core") || activePool.includes("obliques")) {
     return CATEGORIES.core_abs;
@@ -341,16 +451,66 @@ export function getProTipsForExercise(
     return CATEGORIES.cardio_hiit;
   }
 
-  // 4. Default broad athletic tips
+  // 4. Dynamic Generation from actual instructions (to ensure 100% custom non-generic accuracy)
+  if (instructions && instructions.length > 0) {
+    const customTips: string[] = [];
+    const customAvoids: string[] = [];
+
+    for (const inst of instructions) {
+      const lowerInst = inst.toLowerCase();
+      if (
+        lowerInst.includes("keep") ||
+        lowerInst.includes("ensure") ||
+        lowerInst.includes("maintain") ||
+        lowerInst.includes("focus") ||
+        lowerInst.includes("slowly") ||
+        lowerInst.includes("control") ||
+        lowerInst.includes("straight") ||
+        lowerInst.includes("flat") ||
+        lowerInst.includes("stabilize") ||
+        lowerInst.includes("breathe") ||
+        lowerInst.includes("exhale") ||
+        lowerInst.includes("inhale")
+      ) {
+        customTips.push(inst);
+      } else if (
+        lowerInst.includes("avoid") ||
+        lowerInst.includes("do not") ||
+        lowerInst.includes("don't") ||
+        lowerInst.includes("never") ||
+        lowerInst.includes("without")
+      ) {
+        customAvoids.push(inst);
+      }
+    }
+
+    if (customTips.length > 0) {
+      const finalTips = [...customTips];
+      if (finalTips.length < 2 && instructions.length > 1) {
+        const lastInst = instructions[instructions.length - 1];
+        if (!finalTips.includes(lastInst)) {
+          finalTips.push(lastInst);
+        }
+      }
+      return {
+        tips: finalTips,
+        avoid: customAvoids.length > 0 ? customAvoids : [
+          "Avoid rushing the repetitions; execute with slow, controlled mechanics through the full range.",
+          "Do not sacrifice your safety or postural posture to move heavier weights."
+        ]
+      };
+    }
+  }
+
+  // 5. High-quality generic fallback if absolutely no instructions exist
   return {
     tips: [
-      "Concentrate on establishing a deep mind-muscle connection. Actively visualize and feel the target muscle flexing on every contraction.",
-      "Control the pacing of the lift: spend 2-3 seconds lowers the weight and pull or push with explosive, but controlled speed.",
-      "Keep your shoulders neutral and pull your abdominal wall in to secure your body's posture."
+      "Concentrate on establishing a deep mind-muscle connection. Actively feel the target fibers flexing on every repetition.",
+      "Control the pacing of the lift: spend 2-3 seconds lowering the weight under total tension."
     ],
     avoid: [
-      "Never swing, sway, or use full-body momentum to jerk the weights up, which robs the target fibers of stimulus and risks joint strain.",
-      "Don't rush through the set. Maintain a uniform and steady mechanical speed from reps 1 to 10."
+      "Never swing, sway, or use full-body momentum to jerk the weights up, which robs muscles of stimulus.",
+      "Don't rush through the set. Maintain a uniform and steady mechanical speed."
     ]
   };
 }
