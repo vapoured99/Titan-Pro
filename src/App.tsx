@@ -1264,18 +1264,10 @@ export default function App() {
   const [archivedWorkouts, setArchivedWorkouts] = useState<any[]>([]);
 
   // Global Rest Tracker state
-  const [restMode, setRestMode] = useState<"auto" | "manual">("auto");
-  const [restTarget, setRestTarget] = useState<number>(90);
   const [restAudioEnabled, setRestAudioEnabled] = useState<boolean>(true);
   const [manualRestTime, setManualRestTime] = useState<number>(90);
   const [manualRestActive, setManualRestActive] = useState<boolean>(false);
   const [manualRestTarget, setManualRestTarget] = useState<number>(90);
-  const [autoRestSeconds, setAutoRestSeconds] = useState<number>(0);
-  const [autoRestPaused, setAutoRestPaused] = useState<boolean>(false);
-  const [autoRestPauseTime, setAutoRestPauseTime] = useState<number | null>(null);
-  const [autoRestAccumulatedPauseDuration, setAutoRestAccumulatedPauseDuration] = useState<number>(0);
-  const [restTrackerResetTimestamp, setRestTrackerResetTimestamp] = useState<number>(0);
-  const [restTrackerStartTime, setRestTrackerStartTime] = useState<number | null>(null);
   // State for session view selection
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
     null,
@@ -1720,106 +1712,17 @@ export default function App() {
     return sessionSets.filter(s => s && s.source === "formatted_program");
   }, [sessionSets]);
 
-  const hasInitializedRestTrackerRef = useRef(false);
-
-  // Initialize restTrackerStartTime once from the database if there is existing sessionSets
-  useEffect(() => {
-    if (!hasInitializedRestTrackerRef.current && sessionSets.length > 0) {
-      const sorted = [...sessionSets].sort((a, b) => getRestSetTimestamp(a) - getRestSetTimestamp(b));
-      const latest = sorted[sorted.length - 1];
-      if (latest) {
-        const ts = getRestSetTimestamp(latest);
-        if (ts > 0 && ts > restTrackerResetTimestamp) {
-          setRestTrackerStartTime(ts);
-        }
-      }
-      hasInitializedRestTrackerRef.current = true;
-    }
-  }, [sessionSets, restTrackerResetTimestamp]);
-
   const prevRestSetsLengthRef = useRef(sessionSets.length);
 
-  // Sound chime and reset/start rest timer on new set logged (any source)
+  // Sound chime and start manual rest countdown on new set logged (any source)
   useEffect(() => {
     if (sessionSets.length > prevRestSetsLengthRef.current) {
-      setRestTrackerStartTime(Date.now());
       playRestBeep(1200, 0.1);
-      setAutoRestSeconds(0);
-      setAutoRestPaused(false);
-      setAutoRestPauseTime(null);
-      setAutoRestAccumulatedPauseDuration(0);
-      if (restMode === "manual") {
-        setManualRestActive(false);
-        setManualRestTime(manualRestTarget);
-      }
+      setManualRestTime(manualRestTarget);
+      setManualRestActive(true);
     }
     prevRestSetsLengthRef.current = sessionSets.length;
-  }, [sessionSets.length, restMode, manualRestTarget]);
-
-  const handlePauseAutoRest = () => {
-    if (!autoRestPaused) {
-      setAutoRestPaused(true);
-      setAutoRestPauseTime(Date.now());
-      playRestBeep(880, 0.05);
-    }
-  };
-
-  const handleResumeAutoRest = () => {
-    if (autoRestPaused) {
-      const pausedAt = autoRestPauseTime || Date.now();
-      const currentPauseSession = Date.now() - pausedAt;
-      setAutoRestAccumulatedPauseDuration(prev => prev + currentPauseSession);
-      setAutoRestPaused(false);
-      setAutoRestPauseTime(null);
-      playRestBeep(980, 0.05);
-    }
-  };
-
-  const handleResetAutoRest = () => {
-    if (restTrackerStartTime) {
-      setAutoRestPaused(true);
-      setAutoRestPauseTime(Date.now());
-      setAutoRestAccumulatedPauseDuration(Date.now() - restTrackerStartTime);
-      setAutoRestSeconds(0);
-      playRestBeep(440, 0.08);
-    } else {
-      setAutoRestSeconds(0);
-      setAutoRestPaused(false);
-      setAutoRestPauseTime(null);
-      setAutoRestAccumulatedPauseDuration(0);
-    }
-  };
-
-  // Sync auto rest seconds since latest set
-  useEffect(() => {
-    const totalExercises = formattedProgram.reduce((sum, item) => sum + item.exercises.length, 0);
-    if (totalExercises > 0 && restTrackerStartTime) {
-      const updateAutoSeconds = () => {
-        const lastTs = restTrackerStartTime;
-        let diff = 0;
-        if (autoRestPaused) {
-          const pausedAt = autoRestPauseTime || Date.now();
-          const currentPauseSession = Date.now() - pausedAt;
-          const totalPause = autoRestAccumulatedPauseDuration + currentPauseSession;
-          diff = Math.max(0, Math.floor((Date.now() - lastTs - totalPause) / 1000));
-        } else {
-          diff = Math.max(0, Math.floor((Date.now() - lastTs - autoRestAccumulatedPauseDuration) / 1000));
-        }
-        setAutoRestSeconds(diff);
-
-        if (!autoRestPaused && diff === restTarget) {
-          playRestBeep(660, 0.3);
-          setTimeout(() => playRestBeep(880, 0.2), 150);
-        }
-      };
-
-      updateAutoSeconds();
-      const interval = setInterval(updateAutoSeconds, 1000);
-      return () => clearInterval(interval);
-    } else {
-      setAutoRestSeconds(0);
-    }
-  }, [restTrackerStartTime, restTarget, autoRestPaused, autoRestPauseTime, autoRestAccumulatedPauseDuration, formattedProgram]);
+  }, [sessionSets.length, manualRestTarget]);
 
   // Manual timer countdown ticker
   useEffect(() => {
@@ -1847,13 +1750,8 @@ export default function App() {
   useEffect(() => {
     const totalExercises = formattedProgram.reduce((sum, item) => sum + item.exercises.length, 0);
     if (totalExercises === 0) {
-      setAutoRestSeconds(0);
-      setAutoRestPaused(false);
-      setAutoRestPauseTime(null);
-      setAutoRestAccumulatedPauseDuration(0);
       setManualRestTime(0);
       setManualRestActive(false);
-      setRestTrackerStartTime(null);
     }
   }, [formattedProgram]);
 
@@ -3824,15 +3722,9 @@ export default function App() {
       setSessionSets(prev => prev.filter(s => !(s.exerciseName === targetExName && s.source === "formatted_program")));
     }
 
-    // Wipe/reset rest tracker
-    setAutoRestSeconds(0);
-    setAutoRestPaused(false);
-    setAutoRestPauseTime(null);
-    setAutoRestAccumulatedPauseDuration(0);
+    // Wipe/reset manual rest tracker
     setManualRestTime(0);
     setManualRestActive(false);
-    setRestTrackerResetTimestamp(Date.now());
-    setRestTrackerStartTime(null);
 
     setToast({ message: "Exercise deleted from plan. Rest tracker reset to 0.", type: "success" });
   };
@@ -12921,9 +12813,7 @@ export default function App() {
                       
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-sm bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center shrink-0">
-                          <Clock className={`w-6 h-6 ${
-                            restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-gym-accent"
-                          }`} />
+                          <Clock className="w-6 h-6 text-gym-accent" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
@@ -12931,158 +12821,75 @@ export default function App() {
                               Active Rest Chronometer
                             </h4>
                             <span className="text-white/20 font-mono text-[9px]">|</span>
-                            <span className={`text-[9px] font-mono font-bold uppercase tracking-wider ${
-                              restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-white/40"
-                            }`}>
-                              {restMode === "auto" 
-                                ? (autoRestSeconds > restTarget ? "OVER-RESTING" : "RESTING") 
-                                : (manualRestActive ? "COUNTDOWN ACTIVE" : "STANDBY")}
+                            <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-white/40">
+                              {manualRestActive ? "COUNTDOWN ACTIVE" : "STANDBY"}
                             </span>
                           </div>
                           <div className="flex items-baseline gap-2 mt-1.5">
-                            <span className={`text-4xl font-black font-mono tracking-tight tabular-nums leading-none ${
-                              restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-white"
-                            }`}>
+                            <span className="text-4xl font-black font-mono tracking-tight tabular-nums leading-none text-white">
                               {(() => {
-                                const secs = restMode === "auto" ? autoRestSeconds : manualRestTime;
+                                const secs = manualRestTime;
                                 const m = Math.floor(secs / 60);
                                 const s = secs % 60;
                                 return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
                               })()}
                             </span>
                             <span className="text-[10px] font-mono text-white/30 uppercase tracking-widest leading-none font-bold">
-                              {restMode === "auto" ? `target ${restTarget}s` : `target ${manualRestTarget}s`}
+                              target {manualRestTarget}s
                             </span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 lg:self-center shrink-0">
-                        {/* Mode selectors */}
-                        <div className="flex flex-col gap-1.5">
-                          <span className="text-[8px] font-mono font-bold text-white/35 uppercase tracking-widest">Tracking Mode</span>
-                          <div className="grid grid-cols-2 gap-1 p-0.5 bg-black/40 rounded-sm border border-white/5">
-                            <button
-                              type="button"
-                              onClick={() => setRestMode("auto")}
-                              className={`px-3 py-1 text-[9px] font-mono font-black uppercase tracking-wider rounded-sm transition-all cursor-pointer ${
-                                restMode === "auto"
-                                  ? "bg-gym-accent text-black"
-                                  : "bg-transparent text-white/40 hover:text-white/70"
-                              }`}
-                            >
-                              Auto
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setRestMode("manual")}
-                              className={`px-3 py-1 text-[9px] font-mono font-black uppercase tracking-wider rounded-sm transition-all cursor-pointer ${
-                                restMode === "manual"
-                                  ? "bg-gym-accent text-black"
-                                  : "bg-transparent text-white/40 hover:text-white/70"
-                              }`}
-                            >
-                              Manual
-                            </button>
-                          </div>
-                        </div>
-
                         {/* Target config based on mode */}
                         <div className="flex flex-col gap-1.5">
                           <span className="text-[8px] font-mono font-bold text-white/35 uppercase tracking-widest">
-                            {restMode === "auto" ? "Interval Targets" : "Manual Countdown"}
+                            Manual Countdown
                           </span>
-                          {restMode === "auto" ? (
-                            <div className="flex items-center gap-1.5 bg-black/40 p-0.5 rounded-sm border border-white/5 h-[26px]">
-                              <div className="flex gap-1 border-r border-white/10 pr-1.5">
-                                {[45, 60, 90, 120].map((sec) => (
-                                  <button
-                                    key={sec}
-                                    type="button"
-                                    onClick={() => {
-                                      setRestTarget(sec);
-                                      playRestBeep(980, 0.05);
-                                    }}
-                                    className={`px-1.5 py-0.5 text-[8.5px] font-mono font-bold rounded-sm border transition-all cursor-pointer ${
-                                      restTarget === sec
-                                        ? "bg-gym-accent border-gym-accent text-black font-black"
-                                        : "bg-white/[0.02] border-white/5 text-white/50 hover:border-white/15"
-                                    }`}
-                                  >
-                                    {sec}s
-                                  </button>
-                                ))}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (autoRestPaused) {
-                                    handleResumeAutoRest();
-                                  } else {
-                                    handlePauseAutoRest();
-                                  }
-                                }}
-                                className={`px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none h-full ${
-                                  autoRestPaused
-                                    ? "bg-cyan-500/15 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25"
-                                    : "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25"
-                                }`}
-                              >
-                                {autoRestPaused ? "Start" : "Pause"}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={handleResetAutoRest}
-                                className="px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none h-full"
-                              >
-                                Reset
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-1.5 bg-black/40 p-0.5 rounded-sm border border-white/5 h-[26px]">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setManualRestActive(!manualRestActive);
-                                  playRestBeep(880, 0.05);
-                                }}
-                                className={`px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none h-full ${
-                                  manualRestActive
-                                    ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25"
-                                    : "bg-cyan-500/15 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25"
-                                }`}
-                              >
-                                {manualRestActive ? "Pause" : "Start"}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setManualRestTime(manualRestTarget);
-                                  setManualRestActive(false);
-                                  playRestBeep(440, 0.08);
-                                }}
-                                className="px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none h-full"
-                              >
-                                Reset
-                              </button>
-                              <select
-                                value={manualRestTarget}
-                                onChange={(e) => {
-                                  const val = Number(e.target.value);
-                                  setManualRestTarget(val);
-                                  setManualRestTime(val);
-                                  setManualRestActive(false);
-                                }}
-                                className="bg-black/80 border border-white/10 text-white/70 rounded-sm text-[9px] px-1 py-0.5 font-mono focus:outline-none cursor-pointer h-full"
-                              >
-                                {[30, 45, 60, 90, 120, 180].map((sec) => (
-                                  <option key={sec} value={sec}>
-                                    {sec}s
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-1.5 bg-black/40 p-0.5 rounded-sm border border-white/5 h-[26px]">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setManualRestActive(!manualRestActive);
+                                playRestBeep(880, 0.05);
+                              }}
+                              className={`px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none h-full ${
+                                manualRestActive
+                                  ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25"
+                                  : "bg-cyan-500/15 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25"
+                              }`}
+                            >
+                              {manualRestActive ? "Pause" : "Start"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setManualRestTime(manualRestTarget);
+                                setManualRestActive(false);
+                                playRestBeep(440, 0.08);
+                              }}
+                              className="px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none h-full"
+                            >
+                              Reset
+                            </button>
+                            <select
+                              value={manualRestTarget}
+                              onChange={(e) => {
+                                const val = Number(e.target.value);
+                                setManualRestTarget(val);
+                                setManualRestTime(val);
+                                setManualRestActive(false);
+                              }}
+                              className="bg-black/80 border border-white/10 text-white/70 rounded-sm text-[9px] px-1 py-0.5 font-mono focus:outline-none cursor-pointer h-full"
+                            >
+                              {[30, 45, 60, 90, 120, 180].map((sec) => (
+                                <option key={sec} value={sec}>
+                                  {sec}s
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
 
                         {/* Audio controls */}
@@ -16170,21 +15977,15 @@ export default function App() {
               >
                 {/* Visual state indicator dot */}
                 <div className="relative flex h-2 w-2 shrink-0">
-                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                    restMode === "auto" && autoRestSeconds > restTarget ? "bg-red-500" : "bg-gym-accent"
-                  }`}></span>
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                    restMode === "auto" && autoRestSeconds > restTarget ? "bg-red-500" : "bg-gym-accent"
-                  }`}></span>
+                  <span className={`absolute inline-flex h-full w-full rounded-full opacity-75 bg-gym-accent ${manualRestActive ? "animate-ping" : ""}`}></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-gym-accent"></span>
                 </div>
 
                 {/* Timer text */}
                 <div className="flex items-center gap-2">
-                  <span className={`text-base font-black font-mono tracking-tight tabular-nums leading-none ${
-                    restMode === "auto" && autoRestSeconds > restTarget ? "text-red-400 animate-pulse" : "text-white"
-                  }`}>
+                  <span className="text-base font-black font-mono tracking-tight tabular-nums leading-none text-white">
                     {(() => {
-                      const secs = restMode === "auto" ? autoRestSeconds : manualRestTime;
+                      const secs = manualRestTime;
                       const m = Math.floor(secs / 60);
                       const s = secs % 60;
                       return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
@@ -16192,9 +15993,7 @@ export default function App() {
                   </span>
                   
                   <span className="text-[8px] font-mono font-bold text-white/40 uppercase tracking-widest leading-none">
-                    {restMode === "auto" 
-                      ? (autoRestSeconds > restTarget ? "OVER-REST" : "RESTING") 
-                      : (manualRestActive ? "COUNTDOWN" : "STANDBY")}
+                    {manualRestActive ? "COUNTDOWN" : "STANDBY"}
                   </span>
                 </div>
 
@@ -16203,60 +16002,29 @@ export default function App() {
 
                 {/* Minimal context/controls */}
                 <div className="flex items-center gap-1.5">
-                  {restMode === "auto" ? (
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        onClick={() => {
-                          // Toggle rest target easily
-                          const nextTargets = [45, 60, 90, 120];
-                          const currentIdx = nextTargets.indexOf(restTarget);
-                          const nextTarget = nextTargets[(currentIdx + 1) % nextTargets.length];
-                          setRestTarget(nextTarget);
-                          playRestBeep(980, 0.05);
-                        }}
-                        className="px-2 py-0.5 rounded-full border border-white/10 bg-white/5 hover:border-gym-accent/30 text-[8px] font-mono font-bold text-white/60 transition-all cursor-pointer"
-                        title="Change Target Interval"
-                      >
-                        {restTarget}s ⟳
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (autoRestPaused) {
-                            handleResumeAutoRest();
-                          } else {
-                            handlePauseAutoRest();
-                          }
-                        }}
-                        className={`px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase transition-all cursor-pointer ${
-                          autoRestPaused
-                            ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                            : "bg-red-500/20 text-red-400 border border-red-500/30"
-                        }`}
-                      >
-                        {autoRestPaused ? "Start" : "Pause"}
-                      </button>
-                      <button
-                        onClick={handleResetAutoRest}
-                        className="px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer"
-                      >
-                        Reset
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setManualRestActive(!manualRestActive);
-                        playRestBeep(880, 0.05);
-                      }}
-                      className={`px-2 py-0.5 rounded-full text-[8px] font-mono font-bold uppercase transition-all cursor-pointer ${
-                        manualRestActive
-                          ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                          : "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                      }`}
-                    >
-                      {manualRestActive ? "Pause" : "Start"}
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      setManualRestActive(!manualRestActive);
+                      playRestBeep(880, 0.05);
+                    }}
+                    className={`px-2.5 py-1 rounded-full text-[8px] font-mono font-bold uppercase transition-all cursor-pointer ${
+                      manualRestActive
+                        ? "bg-red-500/20 text-red-400 border border-red-500/30"
+                        : "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                    }`}
+                  >
+                    {manualRestActive ? "Pause" : "Start"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setManualRestTime(manualRestTarget);
+                      setManualRestActive(false);
+                      playRestBeep(440, 0.08);
+                    }}
+                    className="px-2.5 py-1 rounded-full text-[8px] font-mono font-bold uppercase bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer"
+                  >
+                    Reset
+                  </button>
 
                   {/* Audio toggler icon button */}
                   <button
