@@ -963,7 +963,7 @@ const PBBlock = ({
   }
 
   return (
-    <div className="mt-3 p-4 rounded-sm bg-black/55 border border-gym-accent/20">
+    <div className="mt-3 p-4 rounded-md bg-black/55 border border-gym-accent/20">
       {pb && (
         <div
           className={`text-[10px] text-gym-accent font-bold uppercase tracking-wider flex items-center gap-2 ${showLatest ? "mb-4" : ""}`}
@@ -1100,7 +1100,7 @@ function ProfileDisplayNameEditor({
       <span className="text-[9px] text-white/25 uppercase tracking-[0.25em] font-black">
         Display Name
       </span>
-      <div className="flex items-center gap-3 bg-white/[0.02] border border-white/10 rounded-sm p-2 text-sm focus-within:border-gym-accent focus-within:bg-white/[0.04] transition-all">
+      <div className="flex items-center gap-3 bg-white/[0.02] border border-white/10 rounded-md p-2 text-sm focus-within:border-gym-accent focus-within:bg-white/[0.04] transition-all">
         <input
           type="text"
           value={name}
@@ -5535,7 +5535,7 @@ export default function App() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="relative z-10 max-w-md w-full p-10 border border-white/10 rounded-sm bg-black/40 backdrop-blur-md"
+          className="relative z-10 max-w-md w-full p-10 border border-white/10 rounded-md bg-black/40 backdrop-blur-md"
         >
           <span className="text-[10px] uppercase tracking-[0.3em] text-gym-accent mb-2 block font-bold">
             Est. 2026
@@ -5565,7 +5565,7 @@ export default function App() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-sm px-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
                 placeholder="Ex. athlete@gympro.com"
                 required
               />
@@ -5580,7 +5580,7 @@ export default function App() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-sm px-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                  className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
                   placeholder="••••••••"
                   required={authMode !== "reset"}
                 />
@@ -5600,7 +5600,7 @@ export default function App() {
 
             <button
               type="submit"
-              className="w-full bg-gym-accent text-black py-4 rounded-sm font-bold uppercase tracking-widest hover:brightness-110 transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 cursor-pointer shadow-lg shadow-gym-accent/20 mt-6"
+              className="w-full bg-gym-accent text-black py-4 rounded-md font-bold uppercase tracking-widest hover:brightness-110 transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 cursor-pointer shadow-lg shadow-gym-accent/20 mt-6"
             >
               {authMode === "login"
                 ? "Enter Archive"
@@ -5620,7 +5620,7 @@ export default function App() {
 
             <button
               onClick={handleGoogleLogin}
-              className="w-full bg-white/5 border border-white/10 text-white/60 py-4 rounded-sm font-bold uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 cursor-pointer"
+              className="w-full bg-white/5 border border-white/10 text-white/60 py-4 rounded-md font-bold uppercase tracking-widest hover:bg-white/10 hover:text-white transition-all transform active:scale-[0.98] flex items-center justify-center gap-3 cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -5694,7 +5694,7 @@ export default function App() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: ei * 0.05 }}
-        className="bg-black/75 border border-white/15 rounded-sm p-6 flex flex-col group/card backdrop-blur-md"
+        className="bg-black/75 border border-white/15 rounded-md p-6 flex flex-col group/card backdrop-blur-md"
       >
         <div className="flex items-center justify-between mb-6">
           <div className="flex flex-col">
@@ -5704,7 +5704,7 @@ export default function App() {
               </span>
               {ex.category && (
                 <span
-                  className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-[0.1em] ${
+                  className={`text-[8px] px-1.5 py-0.2 rounded-md font-black uppercase tracking-[0.1em] ${
                     ex.category === "compound"
                       ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                       : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
@@ -5737,14 +5737,14 @@ export default function App() {
           <div className="flex flex-col gap-1.5 shrink-0">
             <button
               onClick={() => setGuidanceEx(ex)}
-              className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+              className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-md"
               title="Guidance & Instructions"
             >
               <BookOpen className="w-3.5 h-3.5" />
             </button>
             <button
               onClick={() => handleSwap(di, ei)}
-              className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+              className="p-2.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-md"
               title="Swap Exercise"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -5753,7 +5753,7 @@ export default function App() {
               onClick={() =>
                 handleRemoveExerciseFromFormattedProgram(di, ei)
               }
-              className="p-2.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-sm"
+              className="p-2.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-md"
               title="Remove"
             >
               <Trash2 className="w-3.5 h-3.5 text-red-500" />
@@ -5778,7 +5778,7 @@ export default function App() {
             );
           })()}
 
-          <div className="flex flex-col gap-3 mb-4 bg-white/[0.02] border border-white/[0.04] p-3 rounded-sm w-full">
+          <div className="flex flex-col gap-3 mb-4 bg-white/[0.02] border border-white/[0.04] p-3 rounded-md w-full">
             {/* Row 1: Weight & Reps side by side */}
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col">
@@ -5792,7 +5792,7 @@ export default function App() {
                   inputMode="decimal"
                   placeholder="0"
                   id={`w-${di}-${ei}`}
-                  className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                  className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
                 />
               </div>
               <div className="flex flex-col">
@@ -5806,7 +5806,7 @@ export default function App() {
                   inputMode="numeric"
                   placeholder="0"
                   id={`r-${di}-${ei}`}
-                  className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                  className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-base font-medium focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
                 />
               </div>
             </div>
@@ -5820,7 +5820,7 @@ export default function App() {
                 type="text"
                 placeholder="Warmup, RPE 9, drop set, etc."
                 id={`notes-${di}-${ei}`}
-                className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
+                className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
               />
             </div>
 
@@ -5829,7 +5829,7 @@ export default function App() {
               <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
                 Set Intensity (How'd it feel?)
               </span>
-              <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-sm border border-white/5">
+              <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-md border border-white/5">
                 <button
                   type="button"
                   onClick={() =>
@@ -5838,7 +5838,7 @@ export default function App() {
                       [ex.name]: "easy",
                     }))
                   }
-                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
                     (setDifficulties[ex.name] || "moderate") === "easy"
                       ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-black shadow-[0_0_8px_rgba(16,185,129,0.1)]"
                       : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
@@ -5854,7 +5854,7 @@ export default function App() {
                       [ex.name]: "moderate",
                     }))
                   }
-                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
                     (setDifficulties[ex.name] || "moderate") === "moderate"
                       ? "bg-amber-500/15 border-amber-500/35 text-amber-400 font-bold shadow-[0_0_8px_rgba(245,158,11,0.1)]"
                       : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
@@ -5870,7 +5870,7 @@ export default function App() {
                       [ex.name]: "hard",
                     }))
                   }
-                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                  className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
                     (setDifficulties[ex.name] || "moderate") === "hard"
                       ? "bg-rose-500/15 border-rose-500/35 text-rose-400 font-black shadow-[0_0_8px_rgba(244,63,94,0.1)]"
                       : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
@@ -5916,7 +5916,7 @@ export default function App() {
               });
 
               return (
-                <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-sm px-2.5 py-1.5 mt-1 text-[10px]">
+                <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-md px-2.5 py-1.5 mt-1 text-[10px]">
                   <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
                     <span className="relative flex h-1.5 w-1.5 shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gym-accent/40 opacity-75"></span>
@@ -5937,7 +5937,7 @@ export default function App() {
                       if (wInput) wInput.value = ghostSet.weight.toString();
                       if (rInput) rInput.value = ghostSet.reps.toString();
                     }}
-                    className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+                    className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-md transition-all cursor-pointer whitespace-nowrap shrink-0"
                     title="Use ghost set target values"
                   >
                     Match
@@ -5974,7 +5974,7 @@ export default function App() {
                   }));
                 }
               }}
-              className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
+              className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2 rounded-md text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
             >
               Log Set
             </button>
@@ -6027,11 +6027,11 @@ export default function App() {
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="mb-4 p-3 rounded-sm bg-gym-accent/5 border border-gym-accent/20 overflow-hidden"
+              className="mb-4 p-3 rounded-md bg-gym-accent/5 border border-gym-accent/20 overflow-hidden"
             >
               {recommendWeight > 0 && (
                 hasStruggled ? (
-                  <div className="mb-3.5 p-3 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2">
+                  <div className="mb-3.5 p-3 rounded-md bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2">
                     <div className="flex items-center gap-1.5 justify-between">
                       <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-amber-400 flex items-center gap-1.5 animate-pulse">
                         <Activity className="w-3.5 h-3.5" />
@@ -6046,7 +6046,7 @@ export default function App() {
                     </p>
                   </div>
                 ) : (
-                  <div className="mb-3.5 p-3 rounded-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 flex flex-col gap-2">
+                  <div className="mb-3.5 p-3 rounded-md bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 flex flex-col gap-2">
                     <div className="flex items-center gap-1.5 justify-between">
                       <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
                         <TrendingUp className="w-3.5 h-3.5 animate-bounce" />
@@ -6072,7 +6072,7 @@ export default function App() {
                         });
                         setTimeout(() => setToast(null), 3000);
                       }}
-                      className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold uppercase tracking-[0.15em] font-mono text-[8px] transition-all cursor-pointer shadow-sm rounded-sm text-center"
+                      className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold uppercase tracking-[0.15em] font-mono text-[8px] transition-all cursor-pointer shadow-sm rounded-md text-center"
                     >
                       Apply {recommendWeight}kg Next-Set Target
                     </button>
@@ -6097,7 +6097,7 @@ export default function App() {
                   (set, sIdx) => (
                     <div
                       key={set.id || sIdx}
-                      className="flex items-center justify-between bg-black/55 border border-white/5 px-2.5 py-1.5 rounded-sm hover:border-white/15 transition-colors group/setrow"
+                      className="flex items-center justify-between bg-black/55 border border-white/5 px-2.5 py-1.5 rounded-md hover:border-white/15 transition-colors group/setrow"
                     >
                       <div className="flex items-center gap-2 flex-wrap min-w-0">
                         <span className="text-[9px] font-bold text-white/30 tracking-wider">
@@ -6129,7 +6129,7 @@ export default function App() {
                         {set.notes && (
                           <span
                             onClick={() => setViewingNote(set.notes)}
-                            className="ml-1 px-1.5 py-0.5 bg-gym-accent/11 border border-gym-accent/20 text-gym-accent text-[8px] font-bold rounded-sm uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
+                            className="ml-1 px-1.5 py-0.5 bg-gym-accent/11 border border-gym-accent/20 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
                             title="Click to view full note"
                           >
                             {set.notes}
@@ -6329,7 +6329,7 @@ export default function App() {
               </button>
               <button
                 onClick={handleLogout}
-                className="p-2.5 bg-white/5 border border-white/10 rounded-sm text-theme-text-muted hover:text-theme-text hover:bg-white/10 transition-all cursor-pointer"
+                className="p-2.5 bg-white/5 border border-white/10 rounded-md text-theme-text-muted hover:text-theme-text hover:bg-white/10 transition-all cursor-pointer"
                 title="Logout"
               >
                 <LogOut className="w-4 h-4" />
@@ -6514,7 +6514,7 @@ export default function App() {
                           Biometric &amp; Combat Readiness Command Center
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 bg-white/[0.02] border border-white/5 px-4 py-2 rounded-sm text-xs font-mono text-white/60">
+                      <div className="flex items-center gap-3 bg-white/[0.02] border border-white/5 px-4 py-2 rounded-md text-xs font-mono text-white/60">
                         <span className="w-2 h-2 rounded-full bg-gym-accent animate-pulse" />
                         <span>SYS_STATUS: ONLINE</span>
                         <div className="w-14 h-5 relative flex items-center justify-center opacity-75 border-l border-white/10 pl-3">
@@ -6574,7 +6574,7 @@ export default function App() {
                             stiffness: 350,
                             damping: 25,
                           }}
-                          className="bg-black/70 border border-white/10 rounded-sm p-4 backdrop-blur-md cursor-pointer"
+                          className="bg-black/70 border border-white/10 rounded-md p-4 backdrop-blur-md cursor-pointer"
                         >
                           <div className="flex justify-between items-baseline mb-1">
                             <span className="text-xs font-bold text-white tracking-widest font-mono uppercase">
@@ -6584,11 +6584,11 @@ export default function App() {
                               {xp} / {xpNeeded} XP
                             </span>
                           </div>
-                          <div className="w-full bg-white/5 border border-white/10 h-2 rounded-sm overflow-hidden p-0.5">
+                          <div className="w-full bg-white/5 border border-white/10 h-2 rounded-md overflow-hidden p-0.5">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${xpPercentage}%` }}
-                              className="h-full bg-gradient-to-r from-gym-accent to-gym-accent-light rounded-sm"
+                              className="h-full bg-gradient-to-r from-gym-accent to-gym-accent-light rounded-md"
                               transition={{ duration: 1 }}
                             />
                           </div>
@@ -6618,7 +6618,7 @@ export default function App() {
                           stiffness: 350,
                           damping: 25,
                         }}
-                        className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md cursor-pointer"
+                        className="bg-black/70 border border-white/10 rounded-md p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md cursor-pointer"
                       >
                         <div>
                           <h4 className="text-[10px] text-white uppercase font-black tracking-widest mb-1 font-mono">
@@ -6666,7 +6666,7 @@ export default function App() {
                           stiffness: 350,
                           damping: 25,
                         }}
-                        className="bg-black/70 border border-white/10 rounded-sm p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md cursor-pointer"
+                        className="bg-black/70 border border-white/10 rounded-md p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md cursor-pointer"
                       >
                         <div>
                           <h4 className="text-[10px] text-white uppercase font-black tracking-widest mb-1 font-mono">
@@ -6726,7 +6726,7 @@ export default function App() {
                                           <span className="font-light truncate max-w-[150px]">
                                             {ex.name}
                                           </span>
-                                          <span className="text-[8px] font-mono text-white/30 tracking-wider uppercase font-bold px-1.5 py-0.5 bg-white/[0.02] border border-white/5 rounded-sm">
+                                          <span className="text-[8px] font-mono text-white/30 tracking-wider uppercase font-bold px-1.5 py-0.5 bg-white/[0.02] border border-white/5 rounded-md">
                                             {ex.pool || ex.muscleGroup || "Gym"}
                                           </span>
                                         </div>
@@ -6790,7 +6790,7 @@ export default function App() {
                           stiffness: 350,
                           damping: 25,
                         }}
-                        className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
+                        className="bg-black/70 border border-white/10 rounded-md p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
                       >
                         <div className="mb-4">
                           <div className="flex justify-between items-baseline">
@@ -6810,7 +6810,7 @@ export default function App() {
 
                         <div className="h-[120px] w-full">
                           {weightHistory.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-sm border border-dashed border-white/5">
+                            <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-md border border-dashed border-white/5">
                               <TrendingUp className="w-5 h-5 text-white/10 mb-1" />
                               <span className="text-[9px] text-white/20 font-bold">
                                 No weight logs recorded
@@ -6905,7 +6905,7 @@ export default function App() {
                           stiffness: 350,
                           damping: 25,
                         }}
-                        className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
+                        className="bg-black/70 border border-white/10 rounded-md p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
                       >
                         <div className="mb-4">
                           <div className="flex justify-between items-baseline">
@@ -6925,7 +6925,7 @@ export default function App() {
 
                         <div className="h-[120px] w-full">
                           {archivedWorkouts.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-sm border border-dashed border-white/5">
+                            <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-md border border-dashed border-white/5">
                               <Activity className="w-5 h-5 text-white/10 mb-1" />
                               <span className="text-[9px] text-white/20 font-bold">
                                 No sessions completed yet
@@ -7004,7 +7004,7 @@ export default function App() {
                           stiffness: 350,
                           damping: 25,
                         }}
-                        className="bg-black/70 border border-white/10 rounded-sm p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
+                        className="bg-black/70 border border-white/10 rounded-md p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
                       >
                         <div className="mb-4">
                           <div className="flex justify-between items-baseline">
@@ -7024,7 +7024,7 @@ export default function App() {
 
                         <div className="h-[120px] w-full">
                           {chronologicalDaysConsole.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-sm border border-dashed border-white/5">
+                            <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-md border border-dashed border-white/5">
                               <Flame className="w-5 h-5 text-white/10 mb-1" />
                               <span className="text-[9px] text-white/20 font-bold">
                                 No calories burned logged yet
@@ -7134,17 +7134,17 @@ export default function App() {
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 self-stretch xl:self-auto">
                     {/* View Mode Switcher */}
-                    <div className="flex bg-black/60 border border-white/10 rounded-sm p-1 inline-flex self-start sm:self-auto">
+                    <div className="flex bg-black/60 border border-white/10 rounded-md p-1 inline-flex self-start sm:self-auto">
                       <button
                         onClick={() => setLibraryViewMode("deck")}
-                        className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer ${libraryViewMode === "deck" ? "bg-gym-accent text-black font-black" : "text-white/40 hover:text-white hover:bg-white/5"}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer ${libraryViewMode === "deck" ? "bg-gym-accent text-black font-black" : "text-white/40 hover:text-white hover:bg-white/5"}`}
                       >
                         <LayoutGrid className="w-3.5 h-3.5" />
                         Visual Deck
                       </button>
                       <button
                         onClick={() => setLibraryViewMode("list")}
-                        className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer ${libraryViewMode === "list" ? "bg-gym-accent text-black font-black" : "text-white/40 hover:text-white hover:bg-white/5"}`}
+                        className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer ${libraryViewMode === "list" ? "bg-gym-accent text-black font-black" : "text-white/40 hover:text-white hover:bg-white/5"}`}
                       >
                         <List className="w-3.5 h-3.5" />
                         Classic List
@@ -7174,7 +7174,7 @@ export default function App() {
                         placeholder="Search archive..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="bg-black/60 border border-white/20 rounded-sm pl-11 pr-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-full sm:w-64 text-white font-mono"
+                        className="bg-black/60 border border-white/20 rounded-md pl-11 pr-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-full sm:w-64 text-white font-mono"
                       />
                       <div className="absolute top-full right-0 mt-2">
                         <a
@@ -7301,7 +7301,7 @@ export default function App() {
                         <button
                           key={sec.key}
                           onClick={() => setSelectedLibraryCategory(sec.key)}
-                          className={`text-left p-4 rounded-sm border cursor-pointer transition-all duration-300 relative overflow-hidden group flex flex-col justify-between h-28 ${
+                          className={`text-left p-4 rounded-md border cursor-pointer transition-all duration-300 relative overflow-hidden group flex flex-col justify-between h-28 ${
                             isActive
                               ? "bg-black/90"
                               : "bg-black/40 border-white/10 hover:border-white/30 hover:bg-black/60"
@@ -7320,7 +7320,7 @@ export default function App() {
 
                           <div className="flex items-start justify-between">
                             <div
-                              className={`w-8 h-8 rounded-sm flex items-center justify-center border transition-all ${
+                              className={`w-8 h-8 rounded-md flex items-center justify-center border transition-all ${
                                 isActive
                                   ? ""
                                   : "bg-white/5 border-white/10 text-white/45 group-hover:text-white"
@@ -7468,7 +7468,7 @@ export default function App() {
                 })().map((section) => (
                   <div
                     key={section.title}
-                    className={`mb-6 border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md ${libraryViewMode === "deck" && !searchQuery ? "p-2" : ""}`}
+                    className={`mb-6 border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md ${libraryViewMode === "deck" && !searchQuery ? "p-2" : ""}`}
                   >
                     {libraryViewMode === "deck" && !searchQuery ? (
                       <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-white/5 mb-4 text-left">
@@ -7494,7 +7494,7 @@ export default function App() {
                         className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
+                          <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
                             {getLibraryCategoryIcon(section.key)}
                           </div>
                           <div className="flex items-center gap-3">
@@ -7531,13 +7531,13 @@ export default function App() {
                                 return (
                                   <div
                                     key={ex.name}
-                                    className="bg-black/60 border border-white/10 rounded-sm p-5 hover:border-white/35 transition-all group flex flex-col justify-between"
+                                    className="bg-black/60 border border-white/10 rounded-md p-5 hover:border-white/35 transition-all group flex flex-col justify-between"
                                   >
                                     <div>
                                       {/* Title Row - full width, wraps nicely, no truncation cutoff */}
                                       <div className="flex items-start justify-between gap-3 mb-2.5">
                                         <div className="flex items-start gap-2.5 min-w-0">
-                                          <div className="w-8 h-8 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center shrink-0 mt-0.5 group-hover:border-gym-accent/30 transition-colors">
+                                          <div className="w-8 h-8 bg-white/5 border border-white/10 rounded-md flex items-center justify-center shrink-0 mt-0.5 group-hover:border-gym-accent/30 transition-colors">
                                             <Icon className="w-4 h-4 text-white/30 group-hover:text-gym-accent transition-colors" />
                                           </div>
                                           <div className="flex flex-col min-w-0">
@@ -7565,7 +7565,7 @@ export default function App() {
                                       <div className="flex items-center gap-2 mb-3.5 ml-10 flex-wrap">
                                         {ex.category && (
                                           <span
-                                            className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-widest ${
+                                            className={`text-[8px] px-1.5 py-0.2 rounded-md font-black uppercase tracking-widest ${
                                               ex.category === "compound"
                                                 ? "bg-amber-500/10 text-amber-500/80 border border-amber-500/20"
                                                 : "bg-purple-500/15 text-purple-400 border border-purple-500/20"
@@ -7575,7 +7575,7 @@ export default function App() {
                                           </span>
                                         )}
                                         {ex.pool && (
-                                          <span className="text-[7.5px] font-mono uppercase tracking-widest px-1.5 py-0.3 rounded-sm border border-white/5 text-white/30 bg-white/[0.01]">
+                                          <span className="text-[7.5px] font-mono uppercase tracking-widest px-1.5 py-0.3 rounded-md border border-white/5 text-white/30 bg-white/[0.01]">
                                             {ex.pool}
                                           </span>
                                         )}
@@ -7618,7 +7618,7 @@ export default function App() {
                                     <div className="flex items-center gap-2 mt-4 pt-1">
                                       <button
                                         onClick={() => setGuidanceEx(ex)}
-                                        className="p-2.5 px-3.5 bg-white/5 border border-white/10 text-white/60 hover:text-gym-accent hover:border-gym-accent/30 hover:bg-gym-accent/5 transition-all text-[9.5px] tracking-wider uppercase font-extrabold rounded-sm flex items-center justify-center gap-1.5 cursor-pointer basis-1/3"
+                                        className="p-2.5 px-3.5 bg-white/5 border border-white/10 text-white/60 hover:text-gym-accent hover:border-gym-accent/30 hover:bg-gym-accent/5 transition-all text-[9.5px] tracking-wider uppercase font-extrabold rounded-md flex items-center justify-center gap-1.5 cursor-pointer basis-1/3"
                                         title="Guidance & Execution Instructions"
                                       >
                                         <BookOpen className="w-3.5 h-3.5" />
@@ -7633,7 +7633,7 @@ export default function App() {
                                           setPopupNotes("");
                                           setPopupDifficulty("moderate");
                                         }}
-                                        className="p-2.5 bg-gym-accent hover:bg-gym-accent/95 text-black text-[9.5px] uppercase font-black tracking-widest transition-all rounded-sm flex-1 flex items-center justify-center gap-1.5 font-mono cursor-pointer shadow-md shadow-gym-accent/10 active:scale-[0.98]"
+                                        className="p-2.5 bg-gym-accent hover:bg-gym-accent/95 text-black text-[9.5px] uppercase font-black tracking-widest transition-all rounded-md flex-1 flex items-center justify-center gap-1.5 font-mono cursor-pointer shadow-md shadow-gym-accent/10 active:scale-[0.98]"
                                         title="Log a new completed set"
                                       >
                                         <Plus className="w-3.5 h-3.5 text-black stroke-[3px]" />
@@ -8279,7 +8279,7 @@ export default function App() {
                 className="space-y-6"
               >
                 {/* Weight Tracking Section */}
-                <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
                   <button
                     onClick={() =>
                       setExpandedProgressSections((prev) => ({
@@ -8290,7 +8290,7 @@ export default function App() {
                     className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Scale className="w-5 h-5" />
                       </div>
                       <div>
@@ -8326,7 +8326,7 @@ export default function App() {
                                   value={newWeight}
                                   onChange={(e) => setNewWeight(e.target.value)}
                                   disabled={isSavingWeight}
-                                  className="bg-black/55 border border-white/20 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-32 disabled:opacity-50 text-white"
+                                  className="bg-black/55 border border-white/20 rounded-md px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-32 disabled:opacity-50 text-white"
                                 />
                               </div>
                               <div className="relative">
@@ -8337,7 +8337,7 @@ export default function App() {
                                     setNewWeightDate(e.target.value)
                                   }
                                   disabled={isSavingWeight}
-                                  className="bg-black/55 border border-white/20 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-44 disabled:opacity-50 text-white [color-scheme:dark]"
+                                  className="bg-black/55 border border-white/20 rounded-md px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-44 disabled:opacity-50 text-white [color-scheme:dark]"
                                 />
                                 <AnimatePresence>
                                   {weightFlash && (
@@ -8361,7 +8361,7 @@ export default function App() {
                                 disabled={
                                   isSavingWeight || !newWeight || !newWeightDate
                                 }
-                                className="bg-gym-accent text-black px-6 py-3 rounded-sm font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed accent-shadow-btn"
+                                className="bg-gym-accent text-black px-6 py-3 rounded-md font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed accent-shadow-btn"
                               >
                                 {isSavingWeight ? (
                                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -8375,7 +8375,7 @@ export default function App() {
 
                           <div className="h-[350px] w-full mb-10">
                             {weightHistory.length === 0 ? (
-                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-sm border border-white/5 border-dashed">
+                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-md border border-white/5 border-dashed">
                                 <TrendingUp className="w-12 h-12 text-white/10 mb-2" />
                                 <p className="text-white/20 font-bold text-sm">
                                   Add your weight to see your progress data
@@ -8554,7 +8554,7 @@ export default function App() {
                                 setShowWeightHistoryList(!showWeightHistoryList)
                               }
                               type="button"
-                              className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-sm text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
+                              className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
                             >
                               <span className="flex items-center gap-2">
                                 <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
@@ -8581,7 +8581,7 @@ export default function App() {
                                       No logged weight entries yet
                                     </div>
                                   ) : (
-                                    <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/15 rounded-sm bg-black">
+                                    <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/15 rounded-md bg-black">
                                       {[...weightHistory]
                                         .reverse()
                                         .map((entry, i) => (
@@ -8642,7 +8642,7 @@ export default function App() {
                                                     );
                                                   }
                                                 }}
-                                                className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all cursor-pointer"
+                                                className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all cursor-pointer"
                                                 title="Delete entry"
                                               >
                                                 <Trash2 className="w-3.5 h-3.5 text-red-500" />
@@ -8663,7 +8663,7 @@ export default function App() {
                 </div>
 
                 {/* Body Fat Tracking Section */}
-                <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
                   <button
                     onClick={() =>
                       setExpandedProgressSections((prev) => ({
@@ -8674,7 +8674,7 @@ export default function App() {
                     className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Percent className="w-5 h-5" />
                       </div>
                       <div>
@@ -8712,7 +8712,7 @@ export default function App() {
                                     setNewBodyFat(e.target.value)
                                   }
                                   disabled={isSavingBodyFat}
-                                  className="bg-black/55 border border-white/20 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-32 disabled:opacity-50 text-white"
+                                  className="bg-black/55 border border-white/20 rounded-md px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-32 disabled:opacity-50 text-white"
                                 />
                               </div>
                               <div className="relative">
@@ -8723,7 +8723,7 @@ export default function App() {
                                     setNewBodyFatDate(e.target.value)
                                   }
                                   disabled={isSavingBodyFat}
-                                  className="bg-black/55 border border-white/20 rounded-sm px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-44 disabled:opacity-50 text-white [color-scheme:dark]"
+                                  className="bg-black/55 border border-white/20 rounded-md px-4 py-3 text-sm font-light focus:outline-none focus:border-gym-accent transition-all w-44 disabled:opacity-50 text-white [color-scheme:dark]"
                                 />
                                 <AnimatePresence>
                                   {bodyFatFlash && (
@@ -8749,7 +8749,7 @@ export default function App() {
                                   !newBodyFat ||
                                   !newBodyFatDate
                                 }
-                                className="bg-gym-accent text-black px-6 py-3 rounded-sm font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed accent-shadow-btn"
+                                className="bg-gym-accent text-black px-6 py-3 rounded-md font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed accent-shadow-btn"
                               >
                                 {isSavingBodyFat ? (
                                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -8763,7 +8763,7 @@ export default function App() {
 
                           <div className="h-[350px] w-full mb-10">
                             {bodyFatHistory.length === 0 ? (
-                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-sm border border-white/5 border-dashed">
+                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-md border border-white/5 border-dashed">
                                 <Percent className="w-12 h-12 text-white/10 mb-2 animate-pulse" />
                                 <p className="text-white/20 font-bold text-sm">
                                   Add your body fat % to see your progress data
@@ -8944,7 +8944,7 @@ export default function App() {
                                 )
                               }
                               type="button"
-                              className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-sm text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
+                              className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
                             >
                               <span className="flex items-center gap-2">
                                 <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
@@ -8971,7 +8971,7 @@ export default function App() {
                                       No logged body fat entries yet
                                     </div>
                                   ) : (
-                                    <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/15 rounded-sm bg-black">
+                                    <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/15 rounded-md bg-black">
                                       {[...bodyFatHistory]
                                         .reverse()
                                         .map((entry, i) => (
@@ -9032,7 +9032,7 @@ export default function App() {
                                                     );
                                                   }
                                                 }}
-                                                className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-sm transition-all cursor-pointer"
+                                                className="p-2 text-red-500/50 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-all cursor-pointer"
                                                 title="Delete entry"
                                               >
                                                 <Trash2 className="w-3.5 h-3.5 text-red-500" />
@@ -9053,7 +9053,7 @@ export default function App() {
                 </div>
 
                 {/* Workout Frequency Heatmap Section */}
-                <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
                   <button
                     onClick={() =>
                       setExpandedProgressSections((prev) => ({
@@ -9064,7 +9064,7 @@ export default function App() {
                     className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Activity className="w-5 h-5" />
                       </div>
                       <div>
@@ -9101,7 +9101,7 @@ export default function App() {
                 </div>
 
                 {/* Trending Section */}
-                <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
                   <button
                     onClick={() =>
                       setExpandedProgressSections((prev) => ({
@@ -9112,7 +9112,7 @@ export default function App() {
                     className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <TrendingUp className="w-5 h-5" />
                       </div>
                       <div>
@@ -9139,12 +9139,12 @@ export default function App() {
                       >
                         <div className="px-6 pb-10 pt-4">
                           <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5">
-                            <div className="flex bg-white/5 p-1 rounded-sm">
+                            <div className="flex bg-white/5 p-1 rounded-md">
                               {(["day", "week", "month"] as const).map((tf) => (
                                 <button
                                   key={tf}
                                   onClick={() => setVolumeTimeframe(tf)}
-                                  className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all ${volumeTimeframe === tf ? "bg-gym-accent text-black shadow-lg" : "text-white/40 hover:text-white"}`}
+                                  className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-md transition-all ${volumeTimeframe === tf ? "bg-gym-accent text-black shadow-lg" : "text-white/40 hover:text-white"}`}
                                 >
                                   {tf}
                                 </button>
@@ -9162,7 +9162,7 @@ export default function App() {
 
                           <div className="h-[350px] w-full">
                             {archivedWorkouts.length === 0 ? (
-                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-sm border border-white/5 border-dashed">
+                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-md border border-white/5 border-dashed">
                                 <Activity className="w-12 h-12 text-white/10 mb-2" />
                                 <p className="text-white/20 font-bold text-sm">
                                   Capture workouts to see your volume trending
@@ -9324,7 +9324,7 @@ export default function App() {
                 </div>
 
                 {/* Personal Records Feed Section */}
-                <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
                   <button
                     onClick={() =>
                       setExpandedProgressSections((prev) => ({
@@ -9335,7 +9335,7 @@ export default function App() {
                     className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Trophy className="w-5 h-5 animate-pulse" />
                       </div>
                       <div>
@@ -9371,7 +9371,7 @@ export default function App() {
                                 placeholder="Search exercise PB..."
                                 value={pbSearchQuery}
                                 onChange={(e) => setPbSearchQuery(e.target.value)}
-                                className="w-full bg-black/55 border border-white/10 rounded-sm pl-11 pr-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-gym-accent transition-all font-sans"
+                                className="w-full bg-black/55 border border-white/10 rounded-md pl-11 pr-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-gym-accent transition-all font-sans"
                               />
                             </div>
 
@@ -9385,7 +9385,7 @@ export default function App() {
                                   backgroundColor: `${activeTheme.accent}12`,
                                   borderColor: `${activeTheme.accent}40`,
                                 }}
-                                className="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest disabled:opacity-40 rounded-sm font-mono flex items-center gap-1.5 cursor-pointer transition-all hover:brightness-125 hover:border-white/30"
+                                className="px-3 py-1.5 text-[9px] font-black uppercase tracking-widest disabled:opacity-40 rounded-md font-mono flex items-center gap-1.5 cursor-pointer transition-all hover:brightness-125 hover:border-white/30"
                                 title="Scan raw session history and recalibrate correct personal bests"
                               >
                                 <RefreshCw className={`w-3 h-3 ${rebuildingPBs ? 'animate-spin' : ''}`} />
@@ -9395,7 +9395,7 @@ export default function App() {
                               <span className="text-[9px] text-white/30 uppercase tracking-widest font-black font-mono">
                                 Sort By
                               </span>
-                              <div className="flex bg-white/5 p-1 rounded-sm border border-white/5">
+                              <div className="flex bg-white/5 p-1 rounded-md border border-white/5">
                                 {[
                                   { key: "date", label: "Date" },
                                   { key: "weight", label: "Weight" },
@@ -9411,7 +9411,7 @@ export default function App() {
                                         setPbSortOrder(opt.key === "name" ? "asc" : "desc");
                                       }
                                     }}
-                                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-sm transition-all flex items-center gap-1 cursor-pointer ${
+                                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-md transition-all flex items-center gap-1 cursor-pointer ${
                                       pbSortKey === opt.key
                                         ? "bg-gym-accent text-black font-extrabold shadow-sm"
                                         : "text-white/40 hover:text-white"
@@ -9552,7 +9552,7 @@ export default function App() {
                             return (
                               <div className="flex flex-col gap-4">
                                 {/* Sub-Tab Navigation */}
-                                <div className="flex border-b border-white/5 p-1 bg-white/[0.01] rounded-sm gap-2">
+                                <div className="flex border-b border-white/5 p-1 bg-white/[0.01] rounded-md gap-2">
                                   <button
                                     onClick={() => setPbSubTab("pbs")}
                                     className={`flex-1 py-2 text-[10px] font-mono font-bold uppercase tracking-wider text-center cursor-pointer transition-all border-b-2 flex items-center justify-center gap-1.5 ${
@@ -9583,7 +9583,7 @@ export default function App() {
                                 {pbSubTab === "pbs" ? (
                                   <>
                                     {pbsList.length === 0 ? (
-                                      <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                      <div className="py-12 border border-dashed border-white/5 rounded-md bg-[#070707]/30 text-center flex flex-col items-center justify-center">
                                         <Trophy className="w-10 h-10 text-white/10 mb-3" />
                                         <p className="text-white/30 text-xs font-semibold uppercase tracking-wider">
                                           No Personal Bests Established
@@ -9593,7 +9593,7 @@ export default function App() {
                                         </p>
                                       </div>
                                     ) : sortedPbs.length === 0 ? (
-                                      <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                      <div className="py-12 border border-dashed border-white/5 rounded-md bg-[#070707]/30 text-center flex flex-col items-center justify-center">
                                         <p className="text-white/30 text-xs font-semibold">
                                           No matches found for "{pbSearchQuery}"
                                         </p>
@@ -9603,7 +9603,7 @@ export default function App() {
                                         {sortedPbs.map((pb, index) => (
                                           <div
                                             key={pb.exerciseName || index}
-                                            className={`pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-sm bg-black/45 border border-white/5 hover:border-white/10 hover:bg-white/[0.01] transition-all group/pbitem ${
+                                            className={`pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-md bg-black/45 border border-white/5 hover:border-white/10 hover:bg-white/[0.01] transition-all group/pbitem ${
                                               index === 0 ? "pt-3.5" : ""
                                             }`}
                                           >
@@ -9700,7 +9700,7 @@ export default function App() {
                                 ) : (
                                   <>
                                     {exercisesRequiringIncrease.length === 0 ? (
-                                      <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                      <div className="py-12 border border-dashed border-white/5 rounded-md bg-[#070707]/30 text-center flex flex-col items-center justify-center">
                                         <Flame className="w-10 h-10 text-white/10 mb-3" />
                                         <p className="text-white/30 text-xs font-semibold uppercase tracking-wider">
                                           No Progression Suggestions
@@ -9710,7 +9710,7 @@ export default function App() {
                                         </p>
                                       </div>
                                     ) : sortedProgression.length === 0 ? (
-                                      <div className="py-12 border border-dashed border-white/5 rounded-sm bg-[#070707]/30 text-center flex flex-col items-center justify-center">
+                                      <div className="py-12 border border-dashed border-white/5 rounded-md bg-[#070707]/30 text-center flex flex-col items-center justify-center">
                                         <p className="text-white/30 text-xs font-semibold">
                                           No matches found for "{pbSearchQuery}"
                                         </p>
@@ -9720,7 +9720,7 @@ export default function App() {
                                         {sortedProgression.map((item, index) => (
                                           <div
                                             key={item.exerciseName}
-                                            className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-sm bg-black/45 border border-emerald-500/10 hover:border-emerald-500/25 hover:bg-emerald-500/[0.01] transition-all group/progitem"
+                                            className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-md bg-black/45 border border-emerald-500/10 hover:border-emerald-500/25 hover:bg-emerald-500/[0.01] transition-all group/progitem"
                                           >
                                             <div className="flex-1">
                                               <div className="flex items-center gap-2">
@@ -9732,7 +9732,7 @@ export default function App() {
                                                   <span>{item.exerciseName}</span>
                                                   <LineChart className="w-3.5 h-3.5 text-gym-accent opacity-0 group-hover/progitem:opacity-100 transition-opacity" />
                                                 </button>
-                                                <span className="bg-emerald-500/10 border border-emerald-500/20 text-[#34d399] text-[8px] font-black uppercase px-2 py-0.5 rounded-sm tracking-wider flex items-center gap-1 font-mono">
+                                                <span className="bg-emerald-500/10 border border-emerald-500/20 text-[#34d399] text-[8px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider flex items-center gap-1 font-mono">
                                                   <TrendingUp className="w-2.5 h-2.5" /> Weight Increase Needed
                                                 </span>
                                               </div>
@@ -9758,7 +9758,7 @@ export default function App() {
                                                 )}
                                               </div>
 
-                                              <div className="mt-2.5 bg-emerald-950/20 border border-emerald-500/10 rounded-sm p-2 text-[10px] text-emerald-400/90 font-mono leading-relaxed">
+                                              <div className="mt-2.5 bg-emerald-950/20 border border-emerald-500/10 rounded-md p-2 text-[10px] text-emerald-400/90 font-mono leading-relaxed">
                                                 {item.completed3SetsOf10 ? (
                                                   <div>
                                                     <strong>🔥 STRONGLY RECOMMENDED PROGRESSION</strong>
@@ -9800,7 +9800,7 @@ export default function App() {
                   </AnimatePresence>
                 </div>
                 {/* Exercise Progression Tracker Section */}
-                <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
                   <button
                     onClick={() =>
                       setExpandedProgressSections((prev) => ({
@@ -9811,7 +9811,7 @@ export default function App() {
                     className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Dumbbell className="w-5 h-5" />
                       </div>
                       <div>
@@ -9845,7 +9845,7 @@ export default function App() {
                               placeholder="Search exercise in database..."
                               value={exerciseProgressSearchQuery}
                               onChange={(e) => setExerciseProgressSearchQuery(e.target.value)}
-                              className="w-full bg-black/55 border border-white/10 rounded-sm pl-11 pr-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-gym-accent transition-all font-sans"
+                              className="w-full bg-black/55 border border-white/10 rounded-md pl-11 pr-4 py-2.5 text-xs text-white placeholder-white/25 focus:outline-none focus:border-gym-accent transition-all font-sans"
                             />
                           </div>
 
@@ -9864,19 +9864,19 @@ export default function App() {
                               <div className="space-y-6">
                                 {/* Search results list */}
                                 {matchedExercises.length === 0 ? (
-                                  <div className="py-8 bg-white/[0.01] border border-dashed border-white/5 rounded-sm text-center">
+                                  <div className="py-8 bg-white/[0.01] border border-dashed border-white/5 rounded-md text-center">
                                     <Dumbbell className="w-8 h-8 text-white/10 mx-auto mb-2.5 animate-pulse" />
                                     <p className="text-white/45 text-[11px] font-mono">No matching exercise found in database</p>
                                   </div>
                                 ) : (
-                                  <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto p-2 bg-black/40 border border-white/5 rounded-sm scrollbar-thin scrollbar-thumb-white/10">
+                                  <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto p-2 bg-black/40 border border-white/5 rounded-md scrollbar-thin scrollbar-thumb-white/10">
                                     {matchedExercises.map((ex) => {
                                       const isSelected = activeEx === ex.name;
                                       return (
                                         <button
                                           key={ex.name}
                                           onClick={() => setSelectedExerciseProgress(ex.name)}
-                                          className={`px-2.5 py-1 rounded-sm text-[9px] font-mono uppercase tracking-wider transition-all border shrink-0 ${
+                                          className={`px-2.5 py-1 rounded-md text-[9px] font-mono uppercase tracking-wider transition-all border shrink-0 ${
                                             isSelected
                                               ? "bg-gym-accent/15 border-gym-accent/40 text-gym-accent font-black"
                                               : ex.hasLogs
@@ -9900,7 +9900,7 @@ export default function App() {
 
                                   if (!stats) {
                                     return (
-                                      <div className="p-8 border border-white/5 bg-[#070707]/30 text-center rounded-sm">
+                                      <div className="p-8 border border-white/5 bg-[#070707]/30 text-center rounded-md">
                                         <Dumbbell className="w-10 h-10 text-white/10 mx-auto mb-3 animate-pulse" />
                                         <p className="text-white/80 text-xs font-mono font-bold uppercase tracking-wider">
                                           Database Entry Found: 0 Sessions
@@ -9957,7 +9957,7 @@ export default function App() {
                                           </h4>
                                         </div>
                                         <div className="shrink-0 flex items-center gap-1.5">
-                                          <span className="text-[9px] font-mono bg-white/[0.04] border border-white/10 text-white/55 px-2 py-0.5 rounded-sm">
+                                          <span className="text-[9px] font-mono bg-white/[0.04] border border-white/10 text-white/55 px-2 py-0.5 rounded-md">
                                             {count} sets logged
                                           </span>
                                         </div>
@@ -9966,7 +9966,7 @@ export default function App() {
                                       {/* Compare stats grid */}
                                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                         {/* First Ever Set weight log */}
-                                        <div className="bg-black/30 border border-white/5 rounded-sm p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px]">
+                                        <div className="bg-black/30 border border-white/5 rounded-md p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px]">
                                           <div>
                                             <span className="text-[8px] text-white/30 uppercase tracking-wider font-bold block mb-1">
                                               First Ever Recorded Set
@@ -9982,7 +9982,7 @@ export default function App() {
                                         </div>
 
                                         {/* Most Recent Set weight log */}
-                                        <div className="bg-black/30 border border-white/5 rounded-sm p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px]">
+                                        <div className="bg-black/30 border border-white/5 rounded-md p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px]">
                                           <div>
                                             <span className="text-[8px] text-white/30 uppercase tracking-wider font-bold block mb-1">
                                               Most Recent Recorded Set
@@ -9998,7 +9998,7 @@ export default function App() {
                                         </div>
 
                                         {/* Absolute & relative progress delta */}
-                                        <div className={`border rounded-sm p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px] ${trendBg}`}>
+                                        <div className={`border rounded-md p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px] ${trendBg}`}>
                                           <div>
                                             <span className="text-[8px] text-white/30 uppercase tracking-wider font-bold block mb-1">
                                               {isAssisted ? "Assistance reduction adaptation" : "Progression adaptation Delta"}
@@ -10022,7 +10022,7 @@ export default function App() {
                                       </div>
 
                                       {/* Chart Section - Visual line graph showing progress */}
-                                      <div className="bg-white/[0.005] border border-white/[0.03] p-4 rounded-sm">
+                                      <div className="bg-white/[0.005] border border-white/[0.03] p-4 rounded-md">
                                         <div className="flex justify-between items-center mb-3">
                                           <span className="text-[9px] text-white/40 font-mono uppercase tracking-wider">
                                             {isAssisted 
@@ -10060,7 +10060,7 @@ export default function App() {
                                                   if (active && payload && payload.length) {
                                                     const d = payload[0].payload;
                                                     return (
-                                                      <div className="bg-zinc-950/95 border border-white/10 px-2.5 py-1.5 rounded-sm font-mono text-[9px] shadow-xl">
+                                                      <div className="bg-zinc-950/95 border border-white/10 px-2.5 py-1.5 rounded-md font-mono text-[9px] shadow-xl">
                                                         <span className="text-white/30 block text-[7.5px] uppercase">{d.workout}</span>
                                                         <span className="text-white font-black block mt-0.5">{d.date}</span>
                                                         <span className="text-gym-accent font-black block mt-1">{d.weight} KG &times; {d.reps} reps</span>
@@ -10096,7 +10096,7 @@ export default function App() {
                 </div>
 
                 {/* Calorie Tracker Section */}
-                <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
                   <button
                     onClick={() =>
                       setExpandedProgressSections((prev) => ({
@@ -10107,7 +10107,7 @@ export default function App() {
                     className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Flame className="w-5 h-5 animate-pulse" />
                       </div>
                       <div>
@@ -10176,7 +10176,7 @@ export default function App() {
                             return (
                               <div className="space-y-8">
                                 {/* Total Combined Display Card */}
-                                <div className="bg-[#0c0c0c] border border-white/5 rounded-sm p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="bg-[#0c0c0c] border border-white/5 rounded-md p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                                   <div className="flex items-center gap-4">
                                     <Flame className="w-8 h-8 text-gym-accent animate-pulse shrink-0" />
                                     <div>
@@ -10204,9 +10204,9 @@ export default function App() {
                                   <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.25em]">
                                     Output Distribution over Time
                                   </h4>
-                                  <div className="h-[250px] w-full bg-[#050505]/40 border border-white/5 rounded-sm p-4">
+                                  <div className="h-[250px] w-full bg-[#050505]/40 border border-white/5 rounded-md p-4">
                                     {chronologicalDays.length === 0 ? (
-                                      <div className="h-full flex flex-col items-center justify-center border border-dashed border-white/5 rounded-sm">
+                                      <div className="h-full flex flex-col items-center justify-center border border-dashed border-white/5 rounded-md">
                                         <Flame className="w-8 h-8 text-white/10 mb-2" />
                                         <p className="text-white/20 text-xs">
                                           No active caloric progression logged
@@ -10398,7 +10398,7 @@ export default function App() {
                                   </div>
 
                                   {sortedDays.length === 0 ? (
-                                    <div className="text-center py-10 border border-dashed border-white/5 rounded-sm bg-black/30 mt-4">
+                                    <div className="text-center py-10 border border-dashed border-white/5 rounded-md bg-black/30 mt-4">
                                       <p className="text-xs text-white/30 font-light">
                                         No logged workout calorie telemetry
                                         found
@@ -10421,7 +10421,7 @@ export default function App() {
                                           transition={{ duration: 0.25 }}
                                           className="overflow-hidden mt-4"
                                         >
-                                          <div className="divide-y divide-white/5 border border-white/10 rounded-sm overflow-hidden bg-[#070707]/60 max-h-[300px] overflow-y-auto no-scrollbar">
+                                          <div className="divide-y divide-white/5 border border-white/10 rounded-md overflow-hidden bg-[#070707]/60 max-h-[300px] overflow-y-auto no-scrollbar">
                                             {sortedDays.map((day) => (
                                               <div
                                                 key={day.date}
@@ -10472,7 +10472,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setShowProgressReport(true)}
-                    className="px-8 py-4 bg-gradient-to-r from-gym-accent to-gym-accent-light text-black hover:brightness-110 transition-all font-black uppercase tracking-widest text-xs rounded-sm cursor-pointer accent-shadow-btn flex items-center gap-2.5 active:scale-[0.98]"
+                    className="px-8 py-4 bg-gradient-to-r from-gym-accent to-gym-accent-light text-black hover:brightness-110 transition-all font-black uppercase tracking-widest text-xs rounded-md cursor-pointer accent-shadow-btn flex items-center gap-2.5 active:scale-[0.98]"
                   >
                     <Trophy className="w-4 h-4 text-black animate-pulse" />
                     Generate Progress Report
@@ -10563,7 +10563,7 @@ export default function App() {
                               setWorkoutInnerTab("program");
                               saveSettings({ activeView: "workout" });
                             }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gym-accent/10 hover:bg-gym-accent/20 border border-gym-accent/30 hover:border-gym-accent/60 text-gym-accent text-[9px] font-bold uppercase tracking-wider rounded-sm transition-all cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gym-accent/10 hover:bg-gym-accent/20 border border-gym-accent/30 hover:border-gym-accent/60 text-gym-accent text-[9px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer"
                           >
                             <ClipboardList className="w-3.5 h-3.5" />
                             Back to Plan
@@ -10585,7 +10585,7 @@ export default function App() {
                             ([name, exerciseSets]: [string, SessionSet[]]) => (
                               <div
                                 key={name}
-                                className="bg-black/65 border border-gym-accent/40 rounded-sm p-4 relative overflow-hidden group backdrop-blur-md"
+                                className="bg-black/65 border border-gym-accent/40 rounded-md p-4 relative overflow-hidden group backdrop-blur-md"
                               >
                                 <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
                                   <div className="flex items-center gap-2">
@@ -10645,7 +10645,7 @@ export default function App() {
                                           {s.notes && (
                                             <span
                                               onClick={() => setViewingNote(s.notes)}
-                                              className="px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/35 text-gym-accent text-[8px] font-bold rounded-sm uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
+                                              className="px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/35 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
                                               title="Click to view full note"
                                             >
                                               {s.notes}
@@ -10692,7 +10692,7 @@ export default function App() {
                           );
 
                           return (
-                            <div className="mt-8 bg-[#0a0a0a]/80 border border-white/10 rounded-sm p-6 relative overflow-hidden backdrop-blur-md">
+                            <div className="mt-8 bg-[#0a0a0a]/80 border border-white/10 rounded-md p-6 relative overflow-hidden backdrop-blur-md">
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                                 <div className="flex items-center gap-3">
                                   <Flame className="w-5 h-5 text-gym-accent animate-pulse" />
@@ -10736,7 +10736,7 @@ export default function App() {
 
                               {/* Dynamic Session Stopwatch & Calibration Panel */}
                               <div className="mt-6 pt-5 border-t border-white/5 flex flex-col gap-4">
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/5 p-3 rounded-sm">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/5 p-3 rounded-md">
                                   <div className="flex items-center gap-2">
                                     <Timer className={`w-4 h-4 ${profile?.timerActive ? "text-gym-accent animate-spin" : "text-white/40"}`} style={{ animationDuration: "3s" }} />
                                     <div>
@@ -10761,7 +10761,7 @@ export default function App() {
                                           setToast({ message: "Workout session timer stopped!", type: "success" });
                                           setTimeout(() => setToast(null), 3000);
                                         }}
-                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-650 hover:bg-red-500 text-white rounded-sm text-[9px] font-mono font-bold uppercase tracking-wider cursor-pointer transition-colors"
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-red-650 hover:bg-red-500 text-white rounded-md text-[9px] font-mono font-bold uppercase tracking-wider cursor-pointer transition-colors"
                                       >
                                         <Square className="w-2.5 h-2.5 fill-current" /> Stop Stopwatch
                                       </button>
@@ -10778,7 +10778,7 @@ export default function App() {
                                           setToast({ message: "Workout session timer started!", type: "success" });
                                           setTimeout(() => setToast(null), 3000);
                                         }}
-                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gym-accent hover:bg-gym-accent-light text-black rounded-sm text-[9px] font-mono font-bold uppercase tracking-wider cursor-pointer transition-colors"
+                                        className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gym-accent hover:bg-gym-accent-light text-black rounded-md text-[9px] font-mono font-bold uppercase tracking-wider cursor-pointer transition-colors"
                                       >
                                         <Play className="w-2.5 h-2.5 fill-current animate-pulse" /> {profile?.timerAccumulatedMs && profile.timerAccumulatedMs > 0 ? "Resume Stopwatch" : "Start Stopwatch"}
                                       </button>
@@ -10797,7 +10797,7 @@ export default function App() {
                                           setToast({ message: "Workout session timing reset!", type: "info" });
                                           setTimeout(() => setToast(null), 3000);
                                         }}
-                                        className="px-2.5 py-1.5 border border-white/10 hover:border-white/20 text-white/50 hover:text-white rounded-sm text-[9px] font-mono font-bold uppercase cursor-pointer transition-colors"
+                                        className="px-2.5 py-1.5 border border-white/10 hover:border-white/20 text-white/50 hover:text-white rounded-md text-[9px] font-mono font-bold uppercase cursor-pointer transition-colors"
                                         title="Reset timers and overrides"
                                       >
                                         Reset
@@ -10808,7 +10808,7 @@ export default function App() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                                   {/* Timing Status Readout */}
-                                  <div className="flex flex-col justify-center bg-white/[0.01] border border-white/[0.03] p-3 rounded-sm">
+                                  <div className="flex flex-col justify-center bg-white/[0.01] border border-white/[0.03] p-3 rounded-md">
                                     <span className="text-[8px] text-white/30 uppercase tracking-widest font-black mb-1">Time Elapsed Status</span>
                                     <div className="flex items-baseline gap-1.5">
                                       {(() => {
@@ -10849,7 +10849,7 @@ export default function App() {
                                   </div>
 
                                   {/* Fail-safe Manual override minutes input */}
-                                  <div className="flex flex-col justify-center bg-white/[0.01] border border-white/[0.03] p-3 rounded-sm">
+                                  <div className="flex flex-col justify-center bg-white/[0.01] border border-white/[0.03] p-3 rounded-md">
                                     <label className="text-[8px] text-white/30 uppercase tracking-widest font-black mb-1.5 flex items-center gap-1">
                                       <Clock className="w-3 h-3 text-white/30" /> Manual Override Calibration (Fail-safe)
                                     </label>
@@ -10867,7 +10867,7 @@ export default function App() {
                                           });
                                         }}
                                         placeholder="Enter exact session minutes directly (e.g. 45)"
-                                        className="flex-1 bg-black/50 border border-white/10 rounded-sm px-2 py-1 text-[10px] text-white focus:outline-none focus:border-gym-accent/30 font-mono placeholder:text-white/15"
+                                        className="flex-1 bg-black/50 border border-white/10 rounded-md px-2 py-1 text-[10px] text-white focus:outline-none focus:border-gym-accent/30 font-mono placeholder:text-white/15"
                                       />
                                       <span className="text-[9px] font-mono text-white/30">min</span>
                                     </div>
@@ -10881,13 +10881,13 @@ export default function App() {
                         <div className="mt-8 flex items-center justify-center gap-4">
                           <button
                             onClick={handleClearActiveSession}
-                            className="px-6 py-4 border border-red-500/20 text-red-500/60 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/10 transition-all cursor-pointer rounded-sm"
+                            className="px-6 py-4 border border-red-500/20 text-red-500/60 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/10 transition-all cursor-pointer rounded-md"
                           >
                             Discard Session
                           </button>
                           <button
                             onClick={handleArchiveWorkout}
-                            className="px-6 py-4 border border-gym-accent/30 text-gym-accent text-[10px] font-bold uppercase tracking-widest hover:bg-gym-accent/10 transition-all cursor-pointer rounded-sm flex items-center gap-3"
+                            className="px-6 py-4 border border-gym-accent/30 text-gym-accent text-[10px] font-bold uppercase tracking-widest hover:bg-gym-accent/10 transition-all cursor-pointer rounded-md flex items-center gap-3"
                           >
                             <Save className="w-4 h-4 animate-pulse" />
                             Capture Workout Session
@@ -10910,7 +10910,7 @@ export default function App() {
                               onClick={() =>
                                 setShowHistoryMenu(!showHistoryMenu)
                               }
-                              className="bg-black/60 border border-white/20 px-4 py-2 rounded-sm text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
+                              className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
                             >
                               <History className="w-3 h-3" />
                               {selectedWorkoutId &&
@@ -10932,7 +10932,7 @@ export default function App() {
                                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                   animate={{ opacity: 1, y: 0, scale: 1 }}
                                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                  className="absolute top-full right-0 mt-2 w-64 bg-black border border-white/20 rounded-sm shadow-2xl z-50 overflow-hidden"
+                                  className="absolute top-full right-0 mt-2 w-64 bg-black border border-white/20 rounded-md shadow-2xl z-50 overflow-hidden"
                                 >
                                   <div className="max-h-72 overflow-y-auto py-2">
                                     {archivedWorkouts.map((w) => {
@@ -10999,7 +10999,7 @@ export default function App() {
                               <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="flex flex-col items-center justify-center p-20 border border-white/5 border-dashed rounded-sm bg-white/[0.01]"
+                                className="flex flex-col items-center justify-center p-20 border border-white/5 border-dashed rounded-md bg-white/[0.01]"
                               >
                                 <History className="w-12 h-12 text-white/5 mb-6" />
                                 <h3 className="text-xl font-serif italic text-white/40 text-center px-10">
@@ -11020,11 +11020,11 @@ export default function App() {
                               key={workout.id}
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
-                              className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md"
+                              className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md"
                             >
                               <div className="p-8 border-b border-white/5 bg-black/45 flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="flex items-center gap-8">
-                                  <div className="w-16 h-16 bg-gym-accent/15 border border-gym-accent/30 rounded-sm flex flex-col items-center justify-center">
+                                  <div className="w-16 h-16 bg-gym-accent/15 border border-gym-accent/30 rounded-md flex flex-col items-center justify-center">
                                     <span className="text-xl font-light text-gym-accent">
                                       {dateObj.getDate()}
                                     </span>
@@ -11075,7 +11075,7 @@ export default function App() {
                                     onClick={() =>
                                       setSavingRoutineWorkout(workout)
                                     }
-                                    className="flex items-center gap-2 px-6 py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg shadow-gym-accent/5 rounded-sm"
+                                    className="flex items-center gap-2 px-6 py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg shadow-gym-accent/5 rounded-md"
                                   >
                                     <Save className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                                     Save Routine
@@ -11085,7 +11085,7 @@ export default function App() {
                                       handleDeleteWorkout(workout.id)
                                     }
                                     disabled={dataLoading}
-                                    className={`flex items-center gap-2 px-6 py-3 border rounded-sm text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg ${dataLoading ? "bg-white/5 border-white/10 text-white/20" : "bg-red-500/5 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-red-500/5"}`}
+                                    className={`flex items-center gap-2 px-6 py-3 border rounded-md text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg ${dataLoading ? "bg-white/5 border-white/10 text-white/20" : "bg-red-500/5 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-red-500/5"}`}
                                   >
                                     {dataLoading ? (
                                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -11209,13 +11209,13 @@ export default function App() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setIsCreatingRoutine(false)}
-                          className="px-4 py-2 border border-white/10 text-white/60 hover:text-white hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest transition-all rounded-sm cursor-pointer"
+                          className="px-4 py-2 border border-white/10 text-white/60 hover:text-white hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleSaveCustomRoutine}
-                          className="px-5 py-2 bg-gym-accent hover:bg-gym-accent/90 text-black text-[10px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer shadow-[0_0_15px_rgba(255,231,101,0.2)] font-semibold"
+                          className="px-5 py-2 bg-gym-accent hover:bg-gym-accent/90 text-black text-[10px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer shadow-[0_0_15px_rgba(255,231,101,0.2)] font-semibold"
                         >
                           Save Routine
                         </button>
@@ -11223,7 +11223,7 @@ export default function App() {
                     </div>
 
                     {/* Routine Info Form */}
-                    <div className="bg-white/[0.01] border border-white/5 p-6 rounded-sm">
+                    <div className="bg-white/[0.01] border border-white/5 p-6 rounded-md">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Name input */}
                         <div className="space-y-2">
@@ -11235,7 +11235,7 @@ export default function App() {
                             placeholder="e.g. Savage Chest & Arms, Powerhouse Legs..."
                             value={newRoutineName}
                             onChange={(e) => setNewRoutineName(e.target.value)}
-                            className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm font-light focus:outline-none transition-all text-white"
+                            className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-md px-4 py-3 text-sm font-light focus:outline-none transition-all text-white"
                           />
                         </div>
 
@@ -11254,7 +11254,7 @@ export default function App() {
                                 }
                               }}
                               defaultValue=""
-                              className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
+                              className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
                             >
                               <option value="" disabled>-- Select a routine to preload & tweak --</option>
                               {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
@@ -11269,7 +11269,7 @@ export default function App() {
                     </div>
 
                     {/* Quick Muscle Split Cards Panel */}
-                    <div className="space-y-3 bg-white/[0.01] border border-white/5 p-5 rounded-sm">
+                    <div className="space-y-3 bg-white/[0.01] border border-white/5 p-5 rounded-md">
                       <div className="flex items-center justify-between">
                         <div>
                           <h4 className="text-xs font-black uppercase tracking-widest text-[#ffffff]/80">
@@ -11279,7 +11279,7 @@ export default function App() {
                             Visual selector for your targeted routine day focus
                           </p>
                         </div>
-                        <span className="text-[8px] font-mono font-bold bg-gym-accent/5 px-2.5 py-1 rounded-sm border border-gym-accent/15 text-gym-accent uppercase tracking-wider">
+                        <span className="text-[8px] font-mono font-bold bg-gym-accent/5 px-2.5 py-1 rounded-md border border-gym-accent/15 text-gym-accent uppercase tracking-wider">
                           Auto Synced
                         </span>
                       </div>
@@ -11331,14 +11331,14 @@ export default function App() {
                               setShuffleTrigger(prev => prev + 1);
                               setToast({ message: "Suggestions shuffled!", type: "success" });
                             }}
-                            className="px-4 py-2.5 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer"
+                            className="px-4 py-2.5 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer"
                           >
                             🔄 Reshuffle
                           </button>
                           <button
                             type="button"
                             onClick={() => handleLoadSuggestedExercises(suggestedExercises)}
-                            className="px-4 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer shadow-[0_0_12px_rgba(255,231,101,0.2)] font-semibold"
+                            className="px-4 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer shadow-[0_0_12px_rgba(255,231,101,0.2)] font-semibold"
                           >
                             ⚡ Load Suggestions (Replace All)
                           </button>
@@ -11390,7 +11390,7 @@ export default function App() {
                     {/* Exercises Selection Block */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                       {/* Selector/Finder on the left */}
-                      <div className="space-y-4 bg-white/[0.01] border border-white/5 p-6 rounded-sm">
+                      <div className="space-y-4 bg-white/[0.01] border border-white/5 p-6 rounded-md">
                         <div>
                           <h4 className="text-sm font-semibold italic font-serif text-white/90">
                             Add Exercises
@@ -11407,7 +11407,7 @@ export default function App() {
                             placeholder="Type to filter exercises..."
                             value={builderSearch}
                             onChange={(e) => setBuilderSearch(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-sm pl-10 pr-4 py-2.5 text-xs font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                            className="w-full bg-black/40 border border-white/10 rounded-md pl-10 pr-4 py-2.5 text-xs font-light focus:outline-none focus:border-gym-accent transition-all text-white"
                           />
                         </div>
 
@@ -11439,7 +11439,7 @@ export default function App() {
                                         setBuilderSearch("");
                                       }
                                     }}
-                                    className="w-full text-left p-3 rounded-sm border border-gym-accent/20 bg-gym-accent/5 hover:bg-gym-accent hover:text-black transition-all cursor-pointer flex items-center justify-between"
+                                    className="w-full text-left p-3 rounded-md border border-gym-accent/20 bg-gym-accent/5 hover:bg-gym-accent hover:text-black transition-all cursor-pointer flex items-center justify-between"
                                   >
                                     <div className="min-w-0 flex-1">
                                       <span className="text-xs font-bold text-gym-accent block truncate hover:text-inherit">
@@ -11463,7 +11463,7 @@ export default function App() {
                                       key={idx}
                                       onClick={() => handleAddExercise(ex.name)}
                                       disabled={isAdded}
-                                      className={`w-full text-left p-2.5 rounded-sm border transition-all flex items-center justify-between gap-3 ${
+                                      className={`w-full text-left p-2.5 rounded-md border transition-all flex items-center justify-between gap-3 ${
                                         isAdded 
                                           ? "border-emerald-500/10 bg-emerald-500/5 text-emerald-400 opacity-60 cursor-not-allowed" 
                                           : "border-white/5 bg-black/40 hover:bg-white/[0.04] hover:border-white/10 text-white/80 cursor-pointer"
@@ -11471,7 +11471,7 @@ export default function App() {
                                     >
                                       <span className="text-xs font-medium truncate">{ex.name}</span>
                                       {isAdded ? (
-                                        <span className="text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded-sm text-emerald-400">
+                                        <span className="text-[9px] font-bold uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded-md text-emerald-400">
                                           Added
                                         </span>
                                       ) : (
@@ -11503,7 +11503,7 @@ export default function App() {
                         </div>
 
                         {newRoutineExercises.length === 0 ? (
-                          <div className="border border-dashed border-white/10 rounded-sm p-12 text-center bg-black/20">
+                          <div className="border border-dashed border-white/10 rounded-md p-12 text-center bg-black/20">
                             <Dumbbell className="w-8 h-8 text-white/10 mx-auto mb-3 animate-pulse" />
                             <p className="text-xs font-bold text-white/40 uppercase tracking-widest">
                               Routine is empty
@@ -11521,7 +11521,7 @@ export default function App() {
                                 onDragStart={(e) => handleRoutineExDragStart(e, exIdx)}
                                 onDragOver={(e) => handleRoutineExDragOver(e, exIdx)}
                                 onDrop={(e) => handleRoutineExDrop(e, exIdx)}
-                                className={`transition-all rounded-sm overflow-hidden border ${
+                                className={`transition-all rounded-md overflow-hidden border ${
                                   draggedIdx === exIdx
                                     ? "opacity-35 bg-gym-accent/5 border-gym-accent/40 border-dashed animate-pulse scale-[0.99]"
                                     : "bg-black/55 border-white/10 hover:border-white/20 hover:bg-black/70"
@@ -11532,13 +11532,13 @@ export default function App() {
                                   <div className="flex items-center gap-2 min-w-0">
                                     {/* Grip Drag Handle */}
                                     <div 
-                                      className="cursor-grab active:cursor-grabbing p-1.5 text-white/20 hover:text-gym-accent transition-colors shrink-0 rounded-sm hover:bg-white/5" 
+                                      className="cursor-grab active:cursor-grabbing p-1.5 text-white/20 hover:text-gym-accent transition-colors shrink-0 rounded-md hover:bg-white/5" 
                                       title="Drag and drop to reorder exercise"
                                     >
                                       <GripVertical className="w-3.5 h-3.5" />
                                     </div>
 
-                                    <span className="text-xs font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/20 px-2.5 py-0.5 rounded-sm shrink-0">
+                                    <span className="text-xs font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/20 px-2.5 py-0.5 rounded-md shrink-0">
                                       {exIdx + 1}
                                     </span>
                                     <div className="min-w-0">
@@ -11568,7 +11568,7 @@ export default function App() {
                                       type="button"
                                       onClick={() => handleMoveExerciseUp(exIdx)}
                                       disabled={exIdx === 0}
-                                      className={`p-1.5 rounded-sm transition-all border border-transparent ${
+                                      className={`p-1.5 rounded-md transition-all border border-transparent ${
                                         exIdx === 0
                                           ? "text-white/10 cursor-not-allowed"
                                           : "text-white/40 hover:text-gym-accent hover:bg-white/5 cursor-pointer"
@@ -11583,7 +11583,7 @@ export default function App() {
                                       type="button"
                                       onClick={() => handleMoveExerciseDown(exIdx)}
                                       disabled={exIdx === newRoutineExercises.length - 1}
-                                      className={`p-1.5 rounded-sm transition-all border border-transparent ${
+                                      className={`p-1.5 rounded-md transition-all border border-transparent ${
                                         exIdx === newRoutineExercises.length - 1
                                           ? "text-white/10 cursor-not-allowed"
                                           : "text-white/40 hover:text-gym-accent hover:bg-white/5 cursor-pointer"
@@ -11599,7 +11599,7 @@ export default function App() {
                                     <button
                                       type="button"
                                       onClick={() => handleRemoveExercise(exItem.id)}
-                                      className="p-1.5 text-white/30 hover:text-rose-400 hover:bg-rose-500/10 rounded-sm transition-all cursor-pointer bg-transparent border-0"
+                                      className="p-1.5 text-white/30 hover:text-rose-400 hover:bg-rose-500/10 rounded-md transition-all cursor-pointer bg-transparent border-0"
                                       title="Remove exercise"
                                     >
                                       <Trash2 className="w-4 h-4" />
@@ -11617,13 +11617,13 @@ export default function App() {
                     <div className="pt-6 border-t border-white/5 flex justify-end gap-3">
                       <button
                         onClick={() => setIsCreatingRoutine(false)}
-                        className="px-6 py-2.5 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-widest transition-all rounded-sm cursor-pointer"
+                        className="px-6 py-2.5 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white text-xs font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSaveCustomRoutine}
-                        className="px-8 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-xs font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer shadow-[0_0_20px_rgba(255,231,101,0.25)] font-semibold"
+                        className="px-8 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-xs font-black uppercase tracking-widest transition-all rounded-md cursor-pointer shadow-[0_0_20px_rgba(255,231,101,0.25)] font-semibold"
                       >
                         Create & Save Routine
                       </button>
@@ -11648,7 +11648,7 @@ export default function App() {
                           setIsCreatingRoutine(true);
                           setBuilderSearch("");
                         }}
-                        className="flex items-center gap-2 px-4 py-2 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:border-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-sm cursor-pointer font-semibold"
+                        className="flex items-center gap-2 px-4 py-2 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:border-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold"
                       >
                         <Plus className="w-3.5 h-3.5 animate-none" />
                         Create Custom Routine
@@ -11657,7 +11657,7 @@ export default function App() {
 
                     {/* Routine Analytics Summary View */}
                     {routines.length > 0 && selectedRoutine && (
-                      <div className="mb-8 p-6 rounded-sm bg-black/60 border border-white/10 backdrop-blur-md space-y-5">
+                      <div className="mb-8 p-6 rounded-md bg-black/60 border border-white/10 backdrop-blur-md space-y-5">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/5">
                           <div className="space-y-1">
                             <span className="text-[9px] text-gym-accent font-bold uppercase tracking-[0.2em] flex items-center gap-1.5">
@@ -11679,7 +11679,7 @@ export default function App() {
                             <select
                               value={selectedRoutineId || ""}
                               onChange={(e) => setSelectedRoutineId(e.target.value)}
-                              className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer min-w-[200px] max-w-[320px] shadow-md"
+                              className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer min-w-[200px] max-w-[320px] shadow-md"
                             >
                               {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
                                 <option key={r.id || ri} value={r.id}>
@@ -11717,7 +11717,7 @@ export default function App() {
                               {selectedRoutineMuscleGroups.map((item) => (
                                 <div
                                   key={item.group}
-                                  className="bg-white/[0.01] border border-white/5 rounded-sm p-4 flex flex-col justify-between hover:bg-white/[0.03] hover:border-white/10 transition-all group/item"
+                                  className="bg-white/[0.01] border border-white/5 rounded-md p-4 flex flex-col justify-between hover:bg-white/[0.03] hover:border-white/10 transition-all group/item"
                                 >
                                   <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-1.5 min-w-0">
@@ -11742,12 +11742,12 @@ export default function App() {
                                         Emphasis
                                       </span>
                                     </div>
-                                    <div className="w-full bg-white/5 h-1 rounded-sm overflow-hidden font-mono">
+                                    <div className="w-full bg-white/5 h-1 rounded-md overflow-hidden font-mono">
                                       <motion.div
                                         initial={{ width: 0 }}
                                         animate={{ width: `${item.percentage}%` }}
                                         transition={{ duration: 0.8, ease: "easeOut" }}
-                                        className="bg-gym-accent h-full rounded-sm shadow-[0_0_8px_rgba(255,231,101,0.35)]"
+                                        className="bg-gym-accent h-full rounded-md shadow-[0_0_8px_rgba(255,231,101,0.35)]"
                                       />
                                     </div>
                                   </div>
@@ -11767,7 +11767,7 @@ export default function App() {
                                   {selectedRoutineSecondaryMuscleGroups.map((item) => (
                                     <div
                                       key={item.group}
-                                      className="bg-white/[0.005] border border-white/5 rounded-sm p-3.5 flex flex-col justify-between hover:bg-white/[0.02] hover:border-white/10 transition-all group/item"
+                                      className="bg-white/[0.005] border border-white/5 rounded-md p-3.5 flex flex-col justify-between hover:bg-white/[0.02] hover:border-white/10 transition-all group/item"
                                     >
                                       <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-1.5 min-w-0">
@@ -11792,12 +11792,12 @@ export default function App() {
                                             Synergy Contribution
                                           </span>
                                         </div>
-                                        <div className="w-full bg-white/5 h-[3px] rounded-sm overflow-hidden font-mono">
+                                        <div className="w-full bg-white/5 h-[3px] rounded-md overflow-hidden font-mono">
                                           <motion.div
                                             initial={{ width: 0 }}
                                             animate={{ width: `${item.percentage}%` }}
                                             transition={{ duration: 0.8, ease: "easeOut" }}
-                                            className="bg-white/40 h-full rounded-sm"
+                                            className="bg-white/40 h-full rounded-md"
                                           />
                                         </div>
                                       </div>
@@ -11826,10 +11826,10 @@ export default function App() {
                                 [di]: !isOpen,
                               }))
                             }
-                            className="w-full flex items-center justify-between p-6 rounded-sm bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
+                            className="w-full flex items-center justify-between p-6 rounded-md bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
                           >
                             <div className="flex items-center gap-4">
-                              <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
+                              <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
                                 {day.icon}
                               </div>
                               <div className="flex items-center gap-3">
@@ -11858,7 +11858,7 @@ export default function App() {
                             exit={{ height: 0, opacity: 0, marginTop: 0 }}
                             className="overflow-hidden"
                           >
-                            <div className="p-6 bg-white/[0.01] border border-white/5 rounded-sm space-y-4">
+                            <div className="p-6 bg-white/[0.01] border border-white/5 rounded-md space-y-4">
                               {categoryRoutines.length === 0 ? (
                                 <div className="text-center py-8">
                                   <Repeat className="w-8 h-8 text-white/5 mx-auto mb-3 animate-pulse" />
@@ -11876,7 +11876,7 @@ export default function App() {
                                     <div
                                       key={routine.id || ri}
                                       onClick={() => setSelectedRoutineId(routine.id)}
-                                      className={`border rounded-sm overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer ${
+                                      className={`border rounded-md overflow-hidden flex flex-col justify-between transition-all duration-300 cursor-pointer ${
                                         selectedRoutineId === routine.id
                                           ? "bg-gym-accent/[0.04] border-gym-accent shadow-lg shadow-gym-accent/5 ring-1 ring-gym-accent/20"
                                           : "bg-black/55 border-white/10 hover:border-white/20 hover:bg-black/65"
@@ -11904,7 +11904,7 @@ export default function App() {
                                                     if (e.key === "Escape")
                                                       setEditingRoutineId(null);
                                                   }}
-                                                  className="w-full bg-black/90 border border-gym-accent/40 text-sm text-white px-2.5 py-1.5 rounded-sm focus:outline-none focus:border-gym-accent/80 font-medium"
+                                                  className="w-full bg-black/90 border border-gym-accent/40 text-sm text-white px-2.5 py-1.5 rounded-md focus:outline-none focus:border-gym-accent/80 font-medium"
                                                   autoFocus
                                                 />
                                                 <div className="flex gap-2">
@@ -11916,7 +11916,7 @@ export default function App() {
                                                         editingRoutineName,
                                                       );
                                                     }}
-                                                    className="px-2.5 py-1 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-bold uppercase tracking-wider rounded-sm cursor-pointer"
+                                                    className="px-2.5 py-1 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-bold uppercase tracking-wider rounded-md cursor-pointer"
                                                   >
                                                     Save
                                                   </button>
@@ -11925,7 +11925,7 @@ export default function App() {
                                                       e.stopPropagation();
                                                       setEditingRoutineId(null);
                                                     }}
-                                                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-white/70 text-[9px] font-bold uppercase tracking-wider rounded-sm cursor-pointer"
+                                                    className="px-2.5 py-1 bg-white/5 hover:bg-white/10 text-white/70 text-[9px] font-bold uppercase tracking-wider rounded-md cursor-pointer"
                                                   >
                                                     Cancel
                                                   </button>
@@ -11967,7 +11967,7 @@ export default function App() {
                                                   routine,
                                                 );
                                               }}
-                                              className="px-2.5 py-1.5 bg-gym-accent/15 border border-gym-accent/25 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] font-bold uppercase tracking-wider transition-all rounded-sm cursor-pointer"
+                                              className="px-2.5 py-1.5 bg-gym-accent/15 border border-gym-accent/25 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] font-bold uppercase tracking-wider transition-all rounded-md cursor-pointer"
                                               title="Load sets into today's active session"
                                             >
                                               Use Routine
@@ -11977,7 +11977,7 @@ export default function App() {
                                                 e.stopPropagation();
                                                 handlePreloadToBuilder(routine);
                                               }}
-                                              className="px-2.5 py-1.5 bg-white/5 border border-white/10 hover:border-gym-accent/40 hover:text-gym-accent text-white/70 text-[9px] font-bold uppercase tracking-wider transition-all rounded-sm cursor-pointer whitespace-nowrap"
+                                              className="px-2.5 py-1.5 bg-white/5 border border-white/10 hover:border-gym-accent/40 hover:text-gym-accent text-white/70 text-[9px] font-bold uppercase tracking-wider transition-all rounded-md cursor-pointer whitespace-nowrap"
                                               title="Tweak, edit, or adjust this routine in custom builder"
                                             >
                                               Modify & Tweak
@@ -11987,7 +11987,7 @@ export default function App() {
                                                 e.stopPropagation();
                                                 handleDeleteRoutine(routine.id!);
                                               }}
-                                              className="p-1.5 border border-red-500/10 hover:border-red-500/35 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 transition-colors rounded-sm cursor-pointer"
+                                              className="p-1.5 border border-red-500/10 hover:border-red-500/35 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 transition-colors rounded-md cursor-pointer"
                                               title="Delete routine"
                                             >
                                               <Trash2 className="w-3.5 h-3.5 text-red-500" />
@@ -12421,7 +12421,7 @@ export default function App() {
                                     prev ? { ...prev, sex: val as any } : null,
                                   );
                                 }}
-                                className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
+                                className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
                               >
                                 <option
                                   value="male"
@@ -12808,11 +12808,11 @@ export default function App() {
                     className="space-y-6"
                   >
                     {/* Active Rest Chronometer Widget */}
-                    <div className="bg-black/60 border border-gym-accent/20 rounded-sm p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative overflow-hidden backdrop-blur-md">
+                    <div className="bg-black/60 border border-gym-accent/20 rounded-md p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative overflow-hidden backdrop-blur-md">
                       <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-gym-accent" />
                       
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-sm bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-md bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center shrink-0">
                           <Clock className="w-6 h-6 text-gym-accent" />
                         </div>
                         <div>
@@ -12847,14 +12847,14 @@ export default function App() {
                           <span className="text-[8px] font-mono font-bold text-white/35 uppercase tracking-widest">
                             Manual Countdown
                           </span>
-                          <div className="flex items-center gap-1.5 bg-black/40 p-0.5 rounded-sm border border-white/5 h-[26px]">
+                          <div className="flex items-center gap-1.5 bg-black/40 p-0.5 rounded-md border border-white/5 h-[26px]">
                             <button
                               type="button"
                               onClick={() => {
                                 setManualRestActive(!manualRestActive);
                                 playRestBeep(880, 0.05);
                               }}
-                              className={`px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none h-full ${
+                              className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none h-full ${
                                 manualRestActive
                                   ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25"
                                   : "bg-cyan-500/15 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25"
@@ -12869,7 +12869,7 @@ export default function App() {
                                 setManualRestActive(false);
                                 playRestBeep(440, 0.08);
                               }}
-                              className="px-2 py-0.5 rounded-sm text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none h-full"
+                              className="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none h-full"
                             >
                               Reset
                             </button>
@@ -12881,7 +12881,7 @@ export default function App() {
                                 setManualRestTime(val);
                                 setManualRestActive(false);
                               }}
-                              className="bg-black/80 border border-white/10 text-white/70 rounded-sm text-[9px] px-1 py-0.5 font-mono focus:outline-none cursor-pointer h-full"
+                              className="bg-black/80 border border-white/10 text-white/70 rounded-md text-[9px] px-1 py-0.5 font-mono focus:outline-none cursor-pointer h-full"
                             >
                               {[30, 45, 60, 90, 120, 180].map((sec) => (
                                 <option key={sec} value={sec}>
@@ -12898,7 +12898,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={() => setRestAudioEnabled(!restAudioEnabled)}
-                            className={`h-[26px] px-2.5 rounded-sm border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                            className={`h-[26px] px-2.5 rounded-md border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                               restAudioEnabled
                                 ? "bg-gym-accent/15 border-gym-accent/25 text-gym-accent animate-none"
                                 : "bg-white/5 border-white/10 text-white/40 hover:text-white/60"
@@ -12922,12 +12922,12 @@ export default function App() {
                     </div>
 
                     {formattedProgram.length === 0 ? (
-                      <div className="text-center py-12 bg-black/40 border border-white/5 rounded-sm">
+                      <div className="text-center py-12 bg-black/40 border border-white/5 rounded-md">
                         <Dumbbell className="w-8 h-8 text-white/10 mx-auto mb-3" />
                         <p className="text-sm text-white/40 mb-4">No exercises selected.</p>
                         <button
                           onClick={() => setWorkoutInnerTab("builder")}
-                          className="px-4 py-2 bg-gym-accent text-black text-xs font-black uppercase tracking-widest rounded-sm cursor-pointer hover:bg-gym-accent/90 transition-all"
+                          className="px-4 py-2 bg-gym-accent text-black text-xs font-black uppercase tracking-widest rounded-md cursor-pointer hover:bg-gym-accent/90 transition-all"
                         >
                           Go to Plan Builder
                         </button>
@@ -12938,7 +12938,7 @@ export default function App() {
                           <div key={idx} className="space-y-4">
                             {/* Day Title Section */}
                             <div className="flex items-center gap-3 border-b border-white/10 pb-2 pl-1">
-                              <div className="w-6 h-6 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent text-xs">
+                              <div className="w-6 h-6 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent text-xs">
                                 {DAY_CONFIG[item.dayIndex]?.icon || <Dumbbell className="w-3.5 h-3.5" />}
                               </div>
                               <h3 className="text-lg font-light italic font-serif text-white/95">
@@ -12963,7 +12963,7 @@ export default function App() {
                     <div className="flex justify-start gap-3 pt-4">
                       <button
                         onClick={() => setWorkoutInnerTab("builder")}
-                        className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white/85 rounded-sm text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer"
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white/85 rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer"
                       >
                         <Dumbbell className="w-3.5 h-3.5" />
                         Modify Program in Builder
@@ -13015,7 +13015,7 @@ export default function App() {
                     <motion.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mb-6 p-4 rounded-sm border border-emerald-500/30 bg-emerald-950/20 bg-gradient-to-r from-emerald-500/10 to-transparent relative overflow-hidden accent-shadow-card"
+                      className="mb-6 p-4 rounded-md border border-emerald-500/30 bg-emerald-950/20 bg-gradient-to-r from-emerald-500/10 to-transparent relative overflow-hidden accent-shadow-card"
                     >
                       <div className="absolute top-0 right-0 p-3 text-emerald-400 font-mono text-[11px] animate-pulse">⚡ PROGRESSION DETECTED</div>
                       <div className="flex items-center gap-2 mb-2">
@@ -13031,7 +13031,7 @@ export default function App() {
                         {progressions.map((p, idx) => (
                           <div
                             key={idx}
-                            className="flex flex-wrap items-center justify-between text-xs bg-black/45 border border-white/5 py-2.5 px-3 rounded-sm hover:border-emerald-500/25 transition-colors"
+                            className="flex flex-wrap items-center justify-between text-xs bg-black/45 border border-white/5 py-2.5 px-3 rounded-md hover:border-emerald-500/25 transition-colors"
                           >
                             <span className="font-semibold text-white/90 font-sans">
                               {p.name}
@@ -13060,14 +13060,14 @@ export default function App() {
                           [di]: !prev[di],
                         }))
                       }
-                      className={`w-full flex items-center justify-between p-6 rounded-sm border transition-all cursor-pointer group backdrop-blur-md ${
+                      className={`w-full flex items-center justify-between p-6 rounded-md border transition-all cursor-pointer group backdrop-blur-md ${
                         lastLoadedDayIndex === di
                           ? "bg-gym-accent/[0.04] border-gym-accent shadow-md shadow-gym-accent/10"
                           : "bg-black/70 border-white/15 hover:bg-white/[0.04] hover:border-white/25"
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
+                        <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
                           {day.icon}
                         </div>
                         <div className="flex items-center gap-3">
@@ -13117,7 +13117,7 @@ export default function App() {
                                   layout
                                   initial={{ opacity: 0, y: 10 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  className="bg-black/45 border border-white/10 hover:border-white/20 rounded-sm p-4 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group/card"
+                                  className="bg-black/45 border border-white/10 hover:border-white/20 rounded-md p-4 flex flex-col justify-between backdrop-blur-md relative overflow-hidden group/card"
                                 >
                                   {/* Accent indicator line on left */}
                                   <div className="absolute top-0 bottom-0 left-0 w-[2px] bg-gym-accent opacity-40 group-hover/card:opacity-100 transition-opacity" />
@@ -13129,7 +13129,7 @@ export default function App() {
                                           #{ei + 1}
                                         </span>
                                         {ex.category && (
-                                          <span className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-[0.1em] ${
+                                          <span className={`text-[8px] px-1.5 py-0.2 rounded-md font-black uppercase tracking-[0.1em] ${
                                             ex.category === "compound"
                                               ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                                               : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
@@ -13147,21 +13147,21 @@ export default function App() {
                                     <div className="flex gap-1 shrink-0">
                                       <button
                                         onClick={() => setGuidanceEx(ex)}
-                                        className="p-1.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+                                        className="p-1.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-md"
                                         title="Guidance & Instructions"
                                       >
                                         <BookOpen className="w-3.5 h-3.5" />
                                       </button>
                                       <button
                                         onClick={() => handleSwap(di, ei)}
-                                        className="p-1.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-sm"
+                                        className="p-1.5 bg-white/5 border border-white/10 text-white/40 hover:text-gym-accent hover:bg-gym-accent/5 transition-all cursor-pointer rounded-md"
                                         title="Swap Exercise"
                                       >
                                         <RefreshCw className="w-3.5 h-3.5" />
                                       </button>
                                       <button
                                         onClick={() => handleRemoveExerciseFromPlan(di, ei)}
-                                        className="p-1.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-sm"
+                                        className="p-1.5 bg-red-500/[0.03] border border-red-500/10 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 transition-all cursor-pointer rounded-md"
                                         title="Remove"
                                       >
                                         <Trash2 className="w-3.5 h-3.5 text-red-500" />
@@ -13200,7 +13200,7 @@ export default function App() {
                             {/* Add Exercise Slot */}
                             <button
                               onClick={() => setAddingToDay(di)}
-                              className="bg-black/30 border border-white/10 border-dashed rounded-sm p-4 flex flex-col items-center justify-center gap-2 hover:bg-black/50 hover:border-gym-accent/30 transition-all cursor-pointer group/add min-h-[105px]"
+                              className="bg-black/30 border border-white/10 border-dashed rounded-md p-4 flex flex-col items-center justify-center gap-2 hover:bg-black/50 hover:border-gym-accent/30 transition-all cursor-pointer group/add min-h-[105px]"
                             >
                               <Plus className="w-4 h-4 text-white/40 group-hover/add:text-gym-accent transition-all" />
                               <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 group-hover/add:text-white transition-all">
@@ -13254,7 +13254,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col max-h-[80vh] shadow-2xl"
+                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-md overflow-hidden flex flex-col max-h-[80vh] shadow-2xl"
               >
                 <div className="p-8 border-b border-white/5">
                   <div className="flex items-center justify-between mb-6">
@@ -13280,7 +13280,7 @@ export default function App() {
                           setCreatingCustomForDay(addingToDay);
                           setShowAddCustomModal(true);
                         }}
-                        className="flex items-center gap-2 px-3 py-2 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black text-gym-accent rounded-sm text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer"
+                        className="flex items-center gap-2 px-3 py-2 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black text-gym-accent rounded-md text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer"
                       >
                         <Plus className="w-3 h-3" />
                         Create Custom
@@ -13304,7 +13304,7 @@ export default function App() {
                       autoFocus
                       value={modalSearch}
                       onChange={(e) => setModalSearch(e.target.value)}
-                      className="w-full bg-black/60 border border-white/20 rounded-sm pl-12 pr-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                      className="w-full bg-black/60 border border-white/20 rounded-md pl-12 pr-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
                     />
                   </div>
                 </div>
@@ -13330,7 +13330,7 @@ export default function App() {
                           onClick={() =>
                             handleAddExerciseToPlan(addingToDay, ex)
                           }
-                          className="w-full flex items-center justify-between p-4 bg-black/65 border border-white/10 rounded-sm hover:bg-black/85 hover:border-gym-accent/30 transition-all text-left cursor-pointer group/inner"
+                          className="w-full flex items-center justify-between p-4 bg-black/65 border border-white/10 rounded-md hover:bg-black/85 hover:border-gym-accent/30 transition-all text-left cursor-pointer group/inner"
                         >
                           <div className="flex flex-col gap-1">
                             <span className="text-xs font-medium text-white/70 group-hover/inner:text-gym-accent transition-colors">
@@ -13571,7 +13571,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.9, y: 30 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl z-50"
+                className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-md overflow-hidden flex flex-col shadow-2xl z-50"
               >
                 <div className="p-8 border-b border-white/5 relative">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-3xl" />
@@ -13597,10 +13597,10 @@ export default function App() {
                         onClick={() =>
                           handleSaveRoutine(savingRoutineWorkout, idx)
                         }
-                        className="w-full text-left p-4 rounded-sm border border-white/10 bg-white/[0.02] hover:bg-gym-accent hover:border-gym-accent hover:text-black transition-all cursor-pointer flex items-center justify-between group"
+                        className="w-full text-left p-4 rounded-md border border-white/10 bg-white/[0.02] hover:bg-gym-accent hover:border-gym-accent hover:text-black transition-all cursor-pointer flex items-center justify-between group"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-7 h-7 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 group-hover:bg-black/10 group-hover:border-black/20">
+                          <div className="w-7 h-7 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 group-hover:bg-black/10 group-hover:border-black/20">
                             {day.icon}
                           </div>
                           <span className="text-sm font-medium font-serif italic text-white/90 group-hover:text-black">
@@ -13615,7 +13615,7 @@ export default function App() {
                   <div className="pt-4 flex justify-end gap-2">
                     <button
                       onClick={() => setSavingRoutineWorkout(null)}
-                      className="px-5 py-2.5 border border-white/10 hover:border-white/20 rounded-sm text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer"
+                      className="px-5 py-2.5 border border-white/10 hover:border-white/20 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer"
                     >
                       Cancel
                     </button>
@@ -13641,7 +13641,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.95, y: 25 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 25 }}
-                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl z-50 p-6 sm:p-8"
+                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-md overflow-hidden flex flex-col shadow-2xl z-50 p-6 sm:p-8"
               >
                 {/* Visual Glow */}
                 <div
@@ -13679,7 +13679,7 @@ export default function App() {
 
                   if (chartData.length === 0) {
                     return (
-                      <div className="py-16 border border-dashed border-white/5 bg-[#070707]/30 text-center flex flex-col items-center justify-center rounded-sm">
+                      <div className="py-16 border border-dashed border-white/5 bg-[#070707]/30 text-center flex flex-col items-center justify-center rounded-md">
                         <Dumbbell className="w-12 h-12 text-white/10 mb-4 animate-pulse" />
                         <p className="text-white/60 text-xs font-semibold uppercase tracking-wider">
                           No Chronological Logs
@@ -13706,7 +13706,7 @@ export default function App() {
                     <div className="space-y-6 relative z-10">
                       {/* Stats bento */}
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                        <div className="bg-black/40 border border-white/5 rounded-sm p-3.5 flex flex-col justify-center">
+                        <div className="bg-black/40 border border-white/5 rounded-md p-3.5 flex flex-col justify-center">
                           <span className="text-[8px] text-white/30 uppercase font-black tracking-wider block mb-1">
                             Recorded lifts
                           </span>
@@ -13714,7 +13714,7 @@ export default function App() {
                             {chartData.length}
                           </span>
                         </div>
-                        <div className="bg-black/40 border border-white/5 rounded-sm p-3.5 flex flex-col justify-center">
+                        <div className="bg-black/40 border border-white/5 rounded-md p-3.5 flex flex-col justify-center">
                           <span className="text-[8px] text-white/30 uppercase font-black tracking-wider block mb-1">
                             Peak Weight Load
                           </span>
@@ -13728,7 +13728,7 @@ export default function App() {
                             </span>
                           </span>
                         </div>
-                        <div className="bg-black/40 border border-white/5 rounded-sm p-3.5 flex flex-col justify-center">
+                        <div className="bg-black/40 border border-white/5 rounded-md p-3.5 flex flex-col justify-center">
                           <span className="text-[8px] text-white/30 uppercase font-black tracking-wider block mb-1">
                             Starting Load
                           </span>
@@ -13744,7 +13744,7 @@ export default function App() {
                             borderColor: `${activeTheme.accent}20`,
                             backgroundColor: `${activeTheme.accent}03`,
                           }}
-                          className="border rounded-sm p-3.5 flex flex-col justify-center"
+                          className="border rounded-md p-3.5 flex flex-col justify-center"
                         >
                           <span
                             style={{ color: `${activeTheme.accent}70` }}
@@ -13768,7 +13768,7 @@ export default function App() {
                       </div>
 
                       {/* Line/Area Chart */}
-                      <div className="w-full h-64 bg-black/35 border border-white/5 rounded-sm p-4 pt-6">
+                      <div className="w-full h-64 bg-black/35 border border-white/5 rounded-md p-4 pt-6">
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart
                             data={chartData}
@@ -13825,7 +13825,7 @@ export default function App() {
                                   const data = payload[0]
                                     .payload as any;
                                   return (
-                                    <div className="bg-[#0c0c0c] border border-white/10 p-3 shadow-2xl rounded-sm font-mono text-[10px]">
+                                    <div className="bg-[#0c0c0c] border border-white/10 p-3 shadow-2xl rounded-md font-mono text-[10px]">
                                       <p className="text-white/40 mb-1 font-sans">
                                         {new Date(
                                           data.fullDate,
@@ -13890,7 +13890,7 @@ export default function App() {
                       borderColor: `${activeTheme.accent}30`,
                       backgroundColor: `${activeTheme.accent}0a`,
                     }}
-                    className="px-6 py-2.5 hover:bg-white/10 hover:border-white/20 rounded-sm text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-colors font-mono"
+                    className="px-6 py-2.5 hover:bg-white/10 hover:border-white/20 rounded-md text-[10px] font-black uppercase tracking-widest text-white cursor-pointer transition-colors font-mono"
                   >
                     Done
                   </button>
@@ -13918,7 +13918,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-sm flex flex-col max-h-[90vh] overflow-y-auto shadow-2xl p-8"
+                className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-md flex flex-col max-h-[90vh] overflow-y-auto shadow-2xl p-8"
               >
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -13956,7 +13956,7 @@ export default function App() {
                       placeholder="e.g., Kettlebell Deadlift"
                       value={customExName}
                       onChange={(e) => setCustomExName(e.target.value)}
-                      className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white font-light"
+                      className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-md px-4 py-3 text-sm focus:outline-none transition-all text-white font-light"
                     />
                   </div>
 
@@ -13967,7 +13967,7 @@ export default function App() {
                     <select
                       value={customExPool}
                       onChange={(e) => setCustomExPool(e.target.value as any)}
-                      className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
+                      className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
                     >
                       {creatingCustomForDay !== null ? (
                         DAY_CONFIG[creatingCustomForDay].pools.map(
@@ -14077,7 +14077,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setCustomExCategory("compound")}
-                        className={`py-3 rounded-sm border text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
+                        className={`py-3 rounded-md border text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
                           customExCategory === "compound"
                             ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
                             : "border-white/10 bg-white/[0.02] text-white/60 hover:border-white/25"
@@ -14088,7 +14088,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setCustomExCategory("isolation")}
-                        className={`py-3 rounded-sm border text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
+                        className={`py-3 rounded-md border text-xs font-bold uppercase tracking-widest transition-all cursor-pointer ${
                           customExCategory === "isolation"
                             ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
                             : "border-white/10 bg-white/[0.02] text-white/60 hover:border-white/25"
@@ -14108,7 +14108,7 @@ export default function App() {
                       placeholder="e.g., https://www.youtube.com/watch?v=..."
                       value={customExVideoUrl}
                       onChange={(e) => setCustomExVideoUrl(e.target.value)}
-                      className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white font-light"
+                      className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-md px-4 py-3 text-sm focus:outline-none transition-all text-white font-light"
                     />
                   </div>
 
@@ -14134,7 +14134,7 @@ export default function App() {
                             }
                           }
                         }}
-                        className="flex-1 bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-sm px-4 py-3 text-sm focus:outline-none transition-all text-white font-light text-ellipsis overflow-hidden"
+                        className="flex-1 bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-md px-4 py-3 text-sm focus:outline-none transition-all text-white font-light text-ellipsis overflow-hidden"
                       />
                       <button
                         type="button"
@@ -14147,14 +14147,14 @@ export default function App() {
                             setGuidanceStepInput("");
                           }
                         }}
-                        className="px-4 bg-white/5 hover:bg-gym-accent hover:text-black border border-white/10 text-white/80 rounded-sm text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
+                        className="px-4 bg-white/5 hover:bg-gym-accent hover:text-black border border-white/10 text-white/80 rounded-md text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
                       >
                         Add
                       </button>
                     </div>
 
                     {customGuidanceSteps.length > 0 && (
-                      <div className="mt-3 space-y-2 max-h-40 overflow-y-auto bg-black/45 border border-white/5 p-3 rounded-sm">
+                      <div className="mt-3 space-y-2 max-h-40 overflow-y-auto bg-black/45 border border-white/5 p-3 rounded-md">
                         {customGuidanceSteps.map((step, idx) => (
                           <div
                             key={idx}
@@ -14188,7 +14188,7 @@ export default function App() {
                   <div className="pt-4">
                     <button
                       type="submit"
-                      className="w-full bg-gym-accent text-black hover:bg-white hover:text-black font-black uppercase tracking-widest py-4 rounded-sm text-sm transition-all focus:outline-none shadow-md shadow-gym-accent/5 cursor-pointer"
+                      className="w-full bg-gym-accent text-black hover:bg-white hover:text-black font-black uppercase tracking-widest py-4 rounded-md text-sm transition-all focus:outline-none shadow-md shadow-gym-accent/5 cursor-pointer"
                     >
                       Add to Archive
                     </button>
@@ -14218,13 +14218,13 @@ export default function App() {
                     initial={{ opacity: 0, scale: 0.9, y: 30 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                    className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-sm flex flex-col shadow-2xl my-auto z-10"
+                    className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-md flex flex-col shadow-2xl my-auto z-10"
                   >
                     <div className="p-10 border-b border-white/5 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/5 rounded-full blur-3xl -mr-16 -mt-16" />
                       <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-6">
-                          <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center">
+                          <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-md flex items-center justify-center">
                             <BookOpen className="w-6 h-6 text-gym-accent" />
                           </div>
                           <div>
@@ -14242,7 +14242,7 @@ export default function App() {
                             <span className="text-[8px] text-white/20 uppercase tracking-widest font-black mb-1">
                               Focus Area
                             </span>
-                            <span className="text-[10px] text-white/60 font-bold uppercase tracking-widest border border-white/10 px-2 py-1 rounded-sm bg-white/[0.02]">
+                            <span className="text-[10px] text-white/60 font-bold uppercase tracking-widest border border-white/10 px-2 py-1 rounded-md bg-white/[0.02]">
                               {resolvedEx.pool}
                             </span>
                           </div>
@@ -14258,7 +14258,7 @@ export default function App() {
                                     {secondaries.map((mus) => (
                                       <span
                                         key={mus}
-                                        className="text-[9px] text-white/50 font-bold uppercase tracking-widest border border-white/5 px-2 py-1 rounded-sm bg-white/[0.01]"
+                                        className="text-[9px] text-white/50 font-bold uppercase tracking-widest border border-white/5 px-2 py-1 rounded-md bg-white/[0.01]"
                                       >
                                         {mus}
                                       </span>
@@ -14292,7 +14292,7 @@ export default function App() {
                       <p className="text-[10px] text-white/40 uppercase tracking-widest text-center mb-6">
                         Primary target <span className="text-orange-500 font-bold">orange</span> / Synergistic support <span className="text-blue-400 font-bold">blue</span>
                       </p>
-                      <div className="flex justify-center py-2 bg-black/40 border border-white/5 rounded-sm overflow-hidden max-w-md mx-auto">
+                      <div className="flex justify-center py-2 bg-black/40 border border-white/5 rounded-md overflow-hidden max-w-md mx-auto">
                         <AnatomyChart 
                           sets={[]} 
                           compact={true} 
@@ -14319,7 +14319,7 @@ export default function App() {
                               key={idx}
                               className="flex gap-6 group"
                             >
-                              <div className="flex-shrink-0 w-8 h-8 rounded-sm bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-gym-accent group-hover:bg-gym-accent group-hover:text-black transition-all">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-black text-gym-accent group-hover:bg-gym-accent group-hover:text-black transition-all">
                                 {idx + 1}
                               </div>
                               <p className="text-[14px] leading-relaxed text-white/70 font-light pt-1.5">
@@ -14403,7 +14403,7 @@ export default function App() {
 
                       {resolvedEx.pool !== "cardio" &&
                         (resolvedEx.youtubeId ? (
-                          <div className="rounded-sm overflow-hidden border border-white/10 bg-black aspect-video relative shadow-lg">
+                          <div className="rounded-md overflow-hidden border border-white/10 bg-black aspect-video relative shadow-lg">
                             <iframe
                               className="w-full h-full"
                               src={`https://www.youtube.com/embed/${resolvedEx.youtubeId}?rel=0`}
@@ -14413,7 +14413,7 @@ export default function App() {
                             />
                           </div>
                         ) : (
-                          <div className="p-6 rounded-sm border border-dashed border-white/10 bg-white/[0.005] flex flex-col items-center justify-center text-center gap-3 py-10">
+                          <div className="p-6 rounded-md border border-dashed border-white/10 bg-white/[0.005] flex flex-col items-center justify-center text-center gap-3 py-10">
                             <Youtube className="w-8 h-8 text-white/20" />
                             <div>
                               <span className="text-xs font-bold text-white uppercase tracking-wider block">
@@ -14435,7 +14435,7 @@ export default function App() {
                             href={resolvedEx.youtubeUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] px-5 py-2.5 border border-white/10 hover:border-gym-accent rounded-sm text-white/60 hover:text-white hover:bg-gym-accent/5 transition-all cursor-pointer"
+                            className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] px-5 py-2.5 border border-white/10 hover:border-gym-accent rounded-md text-white/60 hover:text-white hover:bg-gym-accent/5 transition-all cursor-pointer"
                           >
                             <Youtube className="w-4 h-4 text-red-500" />
                             Watch Tutorial on YouTube
@@ -14447,7 +14447,7 @@ export default function App() {
                     <div className="p-8 border-t border-white/5 bg-white/[0.02] flex justify-end">
                       <button
                         onClick={() => setGuidanceEx(null)}
-                        className="px-10 py-4 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-gym-accent hover:bg-gym-accent/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] cursor-pointer rounded-sm"
+                        className="px-10 py-4 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-gym-accent hover:bg-gym-accent/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] cursor-pointer rounded-md"
                       >
                         Close Archive
                       </button>
@@ -14483,13 +14483,13 @@ export default function App() {
                     initial={{ opacity: 0, scale: 0.9, y: 30 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                    className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-sm flex flex-col shadow-2xl my-auto z-10 overflow-hidden"
+                    className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-md flex flex-col shadow-2xl my-auto z-10 overflow-hidden"
                   >
                     <div className="p-6 border-b border-white/15 relative overflow-hidden bg-white/[0.01]">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-2xl -mr-12 -mt-12" />
                       <div className="relative z-10 flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center shrink-0">
+                          <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-md flex items-center justify-center shrink-0">
                             <Icon className="w-5 h-5 text-gym-accent" />
                           </div>
                           <div>
@@ -14501,7 +14501,7 @@ export default function App() {
                             </h3>
                             {resolvedEx.category && (
                               <span
-                                className={`inline-block text-[7.5px] px-1.5 py-0.2 rounded-sm font-black uppercase mt-1 tracking-widest ${
+                                className={`inline-block text-[7.5px] px-1.5 py-0.2 rounded-md font-black uppercase mt-1 tracking-widest ${
                                   resolvedEx.category === "compound"
                                     ? "bg-amber-500/10 text-amber-500/80 border border-amber-500/20"
                                     : "bg-purple-500/15 text-purple-400 border border-purple-500/20"
@@ -14529,7 +14529,7 @@ export default function App() {
                               setPopupNotes("");
                               setPopupDifficulty("moderate");
                             }}
-                            className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white rounded-sm transition-all cursor-pointer"
+                            className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white rounded-md transition-all cursor-pointer"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -14539,7 +14539,7 @@ export default function App() {
 
                     <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                       {/* Form Inputs */}
-                      <div className="flex flex-col gap-3 bg-white/[0.01] border border-white/[0.04] p-4 rounded-sm w-full">
+                      <div className="flex flex-col gap-3 bg-white/[0.01] border border-white/[0.04] p-4 rounded-md w-full">
                         <div className="grid grid-cols-2 gap-3 w-full">
                           <div className="flex flex-col">
                             <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
@@ -14551,7 +14551,7 @@ export default function App() {
                               placeholder="0"
                               value={popupWeight}
                               onChange={(e) => setPopupWeight(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                              className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
                             />
                           </div>
                           <div className="flex flex-col">
@@ -14564,7 +14564,7 @@ export default function App() {
                               placeholder="0"
                               value={popupReps}
                               onChange={(e) => setPopupReps(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
+                              className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
                             />
                           </div>
                         </div>
@@ -14578,7 +14578,7 @@ export default function App() {
                             placeholder="Warmup, RPE 9, drop set, etc."
                             value={popupNotes}
                             onChange={(e) => setPopupNotes(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-sm py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
+                            className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-xs font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white"
                           />
                         </div>
 
@@ -14587,11 +14587,11 @@ export default function App() {
                           <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
                             Set Intensity (How'd it feel?)
                           </span>
-                          <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-sm border border-white/5">
+                          <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-md border border-white/5">
                             <button
                               type="button"
                               onClick={() => setPopupDifficulty("easy")}
-                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
                                 popupDifficulty === "easy"
                                   ? "bg-emerald-500/15 border-emerald-500/35 text-emerald-400 font-black shadow-[0_0_8px_rgba(16,185,129,0.1)]"
                                   : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
@@ -14602,7 +14602,7 @@ export default function App() {
                             <button
                               type="button"
                               onClick={() => setPopupDifficulty("moderate")}
-                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
                                 popupDifficulty === "moderate"
                                   ? "bg-amber-500/15 border-amber-500/35 text-amber-400 font-bold shadow-[0_0_8px_rgba(245,158,11,0.1)]"
                                   : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
@@ -14613,7 +14613,7 @@ export default function App() {
                             <button
                               type="button"
                               onClick={() => setPopupDifficulty("hard")}
-                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-sm border transition-all cursor-pointer text-center ${
+                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
                                 popupDifficulty === "hard"
                                   ? "bg-rose-500/15 border-rose-500/35 text-rose-400 font-black shadow-[0_0_8px_rgba(244,63,94,0.1)]"
                                   : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
@@ -14659,7 +14659,7 @@ export default function App() {
                           });
 
                           return (
-                            <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-sm px-2.5 py-1.5 mt-1 text-[10px] w-full font-sans">
+                            <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-md px-2.5 py-1.5 mt-1 text-[10px] w-full font-sans">
                               <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
                                 <span className="relative flex h-1.5 w-1.5 shrink-0">
                                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gym-accent/40 opacity-75"></span>
@@ -14678,7 +14678,7 @@ export default function App() {
                                   setPopupWeight(ghostSet.weight.toString());
                                   setPopupReps(ghostSet.reps.toString());
                                 }}
-                                className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-sm transition-all cursor-pointer whitespace-nowrap shrink-0"
+                                className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-md transition-all cursor-pointer whitespace-nowrap shrink-0"
                                 title="Use ghost set target values"
                               >
                                 Match
@@ -14709,7 +14709,7 @@ export default function App() {
                               setTimeout(() => setToast(null), 3000);
                             }
                           }}
-                          className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2.5 rounded-sm text-[9.5px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
+                          className="w-full bg-gym-accent hover:bg-gym-accent/90 text-black py-2.5 rounded-md text-[9.5px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer text-center font-mono mt-1"
                         >
                           Submit entry Log set
                         </button>
@@ -14754,7 +14754,7 @@ export default function App() {
                         if (recommendWeight > 0) {
                           if (hasStruggled) {
                             return (
-                              <div className="p-3.5 rounded-sm bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(245,158,11,0.08)]">
+                              <div className="p-3.5 rounded-md bg-amber-500/10 border border-amber-500/25 text-amber-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(245,158,11,0.08)]">
                                 <div className="flex items-center gap-1.5 justify-between">
                                   <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-amber-400 flex items-center gap-1.5">
                                     <Activity className="w-3.5 h-3.5" />
@@ -14772,7 +14772,7 @@ export default function App() {
                           }
 
                           return (
-                            <div className="p-3.5 rounded-sm bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+                            <div className="p-3.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 flex flex-col gap-2 shadow-[0_0_15px_rgba(16,185,129,0.1)]">
                               <div className="flex items-center gap-1.5 justify-between">
                                 <span className="text-[9px] font-black uppercase tracking-[0.2em] font-mono text-emerald-400 flex items-center gap-1.5">
                                   <TrendingUp className="w-3.5 h-3.5" />
@@ -14796,7 +14796,7 @@ export default function App() {
                                   });
                                   setTimeout(() => setToast(null), 2000);
                                 }}
-                                className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-semibold rounded-sm text-[9px] font-black uppercase tracking-[0.15em] font-mono transition-all cursor-pointer shadow-md shadow-emerald-500/15 text-center"
+                                className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-semibold rounded-md text-[9px] font-black uppercase tracking-[0.15em] font-mono transition-all cursor-pointer shadow-md shadow-emerald-500/15 text-center"
                               >
                                 Apply {recommendWeight}kg Recommendation
                               </button>
@@ -14830,7 +14830,7 @@ export default function App() {
                           setPopupNotes("");
                           setPopupDifficulty("moderate");
                         }}
-                        className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all text-[10px] font-black uppercase tracking-wider cursor-pointer rounded-sm"
+                        className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white/60 hover:text-white transition-all text-[10px] font-black uppercase tracking-wider cursor-pointer rounded-md"
                       >
                         Done / Close
                       </button>
@@ -14889,14 +14889,14 @@ export default function App() {
                     initial={{ opacity: 0, scale: 0.9, y: 30 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                    className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-sm flex flex-col shadow-2xl my-auto z-10"
+                    className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-md flex flex-col shadow-2xl my-auto z-10"
                   >
                     {/* Header */}
                     <div className="p-8 border-b border-white/5 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/5 rounded-full blur-3xl -mr-16 -mt-16" />
                       <div className="relative z-10">
                         <div className="flex items-center gap-3 mb-4">
-                          <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-sm flex items-center justify-center">
+                          <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-md flex items-center justify-center">
                             <ArrowLeftRight className="w-6 h-6 text-gym-accent" />
                           </div>
                           <div>
@@ -14909,13 +14909,13 @@ export default function App() {
                           </div>
                         </div>
 
-                        <div className="bg-white/[0.02] border border-white/5 rounded-sm p-4 mt-4">
+                        <div className="bg-white/[0.02] border border-white/5 rounded-md p-4 mt-4">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                               <span className="text-[8px] text-white/30 uppercase tracking-widest font-black block mb-0.5">
                                 Target Section / Compartment
                               </span>
-                              <span className="text-xs text-white/90 font-bold uppercase tracking-wider font-mono bg-white/[0.04] border border-white/10 px-2.5 py-1 rounded-sm inline-block">
+                              <span className="text-xs text-white/90 font-bold uppercase tracking-wider font-mono bg-white/[0.04] border border-white/10 px-2.5 py-1 rounded-md inline-block">
                                 {formattedCategoryName}
                               </span>
                             </div>
@@ -14926,7 +14926,7 @@ export default function App() {
                                   executeSwap(swappingExercise.dayIndex, swappingExercise.exIndex, randomEx);
                                   setSwapSearch("");
                                 }}
-                                className="flex items-center gap-2 px-4 py-2 bg-gym-accent hover:bg-gym-accent/90 text-black text-[10px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer self-start sm:self-center"
+                                className="flex items-center gap-2 px-4 py-2 bg-gym-accent hover:bg-gym-accent/90 text-black text-[10px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer self-start sm:self-center"
                               >
                                 <Zap className="w-3.5 h-3.5 fill-black" />
                                 Surprise Me (Random Equivalent)
@@ -14949,7 +14949,7 @@ export default function App() {
                           value={swapSearch}
                           onChange={(e) => setSwapSearch(e.target.value)}
                           placeholder={`Search ${alternatives.length} biomechanical equivalents...`}
-                          className="w-full bg-black/60 border border-white/10 focus:border-gym-accent rounded-sm pl-11 pr-4 py-3 text-xs font-light focus:outline-none transition-all text-white placeholder-white/20 font-mono"
+                          className="w-full bg-black/60 border border-white/10 focus:border-gym-accent rounded-md pl-11 pr-4 py-3 text-xs font-light focus:outline-none transition-all text-white placeholder-white/20 font-mono"
                         />
                       </div>
                     </div>
@@ -14965,7 +14965,7 @@ export default function App() {
                                 executeSwap(swappingExercise.dayIndex, swappingExercise.exIndex, alt);
                                 setSwapSearch("");
                               }}
-                              className="group p-4 bg-white/[0.01] border border-white/5 hover:border-gym-accent/30 hover:bg-gym-accent/[0.02] rounded-sm transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                              className="group p-4 bg-white/[0.01] border border-white/5 hover:border-gym-accent/30 hover:bg-gym-accent/[0.02] rounded-md transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                             >
                               <div className="space-y-1.5 flex-1 pr-4">
                                 <div className="flex items-center gap-2">
@@ -14974,7 +14974,7 @@ export default function App() {
                                   </h4>
                                   {alt.category && (
                                     <span
-                                      className={`text-[8px] px-1.5 py-0.2 rounded-sm font-black uppercase tracking-[0.1em] ${
+                                      className={`text-[8px] px-1.5 py-0.2 rounded-md font-black uppercase tracking-[0.1em] ${
                                         alt.category === "compound"
                                           ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                                           : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
@@ -14990,14 +14990,14 @@ export default function App() {
                                   </p>
                                 )}
                               </div>
-                              <span className="shrink-0 px-4 py-2 border border-white/10 group-hover:border-gym-accent group-hover:bg-gym-accent group-hover:text-black hover:bg-gym-accent text-white/60 text-[9px] font-black uppercase tracking-widest transition-all rounded-sm cursor-pointer whitespace-nowrap text-center">
+                              <span className="shrink-0 px-4 py-2 border border-white/10 group-hover:border-gym-accent group-hover:bg-gym-accent group-hover:text-black hover:bg-gym-accent text-white/60 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer whitespace-nowrap text-center">
                                 Swap & Replace
                               </span>
                             </div>
                           );
                         })
                       ) : (
-                        <div className="p-8 rounded-sm border border-dashed border-white/10 bg-white/[0.005] flex flex-col items-center justify-center text-center gap-3 py-10">
+                        <div className="p-8 rounded-md border border-dashed border-white/10 bg-white/[0.005] flex flex-col items-center justify-center text-center gap-3 py-10">
                           <Dumbbell className="w-8 h-8 text-white/20" />
                           <div>
                             <span className="text-xs font-bold text-white uppercase tracking-wider block">
@@ -15018,7 +15018,7 @@ export default function App() {
                           setSwappingExercise(null);
                           setSwapSearch("");
                         }}
-                        className="px-8 py-3.5 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-gym-accent hover:bg-gym-accent/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] cursor-pointer rounded-sm"
+                        className="px-8 py-3.5 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-gym-accent hover:bg-gym-accent/5 transition-all text-[10px] font-black uppercase tracking-[0.3em] cursor-pointer rounded-md"
                       >
                         Cancel Swap
                       </button>
@@ -15044,13 +15044,13 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.9, y: 30 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-sm overflow-hidden flex flex-col shadow-2xl"
+                className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-md overflow-hidden flex flex-col shadow-2xl"
               >
                 <div className="p-8 border-b border-white/5 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-2xl -mr-12 -mt-12" />
                   <div className="relative z-10 flex items-center gap-4">
                     <div
-                      className={`w-12 h-12 rounded-sm flex items-center justify-center border ${
+                      className={`w-12 h-12 rounded-md flex items-center justify-center border ${
                         driveConfirmAction.type === "delete"
                           ? "bg-red-500/10 border-red-500/25 text-red-500"
                           : "bg-gym-accent/10 border-gym-accent/20 text-gym-accent"
@@ -15117,7 +15117,7 @@ export default function App() {
                         executeRestoreBackup(driveConfirmAction.fileId);
                       }
                     }}
-                    className={`px-6 py-3 text-black text-[10px] font-black uppercase tracking-widest cursor-pointer rounded-sm transition-all hover:brightness-110 ${
+                    className={`px-6 py-3 text-black text-[10px] font-black uppercase tracking-widest cursor-pointer rounded-md transition-all hover:brightness-110 ${
                       driveConfirmAction.type === "delete"
                         ? "bg-red-500 text-white shadow-lg shadow-red-500/10"
                         : "bg-gym-accent text-black shadow-lg shadow-gym-accent/10"
@@ -15200,7 +15200,7 @@ export default function App() {
                     initial={{ opacity: 0, scale: 0.95, y: 40 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 40 }}
-                    className="relative z-10 w-full max-w-4xl max-h-[92vh] flex flex-col bg-[#050505] border border-white/10 rounded-sm shadow-2xl overflow-hidden"
+                    className="relative z-10 w-full max-w-4xl max-h-[92vh] flex flex-col bg-[#050505] border border-white/10 rounded-md shadow-2xl overflow-hidden"
                   >
                     {/* Modal Top Ribbon Controls */}
                     <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/50 backdrop-blur-md">
@@ -15219,7 +15219,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => setShowProgressReport(false)}
-                          className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest text-[10px] rounded-sm transition-all hover:brightness-110 active:scale-95 flex items-center gap-2 cursor-pointer shadow-lg shadow-white/5"
+                          className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest text-[10px] rounded-md transition-all hover:brightness-110 active:scale-95 flex items-center gap-2 cursor-pointer shadow-lg shadow-white/5"
                         >
                           Close
                         </button>
@@ -15249,7 +15249,7 @@ export default function App() {
                             width: "780px",
                             backgroundColor: activeTheme.bg || "#050505",
                           }}
-                          className="p-8 border border-gym-accent/25 rounded-sm flex flex-col gap-6 font-sans shrink-0 text-white relative select-none"
+                          className="p-8 border border-gym-accent/25 rounded-md flex flex-col gap-6 font-sans shrink-0 text-white relative select-none"
                         >
                           {/* Corner Tech Anchors */}
                           <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-gym-accent/40" />
@@ -15289,13 +15289,13 @@ export default function App() {
                           {/* Metrics Card Row */}
                           <div className="grid grid-cols-12 gap-5 items-stretch">
                             {/* Avatar Column */}
-                            <div className="col-span-4 bg-white/[0.015] border border-white/10 rounded-sm p-4 flex flex-col items-center justify-between text-center relative overflow-hidden">
+                            <div className="col-span-4 bg-white/[0.015] border border-white/10 rounded-md p-4 flex flex-col items-center justify-between text-center relative overflow-hidden">
                               <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase block">
                                 AVATAR SPECIMEN
                               </span>
 
                               {/* Image Box - Converted to elegant rectangular dossier avatar display card */}
-                              <div className="w-[136px] h-[170px] rounded-sm bg-black/50 border border-gym-accent/30 overflow-hidden flex items-center justify-center my-4 relative shadow-inner">
+                              <div className="w-[136px] h-[170px] rounded-md bg-black/50 border border-gym-accent/30 overflow-hidden flex items-center justify-center my-4 relative shadow-inner">
                                 {avatarImg ? (
                                   <img
                                     src={avatarImg}
@@ -15338,7 +15338,7 @@ export default function App() {
                             </div>
 
                             {/* Numeric Profile Matrix */}
-                            <div className="col-span-8 bg-white/[0.015] border border-white/10 rounded-sm p-5 flex flex-col justify-between relative overflow-hidden">
+                            <div className="col-span-8 bg-white/[0.015] border border-white/10 rounded-md p-5 flex flex-col justify-between relative overflow-hidden">
                               <div>
                                 <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase block">
                                   METRIC CONSOLE
@@ -15405,7 +15405,7 @@ export default function App() {
                           </div>
 
                           {/* Chart Section 1: Physical Progress Area Chart */}
-                          <div className="bg-white/[0.015] border border-white/10 rounded-sm p-5 relative overflow-hidden">
+                          <div className="bg-white/[0.015] border border-white/10 rounded-md p-5 relative overflow-hidden">
                             <div className="flex items-center justify-between mb-4 relative z-10">
                               <div>
                                 <span className="text-[10px] font-mono font-bold tracking-widest text-gym-accent uppercase block">
@@ -15421,7 +15421,7 @@ export default function App() {
                             </div>
                             <div className="h-32 w-full">
                               {weightHistory.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-sm bg-black/40">
+                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-md bg-black/40">
                                   <TrendingUp className="w-6 h-6 text-white/10 mb-1" />
                                   <span className="text-[10px] text-white/55 uppercase tracking-widest">
                                     No physical logs archived
@@ -15530,7 +15530,7 @@ export default function App() {
                           </div>
 
                           {/* Chart Section 2: Volume Progression Timeline Area Chart */}
-                          <div className="bg-white/[0.015] border border-white/10 rounded-sm p-5 relative overflow-hidden">
+                          <div className="bg-white/[0.015] border border-white/10 rounded-md p-5 relative overflow-hidden">
                             <div className="flex items-center justify-between mb-4 relative z-10">
                               <div>
                                 <span className="text-[10px] font-mono font-bold tracking-widest text-gym-accent uppercase block">
@@ -15546,7 +15546,7 @@ export default function App() {
                             </div>
                             <div className="h-32 w-full">
                               {archivedWorkouts.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-sm bg-black/40">
+                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-md bg-black/40">
                                   <Activity className="w-6 h-6 text-white/10 mb-1" />
                                   <span className="text-[10px] text-white/55 uppercase tracking-widest">
                                     No active training logs archived
@@ -15652,7 +15652,7 @@ export default function App() {
                           </div>
 
                           {/* Chart Section 3: Caloric Progression Timeline Area Chart */}
-                          <div className="bg-white/[0.015] border border-white/10 rounded-sm p-5 relative overflow-hidden">
+                          <div className="bg-white/[0.015] border border-white/10 rounded-md p-5 relative overflow-hidden">
                             <div className="flex items-center justify-between mb-4 relative z-10">
                               <div>
                                 <span className="text-[10px] font-mono font-bold tracking-widest text-gym-accent uppercase block">
@@ -15668,7 +15668,7 @@ export default function App() {
                             </div>
                             <div className="h-32 w-full">
                               {archivedWorkouts.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-sm bg-black/40">
+                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-md bg-black/40">
                                   <Flame className="w-5 h-5 text-white/10 mb-1 animate-pulse" />
                                   <span className="text-[10px] text-white/55 uppercase tracking-widest">
                                     No active training logs archived
@@ -15788,7 +15788,7 @@ export default function App() {
                           </div>
 
                           {/* Chart Section 4: Body Fat Progression Timeline Area Chart */}
-                          <div className="bg-white/[0.015] border border-white/10 rounded-sm p-5 relative overflow-hidden">
+                          <div className="bg-white/[0.015] border border-white/10 rounded-md p-5 relative overflow-hidden">
                             <div className="flex items-center justify-between mb-4 relative z-10">
                               <div>
                                 <span className="text-[10px] font-mono font-bold tracking-widest text-gym-accent uppercase block">
@@ -15804,7 +15804,7 @@ export default function App() {
                             </div>
                             <div className="h-32 w-full">
                               {bodyFatHistory.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-sm bg-black/40">
+                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-md bg-black/40">
                                   <Percent className="w-5 h-5 text-white/10 mb-1 animate-pulse" />
                                   <span className="text-[10px] text-white/55 uppercase tracking-widest">
                                     No body fat logs archived
@@ -16050,7 +16050,7 @@ export default function App() {
               initial={{ opacity: 0, y: 50, x: "-50%" }}
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: 20, x: "-50%" }}
-              className={`fixed bottom-10 left-1/2 z-[200] px-6 py-3 rounded-sm border shadow-2xl flex items-center gap-3 min-w-[280px] ${
+              className={`fixed bottom-10 left-1/2 z-[200] px-6 py-3 rounded-md border shadow-2xl flex items-center gap-3 min-w-[280px] ${
                 toast.type === "pb"
                   ? "bg-gym-accent border-gym-accent text-black"
                   : "bg-[#0d0d0d] border-gym-accent/30 text-white"
@@ -16081,7 +16081,7 @@ export default function App() {
                 exit={{ opacity: 0, scale: 0.9, y: 40 }}
                 transition={{ type: "spring", damping: 25, stiffness: 180 }}
                 onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-w-3xl bg-[#080808] border border-gym-accent/20 rounded-sm flex flex-col shadow-2xl my-auto z-10 overflow-hidden"
+                className="relative w-full max-w-3xl bg-[#080808] border border-gym-accent/20 rounded-md flex flex-col shadow-2xl my-auto z-10 overflow-hidden"
               >
                 {/* Visual Top Glow and Accent lines */}
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-cyan-500 via-gym-accent to-purple-600" />
@@ -16091,7 +16091,7 @@ export default function App() {
                 {/* Header */}
                 <div className="p-8 border-b border-white/5 relative z-10 flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gym-accent/10 border border-gym-accent/30 rounded-sm flex items-center justify-center shadow-[0_0_15px_rgba(235,255,0,0.1)]">
+                    <div className="w-12 h-12 bg-gym-accent/10 border border-gym-accent/30 rounded-md flex items-center justify-center shadow-[0_0_15px_rgba(235,255,0,0.1)]">
                       <Award className="w-6 h-6 text-gym-accent" />
                     </div>
                     <div>
@@ -16118,7 +16118,7 @@ export default function App() {
                   {/* Grid of Key Performance Indicators */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {/* Volume KPI */}
-                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-sm hover:border-gym-accent/20 transition-all flex flex-col justify-between">
+                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-md hover:border-gym-accent/20 transition-all flex flex-col justify-between">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[8px] text-white/40 uppercase tracking-widest font-black">
                           Total Volume
@@ -16136,7 +16136,7 @@ export default function App() {
                     </div>
 
                     {/* Peak Lift KPI */}
-                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-sm hover:border-gym-accent/20 transition-all flex flex-col justify-between">
+                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-md hover:border-gym-accent/20 transition-all flex flex-col justify-between">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[8px] text-white/40 uppercase tracking-widest font-black">
                           Peak Lift
@@ -16157,7 +16157,7 @@ export default function App() {
                     </div>
 
                     {/* Total Sets KPI */}
-                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-sm hover:border-gym-accent/20 transition-all flex flex-col justify-between">
+                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-md hover:border-gym-accent/20 transition-all flex flex-col justify-between">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[8px] text-white/40 uppercase tracking-widest font-black">
                           Completed Sets
@@ -16178,7 +16178,7 @@ export default function App() {
                     </div>
 
                     {/* Energy Output KPI */}
-                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-sm hover:border-gym-accent/20 transition-all flex flex-col justify-between">
+                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-md hover:border-gym-accent/20 transition-all flex flex-col justify-between">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[8px] text-white/40 uppercase tracking-widest font-black">
                           Energy Output
@@ -16236,17 +16236,17 @@ export default function App() {
                       </div>
 
                       {/* Pure Rewards Section */}
-                      <div className="bg-gym-accent/[0.02] border border-gym-accent/15 p-4 rounded-sm space-y-3">
+                      <div className="bg-gym-accent/[0.02] border border-gym-accent/15 p-4 rounded-md space-y-3">
                         <h5 className="text-[8px] font-black text-gym-accent uppercase tracking-[0.25em] flex items-center gap-1.5">
                           <Award className="w-3.5 h-3.5" />
                           Session Loot & Rewards
                         </h5>
                         <div className="grid grid-cols-2 gap-3 text-xs">
-                          <div className="bg-black/40 border border-white/5 p-2.5 rounded-sm flex items-center gap-2">
+                          <div className="bg-black/40 border border-white/5 p-2.5 rounded-md flex items-center gap-2">
                             <span className="text-gym-accent font-mono font-bold">+400</span>
                             <span className="text-[9px] text-white/40 uppercase font-black tracking-widest font-sans">XP GAINED</span>
                           </div>
-                          <div className="bg-black/40 border border-white/5 p-2.5 rounded-sm flex items-center gap-2">
+                          <div className="bg-black/40 border border-white/5 p-2.5 rounded-md flex items-center gap-2">
                             <span className="text-gym-accent font-mono font-bold">+250</span>
                             <span className="text-[9px] text-white/40 uppercase font-black tracking-widest font-sans">CREDITS</span>
                           </div>
@@ -16265,13 +16265,13 @@ export default function App() {
                         {sessionSummary.exercisesList.map((exItem) => (
                           <div
                             key={exItem.name}
-                            className="bg-white/[0.01] border border-white/5 hover:border-white/10 p-3.5 rounded-sm space-y-2 transition-all"
+                            className="bg-white/[0.01] border border-white/5 hover:border-white/10 p-3.5 rounded-md space-y-2 transition-all"
                           >
                             <div className="flex items-start justify-between gap-4 font-sans">
                               <span className="text-xs font-bold text-white/90 leading-snug break-words max-w-[70%]">
                                 {exItem.name}
                               </span>
-                              <span className="text-[9px] font-mono text-gym-accent border border-gym-accent/20 px-2 py-0.5 rounded-sm uppercase tracking-widest bg-gym-accent/5 shrink-0">
+                              <span className="text-[9px] font-mono text-gym-accent border border-gym-accent/20 px-2 py-0.5 rounded-md uppercase tracking-widest bg-gym-accent/5 shrink-0">
                                 {exItem.setsCount} Sets
                               </span>
                             </div>
@@ -16306,7 +16306,7 @@ export default function App() {
                   </div>
                   <button
                     onClick={() => setSessionSummary(null)}
-                    className="w-full sm:w-auto px-10 py-4 bg-gym-accent text-black hover:bg-white font-black uppercase tracking-[0.25em] text-[10px] cursor-pointer rounded-sm transition-all duration-300 shadow-lg shadow-gym-accent/10 active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto px-10 py-4 bg-gym-accent text-black hover:bg-white font-black uppercase tracking-[0.25em] text-[10px] cursor-pointer rounded-md transition-all duration-300 shadow-lg shadow-gym-accent/10 active:scale-[0.98] flex items-center justify-center gap-2"
                   >
                     <Check className="w-4 h-4 stroke-[3px]" />
                     Acknowledge Evolution
@@ -16330,7 +16330,7 @@ export default function App() {
                 exit={{ opacity: 0, scale: 0.95, y: 15 }}
                 transition={{ duration: 0.2 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-md bg-[#0d0d0d] border border-gym-accent/30 rounded-sm shadow-2xl overflow-hidden"
+                className="w-full max-w-md bg-[#0d0d0d] border border-gym-accent/30 rounded-md shadow-2xl overflow-hidden"
               >
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-white/5 px-4 py-3 bg-black/40">
@@ -16359,7 +16359,7 @@ export default function App() {
                 <div className="border-t border-white/5 px-4 py-3 bg-black/20 flex justify-end">
                   <button
                     onClick={() => setViewingNote(null)}
-                    className="bg-gym-accent hover:bg-gym-accent/90 text-black px-4 py-1.5 rounded-sm text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer font-mono"
+                    className="bg-gym-accent hover:bg-gym-accent/90 text-black px-4 py-1.5 rounded-md text-[9px] font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer font-mono"
                   >
                     Okay
                   </button>

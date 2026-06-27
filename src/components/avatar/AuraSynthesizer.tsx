@@ -42,7 +42,7 @@ export const AuraSynthesizer: React.FC<AuraSynthesizerProps> = ({
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-bold text-white font-sans uppercase font-mono">{aura.name}</h4>
                     {isEquipped && (
-                      <span className="text-[7.5px] bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 font-bold font-mono uppercase px-1 rounded-sm">Current</span>
+                      <span className="text-[7.5px] bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 font-bold font-mono uppercase px-1 rounded-md">Current</span>
                     )}
                   </div>
                   <p className="text-[10px] text-white/50 mt-1 max-w-[260px] line-clamp-2 leading-relaxed">{aura.desc}</p>

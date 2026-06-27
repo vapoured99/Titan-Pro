@@ -199,7 +199,7 @@ export default function WorkoutCalendarHeatmap({
       {/* 1. Header and Micro Analytics Ribbell Blocks */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Stat block 1 */}
-        <div className="bg-white/[0.015] border border-white/5 rounded-sm p-4 flex items-center gap-3">
+        <div className="bg-white/[0.015] border border-white/5 rounded-md p-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent shrink-0">
             <CheckCircle2 className="w-4.5 h-4.5" />
           </div>
@@ -210,7 +210,7 @@ export default function WorkoutCalendarHeatmap({
         </div>
 
         {/* Stat block 2 */}
-        <div className="bg-white/[0.015] border border-white/5 rounded-sm p-4 flex items-center gap-3">
+        <div className="bg-white/[0.015] border border-white/5 rounded-md p-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent shrink-0">
             <Flame className="w-4.5 h-4.5" />
           </div>
@@ -221,7 +221,7 @@ export default function WorkoutCalendarHeatmap({
         </div>
 
         {/* Stat block 3 */}
-        <div className="bg-white/[0.015] border border-white/5 rounded-sm p-4 flex items-center gap-3">
+        <div className="bg-white/[0.015] border border-white/5 rounded-md p-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent shrink-0">
             <TrendingUp className="w-4.5 h-4.5" />
           </div>
@@ -232,7 +232,7 @@ export default function WorkoutCalendarHeatmap({
         </div>
 
         {/* Stat block 4 */}
-        <div className="bg-white/[0.015] border border-white/5 rounded-sm p-4 flex items-center gap-3">
+        <div className="bg-white/[0.015] border border-white/5 rounded-md p-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent shrink-0">
             <Sparkles className="w-4.5 h-4.5" />
           </div>
@@ -252,10 +252,10 @@ export default function WorkoutCalendarHeatmap({
         <div className="flex items-center gap-2">
           <span>LESS ACTIVITY</span>
           <div className="flex items-center gap-1">
-            <div className="w-4 h-4 rounded-sm bg-white/[0.02] border border-white/5" title="0 Workouts" />
-            <div className="w-4 h-4 rounded-sm border" style={{ backgroundColor: `rgba(var(--gym-accent-rgb), 0.22)`, borderColor: `rgba(var(--gym-accent-rgb), 0.3)` }} title="1 Workout" />
-            <div className="w-4 h-4 rounded-sm border" style={{ backgroundColor: `rgba(var(--gym-accent-rgb), 0.55)`, borderColor: `rgba(var(--gym-accent-rgb), 0.6)` }} title="2 Workouts" />
-            <div className="w-4 h-4 rounded-sm border" style={{ backgroundColor: `var(--gym-accent)`, borderColor: `var(--gym-accent)` }} title="3+ Workouts" />
+            <div className="w-4 h-4 rounded-md bg-white/[0.02] border border-white/5" title="0 Workouts" />
+            <div className="w-4 h-4 rounded-md border" style={{ backgroundColor: `rgba(var(--gym-accent-rgb), 0.22)`, borderColor: `rgba(var(--gym-accent-rgb), 0.3)` }} title="1 Workout" />
+            <div className="w-4 h-4 rounded-md border" style={{ backgroundColor: `rgba(var(--gym-accent-rgb), 0.55)`, borderColor: `rgba(var(--gym-accent-rgb), 0.6)` }} title="2 Workouts" />
+            <div className="w-4 h-4 rounded-md border" style={{ backgroundColor: `var(--gym-accent)`, borderColor: `var(--gym-accent)` }} title="3+ Workouts" />
           </div>
           <span>MORE INTENSITY</span>
         </div>
@@ -265,7 +265,7 @@ export default function WorkoutCalendarHeatmap({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {calendarMonths.map((mObj, mIdx) => {
           return (
-            <div key={`${mObj.year}-${mObj.month}`} className="border border-white/5 bg-white/[0.01] rounded-sm p-5 relative overflow-hidden">
+            <div key={`${mObj.year}-${mObj.month}`} className="border border-white/5 bg-white/[0.01] rounded-md p-5 relative overflow-hidden">
               {/* Background Month Watermark */}
               <div className="absolute right-2 top-2 select-none opacity-[0.02] text-5xl font-black font-sans leading-none pointer-events-none">
                 {(mObj.month + 1).toString().padStart(2, '0')}
@@ -345,7 +345,7 @@ export default function WorkoutCalendarHeatmap({
                     <button
                       key={`day-${dayNum}`}
                       onClick={() => handleCellClick(dateStr, count > 0)}
-                      className={`aspect-square flex items-center justify-center rounded-sm text-[9px] font-mono border transition-all cursor-pointer relative select-none hover:scale-110 hover:z-10 focus:outline-none ${textClass} ${
+                      className={`aspect-square flex items-center justify-center rounded-md text-[9px] font-mono border transition-all cursor-pointer relative select-none hover:scale-110 hover:z-10 focus:outline-none ${textClass} ${
                         isDaySelected ? 'ring-2 ring-white scale-105 z-10 shadow-lg' : ''
                       }`}
                       style={tileStyle}
@@ -373,7 +373,7 @@ export default function WorkoutCalendarHeatmap({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 15 }}
             transition={{ duration: 0.25 }}
-            className="border border-white/10 rounded-sm bg-black/60 p-6 backdrop-blur-md"
+            className="border border-white/10 rounded-md bg-black/60 p-6 backdrop-blur-md"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/5 mb-4">
               <div>
@@ -385,14 +385,14 @@ export default function WorkoutCalendarHeatmap({
               </div>
               <button
                 onClick={() => setSelectedDate(null)}
-                className="self-start sm:self-center px-3 py-1 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-sm text-[8px] font-mono tracking-widest uppercase text-white/60 hover:text-white cursor-pointer transition-all active:scale-95"
+                className="self-start sm:self-center px-3 py-1 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-md text-[8px] font-mono tracking-widest uppercase text-white/60 hover:text-white cursor-pointer transition-all active:scale-95"
               >
                 CLOSE ANALYSIS
               </button>
             </div>
 
             {selectedDateWorkouts.length === 0 ? (
-              <div className="py-8 text-center bg-white/[0.01] border border-dashed border-white/5 rounded-sm flex flex-col items-center justify-center">
+              <div className="py-8 text-center bg-white/[0.01] border border-dashed border-white/5 rounded-md flex flex-col items-center justify-center">
                 <Activity className="w-8 h-8 text-white/10 mb-1.5 animate-pulse" />
                 <p className="text-white/20 font-bold text-xs">No entries archived on this date.</p>
                 <p className="text-[10px] text-white/15 uppercase tracking-widest mt-0.5">System standing: inactive</p>
@@ -401,7 +401,7 @@ export default function WorkoutCalendarHeatmap({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedDateWorkouts.map((w) => {
                   return (
-                    <div key={w.id} className="border border-white/10 rounded-sm p-4 bg-white/[0.015] hover:border-gym-accent/30 hover:bg-white/[0.03] transition-all flex flex-col justify-between">
+                    <div key={w.id} className="border border-white/10 rounded-md p-4 bg-white/[0.015] hover:border-gym-accent/30 hover:bg-white/[0.03] transition-all flex flex-col justify-between">
                       <div>
                         {/* Title Row */}
                         <div className="flex items-center justify-between gap-3 mb-2">

@@ -96,7 +96,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
   }, [duration, cnsScore, compoundSetsCount, sweatRate]);
 
   return (
-    <div className="bg-[#050506] border border-white/10 rounded-sm p-6 relative overflow-hidden space-y-6" id="synaptic-planner-container">
+    <div className="bg-[#050506] border border-white/10 rounded-md p-6 relative overflow-hidden space-y-6" id="synaptic-planner-container">
       {/* Background design grids */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,223,0,0.02)_0%,transparent_60%)] pointer-events-none" />
       
@@ -119,7 +119,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
         <div className="flex items-center gap-2 font-mono shrink-0">
           <div className="text-right">
             <span className="text-[7px] text-white/30 block uppercase tracking-widest font-bold">DRINK CONCENTRATION</span>
-            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-sm border inline-block ${calculations.tonicityColor}`}>
+            <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md border inline-block ${calculations.tonicityColor}`}>
               {calculations.tonicityLabel} ({calculations.osmolarity} mOsm/L)
             </span>
           </div>
@@ -129,7 +129,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 5 cols: Interactive Control Deck */}
         <div className="lg:col-span-5 space-y-5">
-          <div className="bg-black/40 border border-white/5 p-4 rounded-sm space-y-4">
+          <div className="bg-black/40 border border-white/5 p-4 rounded-md space-y-4">
             <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest text-[#ffdf00] border-b border-white/5 pb-2">
               <Sliders className="w-3.5 h-3.5" />
               YOUR WORKOUT ADJUSTMENTS
@@ -174,7 +174,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
                   <button
                     key={rate}
                     onClick={() => setSweatRate(rate)}
-                    className={`p-1.5 text-[8.5px] font-mono font-bold rounded-sm border uppercase transition-all ${
+                    className={`p-1.5 text-[8.5px] font-mono font-bold rounded-md border uppercase transition-all ${
                       sweatRate === rate
                         ? "bg-gym-accent/10 text-gym-accent border-gym-accent"
                         : "bg-black/30 text-white/40 border-white/5 hover:border-white/15 hover:text-white/60"
@@ -187,7 +187,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
             </div>
 
             {/* Scientific disclaimer notes */}
-            <div className="p-3 bg-white/[0.02] border border-white/5 rounded-sm text-[9px] text-white/45 leading-relaxed space-y-1.5 uppercase font-mono">
+            <div className="p-3 bg-white/[0.02] border border-white/5 rounded-md text-[9px] text-white/45 leading-relaxed space-y-1.5 uppercase font-mono">
               <div className="flex items-center gap-1.5 text-white font-bold">
                 <Info className="w-3.5 h-3.5 text-gym-accent" />
                 WHY WATER & MINERAL RECOVERY MATTERS
@@ -200,7 +200,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
           </div>
 
           {/* Telemetry reports */}
-          <div className="bg-[#030304] border border-white/5 rounded-sm p-4 space-y-3.5">
+          <div className="bg-[#030304] border border-white/5 rounded-md p-4 space-y-3.5">
             <span className="text-[7.5px] font-mono text-white/30 tracking-widest uppercase block">
               ESTIMATED RECOVERY READINESS ESTIMATES
             </span>
@@ -251,7 +251,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
         <div className="lg:col-span-7 space-y-4">
           
           {/* Fluid Composition Table */}
-          <div className="bg-black/60 border border-white/10 rounded-sm p-4 font-mono space-y-4 relative">
+          <div className="bg-black/60 border border-white/10 rounded-md p-4 font-mono space-y-4 relative">
             <span className="text-[8px] text-white/45 tracking-widest uppercase flex items-center gap-1.5 border-b border-white/5 pb-2">
               <CupSoda className="w-3.5 h-3.5 text-gym-accent" />
               SOLUTE BALANCE RECIPE (YOUR INTRA-WORKOUT DRINK)
@@ -272,7 +272,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-[11px] p-1.5 hover:bg-white/[0.01] rounded">
                   <span className="text-white font-bold flex items-center gap-2">
-                    <span className="text-[9px] bg-red-500/10 border border-red-500/20 text-red-400 px-1 py-0.5 rounded-sm">Na⁺</span>
+                    <span className="text-[9px] bg-red-500/10 border border-red-500/20 text-red-400 px-1 py-0.5 rounded-md">Na⁺</span>
                     Sodium Mineral (Regulates fluids and blood flow)
                   </span>
                   <span className="text-white font-bold text-[13px]">{calculations.sodium} mg</span>
@@ -291,7 +291,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-[11px] p-1.5 hover:bg-white/[0.01] rounded">
                   <span className="text-white font-bold flex items-center gap-2">
-                    <span className="text-[9px] bg-violet-500/10 border border-violet-500/20 text-violet-400 px-1 py-0.5 rounded-sm">K⁺</span>
+                    <span className="text-[9px] bg-violet-500/10 border border-violet-500/20 text-violet-400 px-1 py-0.5 rounded-md">K⁺</span>
                     Potassium Mineral (Helps muscles and heart function)
                   </span>
                   <span className="text-white font-bold text-[13px]">{calculations.potassium} mg</span>
@@ -310,7 +310,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-[11px] p-1.5 hover:bg-white/[0.01] rounded">
                   <span className="text-white font-bold flex items-center gap-2">
-                    <span className="text-[9px] bg-[#ffdf00]/10 border border-[#ffdf00]/25 text-[#ffdf00] px-1 py-0.5 rounded-sm">Mg²⁺</span>
+                    <span className="text-[9px] bg-[#ffdf00]/10 border border-[#ffdf00]/25 text-[#ffdf00] px-1 py-0.5 rounded-md">Mg²⁺</span>
                     Magnesium Mineral (Supports relaxation and prevents cramps)
                   </span>
                   <span className="text-[#ffdf00] font-bold text-[13px]">{calculations.magnesium} mg</span>
@@ -329,7 +329,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
               <div className="space-y-1">
                 <div className="flex justify-between items-center text-[11px] p-1.5 hover:bg-white/[0.01] rounded">
                   <span className="text-white font-bold flex items-center gap-2">
-                    <span className="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1 py-0.5 rounded-sm">Ca²⁺</span>
+                    <span className="text-[9px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1 py-0.5 rounded-md">Ca²⁺</span>
                     Calcium Mineral (Crucial for bone and muscle strength)
                   </span>
                   <span className="text-white font-bold text-[13px]">{calculations.calcium} mg</span>
@@ -346,7 +346,7 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
             </div>
 
             {/* Instruction card */}
-            <div className="mt-4 p-3 bg-gym-accent/5 border border-gym-accent/20 rounded-sm text-[10px] leading-relaxed text-white">
+            <div className="mt-4 p-3 bg-gym-accent/5 border border-gym-accent/20 rounded-md text-[10px] leading-relaxed text-white">
               <span className="text-gym-accent font-black block uppercase mb-1 flex items-center gap-1.5 text-[10.5px]">
                 <Zap className="w-3.5 h-3.5 shrink-0 text-gym-accent animate-pulse" />
                 HOW TO MIX & USE YOUR HOME-MADE SPORTS DRINK
@@ -358,13 +358,13 @@ export const SynapticReplenishmentPlanner: React.FC<SynapticReplenishmentPlanner
           </div>
 
           {/* Graphical Representation: Active Cell Ion Pump Membrane */}
-          <div className="bg-[#030304] border border-white/5 rounded-sm p-4 select-none relative h-[180px] flex flex-col justify-between">
+          <div className="bg-[#030304] border border-white/5 rounded-md p-4 select-none relative h-[180px] flex flex-col justify-between">
             <span className="text-[7.5px] font-mono text-white/30 tracking-widest uppercase block">
               HOW ELECTROLYTES ENTER YOUR CELLS (ACTIVE GRAPHIC)
             </span>
 
             {/* Render direct visual representation of the cell membrane pumping ions */}
-            <div className="w-full flex justify-between items-center h-[110px] relative overflow-hidden bg-black/45 border border-white/5 p-2 rounded-sm font-mono text-[8px]">
+            <div className="w-full flex justify-between items-center h-[110px] relative overflow-hidden bg-black/45 border border-white/5 p-2 rounded-md font-mono text-[8px]">
               {/* Left side: Extracellular fluid */}
               <div className="flex flex-col text-center justify-center space-y-1.5 border-r border-white/5 h-full px-2 w-[80px]">
                 <span className="text-red-400 font-bold tracking-widest uppercase text-[7px]">OUTSIDE CELL</span>

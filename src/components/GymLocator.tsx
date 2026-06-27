@@ -563,7 +563,7 @@ export default function GymLocator() {
           <button
             type="button"
             onClick={() => setIsAddingMode(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-mono uppercase font-black tracking-wider rounded-sm cursor-pointer shadow-[0_0_15px_rgba(212,255,0,0.15)] transition-all active:scale-[0.98]"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-mono uppercase font-black tracking-wider rounded-md cursor-pointer shadow-[0_0_15px_rgba(212,255,0,0.15)] transition-all active:scale-[0.98]"
           >
             <Plus className="w-3.5 h-3.5 stroke-[3]" />
             Add Custom Gym
@@ -574,7 +574,7 @@ export default function GymLocator() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-auto lg:h-[620px] max-h-none overflow-visible">
         
         {/* Left Side: Gym List & Adder Controls */}
-        <div className="lg:col-span-5 flex flex-col bg-[#08080a] border border-white/10 rounded-sm overflow-hidden h-[500px] lg:h-full relative">
+        <div className="lg:col-span-5 flex flex-col bg-[#08080a] border border-white/10 rounded-md overflow-hidden h-[500px] lg:h-full relative">
           
           <AnimatePresence mode="wait">
             {!isAddingMode ? (
@@ -594,7 +594,7 @@ export default function GymLocator() {
                       placeholder="SEARCH GYMS, AMENITIES, OR ADDR..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-black/60 border border-white/10 rounded-sm pl-8 pr-3 py-1.5 text-[10px] font-mono uppercase text-white placeholder-white/20 focus:outline-none focus:border-gym-accent/50 tracking-widest"
+                      className="w-full bg-black/60 border border-white/10 rounded-md pl-8 pr-3 py-1.5 text-[10px] font-mono uppercase text-white placeholder-white/20 focus:outline-none focus:border-gym-accent/50 tracking-widest"
                     />
                     {searchQuery && (
                       <button
@@ -610,7 +610,7 @@ export default function GymLocator() {
                     type="button"
                     onClick={() => setTriggerScan(true)}
                     disabled={isScanning}
-                    className={`w-full py-1.5 px-3 rounded-sm border font-mono uppercase text-[9px] font-black tracking-widest flex items-center justify-center gap-1.5 transition-all text-center cursor-pointer ${
+                    className={`w-full py-1.5 px-3 rounded-md border font-mono uppercase text-[9px] font-black tracking-widest flex items-center justify-center gap-1.5 transition-all text-center cursor-pointer ${
                       isScanning 
                         ? 'bg-gym-accent/20 border-gym-accent/40 text-gym-accent animate-pulse cursor-not-allowed'
                         : 'bg-black hover:bg-gym-accent/15 border-white/10 hover:border-gym-accent/40 text-white hover:text-gym-accent'
@@ -667,7 +667,7 @@ export default function GymLocator() {
                         <div
                           key={gym.id}
                           onClick={() => selectGym(gym)}
-                          className={`p-3 rounded-sm border cursor-pointer transition-all ${
+                          className={`p-3 rounded-md border cursor-pointer transition-all ${
                             isActive 
                               ? "bg-gym-accent/5 border-gym-accent shadow-[0_0_12px_rgba(212,255,0,0.06)]"
                               : "bg-black/30 border-white/[0.05] hover:border-white/15"
@@ -691,7 +691,7 @@ export default function GymLocator() {
                                 type="button"
                                 onClick={(e) => handleDeleteCustomGym(gym.id, e)}
                                 title="De-register Node"
-                                className="p-1 hover:bg-rose-500/10 hover:border-rose-500/30 border border-transparent rounded-sm text-white/30 hover:text-rose-400 cursor-pointer transition-all shrink-0"
+                                className="p-1 hover:bg-rose-500/10 hover:border-rose-500/30 border border-transparent rounded-md text-white/30 hover:text-rose-400 cursor-pointer transition-all shrink-0"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -721,7 +721,7 @@ export default function GymLocator() {
                                   {gym.amenities?.map((am: string, i: number) => (
                                     <span 
                                       key={i}
-                                      className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded-sm text-[8px] font-mono tracking-wider text-white/80"
+                                      className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded-md text-[8px] font-mono tracking-wider text-white/80"
                                     >
                                       {am}
                                     </span>
@@ -730,7 +730,7 @@ export default function GymLocator() {
                               </div>
 
                               {gym.notes && (
-                                <div className="p-2 bg-black/40 border border-white/5 rounded-sm flex items-start gap-1.5 leading-relaxed text-[8.5px] text-white/60">
+                                <div className="p-2 bg-black/40 border border-white/5 rounded-md flex items-start gap-1.5 leading-relaxed text-[8.5px] text-white/60">
                                   <MessageSquare className="w-3 h-3 text-purple-400 shrink-0 mt-0.5" />
                                   <div>
                                     <span className="text-[8px] text-white/30 block mb-0.5">MEMBER DEPLOYMENT NOTES:</span>
@@ -769,7 +769,7 @@ export default function GymLocator() {
                   <button
                     type="button"
                     onClick={() => setIsAddingMode(false)}
-                    className="p-1 hover:bg-white/5 border border-white/5 rounded-sm text-white/40 hover:text-white"
+                    className="p-1 hover:bg-white/5 border border-white/5 rounded-md text-white/40 hover:text-white"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -784,7 +784,7 @@ export default function GymLocator() {
                       placeholder="e.g. PureGym London Old Street"
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
-                      className="w-full bg-black/60 border border-white/10 rounded-sm px-2.5 py-1.5 focus:outline-none focus:border-gym-accent uppercase"
+                      className="w-full bg-black/60 border border-white/10 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-gym-accent uppercase"
                     />
                   </div>
 
@@ -796,12 +796,12 @@ export default function GymLocator() {
                       placeholder="e.g. 10-14 Old St, London EC1V 9BH"
                       value={formAddress}
                       onChange={(e) => setFormAddress(e.target.value)}
-                      className="w-full bg-black/60 border border-white/10 rounded-sm px-2.5 py-1.5 focus:outline-none focus:border-gym-accent uppercase"
+                      className="w-full bg-black/60 border border-white/10 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-gym-accent uppercase"
                     />
                   </div>
 
                   {/* Coordinates Selection HUD Info */}
-                  <div className="p-2 rounded-sm bg-gym-accent/5 border border-gym-accent/15 leading-relaxed text-white/70 font-sans mb-1 text-[8.5px]">
+                  <div className="p-2 rounded-md bg-gym-accent/5 border border-gym-accent/15 leading-relaxed text-white/70 font-sans mb-1 text-[8.5px]">
                     <span className="text-gym-accent font-mono font-black uppercase tracking-wide block mb-0.5">🛰️ MAP ALIGNMENT CAPABLE</span>
                     You can type the decimal coordinates below, or simply **click directly on the interactive map** on the right to auto-fill the telemetry values!
                   </div>
@@ -815,7 +815,7 @@ export default function GymLocator() {
                         placeholder="e.g. 51.5256"
                         value={formLat}
                         onChange={(e) => setFormLat(e.target.value)}
-                        className="w-full bg-black/60 border border-white/10 rounded-sm px-2.5 py-1.5 focus:outline-none focus:border-gym-accent"
+                        className="w-full bg-black/60 border border-white/10 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-gym-accent"
                       />
                     </div>
                     <div className="flex flex-col gap-1">
@@ -826,7 +826,7 @@ export default function GymLocator() {
                         placeholder="e.g. -0.0875"
                         value={formLng}
                         onChange={(e) => setFormLng(e.target.value)}
-                        className="w-full bg-black/60 border border-white/10 rounded-sm px-2.5 py-1.5 focus:outline-none focus:border-gym-accent"
+                        className="w-full bg-black/60 border border-white/10 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-gym-accent"
                       />
                     </div>
                   </div>
@@ -838,7 +838,7 @@ export default function GymLocator() {
                       placeholder="e.g. +44 344 811 0000"
                       value={formPhone}
                       onChange={(e) => setFormPhone(e.target.value)}
-                      className="w-full bg-black/60 border border-white/10 rounded-sm px-2.5 py-1.5 focus:outline-none focus:border-gym-accent"
+                      className="w-full bg-black/60 border border-white/10 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-gym-accent"
                     />
                   </div>
 
@@ -856,12 +856,12 @@ export default function GymLocator() {
                             addAmenity();
                           }
                         }}
-                        className="flex-grow bg-black/60 border border-white/10 rounded-sm px-2.5 py-1 focus:outline-none focus:border-gym-accent placeholder-white/20 uppercase"
+                        className="flex-grow bg-black/60 border border-white/10 rounded-md px-2.5 py-1 focus:outline-none focus:border-gym-accent placeholder-white/20 uppercase"
                       />
                       <button
                         type="button"
                         onClick={addAmenity}
-                        className="px-2 bg-white/5 border border-white/10 rounded-sm hover:bg-white/10 cursor-pointer"
+                        className="px-2 bg-white/5 border border-white/10 rounded-md hover:bg-white/10 cursor-pointer"
                       >
                         +
                       </button>
@@ -890,13 +890,13 @@ export default function GymLocator() {
                       placeholder="Special lockouts, rack availability, access pins or custom trainer setups..."
                       value={formNotes}
                       onChange={(e) => setFormNotes(e.target.value)}
-                      className="w-full h-16 bg-black/60 border border-white/10 rounded-sm px-2.5 py-1.5 focus:outline-none focus:border-gym-accent font-sans normal-case"
+                      className="w-full h-16 bg-black/60 border border-white/10 rounded-md px-2.5 py-1.5 focus:outline-none focus:border-gym-accent font-sans normal-case"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-2 bg-gym-accent hover:bg-gym-accent/90 text-black font-black uppercase tracking-widest text-center cursor-pointer rounded-sm active:scale-[0.98] transition-all pt-2.5 pb-2.5"
+                    className="w-full py-2 bg-gym-accent hover:bg-gym-accent/90 text-black font-black uppercase tracking-widest text-center cursor-pointer rounded-md active:scale-[0.98] transition-all pt-2.5 pb-2.5"
                   >
                     DEPLOY NODE TO SATELLITE
                   </button>
@@ -907,7 +907,7 @@ export default function GymLocator() {
         </div>
 
         {/* Right Side: Interactive Google Map Integration */}
-        <div className="lg:col-span-7 bg-[#08080a] border border-white/10 rounded-sm p-1.5 relative h-[500px] lg:h-full">
+        <div className="lg:col-span-7 bg-[#08080a] border border-white/10 rounded-md p-1.5 relative h-[500px] lg:h-full">
           {!hasValidKey && (
             <div className="absolute inset-0 z-30 bg-black/85 flex flex-col items-center justify-center p-6 text-center">
               <Compass className="w-8 h-8 text-gym-accent mb-2 animate-bounce" />
@@ -922,7 +922,7 @@ export default function GymLocator() {
 
           {hasValidKey && (
             <APIProvider apiKey={API_KEY} version="weekly" libraries={['places']}>
-              <div className="w-full h-full relative rounded-sm bg-[#040405] overflow-hidden">
+              <div className="w-full h-full relative rounded-md bg-[#040405] overflow-hidden">
                 <Map
                   defaultCenter={mapCenter}
                   defaultZoom={11}

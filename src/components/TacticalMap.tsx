@@ -1309,7 +1309,7 @@ export default function TacticalMap() {
 
   if (isKeyLoading) {
     return (
-      <div className="bg-black/95 text-center p-12 max-w-2xl mx-auto my-12 border border-white/10 rounded-sm">
+      <div className="bg-black/95 text-center p-12 max-w-2xl mx-auto my-12 border border-white/10 rounded-md">
         <Loader2 className="w-8 h-8 text-gym-accent animate-spin mx-auto mb-3" />
         <p className="text-xs uppercase tracking-widest font-mono text-white/70">Connecting with Tactical Satellite...</p>
       </div>
@@ -1319,7 +1319,7 @@ export default function TacticalMap() {
   // Safe verification display of API KEY
   if (!hasValidActiveKey) {
     return (
-      <div className="bg-black/95 border border-white/10 rounded-sm p-8 max-w-2xl mx-auto my-12 backdrop-blur-md">
+      <div className="bg-black/95 border border-white/10 rounded-md p-8 max-w-2xl mx-auto my-12 backdrop-blur-md">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-2 animate-pulse">
             <Compass className="w-8 h-8 text-red-500" />
@@ -1329,7 +1329,7 @@ export default function TacticalMap() {
             Google Maps Platform integration requires a valid operational API Key.
           </p>
 
-          <div className="bg-white/[0.02] border border-white/5 p-5 text-left rounded-sm space-y-3 font-sans text-xs text-white/80">
+          <div className="bg-white/[0.02] border border-white/5 p-5 text-left rounded-md space-y-3 font-sans text-xs text-white/80">
             <p className="font-bold text-gym-accent uppercase tracking-wider">Operational Key Deployment Instructions:</p>
             <ol className="list-decimal list-inside space-y-2 leading-relaxed">
               <li>
@@ -1377,18 +1377,18 @@ export default function TacticalMap() {
                 name="manualApiKey"
                 placeholder="Paste Your API Key (AIzaSy...)"
                 required
-                className="flex-1 bg-white/5 border border-white/10 focus:border-gym-accent/50 rounded-sm px-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none font-mono"
+                className="flex-1 bg-white/5 border border-white/10 focus:border-gym-accent/50 rounded-md px-3 py-1.5 text-xs text-white placeholder-white/30 focus:outline-none font-mono"
               />
               <button
                 type="submit"
-                className="px-4 py-1.5 bg-gym-accent text-black font-mono font-black text-xs uppercase hover:bg-gym-accent/90 transition-all rounded-sm cursor-pointer select-none border-none"
+                className="px-4 py-1.5 bg-gym-accent text-black font-mono font-black text-xs uppercase hover:bg-gym-accent/90 transition-all rounded-md cursor-pointer select-none border-none"
               >
                 ACTIVATE KEY
               </button>
             </form>
 
             {/* Referer / Domain Restriction Help Card */}
-            <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 p-4 rounded-sm text-xs space-y-2 mt-4">
+            <div className="bg-amber-500/10 border border-amber-500/20 text-amber-300 p-4 rounded-md text-xs space-y-2 mt-4">
               <p className="font-bold uppercase tracking-wider text-[11px] text-gym-accent flex items-center gap-1.5">
                 ⚠️ HOW TO AUTHORIZE YOUR PHONE & LIVE WEBPAGE:
               </p>
@@ -1397,7 +1397,7 @@ export default function TacticalMap() {
               </p>
               
               <div className="space-y-3 mt-2 text-white/70">
-                <div className="bg-white/5 p-2 rounded-sm border border-white/5">
+                <div className="bg-white/5 p-2 rounded-md border border-white/5">
                   <span className="font-bold text-white text-[10px] block mb-1 uppercase tracking-wider text-gym-accent">Option A: Disable Website Restrictions (Quickest & Safest for testing)</span>
                   <p className="text-[11px] leading-relaxed mb-1.5 text-white/85">
                     If this is a private or experimental credentials key, loosening restrictions allows you to preview on all mobile devices and dev stations immediately:
@@ -1412,10 +1412,10 @@ export default function TacticalMap() {
                   </ol>
                 </div>
 
-                <div className="bg-gym-accent/5 p-3 rounded-sm border border-gym-accent/45 shadow-[0_0_15px_rgba(255,215,0,0.05)]">
+                <div className="bg-gym-accent/5 p-3 rounded-md border border-gym-accent/45 shadow-[0_0_15px_rgba(255,215,0,0.05)]">
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-bold text-gym-accent text-[10px] block uppercase tracking-wider">Option B: Set Specific Website Referers (Strict Security - Recommended)</span>
-                    <span className="bg-gym-accent/20 text-gym-accent text-[8px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wide">Secure Production Mode</span>
+                    <span className="bg-gym-accent/20 text-gym-accent text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide">Secure Production Mode</span>
                   </div>
                   <p className="text-[11px] leading-relaxed mb-1.5 text-white/85">
                     If you want to keep strict HTTP restrictions enabled, you must whitelist the preview cloud containers exactly:
@@ -1424,7 +1424,7 @@ export default function TacticalMap() {
                     <li>Within the Google Cloud Console, edit your API Key config.</li>
                     <li>Ensure <strong>"Website restrictions"</strong> / <strong>"HTTP referrers (web sites)"</strong> is selected.</li>
                     <li>Under <strong>Website restrictions</strong>, locate the URLs text fields and add these items:
-                      <ul className="list-disc pl-4 mt-1 space-y-0.5 text-white/90 font-mono text-[10px] bg-black/30 p-1.5 rounded-sm">
+                      <ul className="list-disc pl-4 mt-1 space-y-0.5 text-white/90 font-mono text-[10px] bg-black/30 p-1.5 rounded-md">
                         <li><code>*.run.app/*</code> &nbsp;<span className="text-white/40 font-sans text-[10px]">(matches all previews on phone)</span></li>
                         <li><code>https://ais-dev-bzhhelxbljh7cbeay67ouu-853669939350.europe-west2.run.app/*</code></li>
                         <li><code>https://ais-pre-bzhhelxbljh7cbeay67ouu-853669939350.europe-west2.run.app/*</code></li>
@@ -1641,7 +1641,7 @@ export default function TacticalMap() {
                 setLocalApiKey('');
                 alert('Device-specific key cleared successfully.');
               }}
-              className="px-3 py-1.5 bg-red-500/15 border border-red-500/30 hover:bg-red-500/25 text-red-400 text-[9px] font-mono tracking-wider font-semibold rounded-sm uppercase cursor-pointer"
+              className="px-3 py-1.5 bg-red-500/15 border border-red-500/30 hover:bg-red-500/25 text-red-400 text-[9px] font-mono tracking-wider font-semibold rounded-md uppercase cursor-pointer"
               title="Click to remove custom device key"
             >
               🔒 Clear Local Key
@@ -1649,7 +1649,7 @@ export default function TacticalMap() {
           )}
           <button
             onClick={triggerCurrentLocation}
-            className="px-3.5 py-1.5 bg-white/5 border border-white/10 hover:border-gym-accent/40 text-white text-[9px] font-bold uppercase tracking-wider font-mono rounded-sm flex items-center gap-2 transition-all cursor-pointer select-none"
+            className="px-3.5 py-1.5 bg-white/5 border border-white/10 hover:border-gym-accent/40 text-white text-[9px] font-bold uppercase tracking-wider font-mono rounded-md flex items-center gap-2 transition-all cursor-pointer select-none"
           >
             <Locate className="w-3.5 h-3.5 text-gym-accent" />
             SYNCHRONIZE GPS
@@ -1664,7 +1664,7 @@ export default function TacticalMap() {
         <div className="lg:col-span-4 space-y-5">
           
           {/* Section A: Live Telemetry & Field Tracker */}
-          <div className="bg-[#08080a] border border-white/10 p-4 rounded-sm space-y-3 shadow-lg relative">
+          <div className="bg-[#08080a] border border-white/10 p-4 rounded-md space-y-3 shadow-lg relative">
             <div className="absolute top-0 right-4 h-[1px] w-12 bg-gym-accent/30" />
             <div className="flex items-center gap-1.5 border-b border-white/5 pb-2">
               <span className="w-1.5 h-1.5 bg-gym-accent rounded-full block animate-pulse"></span>
@@ -1672,15 +1672,15 @@ export default function TacticalMap() {
             </div>
             
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-white/[0.02] border border-white/5 px-2.5 py-2 rounded-sm text-center">
+              <div className="bg-white/[0.02] border border-white/5 px-2.5 py-2 rounded-md text-center">
                 <span className="text-[7.5px] text-white/40 font-mono uppercase block">TOTAL DIST</span>
                 <span className="text-sm font-bold text-gym-accent font-mono tracking-tight block mt-0.5">{routeDistance}</span>
               </div>
-              <div className="bg-white/[0.02] border border-white/5 px-2.5 py-2 rounded-sm text-center">
+              <div className="bg-white/[0.02] border border-white/5 px-2.5 py-2 rounded-md text-center">
                 <span className="text-[7.5px] text-white/40 font-mono uppercase block">DURATION</span>
                 <span className="text-sm font-bold text-white font-mono tracking-tight block mt-0.5">{routeDuration}</span>
               </div>
-              <div className="bg-white/[0.02] border border-white/5 px-2.5 py-2 rounded-sm text-center">
+              <div className="bg-white/[0.02] border border-white/5 px-2.5 py-2 rounded-md text-center">
                 <span className="text-[7.5px] text-white/40 font-mono uppercase block">EXPENDITURE</span>
                 <span className="text-sm font-bold text-white font-mono tracking-tight block mt-0.5">{calculateKcal()} KCAL</span>
               </div>
@@ -1693,7 +1693,7 @@ export default function TacticalMap() {
                   <div className="space-y-1.5">
                     <button
                       onClick={startTrailTracking}
-                      className="w-full py-2 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-black uppercase tracking-wider rounded-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-gym-accent/5 font-mono"
+                      className="w-full py-2 bg-gym-accent hover:bg-gym-accent/90 text-black text-[9px] font-black uppercase tracking-wider rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md shadow-gym-accent/5 font-mono"
                     >
                       <Play className="w-3.5 h-3.5 fill-black text-black" />
                       DEPLOY LIVE GPS RECORDING
@@ -1718,11 +1718,11 @@ export default function TacticalMap() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-                      <div className="bg-white/[0.01] border border-white/5 p-1.5 rounded-sm">
+                      <div className="bg-white/[0.01] border border-white/5 p-1.5 rounded-md">
                         <span className="text-[7px] text-white/30 block font-bold uppercase tracking-wider">COVERED</span>
                         <span className="text-white font-black block mt-0.5">{trailDistanceCovered.toFixed(2)} KM</span>
                       </div>
-                      <div className="bg-white/[0.01] border border-white/5 p-1.5 rounded-sm">
+                      <div className="bg-white/[0.01] border border-white/5 p-1.5 rounded-md">
                         <span className="text-[7.5px] text-white/30 block font-bold uppercase tracking-wider">ENERGY BURN</span>
                         <span className="text-gym-accent font-black block mt-0.5">{Math.round(trailCaloriesBurned)} KCAL</span>
                       </div>
@@ -1730,7 +1730,7 @@ export default function TacticalMap() {
 
                     <button
                       onClick={stopTrailTracking}
-                      className="w-full py-1.5 bg-red-500 hover:bg-red-600 text-white text-[9px] font-black uppercase tracking-wider rounded-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md font-mono"
+                      className="w-full py-1.5 bg-red-500 hover:bg-red-600 text-white text-[9px] font-black uppercase tracking-wider rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md font-mono"
                     >
                       <Square className="w-3 h-3 fill-white text-white" />
                       HALT & EXTRACT LOGS
@@ -1767,7 +1767,7 @@ export default function TacticalMap() {
                         <button
                           onClick={handleLogTrailToActiveSession}
                           disabled={isLoggingToSession}
-                          className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[9px] font-black uppercase tracking-wider rounded-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md disabled:opacity-50 font-mono"
+                          className="w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[9px] font-black uppercase tracking-wider rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md disabled:opacity-50 font-mono"
                         >
                           {isLoggingToSession ? (
                             <Loader2 className="w-3 h-3 animate-spin" />
@@ -1777,7 +1777,7 @@ export default function TacticalMap() {
                           LOG RUN TO CONSOLE SESSIONS
                         </button>
                       ) : (
-                        <div className="bg-emerald-500/10 border border-emerald-500/25 py-2 px-3 rounded-sm flex items-center justify-center gap-1.5">
+                        <div className="bg-emerald-500/10 border border-emerald-500/25 py-2 px-3 rounded-md flex items-center justify-center gap-1.5">
                           <Check className="w-3.5 h-3.5 text-emerald-400" />
                           <span className="text-[8px] text-emerald-400 font-mono tracking-wider uppercase font-black">RECORDED IN CURRENT SESSION</span>
                         </div>
@@ -1791,7 +1791,7 @@ export default function TacticalMap() {
                           setTrailCaloriesBurned(0);
                           setLoggedToActiveSession(false);
                         }}
-                        className="w-full py-1 bg-white/5 hover:bg-white/10 text-white/50 text-[8px] font-mono uppercase tracking-wider rounded-sm transition-all"
+                        className="w-full py-1 bg-white/5 hover:bg-white/10 text-white/50 text-[8px] font-mono uppercase tracking-wider rounded-md transition-all"
                       >
                         RESET TRACKER
                       </button>
@@ -1803,11 +1803,11 @@ export default function TacticalMap() {
           </div>
 
           {/* Section B: Custom Route Desinger and Checkpoints */}
-          <div className="bg-[#08080a] border border-white/10 p-4 rounded-sm space-y-3 shadow-lg relative">
+          <div className="bg-[#08080a] border border-white/10 p-4 rounded-md space-y-3 shadow-lg relative">
             <span className="text-[10px] text-white/80 font-mono font-bold uppercase tracking-wider block">ROUTE DESIGNER</span>
             
             {/* Prompt Return Loop option */}
-            <div className="flex items-center justify-between p-2.5 bg-white/[0.02] border border-white/5 rounded-sm">
+            <div className="flex items-center justify-between p-2.5 bg-white/[0.02] border border-white/5 rounded-md">
               <div className="space-y-0.5 max-w-[70%]">
                 <span className="text-[9px] text-white font-mono tracking-wider block font-bold leading-normal">🔄 CHOREOGRAPH RETURN LOOP</span>
                 <span className="text-[7.5px] text-white/40 leading-normal block">Return back to original start coordinate on completion</span>
@@ -1880,7 +1880,7 @@ export default function TacticalMap() {
                     Clear All
                   </button>
                 </div>
-                <div className="bg-black/40 border border-white/5 max-h-[140px] overflow-y-auto rounded-sm divide-y divide-white/5 text-[9px] font-mono">
+                <div className="bg-black/40 border border-white/5 max-h-[140px] overflow-y-auto rounded-md divide-y divide-white/5 text-[9px] font-mono">
                   {middleWaypoints.map((wp, idx) => (
                     <div key={idx} className="flex justify-between items-center px-2 py-1.5 text-white/60">
                       <span className="flex items-center gap-1.5">
@@ -1907,7 +1907,7 @@ export default function TacticalMap() {
                 <button
                   type="button"
                   onClick={handleClearCustomRoute}
-                  className="flex-1 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 border border-white/5 hover:border-white/10 text-[8px] font-mono uppercase tracking-wider rounded-sm transition-all cursor-pointer"
+                  className="flex-1 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 border border-white/5 hover:border-white/10 text-[8px] font-mono uppercase tracking-wider rounded-md transition-all cursor-pointer"
                 >
                   RESTORE DEFAULT
                 </button>
@@ -1917,13 +1917,13 @@ export default function TacticalMap() {
                 <button
                   type="button"
                   onClick={handleClearRouteMap}
-                  className="flex-1 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 hover:border-red-500/20 text-[8px] font-mono uppercase tracking-wider rounded-sm transition-all cursor-pointer flex items-center justify-center gap-1"
+                  className="flex-1 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/10 hover:border-red-500/20 text-[8px] font-mono uppercase tracking-wider rounded-md transition-all cursor-pointer flex items-center justify-center gap-1"
                 >
                   <Trash2 className="w-3 h-3" />
                   CLEAR ACTIVE ROUTE
                 </button>
               ) : (
-                <div className="w-full text-center py-1.5 text-white/30 text-[8px] uppercase tracking-wider font-mono bg-white/[0.01] border border-dashed border-white/5 rounded-sm">
+                <div className="w-full text-center py-1.5 text-white/30 text-[8px] uppercase tracking-wider font-mono bg-white/[0.01] border border-dashed border-white/5 rounded-md">
                   NO ACTIVE ROUTE
                 </div>
               )}
@@ -1931,7 +1931,7 @@ export default function TacticalMap() {
 
             {/* Save Custom Route form section */}
             {(customOrigin || customDestination || middleWaypoints.length > 0) && !activePreset && (
-              <div className="bg-white/[0.01] border border-gym-accent/25 hover:border-gym-accent/40 p-3 rounded-sm space-y-2.5 mt-2 transition-all">
+              <div className="bg-white/[0.01] border border-gym-accent/25 hover:border-gym-accent/40 p-3 rounded-md space-y-2.5 mt-2 transition-all">
                 <div className="flex items-center gap-1.5 border-b border-white/5 pb-1.5">
                   <span className="text-[9px] text-gym-accent font-mono font-black uppercase tracking-wider">💾 SAVE CUSTOM ROUTE TO DIRECTORY</span>
                 </div>
@@ -1964,7 +1964,7 @@ export default function TacticalMap() {
                       <select 
                         value={saveRouteDifficulty}
                         onChange={(e) => setSaveRouteDifficulty(e.target.value as any)}
-                        className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
+                        className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
                       >
                         <option value="EASY">EASY</option>
                         <option value="MEDIUM">MEDIUM</option>
@@ -2010,7 +2010,7 @@ export default function TacticalMap() {
           </div>
 
           {/* Section C: Preset Trail Explorer */}
-          <div className="bg-[#08080a] border border-white/10 p-4 rounded-sm space-y-3 shadow-lg relative">
+          <div className="bg-[#08080a] border border-white/10 p-4 rounded-md space-y-3 shadow-lg relative">
             <span className="text-[10px] text-white/80 font-mono font-bold uppercase tracking-wider block">TRAIL DIRECTORY &amp; PRESETS</span>
 
             {/* Source Segment Tabs for Presets vs. User Custom Routes */}
@@ -2055,7 +2055,7 @@ export default function TacticalMap() {
 
             {/* Empty State when viewing custom designs but none exist */}
             {trailSource === 'custom' && matchingTrails.length === 0 && (
-              <div className="bg-white/[0.01] border border-dashed border-white/10 p-3.5 rounded-sm text-center space-y-2 my-2">
+              <div className="bg-white/[0.01] border border-dashed border-white/10 p-3.5 rounded-md text-center space-y-2 my-2">
                 <Compass className="w-5 h-5 text-gym-accent/40 mx-auto animate-pulse" />
                 <p className="text-[9.5px] uppercase font-mono tracking-wider text-white/80">Vector Registry Empty</p>
                 <p className="text-[8.5px] text-white/45 leading-relaxed font-sans">
@@ -2074,7 +2074,7 @@ export default function TacticalMap() {
                       key={diff}
                       type="button"
                       onClick={() => setActiveDifficultyFilter(diff)}
-                      className={`py-1 text-[7.5px] font-mono font-black tracking-wider rounded-sm border text-center transition-all cursor-pointer ${
+                      className={`py-1 text-[7.5px] font-mono font-black tracking-wider rounded-md border text-center transition-all cursor-pointer ${
                         isSel
                           ? 'bg-gym-accent border-gym-accent text-black font-extrabold'
                           : 'bg-white/[0.02] border-white/5 text-white/60 hover:bg-white/5'
@@ -2100,7 +2100,7 @@ export default function TacticalMap() {
                     handleClearRouteMap();
                   }
                 }}
-                className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
+                className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
               >
                 <option value="">-- [BLANK CANVAS: PLOT CUSTOM ROUTE] --</option>
                 {matchingTrails.map((trail) => (
@@ -2122,13 +2122,13 @@ export default function TacticalMap() {
 
               {activePreset && (
                 <div className="space-y-2">
-                  <div className="relative w-full py-2.5 px-3 rounded-sm border border-white/5 bg-neutral-955 flex items-center justify-between">
+                  <div className="relative w-full py-2.5 px-3 rounded-md border border-white/5 bg-neutral-955 flex items-center justify-between">
                     <span className="text-[8px] text-white/50 font-mono uppercase tracking-widest font-bold">Active Trajectory Target</span>
                     <span className="bg-black/75 px-1.5 py-0.5 rounded-xs border border-white/5 text-[7px] text-gym-accent uppercase font-mono tracking-wider font-extrabold">
                       {activePreset.trailType || 'Custom Scout Path'}
                     </span>
                   </div>
-                  <div className="bg-white/[0.01] border border-white/5 p-2 rounded-sm text-[9.5px] font-mono text-white/70 space-y-1">
+                  <div className="bg-white/[0.01] border border-white/5 p-2 rounded-md text-[9.5px] font-mono text-white/70 space-y-1">
                     <p className="leading-tight"><span className="text-gym-accent uppercase tracking-wider font-extrabold mr-1">[DESCR]:</span>{activePreset.details}</p>
                   </div>
                 </div>
@@ -2138,7 +2138,7 @@ export default function TacticalMap() {
                 <button
                   type="button"
                   onClick={() => handleDeleteCustomRoute(activePreset.id)}
-                  className={`w-full py-1.5 border text-[8px] font-mono uppercase tracking-wider rounded-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 mt-1 ${
+                  className={`w-full py-1.5 border text-[8px] font-mono uppercase tracking-wider rounded-md transition-all cursor-pointer flex items-center justify-center gap-1.5 mt-1 ${
                     deleteConfirmId === activePreset.id 
                     ? "bg-red-600 hover:bg-red-700 text-white border-red-500 font-bold animate-pulse" 
                     : "bg-red-950/40 hover:bg-red-900/40 text-red-400 border-red-500/10"
@@ -2157,7 +2157,7 @@ export default function TacticalMap() {
         <div className="lg:col-span-8 space-y-4">
           
           {/* Streamlined search & quick operational categories tag HUD */}
-          <div className="bg-[#08080a] border border-white/10 p-3 rounded-sm flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-md">
+          <div className="bg-[#08080a] border border-white/10 p-3 rounded-md flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-md">
             <div className="flex-grow relative">
               <span className="absolute left-3 top-2 text-white/30">
                 <Search className="w-3.5 h-3.5" />
@@ -2170,13 +2170,13 @@ export default function TacticalMap() {
                   if (e.key === 'Enter') setActiveSearch(searchQuery);
                 }}
                 placeholder="Tactical search surrounding terrain, parks, forests..."
-                className="w-full bg-[#040405] border border-white/10 rounded-sm py-1.5 pl-9 pr-4 text-[10px] text-white placeholder-white/20 focus:outline-none focus:border-gym-accent/50 font-mono font-bold"
+                className="w-full bg-[#040405] border border-white/10 rounded-md py-1.5 pl-9 pr-4 text-[10px] text-white placeholder-white/20 focus:outline-none focus:border-gym-accent/50 font-mono font-bold"
               />
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => setActiveSearch(searchQuery)}
-                className="px-3 py-1.5 bg-gym-accent hover:bg-gym-accent/95 text-black text-[9px] font-black uppercase tracking-wider font-mono rounded-sm cursor-pointer select-none"
+                className="px-3 py-1.5 bg-gym-accent hover:bg-gym-accent/95 text-black text-[9px] font-black uppercase tracking-wider font-mono rounded-md cursor-pointer select-none"
               >
                 CALIBRATE SEARCH
               </button>
@@ -2188,7 +2188,7 @@ export default function TacticalMap() {
                     setFoundPlaces([]);
                     setActiveCategoryType(null);
                   }}
-                  className="px-2 py-1.5 bg-white/5 border border-white/15 hover:bg-white/10 text-white text-[9px] font-mono uppercase font-black tracking-wider rounded-sm cursor-pointer"
+                  className="px-2 py-1.5 bg-white/5 border border-white/15 hover:bg-white/10 text-white text-[9px] font-mono uppercase font-black tracking-wider rounded-md cursor-pointer"
                 >
                   X
                 </button>
@@ -2197,17 +2197,17 @@ export default function TacticalMap() {
           </div>
 
           {/* Interactive Google Map Visual frame */}
-          <div className="bg-[#08080a] border border-white/10 rounded-sm p-1.5 relative shadow-2xl">
+          <div className="bg-[#08080a] border border-white/10 rounded-md p-1.5 relative shadow-2xl">
             
             {/* Active map deployment modes HUD */}
             {waypointMode !== 'NONE' && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-gym-accent text-black font-mono font-black text-[9px] px-3 py-1.5 rounded-sm uppercase tracking-wider animate-pulse border border-black/25 shadow-lg">
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-gym-accent text-black font-mono font-black text-[9px] px-3 py-1.5 rounded-md uppercase tracking-wider animate-pulse border border-black/25 shadow-lg">
                 [ TACTICAL VECTOR PLOT ACTIVE ]: SELECT COORDINATE ON MAP FOR {waypointMode}
               </div>
             )}
 
             <APIProvider apiKey={activeKey} version="weekly">
-              <div className="w-full relative h-[560px] rounded-sm bg-[#040405] overflow-hidden">
+              <div className="w-full relative h-[560px] rounded-md bg-[#040405] overflow-hidden">
                 <Map
                   defaultCenter={mapCenter}
                   defaultZoom={13}
@@ -2329,7 +2329,7 @@ export default function TacticalMap() {
                               handleAutoSelectPlace(selectedPlace);
                               setSelectedPlace(null);
                             }}
-                            className="w-full py-1 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-wider text-[8px] rounded-sm text-center cursor-pointer flex items-center justify-center gap-1 transition-all"
+                            className="w-full py-1 bg-emerald-500 hover:bg-emerald-400 text-black font-black uppercase tracking-wider text-[8px] rounded-md text-center cursor-pointer flex items-center justify-center gap-1 transition-all"
                           >
                             ⚡ PLOT OPTIMIZED ROUTE
                           </button>
@@ -2347,7 +2347,7 @@ export default function TacticalMap() {
                                   setSelectedPlace(null);
                                 }
                               }}
-                              className="flex-1 py-1 bg-gym-accent hover:bg-gym-accent/90 text-black font-bold uppercase rounded-sm text-[8px] transition-all cursor-pointer"
+                              className="flex-1 py-1 bg-gym-accent hover:bg-gym-accent/90 text-black font-bold uppercase rounded-md text-[8px] transition-all cursor-pointer"
                             >
                               Set Start
                             </button>
@@ -2363,7 +2363,7 @@ export default function TacticalMap() {
                                   setSelectedPlace(null);
                                 }
                               }}
-                              className="flex-1 py-1 bg-purple-500 hover:bg-purple-600 text-white font-bold uppercase rounded-sm text-[8px] transition-all cursor-pointer"
+                              className="flex-1 py-1 bg-purple-500 hover:bg-purple-600 text-white font-bold uppercase rounded-md text-[8px] transition-all cursor-pointer"
                             >
                               Set End
                             </button>
@@ -2395,7 +2395,7 @@ export default function TacticalMap() {
 
                 {/* Elevation Scanner Embedded Overlay */}
                 {pathPoints.length > 0 && (
-                  <div className="absolute bottom-4 right-4 z-20 w-[240px] bg-black/90 border border-white/10 p-3 rounded-sm backdrop-blur-md shadow-2xl space-y-1.5 pointer-events-auto">
+                  <div className="absolute bottom-4 right-4 z-20 w-[240px] bg-black/90 border border-white/10 p-3 rounded-md backdrop-blur-md shadow-2xl space-y-1.5 pointer-events-auto">
                     <div className="flex items-center justify-between border-b border-white/10 pb-1">
                       <div className="flex items-center gap-1">
                         <span className="animate-pulse w-1.5 h-1.5 bg-gym-accent rounded-full block"></span>
@@ -2499,12 +2499,12 @@ export default function TacticalMap() {
 
           {/* Collapsible/Sleek Places suggested list under the map */}
           {foundPlaces.length > 0 && (
-            <div className="bg-[#08080a] border border-white/10 p-4 rounded-sm space-y-3 shadow-lg">
+            <div className="bg-[#08080a] border border-white/10 p-4 rounded-md space-y-3 shadow-lg">
               <span className="text-[9px] text-white/50 font-mono font-bold uppercase tracking-wider block">SUGGESTED DISCOVERY POINTS INDICES ({foundPlaces.length})</span>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
                 {foundPlaces.slice(0, 6).map((place) => (
-                  <div key={place.id} className="bg-white/[0.01] border border-white/5 p-2.5 rounded-sm flex flex-col justify-between shadow-md">
+                  <div key={place.id} className="bg-white/[0.01] border border-white/5 p-2.5 rounded-md flex flex-col justify-between shadow-md">
                     <div>
                       <span className="text-xs font-bold text-white block truncate">{place.displayName}</span>
                       <span className="text-[10px] text-white/40 block mt-1 line-clamp-1 leading-normal">{place.formattedAddress}</span>

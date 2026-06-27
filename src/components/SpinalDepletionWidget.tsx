@@ -63,7 +63,7 @@ export const SpinalDepletionWidget: React.FC<SpinalDepletionWidgetProps> = ({
       initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      className="relative overflow-hidden bg-black/70 border border-white/10 rounded-sm p-6 select-none backdrop-blur-md"
+      className="relative overflow-hidden bg-black/70 border border-white/10 rounded-md p-6 select-none backdrop-blur-md"
       id="spinal-gauge-hero-card"
     >
       {/* Abstract Corner Radial Glow */}
@@ -210,7 +210,7 @@ export const SpinalDepletionWidget: React.FC<SpinalDepletionWidgetProps> = ({
         <div className="lg:col-span-8 space-y-4">
           <div className="space-y-1">
             <motion.span 
-              className={`text-[8.5px] font-mono font-black uppercase tracking-wider px-2 py-0.5 rounded-sm border inline-block select-none ${cnsFatigueAnalysis.levelColor}`}
+              className={`text-[8.5px] font-mono font-black uppercase tracking-wider px-2 py-0.5 rounded-md border inline-block select-none ${cnsFatigueAnalysis.levelColor}`}
               animate={{ borderColor: `${cnsFatigueAnalysis.hexColor}30` }}
               transition={{ duration: 1.2 }}
             >
@@ -252,7 +252,7 @@ export const SpinalDepletionWidget: React.FC<SpinalDepletionWidgetProps> = ({
               onClick={() => {
                 setActiveView("anatomy");
               }}
-              className="ml-auto text-[9px] text-gym-accent font-extrabold uppercase tracking-wider border border-gym-accent/20 hover:border-gym-accent/60 bg-gym-accent/5 hover:bg-gym-accent/10 px-3 py-1.5 rounded-sm transition-all duration-200 cursor-pointer flex items-center gap-1.5 font-mono hover:scale-[1.02] active:scale-[0.98]"
+              className="ml-auto text-[9px] text-gym-accent font-extrabold uppercase tracking-wider border border-gym-accent/20 hover:border-gym-accent/60 bg-gym-accent/5 hover:bg-gym-accent/10 px-3 py-1.5 rounded-md transition-all duration-200 cursor-pointer flex items-center gap-1.5 font-mono hover:scale-[1.02] active:scale-[0.98]"
             >
               Inspect Neural Component Log
               <span className="text-xs">→</span>

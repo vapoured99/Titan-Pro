@@ -479,7 +479,7 @@ export default function D3RadarChart({
     <div className="space-y-6">
       
       {/* 🔮 MULTI-LAYER CONTROLLER CHIPS PANEL */}
-      <div className="bg-[#0c0c0c]/90 border border-white/5 rounded-sm p-4">
+      <div className="bg-[#0c0c0c]/90 border border-white/5 rounded-md p-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Layers className="w-4 h-4 text-gym-accent" />
@@ -495,7 +495,7 @@ export default function D3RadarChart({
         <div className="flex flex-wrap gap-2 mt-3">
           <button
             onClick={() => toggleLayer("gridWeb")}
-            className={`px-3 py-1.5 rounded-sm border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
               activeLayers.gridWeb 
                 ? "bg-white/5 border-white/20 text-white" 
                 : "bg-black/50 border-white/5 text-white/25 hover:text-white/45"
@@ -507,7 +507,7 @@ export default function D3RadarChart({
 
           <button
             onClick={() => toggleLayer("baseline")}
-            className={`px-3 py-1.5 rounded-sm border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
               activeLayers.baseline 
                 ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-500" 
                 : "bg-black/50 border-white/5 text-white/25 hover:text-white/45"
@@ -519,7 +519,7 @@ export default function D3RadarChart({
 
           <button
             onClick={() => toggleLayer("currentProgress")}
-            className={`px-3 py-1.5 rounded-sm border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
               activeLayers.currentProgress 
                 ? "bg-gym-accent/15 border-gym-accent/30 text-gym-accent" 
                 : "bg-black/50 border-white/5 text-white/25 hover:text-white/45"
@@ -531,7 +531,7 @@ export default function D3RadarChart({
 
           <button
             onClick={() => toggleLayer("targetStandard")}
-            className={`px-3 py-1.5 rounded-sm border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
               activeLayers.targetStandard 
                 ? "bg-purple-500/15 border-purple-500/30 text-purple-400" 
                 : "bg-black/50 border-white/5 text-white/25 hover:text-white/45"
@@ -543,7 +543,7 @@ export default function D3RadarChart({
 
           <button
             onClick={() => toggleLayer("innerGlow")}
-            className={`px-3 py-1.5 rounded-sm border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-md border text-[9px] font-mono font-bold uppercase transition-all tracking-wider flex items-center gap-1.5 cursor-pointer ${
               activeLayers.innerGlow 
                 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-300" 
                 : "bg-black/50 border-white/5 text-white/25 hover:text-white/45"
@@ -556,12 +556,12 @@ export default function D3RadarChart({
       </div>
 
       {/* 📊 INTERACTIVE RADAR & PIN DISPLAY PANEL */}
-      <div className="bg-[#080808]/40 border border-white/5 rounded-sm p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <div className="bg-[#080808]/40 border border-white/5 rounded-md p-6 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
         {/* Radar SVG Area */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center relative">
           <div className="text-center mb-1">
-            <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/20 text-gym-accent font-mono px-2 py-0.5 rounded-sm uppercase tracking-widest font-black inline-block mb-1.5">
+            <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/20 text-gym-accent font-mono px-2 py-0.5 rounded-md uppercase tracking-widest font-black inline-block mb-1.5">
               Interactive Canvas
             </span>
             <h4 className="text-sm font-black text-white/95 tracking-wider uppercase font-sans">
@@ -806,7 +806,7 @@ export default function D3RadarChart({
               <div className="space-y-3">
                 
                 {/* Specific Score Card */}
-                <div className="bg-[#0c0c0c]/90 border border-white/5 rounded-sm p-4 space-y-2 relative overflow-hidden">
+                <div className="bg-[#0c0c0c]/90 border border-white/5 rounded-md p-4 space-y-2 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-xl pointer-events-none" />
                   <div className="flex justify-between items-center text-[10.5px] font-mono border-b border-white/[0.04] pb-2">
                     <span className="text-white/40">Relative adaptation index:</span>
@@ -836,7 +836,7 @@ export default function D3RadarChart({
                       {selectedNode.details.map((item, idx) => (
                         <div
                           key={`sub-ex-${idx}`}
-                          className="bg-white/[0.015] border border-white/5 p-2.5 rounded-sm flex items-center justify-between text-[10px] hover:border-white/10 transition-colors"
+                          className="bg-white/[0.015] border border-white/5 p-2.5 rounded-md flex items-center justify-between text-[10px] hover:border-white/10 transition-colors"
                         >
                           <div className="flex items-center gap-2 max-w-[70%]">
                             <Dumbbell style={{ color: activeTheme.accent }} className="w-3.5 h-3.5 shrink-0" />
@@ -875,7 +875,7 @@ export default function D3RadarChart({
             {selectedNode && (
               <button 
                 onClick={() => setSelectedNode(null)}
-                className="w-full py-2 bg-white/5 hover:bg-white/10 text-white flex items-center justify-center gap-2 text-[9px] uppercase font-bold tracking-widest border border-white/5 rounded-sm cursor-pointer transition-colors"
+                className="w-full py-2 bg-white/5 hover:bg-white/10 text-white flex items-center justify-center gap-2 text-[9px] uppercase font-bold tracking-widest border border-white/5 rounded-md cursor-pointer transition-colors"
               >
                 <RotateCcw className="w-3 h-3 text-gym-accent" />
                 Deselect Channel & Reset Map
@@ -888,7 +888,7 @@ export default function D3RadarChart({
       </div>
 
       {/* 🏋️ ────────────────── REVISIONS: POWER-TO-WEIGHT ANALYST EXPLORER ────────────────── */}
-      <div className="border border-white/10 rounded-sm overflow-hidden bg-black/95 p-5 space-y-5">
+      <div className="border border-white/10 rounded-md overflow-hidden bg-black/95 p-5 space-y-5">
         
         {/* Header Block */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-white/5 pb-4">
@@ -907,7 +907,7 @@ export default function D3RadarChart({
           </div>
           
           <div className="flex items-center gap-2">
-            <span className="text-[8.5px] bg-white/5 font-mono text-white/50 border border-white/10 px-2.5 py-1 text-center font-bold rounded-sm uppercase tracking-wider">
+            <span className="text-[8.5px] bg-white/5 font-mono text-white/50 border border-white/10 px-2.5 py-1 text-center font-bold rounded-md uppercase tracking-wider">
               Gender bracket: {profile?.sex === "female" ? "Female standards" : "Male standards"}
             </span>
           </div>
@@ -940,7 +940,7 @@ export default function D3RadarChart({
                     <button
                       key={ex.id}
                       onClick={() => setSelectedExerciseId(ex.id)}
-                      className={`w-full text-left p-2.5 border rounded-sm transition-all cursor-pointer flex flex-col justify-between relative group ${
+                      className={`w-full text-left p-2.5 border rounded-md transition-all cursor-pointer flex flex-col justify-between relative group ${
                         isSelected
                           ? "bg-gym-accent/10 border-gym-accent text-white"
                           : "bg-[#080808] border-white/5 text-white/60 hover:border-white/20 hover:text-white"
@@ -951,11 +951,11 @@ export default function D3RadarChart({
                           {ex.name}
                         </span>
                         {hasLogged ? (
-                          <span className="text-[8px] px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/30 text-gym-accent font-mono font-bold rounded-sm uppercase shrink-0">
+                          <span className="text-[8px] px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/30 text-gym-accent font-mono font-bold rounded-md uppercase shrink-0">
                             {metrics.ratio.toFixed(2)}x
                           </span>
                         ) : (
-                          <span className="text-[8px] px-1.5 py-0.5 bg-white/5 text-white/35 font-mono rounded-sm uppercase shrink-0">
+                          <span className="text-[8px] px-1.5 py-0.5 bg-white/5 text-white/35 font-mono rounded-md uppercase shrink-0">
                             Unlogged
                           </span>
                         )}
@@ -984,7 +984,7 @@ export default function D3RadarChart({
               const currentEx = QUALIFYING_EXERCISES.find(e => e.id === selectedExerciseId);
               if (!currentEx) {
                 return (
-                  <div className="bg-[#050505] border border-white/5 rounded-sm p-8 relative w-full h-full flex flex-col items-center justify-center text-center space-y-4 min-h-[350px]">
+                  <div className="bg-[#050505] border border-white/5 rounded-md p-8 relative w-full h-full flex flex-col items-center justify-center text-center space-y-4 min-h-[350px]">
                     <div className="absolute top-0 left-0 right-0 h-0.5 bg-gym-accent/30 animate-pulse" />
                     <Scale className="w-12 h-12 text-gym-accent/30 animate-bounce" />
                     <div className="space-y-1 max-w-md">
@@ -1027,7 +1027,7 @@ export default function D3RadarChart({
                 : `${dbWeightDiff.toFixed(1)} kg below BW`;
 
               return (
-                <div className="bg-[#050505] border border-white/5 rounded-sm p-4.5 space-y-4 relative w-full h-full flex flex-col justify-between">
+                <div className="bg-[#050505] border border-white/5 rounded-md p-4.5 space-y-4 relative w-full h-full flex flex-col justify-between">
                   <div className="absolute top-0 left-0 right-0 h-0.5 bg-gym-accent/30" />
 
                   {/* Top Exercise Block */}
@@ -1044,7 +1044,7 @@ export default function D3RadarChart({
                       </p>
                     </div>
 
-                    <div className="bg-black/40 border border-white/5 p-3 rounded-sm flex flex-col justify-center">
+                    <div className="bg-black/40 border border-white/5 p-3 rounded-md flex flex-col justify-center">
                       {metrics.est1RM > 0 ? (
                         <div className="grid grid-cols-2 gap-2 text-center">
                           <div>
@@ -1093,7 +1093,7 @@ export default function D3RadarChart({
                         return (
                           <div 
                             key={tierName}
-                            className={`p-2.5 border rounded-sm text-center flex flex-col justify-between ${
+                            className={`p-2.5 border rounded-md text-center flex flex-col justify-between ${
                               isHit 
                                 ? "bg-gym-accent/5 border-gym-accent/30" 
                                 : "bg-black/20 border-white/[0.03]"
@@ -1131,12 +1131,12 @@ export default function D3RadarChart({
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                       
                       {/* Interactive Inputs */}
-                      <div className="md:col-span-5 bg-[#0a0a0a] p-3 border border-white/5 rounded-sm space-y-2">
+                      <div className="md:col-span-5 bg-[#0a0a0a] p-3 border border-white/5 rounded-md space-y-2">
                         <label className="text-[8px] uppercase font-black text-white/40 tracking-wider font-mono block">
                           Target 1RM Load
                         </label>
                         <div className="flex gap-1.5 leading-none">
-                          <div className="flex-1 flex items-center bg-[#101010] border border-white/10 rounded-sm overflow-hidden px-2.5 h-8">
+                          <div className="flex-1 flex items-center bg-[#101010] border border-white/10 rounded-md overflow-hidden px-2.5 h-8">
                             <input
                               type="number"
                               placeholder="e.g. 100"
@@ -1150,7 +1150,7 @@ export default function D3RadarChart({
                           {metrics.est1RM > 0 && (
                             <button
                               onClick={() => setSimulatorWeightInput(metrics.est1RM.toString())}
-                              className="px-2.5 bg-white/5 border border-white/5 hover:bg-white/10 text-white font-mono text-[8px] uppercase tracking-wider font-bold rounded-sm h-8 transition-all cursor-pointer"
+                              className="px-2.5 bg-white/5 border border-white/5 hover:bg-white/10 text-white font-mono text-[8px] uppercase tracking-wider font-bold rounded-md h-8 transition-all cursor-pointer"
                             >
                               Reset
                             </button>
@@ -1159,7 +1159,7 @@ export default function D3RadarChart({
                       </div>
 
                       {/* Math Result Engine */}
-                      <div className="md:col-span-7 bg-[#080808] p-3 border border-white/5 rounded-sm flex flex-col justify-between min-h-[90px]">
+                      <div className="md:col-span-7 bg-[#080808] p-3 border border-white/5 rounded-md flex flex-col justify-between min-h-[90px]">
                         {simulated1RM > 0 ? (
                           <div className="grid grid-cols-3 gap-2 text-center">
                             <div>
@@ -1187,7 +1187,7 @@ export default function D3RadarChart({
                           </div>
                         )}
 
-                        <div className="bg-black/30 p-1.5 rounded-sm text-[8.5px] text-white/35 flex items-center gap-1.5 border border-white/[0.02] mt-2">
+                        <div className="bg-black/30 p-1.5 rounded-md text-[8.5px] text-white/35 flex items-center gap-1.5 border border-white/[0.02] mt-2">
                           <Info className="w-3 h-3 text-gym-accent shrink-0" />
                           <span className="font-mono truncate">
                             {simulated1RM > 0 

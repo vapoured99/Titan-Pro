@@ -1195,14 +1195,14 @@ export default function AnatomyDashboard({
     <div className="space-y-6" id="anatomy-dashboard">
 
       {/* ────────────────── DROP DOWN 1: PHYSIOLOGICAL ANALYSIS ────────────────── */}
-      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('physiological')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-physiological"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
               <Activity className="w-4 h-4" />
             </div>
             <div>
@@ -1240,12 +1240,12 @@ export default function AnatomyDashboard({
             >
               <div className="p-6 space-y-6">
                 {/* Visual Interactivity & Sync Controller */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-sm bg-black/40 border border-white/5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-md bg-black/40 border border-white/5">
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       type="button"
                       onClick={() => setAnatomyMode('logged')}
-                      className={`px-3.5 py-1.5 text-[10px] uppercase tracking-wider font-extrabold cursor-pointer rounded-sm border transition-all ${
+                      className={`px-3.5 py-1.5 text-[10px] uppercase tracking-wider font-extrabold cursor-pointer rounded-md border transition-all ${
                         anatomyMode === 'logged'
                           ? 'bg-gym-accent border-gym-accent text-black shadow-lg shadow-gym-accent/10'
                           : 'bg-transparent border-white/10 text-white/60 hover:text-white hover:border-white/20'
@@ -1256,7 +1256,7 @@ export default function AnatomyDashboard({
                     <button
                       type="button"
                       onClick={() => setAnatomyMode('routine')}
-                      className={`px-3.5 py-1.5 text-[10px] uppercase tracking-wider font-extrabold cursor-pointer rounded-sm border transition-all ${
+                      className={`px-3.5 py-1.5 text-[10px] uppercase tracking-wider font-extrabold cursor-pointer rounded-md border transition-all ${
                         anatomyMode === 'routine'
                           ? 'bg-gym-accent border-gym-accent text-black shadow-lg shadow-gym-accent/10'
                           : 'bg-transparent border-white/10 text-white/60 hover:text-white hover:border-white/20'
@@ -1277,7 +1277,7 @@ export default function AnatomyDashboard({
                         <select
                           value={selectedDashboardRoutineId || ""}
                           onChange={(e) => setSelectedDashboardRoutineId(e.target.value)}
-                          className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-sm px-4 py-3 focus:outline-none transition-all cursor-pointer min-w-[200px] max-w-[320px] shadow-md"
+                          className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer min-w-[200px] max-w-[320px] shadow-md"
                         >
                           {routines.map((r: any, idx: number) => (
                             <option key={r.id || idx} value={r.id}>
@@ -1291,7 +1291,7 @@ export default function AnatomyDashboard({
                 </div>
 
                 {anatomyMode === 'routine' && selectedDashboardRoutine && (
-                  <div className="p-4 bg-gym-accent/[0.02] border border-gym-accent/10 rounded-sm space-y-3 animate-fade-in">
+                  <div className="p-4 bg-gym-accent/[0.02] border border-gym-accent/10 rounded-md space-y-3 animate-fade-in">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-white/5">
                       <div>
                         <h5 className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-2">
@@ -1337,7 +1337,7 @@ export default function AnatomyDashboard({
                 />
 
                 {anatomyMode === 'logged' && sessionSets.length === 0 && (
-                  <div className="py-5 px-7 bg-white/[0.01] border border-white/5 border-dashed rounded-sm text-center flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="py-5 px-7 bg-white/[0.01] border border-white/5 border-dashed rounded-md text-center flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3 text-left">
                       <Flame className="w-4 h-4 text-white/20 flex-shrink-0 animate-pulse" />
                       <div>
@@ -1349,7 +1349,7 @@ export default function AnatomyDashboard({
                     </div>
                     <button 
                       onClick={() => setActiveView('workout')}
-                      className="text-[9px] bg-gym-accent text-black font-black uppercase tracking-widest px-4 py-2 hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer rounded-sm"
+                      className="text-[9px] bg-gym-accent text-black font-black uppercase tracking-widest px-4 py-2 hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer rounded-md"
                     >
                       Fire Up Workout &rarr;
                     </button>
@@ -1362,14 +1362,14 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 2: MUSCULAR RADAR ANALYSIS ────────────────── */}
-      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('radar')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-radar"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
               <Brain className="w-4 h-4" />
             </div>
             <div>
@@ -1410,7 +1410,7 @@ export default function AnatomyDashboard({
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                   
                   {/* Radar Web Card */}
-                  <div className="lg:col-span-5 p-4 bg-zinc-950/40 border border-white/5 rounded-sm flex flex-col items-center justify-center relative w-full h-full min-h-[385px]">
+                  <div className="lg:col-span-5 p-4 bg-zinc-950/40 border border-white/5 rounded-md flex flex-col items-center justify-center relative w-full h-full min-h-[385px]">
                     <div className="w-full max-w-[340px] flex flex-col items-center justify-center">
                       <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={300} />
                       <span className="text-[9px] uppercase tracking-[0.2em] font-mono font-bold text-white/30 mt-4 block text-center">
@@ -1420,13 +1420,13 @@ export default function AnatomyDashboard({
                   </div>
                   
                   {/* Symmetry Performance & Actionable Recommendations */}
-                  <div className="lg:col-span-7 flex flex-col justify-between p-5 bg-zinc-950/40 border border-white/5 rounded-sm min-h-[385px] space-y-4">
+                  <div className="lg:col-span-7 flex flex-col justify-between p-5 bg-zinc-950/40 border border-white/5 rounded-md min-h-[385px] space-y-4">
                     <div>
                       <div className="flex justify-between items-center border-b border-white/5 pb-2.5 mb-3.5">
                         <span className="text-[9px] font-black font-mono text-white/50 uppercase tracking-widest">
                           Symmetry & Balance Diagnostics
                         </span>
-                        <span className="text-[8px] bg-gym-accent/10 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-sm font-mono uppercase tracking-widest font-black">
+                        <span className="text-[8px] bg-gym-accent/10 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-md font-mono uppercase tracking-widest font-black">
                           Realtime Metric
                         </span>
                       </div>
@@ -1446,7 +1446,7 @@ export default function AnatomyDashboard({
                       </div>
 
                       {/* Diagnostic Status banner */}
-                      <div className="flex gap-2.5 items-start bg-[#050505]/40 border border-white/5 p-3 rounded-sm">
+                      <div className="flex gap-2.5 items-start bg-[#050505]/40 border border-white/5 p-3 rounded-md">
                         {balanceAnalysis.type === 'danger' || balanceAnalysis.type === 'warning' ? (
                           <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                         ) : (
@@ -1471,7 +1471,7 @@ export default function AnatomyDashboard({
                       </h6>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {balanceAnalysis.tips.map((tip, i) => (
-                          <div key={i} className="text-[11px] text-white/70 flex items-start gap-2 leading-relaxed bg-white/[0.01] p-2 border border-white/[0.02] rounded-sm">
+                          <div key={i} className="text-[11px] text-white/70 flex items-start gap-2 leading-relaxed bg-white/[0.01] p-2 border border-white/[0.02] rounded-md">
                             <span className="text-gym-accent font-mono font-bold shrink-0">&bull;</span>
                             <span>{tip}</span>
                           </div>
@@ -1486,7 +1486,7 @@ export default function AnatomyDashboard({
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                   
                   {/* Left: Volumetric List (Selectable Cards) */}
-                  <div className="lg:col-span-5 p-5 bg-zinc-950/40 border border-white/5 rounded-sm flex flex-col justify-between">
+                  <div className="lg:col-span-5 p-5 bg-zinc-950/40 border border-white/5 rounded-md flex flex-col justify-between">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center border-b border-white/5 pb-2.5">
                         <h5 className="text-[9px] font-black text-white/50 uppercase tracking-[0.25em] font-mono">
@@ -1504,7 +1504,7 @@ export default function AnatomyDashboard({
                             <div 
                               key={item.key} 
                               onClick={() => setSelectedRadarGroup(item.key)}
-                              className={`p-3 transition-all rounded-sm flex flex-col justify-between cursor-pointer select-none border ${
+                              className={`p-3 transition-all rounded-md flex flex-col justify-between cursor-pointer select-none border ${
                                 isActive 
                                   ? 'bg-gym-accent/[0.04] border-gym-accent/40 shadow-[0_0_8px_rgba(212,255,0,0.05)]' 
                                   : 'bg-white/[0.01] border-white/[0.03] hover:border-white/10 hover:bg-white/[0.02]'
@@ -1534,7 +1534,7 @@ export default function AnatomyDashboard({
                   </div>
 
                   {/* Right: Sub-Muscle Interactive Coordinates */}
-                  <div className="lg:col-span-7 p-5 bg-[#050505]/60 border border-white/5 hover:border-white/8 transition-all rounded-sm relative overflow-hidden flex flex-col justify-between">
+                  <div className="lg:col-span-7 p-5 bg-[#050505]/60 border border-white/5 hover:border-white/8 transition-all rounded-md relative overflow-hidden flex flex-col justify-between">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/5 rounded-full blur-2xl pointer-events-none" />
                     
                     <div className="w-full">
@@ -1550,7 +1550,7 @@ export default function AnatomyDashboard({
                             </span>
                           </div>
                         </div>
-                        <span className="text-[8px] bg-gym-accent/5 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-sm font-mono uppercase tracking-widest font-black self-start sm:self-auto">
+                        <span className="text-[8px] bg-gym-accent/5 border border-gym-accent/20 text-gym-accent px-2 py-0.5 rounded-md font-mono uppercase tracking-widest font-black self-start sm:self-auto">
                           Interactive Fiber Analytics
                         </span>
                       </div>
@@ -1593,7 +1593,7 @@ export default function AnatomyDashboard({
                           <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch min-h-[300px]">
                             {/* Left part of the Right Column - Visual distribution BarChart */}
                             <div className="md:col-span-6 flex flex-col justify-between space-y-3">
-                              <div className="p-3 bg-white/[0.005] border border-white/[0.02] rounded-sm flex-1 flex flex-col justify-between">
+                              <div className="p-3 bg-white/[0.005] border border-white/[0.02] rounded-md flex-1 flex flex-col justify-between">
                                 <span className="text-[8px] text-white/30 uppercase tracking-widest font-mono font-bold block mb-2">
                                   Volumetric Distribution (% of Group)
                                 </span>
@@ -1627,7 +1627,7 @@ export default function AnatomyDashboard({
                                           if (active && payload && payload.length) {
                                             const data = payload[0].payload;
                                             return (
-                                              <div className="bg-zinc-950/95 border border-white/10 px-2 py-1.5 rounded-sm font-mono text-[9px] shadow-lg">
+                                              <div className="bg-zinc-950/95 border border-white/10 px-2 py-1.5 rounded-md font-mono text-[9px] shadow-lg">
                                                 <span className="text-white font-bold block text-[8px]">{data.fullName}</span>
                                                 <span className="text-gym-accent font-black">{data.count} Sets ({data.percentage}%)</span>
                                               </div>
@@ -1663,7 +1663,7 @@ export default function AnatomyDashboard({
                                       <button
                                         key={entry.key}
                                         onClick={() => setSelectedSubMuscle(entry.key)}
-                                        className={`px-1.5 py-0.5 rounded-sm text-[7px] font-mono uppercase tracking-wider transition-all border ${
+                                        className={`px-1.5 py-0.5 rounded-md text-[7px] font-mono uppercase tracking-wider transition-all border ${
                                           isSelected
                                             ? 'bg-gym-accent/10 border-gym-accent/35 text-gym-accent font-black'
                                             : 'bg-white/[0.01] border-white/[0.03] text-white/50 hover:bg-white/[0.03] hover:text-white'
@@ -1687,7 +1687,7 @@ export default function AnatomyDashboard({
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.98 }}
                                     transition={{ duration: 0.12 }}
-                                    className="h-full flex flex-col justify-between p-3 bg-white/[0.01] border border-white/[0.03] rounded-sm"
+                                    className="h-full flex flex-col justify-between p-3 bg-white/[0.01] border border-white/[0.03] rounded-md"
                                   >
                                     <div className="space-y-3">
                                       <div className="flex justify-between items-start gap-1 font-mono">
@@ -1696,7 +1696,7 @@ export default function AnatomyDashboard({
                                           <span className="text-[7.5px] text-white/30 uppercase tracking-widest block">Selected Fiber Sector</span>
                                         </div>
                                         <div className="text-right shrink-0">
-                                          <span className="text-[9px] text-gym-accent font-bold font-mono bg-gym-accent/5 px-1.5 py-0.5 border border-gym-accent/10 rounded-sm">
+                                          <span className="text-[9px] text-gym-accent font-bold font-mono bg-gym-accent/5 px-1.5 py-0.5 border border-gym-accent/10 rounded-md">
                                             {activeSubData.count} Sets
                                           </span>
                                         </div>
@@ -1716,13 +1716,13 @@ export default function AnatomyDashboard({
                                         <div className="flex flex-wrap gap-1">
                                           {activeSubData.count > 0 ? (
                                             Object.entries(activeSubData.exercises).map(([exName, count]) => (
-                                              <span key={exName} className="text-[8px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded-sm text-white/80 font-mono">
+                                              <span key={exName} className="text-[8px] bg-white/5 border border-white/10 px-1.5 py-0.5 rounded-md text-white/80 font-mono">
                                                 {exName} ({count})
                                               </span>
                                             ))
                                           ) : (
                                             activeSubData.recommends.map((rec) => (
-                                              <span key={rec} className="text-[8px] bg-gym-accent/[0.01] border border-gym-accent/5 px-1.5 py-0.5 rounded-sm text-gym-accent/70 font-mono">
+                                              <span key={rec} className="text-[8px] bg-gym-accent/[0.01] border border-gym-accent/5 px-1.5 py-0.5 rounded-md text-gym-accent/70 font-mono">
                                                 {rec}
                                               </span>
                                             ))
@@ -1731,7 +1731,7 @@ export default function AnatomyDashboard({
                                       </div>
 
                                       {/* Status gauge bottom */}
-                                      <div className="bg-zinc-950/40 border border-white/[0.02] p-1.5 rounded-sm flex items-center justify-between text-[7.5px] font-mono uppercase tracking-wider">
+                                      <div className="bg-zinc-950/40 border border-white/[0.02] p-1.5 rounded-md flex items-center justify-between text-[7.5px] font-mono uppercase tracking-wider">
                                         <span className="text-white/30">RECIPROCAL RECRUITMENT:</span>
                                         <span className={activeSubData.count > 0 ? "text-gym-accent font-bold" : "text-amber-400 font-bold"}>
                                           {activeSubData.count > 0 ? `${activeSubData.percentage}% of Group` : 'Atrophy Danger'}
@@ -1757,14 +1757,14 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 3: BIOMECHANICAL STRUCTURAL LOAD ALERTER ────────────────── */}
-      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('biomechanical')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-biomechanical"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
               <Scale className="w-4 h-4" />
             </div>
             <div>
@@ -1808,7 +1808,7 @@ export default function AnatomyDashboard({
               <div className="p-6 space-y-6">
                 
                 {/* Rolling Indicator Box */}
-                <div className="p-4 bg-zinc-950/60 border border-white/5 rounded-sm space-y-2">
+                <div className="p-4 bg-zinc-950/60 border border-white/5 rounded-md space-y-2">
                   <div className="flex text-[10px] items-center gap-2 text-white/40 uppercase tracking-widest font-mono">
                     <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-ping" />
                     <span>Real-Time Agonist-Antagonist Posture Evaluator</span>
@@ -1822,7 +1822,7 @@ export default function AnatomyDashboard({
                 <div className="space-y-8">
                   
                   {/* SLIDER 1: CHEST VS UPPER BACK */}
-                  <div className="p-5 bg-white/[0.01] border border-white/5 rounded-sm space-y-4">
+                  <div className="p-5 bg-white/[0.01] border border-white/5 rounded-md space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                       <div>
                         <h5 className="text-xs font-bold text-white uppercase tracking-wider">
@@ -1836,19 +1836,19 @@ export default function AnatomyDashboard({
                       {/* Status badge */}
                       <div>
                         {biomechanicalAnalysis.chestBack.total === 0 ? (
-                          <span className="text-[8px] bg-zinc-800 border border-zinc-700 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-zinc-400">
+                          <span className="text-[8px] bg-zinc-800 border border-zinc-700 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-zinc-400">
                             Awaiting Data
                           </span>
                         ) : biomechanicalAnalysis.chestBack.status === 'critical' ? (
-                          <span className="text-[8px] bg-red-950/50 border border-red-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-red-500/40 font-bold animate-pulse text-red-400">
+                          <span className="text-[8px] bg-red-950/50 border border-red-500/30 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-red-500/40 font-bold animate-pulse text-red-400">
                             POSTURAL WARNING
                           </span>
                         ) : biomechanicalAnalysis.chestBack.status === 'moderate' ? (
-                          <span className="text-[8px] bg-amber-950/50 border border-amber-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-amber-500/50 font-bold text-amber-400">
+                          <span className="text-[8px] bg-amber-950/50 border border-amber-500/30 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-amber-500/50 font-bold text-amber-400">
                             MILD IMBALANCE
                           </span>
                         ) : (
-                          <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-gym-accent font-bold">
+                          <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/30 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-gym-accent font-bold">
                             OPTIMAL SYMMETRY
                           </span>
                         )}
@@ -1898,7 +1898,7 @@ export default function AnatomyDashboard({
 
                     {/* Alerter warning container if active */}
                     {biomechanicalAnalysis.chestBack.total > 0 && biomechanicalAnalysis.chestBack.status !== 'balanced' && (
-                      <div className="p-3 bg-red-950/20 border border-red-500/15 rounded-sm flex items-start gap-3 mt-1 animate-fade-in">
+                      <div className="p-3 bg-red-950/20 border border-red-500/15 rounded-md flex items-start gap-3 mt-1 animate-fade-in">
                         <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5 animate-bounce" />
                         <div>
                           <strong className="text-xs text-red-400 uppercase tracking-wide block">{biomechanicalAnalysis.chestBack.warning}</strong>
@@ -1910,7 +1910,7 @@ export default function AnatomyDashboard({
 
 
                   {/* SLIDER 2: QUADS VS HAMSTRINGS */}
-                  <div className="p-5 bg-white/[0.01] border border-white/5 rounded-sm space-y-4">
+                  <div className="p-5 bg-white/[0.01] border border-white/5 rounded-md space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                       <div>
                         <h5 className="text-xs font-bold text-white uppercase tracking-wider">
@@ -1924,19 +1924,19 @@ export default function AnatomyDashboard({
                       {/* Status badge */}
                       <div>
                         {biomechanicalAnalysis.quadHam.total === 0 ? (
-                          <span className="text-[8px] bg-zinc-800 border border-zinc-700 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-zinc-400">
+                          <span className="text-[8px] bg-zinc-800 border border-zinc-700 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-zinc-400">
                             Awaiting Data
                           </span>
                         ) : biomechanicalAnalysis.quadHam.status === 'critical' ? (
-                          <span className="text-[8px] bg-red-950/50 border border-red-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-red-500/40 font-bold animate-pulse text-red-400">
+                          <span className="text-[8px] bg-red-950/50 border border-red-500/30 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-red-500/40 font-bold animate-pulse text-red-400">
                             POSTURAL WARNING
                           </span>
                         ) : biomechanicalAnalysis.quadHam.status === 'moderate' ? (
-                          <span className="text-[8px] bg-amber-950/50 border border-amber-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-amber-500/50 font-bold text-amber-400">
+                          <span className="text-[8px] bg-amber-950/50 border border-amber-500/30 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-amber-500/50 font-bold text-amber-400">
                             MILD IMBALANCE
                           </span>
                         ) : (
-                          <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-gym-accent font-bold">
+                          <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/30 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-gym-accent font-bold">
                             OPTIMAL SYMMETRY
                           </span>
                         )}
@@ -1986,7 +1986,7 @@ export default function AnatomyDashboard({
 
                     {/* Alerter warning container if active */}
                     {biomechanicalAnalysis.quadHam.total > 0 && biomechanicalAnalysis.quadHam.status !== 'balanced' && (
-                      <div className="p-3 bg-red-950/20 border border-red-500/15 rounded-sm flex items-start gap-3 mt-1 animate-fade-in">
+                      <div className="p-3 bg-red-950/20 border border-red-500/15 rounded-md flex items-start gap-3 mt-1 animate-fade-in">
                         <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5 animate-bounce" />
                         <div>
                           <strong className="text-xs text-red-400 uppercase tracking-wide block">{biomechanicalAnalysis.quadHam.warning}</strong>
@@ -1998,7 +1998,7 @@ export default function AnatomyDashboard({
 
 
                   {/* SLIDER 3: BICEPS VS TRICEPS */}
-                  <div className="p-5 bg-white/[0.01] border border-white/5 rounded-sm space-y-4">
+                  <div className="p-5 bg-white/[0.01] border border-white/5 rounded-md space-y-4">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                       <div>
                         <h5 className="text-xs font-bold text-white uppercase tracking-wider">
@@ -2012,19 +2012,19 @@ export default function AnatomyDashboard({
                       {/* Status badge */}
                       <div>
                         {biomechanicalAnalysis.bicepsTriceps.total === 0 ? (
-                          <span className="text-[8px] bg-zinc-800 border border-zinc-700 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-zinc-400">
+                          <span className="text-[8px] bg-zinc-800 border border-zinc-700 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-zinc-400">
                             Awaiting Data
                           </span>
                         ) : biomechanicalAnalysis.bicepsTriceps.status === 'critical' ? (
-                          <span className="text-[8px] bg-red-950/50 border border-red-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-red-500/40 font-bold animate-pulse text-red-400">
+                          <span className="text-[8px] bg-red-950/50 border border-red-500/30 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-red-500/40 font-bold animate-pulse text-red-400">
                             POSTURAL WARNING
                           </span>
                         ) : biomechanicalAnalysis.bicepsTriceps.status === 'moderate' ? (
-                          <span className="text-[8px] bg-amber-950/50 border border-amber-500/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-amber-500/50 font-bold text-amber-400">
+                          <span className="text-[8px] bg-amber-950/50 border border-amber-500/30 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-amber-500/50 font-bold text-amber-400">
                             MILD IMBALANCE
                           </span>
                         ) : (
-                          <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/30 font-mono px-2 py-0.5 rounded-sm uppercase tracking-wider text-gym-accent font-bold">
+                          <span className="text-[8px] bg-gym-accent/15 border border-gym-accent/30 font-mono px-2 py-0.5 rounded-md uppercase tracking-wider text-gym-accent font-bold">
                             OPTIMAL SYMMETRY
                           </span>
                         )}
@@ -2074,7 +2074,7 @@ export default function AnatomyDashboard({
 
                     {/* Alerter warning container if active */}
                     {biomechanicalAnalysis.bicepsTriceps.total > 0 && biomechanicalAnalysis.bicepsTriceps.status !== 'balanced' && (
-                      <div className="p-3 bg-red-950/20 border border-red-500/15 rounded-sm flex items-start gap-3 mt-1 animate-fade-in">
+                      <div className="p-3 bg-red-950/20 border border-red-500/15 rounded-md flex items-start gap-3 mt-1 animate-fade-in">
                         <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5 animate-bounce" />
                         <div>
                           <strong className="text-xs text-red-400 uppercase tracking-wide block">{biomechanicalAnalysis.bicepsTriceps.warning}</strong>
@@ -2088,7 +2088,7 @@ export default function AnatomyDashboard({
 
                 {/* Highly relevant actionable posture recommendations bottom bar */}
                 {biomechanicalAnalysis.totalAlerts === 0 && (
-                  <div className="p-4 bg-gym-accent/[0.03] border border-gym-accent/15 rounded-sm flex items-center gap-3">
+                  <div className="p-4 bg-gym-accent/[0.03] border border-gym-accent/15 rounded-md flex items-center gap-3">
                     <CheckCircle2 className="w-4 h-4 text-gym-accent shrink-0 animate-pulse" />
                     <div>
                       <h6 className="text-xs font-bold text-gym-accent uppercase tracking-wide">Kinetic Chain Integrity Satisfied</h6>
@@ -2106,14 +2106,14 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 4: RELATIVE STRENGTH RADAR ────────────────── */}
-      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
+      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('strength')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-strength"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
               <Award className="w-4 h-4" />
             </div>
             <div>
@@ -2158,14 +2158,14 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 5: DYNAMIC CNS FATIGUE INDEX ────────────────── */}
-      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md mt-4">
+      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md mt-4">
         <button
           onClick={() => toggleSection('cnsFatigue')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-cns-fatigue"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
               <Brain className="w-4 h-4" />
             </div>
             <div>
@@ -2207,9 +2207,9 @@ export default function AnatomyDashboard({
               <div className="p-6 space-y-6">
 
                 {/* Status Announcement Banner */}
-                <div className={`p-4 rounded-sm border ${cnsFatigueAnalysis.levelColor} flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300`}>
+                <div className={`p-4 rounded-md border ${cnsFatigueAnalysis.levelColor} flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300`}>
                   <div className="space-y-1">
-                    <span className="text-[8px] font-black tracking-widest uppercase font-mono bg-white/5 px-2 py-0.5 rounded-sm border border-white/5">
+                    <span className="text-[8px] font-black tracking-widest uppercase font-mono bg-white/5 px-2 py-0.5 rounded-md border border-white/5">
                       CNS NEURAL STATUS FEEDBACK
                     </span>
                     <h5 className="text-sm font-black uppercase tracking-wider font-mono">
@@ -2235,10 +2235,10 @@ export default function AnatomyDashboard({
                     <span>Central Nervous System Wear & Tear Gauge</span>
                     <span className="text-white/60">{cnsFatigueAnalysis.totalSpinalLoad.toFixed(1)} Spinal Load Units</span>
                   </div>
-                  <div className="w-full h-2.5 bg-white/5 rounded-sm overflow-hidden p-0.5 border border-white/10">
+                  <div className="w-full h-2.5 bg-white/5 rounded-md overflow-hidden p-0.5 border border-white/10">
                     <div 
                       style={{ width: `${cnsFatigueAnalysis.score}%` }}
-                      className={`h-full rounded-sm transition-all duration-700 ${cnsFatigueAnalysis.barColor}`}
+                      className={`h-full rounded-md transition-all duration-700 ${cnsFatigueAnalysis.barColor}`}
                     />
                   </div>
                   <div className="flex justify-between text-[7px] text-white/20 font-mono">
@@ -2252,7 +2252,7 @@ export default function AnatomyDashboard({
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                   
                   {/* Left Column: Spinal Section Visualizer */}
-                  <div className="md:col-span-5 bg-[#030303]/75 p-5 border border-white/5 rounded-sm flex flex-col items-center justify-center relative overflow-hidden h-[330px]">
+                  <div className="md:col-span-5 bg-[#030303]/75 p-5 border border-white/5 rounded-md flex flex-col items-center justify-center relative overflow-hidden h-[330px]">
                     <div className="absolute top-2.5 left-3.5 flex items-center gap-1.5 font-mono text-[8px] text-white/30 tracking-widest uppercase">
                       <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
                       Dynamic Vertebrae Loading Model
@@ -2361,7 +2361,7 @@ export default function AnatomyDashboard({
 
                   {/* Right Column: Calculations & contributors logs */}
                   <div className="md:col-span-7 space-y-4">
-                    <div className="p-4 bg-zinc-945 border border-white/5 rounded-sm space-y-3.5">
+                    <div className="p-4 bg-zinc-945 border border-white/5 rounded-md space-y-3.5">
                       <span className="text-[8px] font-black tracking-widest text-gym-accent uppercase font-mono block">
                         ANATOMICAL WEAR & TEAR RECOMMENDATIONS
                       </span>
@@ -2370,7 +2370,7 @@ export default function AnatomyDashboard({
                       </p>
                     </div>
 
-                    <div className="p-4 bg-zinc-950 border border-white/5 rounded-sm space-y-3">
+                    <div className="p-4 bg-zinc-950 border border-white/5 rounded-md space-y-3">
                       <span className="text-[8px] font-black tracking-widest text-white/40 uppercase font-mono block border-b border-white/5 pb-2">
                         COMPONENTS CONTRIBUTING TO SPINAL DEPLETION (PAST 72H)
                       </span>

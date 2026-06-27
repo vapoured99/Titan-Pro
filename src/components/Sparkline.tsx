@@ -96,7 +96,7 @@ export default function Sparkline({
           />
         </svg>
         {maxVal > 0 && (
-          <span className="text-[10px] font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/15 px-1.5 py-0.5 rounded-sm shrink-0">
+          <span className="text-[10px] font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/15 px-1.5 py-0.5 rounded-md shrink-0">
             Est. 1RM: {maxVal.toFixed(1)}kg
           </span>
         )}
@@ -185,7 +185,7 @@ export default function Sparkline({
         )}
       </svg>
       {maxVal > 0 && (
-        <span className="text-[10px] font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/15 px-1.5 py-0.5 rounded-sm select-none shrink-0">
+        <span className="text-[10px] font-mono font-bold text-gym-accent bg-gym-accent/5 border border-gym-accent/15 px-1.5 py-0.5 rounded-md select-none shrink-0">
           Est. 1RM: {maxVal.toFixed(1)}kg
         </span>
       )}

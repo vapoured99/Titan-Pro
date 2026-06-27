@@ -303,7 +303,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
   }, [adaptationMetrics, selectedMuscle]);
 
   return (
-    <div className="bg-[#050506] border border-white/10 rounded-sm p-6 relative overflow-hidden space-y-6" id="hypertrophic-adaptations-panel">
+    <div className="bg-[#050506] border border-white/10 rounded-md p-6 relative overflow-hidden space-y-6" id="hypertrophic-adaptations-panel">
       {/* Background neon dynamic grid element */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(34,197,94,0.015)_0%,transparent_60%)] pointer-events-none" />
 
@@ -326,7 +326,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
         <div>
           <button
             onClick={() => setShowExplanation(!showExplanation)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-[9.5px] font-mono rounded-sm border border-white/10 cursor-pointer transition-all uppercase"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-[9.5px] font-mono rounded-md border border-white/10 cursor-pointer transition-all uppercase"
           >
             <HelpCircle className="w-3.5 h-3.5" />
             {showExplanation ? "Hide Info" : "How It Works"}
@@ -344,7 +344,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-sm space-y-3 text-[10px] leading-relaxed text-white/60 font-mono uppercase">
+            <div className="p-4 bg-white/[0.02] border border-white/5 rounded-md space-y-3 text-[10px] leading-relaxed text-white/60 font-mono uppercase">
               <span className="text-[10.5px] text-emerald-400 font-black block flex items-center gap-2">
                 <Sparkles className="w-4 h-4" />
                 THE IMPORTANCE OF EXERCISE ROTATION
@@ -377,7 +377,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
                 <div
                   key={item.id}
                   onClick={() => setSelectedMuscle(item.id)}
-                  className={`p-3 border rounded-sm transition-all duration-200 cursor-pointer ${
+                  className={`p-3 border rounded-md transition-all duration-200 cursor-pointer ${
                     isSelected
                       ? "bg-white/[0.03] border-white/20 shadow-xs"
                       : "bg-[#020203] border-white/5 hover:border-white/10 hover:bg-white/[0.01]"
@@ -421,14 +421,14 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
 
         {/* Right 6 cols: Deep Adaptation Report & Rotation Blueprint */}
         <div className="lg:col-span-6 space-y-4">
-          <div className="bg-black/60 border border-white/5 rounded-sm p-4 space-y-4 font-mono font-mono">
+          <div className="bg-black/60 border border-white/5 rounded-md p-4 space-y-4 font-mono font-mono">
             <span className="text-[8px] text-white/40 tracking-widest uppercase flex items-center gap-1.5 border-b border-white/5 pb-2">
               <Gauge className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
               ADAPTATION STATUS &bull; {activeCategoryData.label}
             </span>
 
             {/* Current status summary info panel */}
-            <div className={`p-3.5 rounded-sm border ${activeCategoryData.themeColor} space-y-1 cursor-default`}>
+            <div className={`p-3.5 rounded-md border ${activeCategoryData.themeColor} space-y-1 cursor-default`}>
               <div className="flex items-center justify-between text-[11px] font-black uppercase">
                 <span>STIMULUS POTENTIAL: {activeCategoryData.statusLabel}</span>
                 <span className="text-xs">{activeCategoryData.receptivity}%</span>
@@ -472,10 +472,10 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
                   activeCategoryData.suggestedRotations.map((altName, i) => (
                     <div
                       key={i}
-                      className="p-2.5 bg-emerald-500/5 border border-emerald-500/10 rounded-sm flex items-center justify-between hover:bg-emerald-500/10 transition-colors"
+                      className="p-2.5 bg-emerald-500/5 border border-emerald-500/10 rounded-md flex items-center justify-between hover:bg-emerald-500/10 transition-colors"
                     >
                       <div className="flex items-center gap-2.5">
-                        <span className="text-[8px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1 py-0.5 rounded-sm">
+                        <span className="text-[8px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-1 py-0.5 rounded-md">
                           OPTION {i + 1}
                         </span>
                         <span className="text-[10px] font-bold text-white uppercase truncate">{altName}</span>
@@ -496,7 +496,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
 
             {/* Micro warning indicator */}
             {activeCategoryData.consecutiveWeeks >= 4 && (
-              <div className="p-2.5 bg-amber-500/5 border border-amber-500/15 text-amber-500 rounded-sm flex items-start gap-2.5 text-[9px] uppercase leading-relaxed">
+              <div className="p-2.5 bg-amber-500/5 border border-amber-500/15 text-amber-500 rounded-md flex items-start gap-2.5 text-[9px] uppercase leading-relaxed">
                 <AlertCircle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5" />
                 <div>
                   <span className="font-bold block">Plateau Warning</span>

@@ -1057,13 +1057,13 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
 
         {/* Sidebar panel for interactive drills (Option 2) */}
         {!compact && selectedMuscle && (
-          <div className="lg:col-span-4 bg-[#040404]/90 border border-gym-accent/35 rounded-sm p-5 space-y-5 shadow-[0_0_20px_rgba(255,215,0,0.03)] backdrop-blur-md flex flex-col justify-between">
+          <div className="lg:col-span-4 bg-[#040404]/90 border border-gym-accent/35 rounded-md p-5 space-y-5 shadow-[0_0_20px_rgba(255,215,0,0.03)] backdrop-blur-md flex flex-col justify-between">
             {/* Header: Reticle Active Indicator */}
             <div className="flex items-center justify-between border-b border-white/5 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="relative w-8 h-8 flex items-center justify-center border border-gym-accent/40 rounded-sm bg-gym-accent/5">
+                <div className="relative w-8 h-8 flex items-center justify-center border border-gym-accent/40 rounded-md bg-gym-accent/5">
                   <Crosshair className="w-4 h-4 text-gym-accent animate-spin" style={{ animationDuration: '6s' }} />
-                  <span className="absolute inset-0 border border-gym-accent/15 rounded-sm animate-ping opacity-25" />
+                  <span className="absolute inset-0 border border-gym-accent/15 rounded-md animate-ping opacity-25" />
                 </div>
                 <div>
                   <h3 className="text-xs font-black uppercase tracking-widest text-[#ffffff] flex items-center gap-1.5 font-mono">
@@ -1077,7 +1077,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
                   setSelectedMuscle(null);
                   setExpandedExercise(null);
                 }}
-                className="w-6 h-6 rounded-sm bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all cursor-pointer border border-white/5"
+                className="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all cursor-pointer border border-white/5"
               >
                 <X className="w-3.5 h-3.5 text-white/50 hover:text-white" />
               </button>
@@ -1086,19 +1086,19 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
             {/* Grid 1: Alignment Analytics & Mechanical Targets */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Box A: Rep scheme */}
-              <div className="p-3 bg-white/[0.015] border border-white/5 rounded-sm flex flex-col items-center justify-center text-center">
+              <div className="p-3 bg-white/[0.015] border border-white/5 rounded-md flex flex-col items-center justify-center text-center">
                 <Target className="w-4 h-4 text-gym-accent/80 mb-1" />
                 <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest block font-mono">Target Range</span>
                 <span className="text-[10px] font-black text-white uppercase mt-1 font-mono">{BIOMECHANICS[selectedMuscle]?.reps || "8-12 Reps"}</span>
               </div>
               {/* Box B: Rest cycle */}
-              <div className="p-3 bg-white/[0.015] border border-white/5 rounded-sm flex flex-col items-center justify-center text-center">
+              <div className="p-3 bg-white/[0.015] border border-white/5 rounded-md flex flex-col items-center justify-center text-center">
                 <Timer className="w-4 h-4 text-gym-accent/80 mb-1" />
                 <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest block font-mono">Rest Goal</span>
                 <span className="text-[10px] font-black text-white uppercase mt-1 font-mono">{BIOMECHANICS[selectedMuscle]?.rest || "90 Secs"}</span>
               </div>
               {/* Box C: Category */}
-              <div className="p-3 bg-white/[0.015] border border-white/5 rounded-sm flex flex-col items-center justify-center text-center">
+              <div className="p-3 bg-white/[0.015] border border-white/5 rounded-md flex flex-col items-center justify-center text-center">
                 <Dumbbell className="w-4 h-4 text-gym-accent/80 mb-1" />
                 <span className="text-[8px] font-bold text-white/40 uppercase tracking-widest block font-mono">Mechanics</span>
                 <span className="text-[10px] font-black text-gym-accent uppercase mt-1 font-mono text-[9px]">{BIOMECHANICS[selectedMuscle]?.mechanics || "Mixed"}</span>
@@ -1106,7 +1106,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
             </div>
 
             {/* Biomechanical Tips Box */}
-            <div className="p-4 bg-gym-accent/[0.02] border border-gym-accent/15 rounded-sm space-y-1.5">
+            <div className="p-4 bg-gym-accent/[0.02] border border-gym-accent/15 rounded-md space-y-1.5">
               <div className="flex items-center gap-1.5 text-gym-accent">
                 <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                 <span className="text-[9px] font-black uppercase tracking-wider font-mono">Biomechanical Isolation Secret</span>
@@ -1131,7 +1131,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
 
               <div className="max-h-[180px] overflow-y-auto space-y-2 pr-1 scrollbar-thin scrollbar-thumb-white/10">
                 {selectedMuscleDrills.length === 0 ? (
-                  <div className="p-4 rounded-sm border border-white/5 bg-white/[0.01] text-center text-white/45 text-[11px] uppercase">
+                  <div className="p-4 rounded-md border border-white/5 bg-white/[0.01] text-center text-white/45 text-[11px] uppercase">
                     No matching drills cataloged for this precise sector.
                   </div>
                 ) : (
@@ -1140,7 +1140,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
                     return (
                       <div 
                         key={`${ex.name}-${index}`} 
-                        className={`rounded-sm border transition-all duration-300 ${isExpanded ? "bg-white/[0.04] border-gym-accent/30 shadow-[0_0_10px_rgba(255,215,0,0.02)]" : "bg-white/[0.015] border-white/5 hover:bg-white/[0.025]"}`}
+                        className={`rounded-md border transition-all duration-300 ${isExpanded ? "bg-white/[0.04] border-gym-accent/30 shadow-[0_0_10px_rgba(255,215,0,0.02)]" : "bg-white/[0.015] border-white/5 hover:bg-white/[0.025]"}`}
                       >
                         {/* Summary Header Row */}
                         <div 
@@ -1214,7 +1214,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
 
       {/* Placeholder instruction panel when no muscle is clicked */}
       {!compact && !selectedMuscle && (
-        <div className="border border-white/5 rounded-sm p-5 bg-white/[0.01] backdrop-blur-sm flex flex-col items-center justify-center text-center space-y-2.5 min-h-[140px]">
+        <div className="border border-white/5 rounded-md p-5 bg-white/[0.01] backdrop-blur-sm flex flex-col items-center justify-center text-center space-y-2.5 min-h-[140px]">
           <div className="w-9 h-9 rounded-full border border-gym-accent/30 bg-gym-accent/5 flex items-center justify-center relative">
             <Crosshair className="w-4.5 h-4.5 text-gym-accent animate-pulse" />
             <span className="absolute inset-0 border border-gym-accent/10 rounded-full animate-ping opacity-25" />
@@ -1232,10 +1232,10 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
       {!compact && (
         <div className="md:col-span-2 mt-4 space-y-6">
           {/* Modern Interactive Glossary */}
-          <div className="bg-[#050505] border border-white/5 rounded-sm p-5 space-y-4">
+          <div className="bg-[#050505] border border-white/5 rounded-md p-5 space-y-4">
             <h5 className="text-[9px] font-black text-white/40 uppercase tracking-[0.3em] font-mono">Real-time Recovery Legend</h5>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
-              <div className="flex items-start gap-2.5 p-2 bg-red-950/20 border border-red-500/20 rounded-sm">
+              <div className="flex items-start gap-2.5 p-2 bg-red-950/20 border border-red-500/20 rounded-md">
                 <span className="w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_8px_#ef4444] mt-1 flex-shrink-0" />
                 <div>
                   <div className="text-white font-bold uppercase tracking-wider text-[10px]">Active Today</div>
@@ -1243,7 +1243,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2.5 p-2 bg-orange-950/20 border border-orange-500/20 rounded-sm">
+              <div className="flex items-start gap-2.5 p-2 bg-orange-950/20 border border-orange-500/20 rounded-md">
                 <span className="w-2 h-2 rounded-full bg-[#f97316] shadow-[0_0_8px_#f97316] mt-1 flex-shrink-0" />
                 <div>
                   <div className="text-white font-bold uppercase tracking-wider text-[10px]">Fatigued (D1-D2)</div>
@@ -1251,7 +1251,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2.5 p-2 bg-green-950/20 border border-green-500/20 rounded-sm">
+              <div className="flex items-start gap-2.5 p-2 bg-green-950/20 border border-green-500/20 rounded-md">
                 <span className="w-2 h-2 rounded-full bg-[#22c55e] shadow-[0_0_8px_#22c55e] mt-1 flex-shrink-0" />
                 <div>
                   <div className="text-white font-bold uppercase tracking-wider text-[10px]">Ready (D3)</div>
@@ -1259,7 +1259,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
                 </div>
               </div>
 
-              <div className="flex items-start gap-2.5 p-2 bg-zinc-950/80 border border-white/5 rounded-sm">
+              <div className="flex items-start gap-2.5 p-2 bg-zinc-950/80 border border-white/5 rounded-md">
                 <span className="w-2 h-2 rounded-full bg-white/25 mt-1 flex-shrink-0" />
                 <div>
                   <div className="text-white/60 font-bold uppercase tracking-wider text-[10px]">Fully Rested (D4+)</div>
@@ -1276,12 +1276,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
               const isUntouched = info.daysDiff > 4;
 
               return (
-                <div key={group} className="bg-zinc-950/70 border border-white/10 p-4 rounded-sm flex flex-col justify-between backdrop-blur-sm">
+                <div key={group} className="bg-zinc-950/70 border border-white/10 p-4 rounded-md flex flex-col justify-between backdrop-blur-sm">
                   <div className="flex items-center justify-between mb-3 border-b border-white/5 pb-2">
                     <span className="text-[10px] text-white font-black uppercase tracking-widest font-mono">
                       {group === 'core' ? 'abs/core' : group === 'upper_back' ? 'upper back' : group === 'lower_back' ? 'lower back' : group}
                     </span>
-                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider text-[10px]" style={{ color: info.fill, backgroundColor: `${info.fill}10` }}>
+                    <span className="text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider text-[10px]" style={{ color: info.fill, backgroundColor: `${info.fill}10` }}>
                       {info.daysDiff === 0 ? "Today" : isUntouched ? "Fully Rested" : `${info.daysDiff}d Ago`}
                     </span>
                   </div>
@@ -1324,7 +1324,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
                               boxShadow: active ? activeGlow : 'none',
                               borderColor: active ? activeColor : 'rgba(255, 255, 255, 0.1)'
                             }}
-                            className={`h-4 border rounded-sm transition-all duration-500 relative flex items-center justify-center`}
+                            className={`h-4 border rounded-md transition-all duration-500 relative flex items-center justify-center`}
                           >
                             {active && (
                               <div className="w-1 h-1 rounded-full bg-white opacity-80" />

@@ -551,7 +551,7 @@ export default function ConsoleIntelligencePanel({
                             initial={{ scaleY: 0 }}
                             animate={{ scaleY: 1 }}
                             style={{ height: `${heightPct}%`, originY: 1 }}
-                            className={`w-full rounded-sm bg-gradient-to-t ${barBg} ${glowShadow} hover:brightness-125 transition-all duration-300`}
+                            className={`w-full rounded-md bg-gradient-to-t ${barBg} ${glowShadow} hover:brightness-125 transition-all duration-300`}
                           />
                           <span className="text-[7px] font-mono text-white/20 absolute -bottom-1 select-none">#{idx + 1}</span>
                         </div>

@@ -226,7 +226,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
   };
 
   return (
-    <div className="bg-black/60 border border-white/10 rounded-sm p-4 sm:p-6 relative overflow-hidden backdrop-blur-md transition-all duration-300 h-full">
+    <div className="bg-black/60 border border-white/10 rounded-md p-4 sm:p-6 relative overflow-hidden backdrop-blur-md transition-all duration-300 h-full">
       {/* Dynamic Cyber Deco Grid Bars */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gym-accent/30 to-transparent" />
       <div className="absolute top-0 right-10 w-24 h-24 bg-gym-accent/5 rounded-full blur-3xl -z-10" />
@@ -234,7 +234,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
       {/* Header Info */}
       <div className="flex flex-row items-center justify-between gap-4 border-b border-white/5 pb-4 mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/30 flex items-center justify-center text-gym-accent shadow-sm shadow-gym-accent/10">
+          <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/30 flex items-center justify-center text-gym-accent shadow-sm shadow-gym-accent/10">
             <Cpu className="w-4 h-4 animate-pulse" />
           </div>
           <div>
@@ -269,7 +269,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
       </div>
 
       {error && (
-        <div className="mb-4 bg-red-950/20 border border-red-500/30 p-3 rounded-sm text-red-400 font-mono text-[10px] uppercase tracking-wider flex items-start gap-2.5">
+        <div className="mb-4 bg-red-950/20 border border-red-500/30 p-3 rounded-md text-red-400 font-mono text-[10px] uppercase tracking-wider flex items-start gap-2.5">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <div>
             <span className="font-bold">[SYSTEM DEFECT / QUOTA EXHAUSTED]: </span>
@@ -291,7 +291,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
             <div className="flex items-center gap-3 flex-wrap">
               {advice ? (
                 <>
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-gym-accent/10 border border-gym-accent/30 rounded-sm">
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-gym-accent/10 border border-gym-accent/30 rounded-md">
                     <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
                     <span className="text-[9px] text-gym-accent font-black uppercase tracking-wider">{advice.recoveryScore}% READY</span>
                   </div>
@@ -317,7 +317,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
                   onClick={executeAnalysis}
                   disabled={loading}
                   type="button"
-                  className="flex items-center gap-1.5 text-[8px] border border-white/10 hover:border-gym-accent/30 px-2 py-1 uppercase tracking-wider font-black text-white/40 hover:text-gym-accent bg-[#030303] transition-all rounded-sm cursor-pointer"
+                  className="flex items-center gap-1.5 text-[8px] border border-white/10 hover:border-gym-accent/30 px-2 py-1 uppercase tracking-wider font-black text-white/40 hover:text-gym-accent bg-[#030303] transition-all rounded-md cursor-pointer"
                 >
                   <RotateCcw className={`w-2.5 h-2.5 ${loading ? 'animate-spin text-gym-accent' : ''}`} />
                   {loading ? 'ANALYZING...' : 'REFRESH'}
@@ -327,7 +327,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
               <button
                 onClick={() => setIsMinimized(false)}
                 type="button"
-                className="bg-gym-accent hover:brightness-110 text-black font-black uppercase tracking-widest text-[8px] sm:text-[9px] px-3.5 py-1.5 rounded-sm transition-all cursor-pointer flex items-center gap-1 shadow-sm shadow-gym-accent/15"
+                className="bg-gym-accent hover:brightness-110 text-black font-black uppercase tracking-widest text-[8px] sm:text-[9px] px-3.5 py-1.5 rounded-md transition-all cursor-pointer flex items-center gap-1 shadow-sm shadow-gym-accent/15"
               >
                 Expand Directive
               </button>
@@ -351,7 +351,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
               onClick={executeAnalysis}
               disabled={loading}
               type="button"
-              className="bg-gym-accent text-black font-black uppercase tracking-[0.2em] text-[10px] px-6 py-3.5 rounded-sm hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-gym-accent/10 flex items-center gap-2.5"
+              className="bg-gym-accent text-black font-black uppercase tracking-[0.2em] text-[10px] px-6 py-3.5 rounded-md hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-gym-accent/10 flex items-center gap-2.5"
             >
               <Cpu className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
               {loading ? 'CALCULATING BIOMETRIC SYNAPSE...' : 'INITIATE TACTICAL ANALYSIS'}
@@ -374,7 +374,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
             {/* Top row: Quote & Recovery Score */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
               {/* Motivational Battle Quote */}
-              <div className="lg:col-span-8 bg-[#050505] border border-white/5 p-4 rounded-sm flex flex-col justify-center relative overflow-hidden">
+              <div className="lg:col-span-8 bg-[#050505] border border-white/5 p-4 rounded-md flex flex-col justify-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/[0.02] rounded-full blur-2xl" />
                 <span className="text-[8px] text-gym-accent font-black uppercase tracking-widest block mb-1 font-mono">OPERATIVE DIRECTIVE</span>
                 <p className="text-sm sm:text-base font-light italic font-serif text-white leading-snug tracking-tight">
@@ -383,7 +383,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
               </div>
 
               {/* Recovery Score Dial */}
-              <div className="lg:col-span-4 bg-[#050505] border border-white/5 p-4 rounded-sm flex items-center justify-between gap-4">
+              <div className="lg:col-span-4 bg-[#050505] border border-white/5 p-4 rounded-md flex items-center justify-between gap-4">
                 <div className="space-y-1">
                   <span className="text-[9px] text-white/70 font-black uppercase tracking-widest font-mono block">SYSTEM STATUS</span>
                   <div className="text-sm font-semibold text-white">{advice.overallStatus}</div>
@@ -425,7 +425,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
             {/* Target Guidance Splits */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {/* Green Priority Targets */}
-              <div className="bg-green-950/10 border border-green-500/20 p-5 rounded-sm relative">
+              <div className="bg-green-950/10 border border-green-500/20 p-5 rounded-md relative">
                 <div className="absolute top-2 right-3">
                   <CheckCircle className="w-4 h-4 text-green-500/30" />
                 </div>
@@ -438,7 +438,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
                     {advice.priorityTargets.map((target, i) => (
                       <span 
                         key={i} 
-                        className="bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-bold font-mono uppercase px-3 py-1 rounded-sm tracking-wider flex items-center gap-1.5"
+                        className="bg-green-500/10 border border-green-500/30 text-green-400 text-[10px] font-bold font-mono uppercase px-3 py-1 rounded-md tracking-wider flex items-center gap-1.5"
                       >
                         <Zap className="w-2.5 h-2.5 animate-bounce fill-current" />
                         {target}
@@ -449,7 +449,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
               </div>
 
               {/* Red Avoid Targets */}
-              <div className="bg-red-950/10 border border-red-500/20 p-5 rounded-sm relative">
+              <div className="bg-red-950/10 border border-red-500/20 p-5 rounded-md relative">
                 <div className="absolute top-2 right-3">
                   <AlertTriangle className="w-4 h-4 text-red-500/30" />
                 </div>
@@ -462,7 +462,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
                     {advice.avoidTargets.map((target, i) => (
                       <span 
                         key={i} 
-                        className="bg-red-500/10 border border-red-500/35 text-red-400 text-[10px] font-bold font-mono uppercase px-3 py-1 rounded-sm tracking-widest flex items-center gap-1.5"
+                        className="bg-red-500/10 border border-red-500/35 text-red-400 text-[10px] font-bold font-mono uppercase px-3 py-1 rounded-md tracking-widest flex items-center gap-1.5"
                       >
                         <Shield className="w-2.5 h-2.5" />
                         {target}
@@ -474,7 +474,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
             </div>
 
             {/* Bottom block: Detailed Recommendation & Physiology Analysis */}
-            <div className="bg-[#050505] border border-white/5 p-5 rounded-sm space-y-3">
+            <div className="bg-[#050505] border border-white/5 p-5 rounded-md space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2">
                 <h5 className="text-[10px] font-black font-mono text-white/80 uppercase tracking-[0.3em]">PHYSIOLOGICAL REPORT & RECOMMENDATION</h5>
                 <span className="text-[10px] text-gym-accent font-mono font-black uppercase tracking-widest">

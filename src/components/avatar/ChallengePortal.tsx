@@ -607,7 +607,7 @@ export const ChallengePortal: React.FC<ChallengePortalProps> = ({
             
             <button 
               onClick={() => setIsFighting(false)}
-              className="text-[9px] font-mono bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-500/30 text-white/70 hover:text-white px-3 py-1.5 rounded-sm cursor-pointer transition-all uppercase tracking-wider active:scale-95"
+              className="text-[9px] font-mono bg-white/5 border border-white/10 hover:bg-white/10 hover:border-amber-500/30 text-white/70 hover:text-white px-3 py-1.5 rounded-md cursor-pointer transition-all uppercase tracking-wider active:scale-95"
             >
               ← RETREAT TO TEMPLE
             </button>
@@ -820,12 +820,12 @@ export const ChallengePortal: React.FC<ChallengePortalProps> = ({
           <div className="mt-4 relative z-20">
             <div className="flex justify-between items-center mb-1">
               <span className="text-[7.5px] font-mono text-white/30 tracking-widest uppercase">📜 CHRONICLES OF THE CLASH</span>
-              <span className="text-[7.5px] font-mono text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-sm border border-amber-500/25 animate-pulse">● SAGA WRITING</span>
+              <span className="text-[7.5px] font-mono text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded-md border border-amber-500/25 animate-pulse">● SAGA WRITING</span>
             </div>
             
             <div className="bg-stone-950 p-4 rounded border border-amber-500/5 h-32 overflow-y-auto font-sans text-xs text-white/60 space-y-2 select-text no-scrollbar shadow-inner">
               {battleLogs.map((log, i) => (
-                <div key={i} className={`p-2 rounded-sm text-[11px] leading-relaxed border-l-2 ${
+                <div key={i} className={`p-2 rounded-md text-[11px] leading-relaxed border-l-2 ${
                   log.includes('CRITICAL') ? 'bg-amber-500/10 text-amber-300 border-amber-500' :
                   log.includes('💥') ? 'text-white border-yellow-600/80 bg-white/[0.01]' :
                   log.includes('won') || log.includes('TRIUMPH') || log.includes('CONGRATULATIONS') ? 'bg-yellow-500/10 text-yellow-300 border-yellow-500 font-bold uppercase tracking-wide' :

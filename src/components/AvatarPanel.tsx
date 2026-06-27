@@ -2834,7 +2834,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               onClick={() => {
                 setInnerTab(tab.id as any);
               }}
-              className={`flex items-center gap-2 py-2 px-4 rounded-sm text-xs font-bold tracking-wider uppercase transition-all select-none border border-transparent shrink-0 cursor-pointer ${
+              className={`flex items-center gap-2 py-2 px-4 rounded-md text-xs font-bold tracking-wider uppercase transition-all select-none border border-transparent shrink-0 cursor-pointer ${
                 isSelected 
                   ? 'bg-white/5 border-white/10 text-white shadow-xl shadow-black/40' 
                   : 'text-white/40 hover:text-white/85 hover:bg-white/[0.01]'
@@ -3002,7 +3002,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                       className="space-y-4 z-40"
                     >
                       {/* Interactive Spec Badge */}
-                      <span className={`text-[8px] font-black uppercase tracking-[0.25em] px-2.5 py-1 rounded-sm border ${
+                      <span className={`text-[8px] font-black uppercase tracking-[0.25em] px-2.5 py-1 rounded-md border ${
                         rankUpData.type === 'class' ? 'text-cyan-400 border-cyan-500/20 bg-cyan-500/5' : rankUpData.type === 'pr' ? 'text-red-400 border-red-500/20 bg-red-500/5' : 'text-gym-accent border-gym-accent/20 bg-gym-accent/5'
                       }`}>
                         {rankUpData.title}
@@ -3011,7 +3011,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                       <div className="space-y-1 mt-2">
                         <span className="text-[10px] text-white/40 uppercase tracking-widest block">{rankUpData.description}</span>
                         
-                        <div className="flex flex-col items-center justify-center py-2.5 px-3 bg-black/60 border border-white/5 rounded-sm my-1">
+                        <div className="flex flex-col items-center justify-center py-2.5 px-3 bg-black/60 border border-white/5 rounded-md my-1">
                           <span className="text-[9px] text-white/30 uppercase tracking-widest block">SYSTEM METRIC SHIFT</span>
                           <div className="flex items-center gap-3 mt-1.5 font-bold">
                             <span className="text-xs text-white/50 line-through tracking-wide">{rankUpData.prev}</span>
@@ -3310,7 +3310,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <TransparentCharacter 
                     src={activeCharacterImage} 
                     alt="Active Micro Outfit" 
-                    className="w-full h-full object-cover rounded-sm transition-transform duration-500 group-hover:scale-[1.08]" 
+                    className="w-full h-full object-cover rounded-md transition-transform duration-500 group-hover:scale-[1.08]" 
                     toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
                     fallbackSrc={activeOutfit.image}
                   />
@@ -3673,7 +3673,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                       <button
                         onClick={() => handleUpgradeAttribute(stat.key, stat.base)}
                         disabled={unassignedPoints <= 0}
-                        className="w-5 h-5 rounded-sm bg-gym-accent hover:bg-gym-accent-light text-black disabled:opacity-20 transition-all active:scale-95 flex items-center justify-center cursor-pointer shrink-0 disabled:pointer-events-none"
+                        className="w-5 h-5 rounded-md bg-gym-accent hover:bg-gym-accent-light text-black disabled:opacity-20 transition-all active:scale-95 flex items-center justify-center cursor-pointer shrink-0 disabled:pointer-events-none"
                         title={`Calibrate ${stat.short}`}
                       >
                         <Plus className="w-3.5 h-3.5 stroke-[3.5]" />
@@ -3976,13 +3976,13 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                           
                           <div className="flex items-center gap-2">
                             {isEquipped ? (
-                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-sm flex items-center gap-1 select-none font-mono">
+                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-md flex items-center gap-1 select-none font-mono">
                                 <Check className="w-2.5 h-2.5 stroke-[3.5]" /> Active
                               </div>
                             ) : isUnlocked ? (
                               <span className="text-[8.5px] font-mono uppercase font-black text-white/40 tracking-wider group-hover/card:text-white transition-colors">Apply</span>
                             ) : (
-                              <div className="bg-white/[0.02] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-sm flex items-center gap-1 group-hover/card:bg-gym-accent group-hover/card:text-black hover:border-transparent transition-all">
+                              <div className="bg-white/[0.02] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-md flex items-center gap-1 group-hover/card:bg-gym-accent group-hover/card:text-black hover:border-transparent transition-all">
                                 <Coins className="w-3" /> {outfit.price.toLocaleString()}
                               </div>
                             )}
@@ -4026,13 +4026,13 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                           
                           <div className="flex items-center gap-2">
                             {isEquipped ? (
-                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-sm flex items-center gap-1 select-none font-mono">
+                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-md flex items-center gap-1 select-none font-mono">
                                 <Check className="w-2.5 h-2.5 stroke-[3.5]" /> Equipped
                               </div>
                             ) : isUnlocked ? (
                               <span className="text-[8.5px] font-mono uppercase font-black text-white/40 tracking-wider hover:text-white transition-colors">Equip</span>
                             ) : (
-                              <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-sm flex items-center gap-1 transition-all">
+                              <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-md flex items-center gap-1 transition-all">
                                 <Coins className="w-3" /> {emote.price.toLocaleString()}
                               </div>
                             )}
@@ -4076,13 +4076,13 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                           
                           <div className="flex items-center gap-2">
                             {isEquipped ? (
-                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-sm flex items-center gap-1 select-none font-mono">
+                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-md flex items-center gap-1 select-none font-mono">
                                 <Check className="w-2.5 h-2.5 stroke-[3.5]" /> Equipped
                               </div>
                             ) : isUnlocked ? (
                               <span className="text-[8.5px] font-mono uppercase font-black text-white/40 tracking-wider hover:text-white transition-colors">Equip</span>
                             ) : (
-                              <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-sm flex items-center gap-1 transition-all">
+                              <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-md flex items-center gap-1 transition-all">
                                 <Coins className="w-3" /> {title.price.toLocaleString()}
                               </div>
                             )}
@@ -4126,13 +4126,13 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                           
                           <div className="flex items-center gap-2">
                             {isEquipped ? (
-                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-sm flex items-center gap-1 select-none font-mono">
+                              <div className="bg-gym-accent text-black font-bold text-[8px] uppercase tracking-wider px-2.5 py-0.5 rounded-md flex items-center gap-1 select-none font-mono">
                                 <Check className="w-2.5 h-2.5 stroke-[3.5]" /> Equipped
                               </div>
                             ) : isUnlocked ? (
                               <span className="text-[8.5px] font-mono uppercase font-black text-white/40 tracking-wider hover:text-white transition-colors">Equip</span>
                             ) : (
-                              <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-sm flex items-center gap-1 transition-all">
+                              <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-md flex items-center gap-1 transition-all">
                                 <Coins className="w-3" /> {borderItem.price.toLocaleString()}
                               </div>
                             )}

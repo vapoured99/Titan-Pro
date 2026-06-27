@@ -240,7 +240,7 @@ export default function RadarChart({
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4, scale: 1.015, borderColor: 'rgba(34, 197, 110, 0.35)', boxShadow: '0 12px 30px -10px rgba(34, 197, 110, 0.16)' }}
       transition={{ type: "spring", stiffness: 350, damping: 25 }}
-      className="flex flex-col items-center justify-between p-4 bg-black/60 border border-white/10 rounded-sm backdrop-blur-md relative h-full min-h-[410px]"
+      className="flex flex-col items-center justify-between p-4 bg-black/60 border border-white/10 rounded-md backdrop-blur-md relative h-full min-h-[410px]"
     >
       {/* Decorative corners */}
       <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20" />
@@ -258,7 +258,7 @@ export default function RadarChart({
       <div className="flex items-center gap-2 mt-1 mb-2 z-10">
         <button 
           onClick={() => setComparisonMode(prev => !prev)}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-sm border text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-md border text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer ${
             comparisonMode 
               ? 'bg-gym-accent/10 border-gym-accent/40 text-gym-accent shadow-[0_0_10px_rgba(34,197,110,0.15)]' 
               : 'bg-white/5 border-white/10 text-white/40 hover:text-white/80 hover:border-white/20'
@@ -611,7 +611,7 @@ export default function RadarChart({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute z-40 p-3 bg-black/95 border border-white/15 rounded-sm shadow-[0_8px_30px_rgb(0,0,0,0.85)] flex flex-col pointer-events-none text-left min-w-[140px] select-none"
+              className="absolute z-40 p-3 bg-black/95 border border-white/15 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.85)] flex flex-col pointer-events-none text-left min-w-[140px] select-none"
               style={{ 
                 left: activeTooltip.x, 
                 top: activeTooltip.y + 12,
