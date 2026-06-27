@@ -7491,10 +7491,10 @@ export default function App() {
                             [section.title]: !prev[section.title],
                           }))
                         }
-                        className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
+                        className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                       >
                         <div className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
+                          <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
                             {getLibraryCategoryIcon(section.key)}
                           </div>
                           <div className="flex items-center gap-3">
@@ -8287,10 +8287,10 @@ export default function App() {
                         weight: !prev.weight,
                       }))
                     }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Scale className="w-5 h-5" />
                       </div>
                       <div>
@@ -8671,10 +8671,10 @@ export default function App() {
                         bodyFat: !prev.bodyFat,
                       }))
                     }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Percent className="w-5 h-5" />
                       </div>
                       <div>
@@ -9061,10 +9061,10 @@ export default function App() {
                         workoutCalendar: !prev.workoutCalendar,
                       }))
                     }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Activity className="w-5 h-5" />
                       </div>
                       <div>
@@ -9109,10 +9109,10 @@ export default function App() {
                         trending: !prev.trending,
                       }))
                     }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <TrendingUp className="w-5 h-5" />
                       </div>
                       <div>
@@ -9332,10 +9332,10 @@ export default function App() {
                         personalRecords: !prev.personalRecords,
                       }))
                     }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Trophy className="w-5 h-5 animate-pulse" />
                       </div>
                       <div>
@@ -9808,10 +9808,10 @@ export default function App() {
                         exercises: !prev.exercises,
                       }))
                     }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Dumbbell className="w-5 h-5" />
                       </div>
                       <div>
@@ -10104,10 +10104,10 @@ export default function App() {
                         calorieTracker: !prev.calorieTracker,
                       }))
                     }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-colors cursor-pointer group backdrop-blur-md"
+                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="p-2.5 bg-gym-accent/5 border border-gym-accent/10 rounded-sm text-gym-accent group-hover:bg-gym-accent/10 transition-colors">
+                      <div className="w-10 h-10 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
                         <Flame className="w-5 h-5 animate-pulse" />
                       </div>
                       <div>
@@ -13063,11 +13063,11 @@ export default function App() {
                       className={`w-full flex items-center justify-between p-6 rounded-sm border transition-all cursor-pointer group backdrop-blur-md ${
                         lastLoadedDayIndex === di
                           ? "bg-gym-accent/[0.04] border-gym-accent shadow-md shadow-gym-accent/10"
-                          : "bg-black/65 border-white/15 hover:bg-black/80 hover:border-white/25"
+                          : "bg-black/70 border-white/15 hover:bg-white/[0.04] hover:border-white/25"
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
+                        <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
                           {day.icon}
                         </div>
                         <div className="flex items-center gap-3">

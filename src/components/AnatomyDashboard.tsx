@@ -1195,15 +1195,15 @@ export default function AnatomyDashboard({
     <div className="space-y-6" id="anatomy-dashboard">
 
       {/* ────────────────── DROP DOWN 1: PHYSIOLOGICAL ANALYSIS ────────────────── */}
-      <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
+      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('physiological')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-physiological"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 flex items-center justify-center border border-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-              <Activity className="w-4 h-4 text-gym-accent" />
+            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+              <Activity className="w-4 h-4" />
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
@@ -1362,15 +1362,15 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 2: MUSCULAR RADAR ANALYSIS ────────────────── */}
-      <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
+      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('radar')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-radar"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 flex items-center justify-center border border-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-              <Brain className="w-4 h-4 text-gym-accent" />
+            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+              <Brain className="w-4 h-4" />
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
@@ -1757,15 +1757,15 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 3: BIOMECHANICAL STRUCTURAL LOAD ALERTER ────────────────── */}
-      <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
+      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('biomechanical')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-biomechanical"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 flex items-center justify-center border border-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-              <Scale className="w-4 h-4 text-gym-accent" />
+            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+              <Scale className="w-4 h-4" />
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
@@ -2106,15 +2106,15 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 4: RELATIVE STRENGTH RADAR ────────────────── */}
-      <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md">
+      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('strength')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-strength"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 flex items-center justify-center border border-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-              <Award className="w-4 h-4 text-gym-accent" />
+            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+              <Award className="w-4 h-4" />
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
@@ -2158,15 +2158,15 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 5: DYNAMIC CNS FATIGUE INDEX ────────────────── */}
-      <div className="border border-white/5 rounded-sm overflow-hidden bg-[#050505]/40 backdrop-blur-md mt-4">
+      <div className="border border-white/15 rounded-sm overflow-hidden bg-black/70 backdrop-blur-md mt-4">
         <button
           onClick={() => toggleSection('cnsFatigue')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/5 hover:bg-white/[0.02] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-cns-fatigue"
         >
           <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 flex items-center justify-center border border-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-              <Brain className="w-4 h-4 text-gym-accent" />
+            <div className="w-8 h-8 rounded-sm bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+              <Brain className="w-4 h-4" />
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
