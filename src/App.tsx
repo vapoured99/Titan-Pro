@@ -1352,7 +1352,6 @@ export default function App() {
     }
     return [];
   });
-  const [libraryShowFavoritesOnly, setLibraryShowFavoritesOnly] = useState(false);
   const [builderShowFavoritesOnly, setBuilderShowFavoritesOnly] = useState(false);
   const [builderFavDropdownOpen, setBuilderFavDropdownOpen] = useState(false);
   const [favoritesDropdownOpen, setFavoritesDropdownOpen] = useState(false);
@@ -7416,19 +7415,6 @@ export default function App() {
                     </div>
 
                     <button
-                      onClick={() => setLibraryShowFavoritesOnly((prev) => !prev)}
-                      className={`flex items-center justify-center gap-2 px-4 py-3 border transition-all cursor-pointer rounded-md text-xs font-bold uppercase tracking-widest ${
-                        libraryShowFavoritesOnly
-                          ? "bg-amber-400 border-amber-400 text-black shadow-[0_0_12px_rgba(251,191,36,0.25)]"
-                          : "border-white/15 bg-white/5 text-white/60 hover:text-white hover:bg-white/10"
-                      }`}
-                      title="Filter Library by Favorites"
-                    >
-                      <Star className={`w-3.5 h-3.5 ${libraryShowFavoritesOnly ? "fill-black" : ""}`} />
-                      <span>Favorites ({favoriteExercises.length})</span>
-                    </button>
-
-                    <button
                       onClick={() => {
                         setCustomExName("");
                         setCustomExVideoUrl("");
@@ -7725,14 +7711,6 @@ export default function App() {
                             .includes(searchQuery.toLowerCase())),
                     );
 
-                    if (libraryShowFavoritesOnly) {
-                      filteredList = filteredList.filter((ex) =>
-                        favoriteExercises.some(
-                          (favName) => favName.toLowerCase() === ex.name.toLowerCase()
-                        )
-                      );
-                    }
-
                     return {
                       key: catKey,
                       title: catKey.charAt(0).toUpperCase() + catKey.slice(1),
@@ -7742,8 +7720,7 @@ export default function App() {
 
                   if (
                     searchQuery.trim().length > 0 ||
-                    libraryViewMode === "list" ||
-                    libraryShowFavoritesOnly
+                    libraryViewMode === "list"
                   ) {
                     return sectionsList.filter((s) => s.list.length > 0);
                   } else {
