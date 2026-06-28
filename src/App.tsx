@@ -3859,10 +3859,30 @@ export default function App() {
   };
 
   const handleRemoveExerciseFromPlan = (dayIndex: number, exIndex: number) => {
+    if (!currentDays[dayIndex]) return;
+    const targetEx = currentDays[dayIndex][exIndex];
+    const targetExName = targetEx?.name;
+
     const nextDays = [...currentDays];
     nextDays[dayIndex] = nextDays[dayIndex].filter((_, i) => i !== exIndex);
     setCurrentDays(nextDays);
     saveWorkout(nextDays);
+
+    // Also remove from formattedProgram (2. PLAN)
+    if (targetExName) {
+      setFormattedProgram(prev => prev.map(item => {
+        if (item.dayIndex === dayIndex) {
+          return {
+            ...item,
+            exercises: item.exercises.filter(ex => ex.name.toLowerCase() !== targetExName.toLowerCase())
+          };
+        }
+        return item;
+      }).filter(item => item.exercises.length > 0));
+
+      // Filter out formatted_program sets for this deleted exercise from sessionSets
+      setSessionSets(prev => prev.filter(s => !(s.exerciseName === targetExName && s.source === "formatted_program")));
+    }
   };
 
   const handleRemoveExerciseFromFormattedProgram = (dayIndex: number, exIndex: number) => {
@@ -3880,6 +3900,14 @@ export default function App() {
       return item;
     }).filter(item => item.exercises.length > 0);
     setFormattedProgram(nextProgram);
+
+    // Also remove from currentDays (Plan Builder)
+    if (targetExName && currentDays[dayIndex]) {
+      const nextDays = [...currentDays];
+      nextDays[dayIndex] = nextDays[dayIndex].filter((ex) => ex.name.toLowerCase() !== targetExName.toLowerCase());
+      setCurrentDays(nextDays);
+      saveWorkout(nextDays);
+    }
 
     // Filter out formatted_program sets for this deleted exercise from sessionSets
     if (targetExName) {
