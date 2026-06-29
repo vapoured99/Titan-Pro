@@ -2038,6 +2038,41 @@ export default function App() {
   const [avatarImgBase64, setAvatarImgBase64] = useState<string | null>(null);
   const [setDifficulties, setSetDifficulties] = useState<Record<string, "easy" | "moderate" | "hard">>({});
   const [scrollY, setScrollY] = useState(0);
+  const equipmentRef = useRef<HTMLDivElement>(null);
+  const [dynamicSpacer, setDynamicSpacer] = useState(120);
+
+  useEffect(() => {
+    const updateSpacer = () => {
+      if (equipmentRef.current) {
+        const el = equipmentRef.current;
+        const vh = window.innerHeight;
+        const elHeight = el.offsetHeight;
+        // Calculate the spacer height so that the element's center aligns perfectly with the viewport center at max scroll:
+        // spacerHeight = vh / 2 - elHeight / 2 - 68 (68px accounts for Back to Top button height and minimal bottom padding)
+        const spaceBelow = vh / 2 - elHeight / 2;
+        const calculatedSpacer = Math.max(16, spaceBelow - 68);
+        setDynamicSpacer(calculatedSpacer);
+      }
+    };
+
+    updateSpacer();
+    window.addEventListener("resize", updateSpacer);
+
+    let observer: ResizeObserver | null = null;
+    if (equipmentRef.current && typeof ResizeObserver !== "undefined") {
+      observer = new ResizeObserver(() => {
+        updateSpacer();
+      });
+      observer.observe(equipmentRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", updateSpacer);
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, [expandedDays, activeView]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -7022,161 +7057,149 @@ export default function App() {
 
 
                     {/* Section 1: Biomechanical Balance & Anatomy Mapped Side-by-Side */}
-                    <motion.div
-                      initial="hidden"
-                      whileInView="show"
-                      viewport={{ once: false, margin: "-80px" }}
-                      variants={{
-                        hidden: { opacity: 0 },
-                        show: {
-                          opacity: 1,
-                          transition: {
-                            staggerChildren: 0.08,
-                          },
-                        },
-                      }}
-                      className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch"
-                    >
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                       {/* Physiological Simulation Panel */}
-                      <motion.div 
-                        variants={scrollPopInVariant}
-                        className="lg:col-span-8 bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden group hover:border-white/10 transition-all duration-300"
-                      >
-                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                        
-                        <div className="space-y-1 mb-6">
-                          <span className="text-[9px] font-mono text-gym-accent uppercase tracking-widest font-black">
-                            RECONSTRUCTED BIOMETRICS
-                          </span>
-                          <h3 className="text-2xl font-light tracking-tight text-white font-sans">
-                            Physical <span className="font-serif italic font-light text-gym-accent">Symmetry</span>
-                          </h3>
-                          <p className="text-xs text-white/40 max-w-md leading-relaxed">
-                            Dynamic load mapping and active physical recruitment ratios computed from your history.
-                          </p>
-                        </div>
+                      <div className="lg:col-span-8">
+                        <Scroll3DItem className="h-full">
+                          <div className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden group hover:border-white/10 transition-all duration-300 h-full">
+                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                            
+                            <div className="space-y-1 mb-6">
+                              <span className="text-[9px] font-mono text-gym-accent uppercase tracking-widest font-black">
+                                RECONSTRUCTED BIOMETRICS
+                              </span>
+                              <h3 className="text-2xl font-light tracking-tight text-white font-sans">
+                                Physical <span className="font-serif italic font-light text-gym-accent">Symmetry</span>
+                              </h3>
+                              <p className="text-xs text-white/40 max-w-md leading-relaxed">
+                                Dynamic load mapping and active physical recruitment ratios computed from your history.
+                              </p>
+                            </div>
 
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-4">
-                          <div 
-                            className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform duration-300"
-                            onClick={() => setActiveView("anatomy")}
-                          >
-                            <AnatomyChart
-                               sets={sessionSets}
-                               archivedWorkouts={archivedWorkouts}
-                               compact={true}
-                            />
-                          </div>
-                          <div 
-                            className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform duration-300"
-                            onClick={() => setActiveView("progress")}
-                          >
-                            <RadarChart
-                               sessionSets={sessionSets}
-                               archivedWorkouts={archivedWorkouts}
-                               size={280}
-                            />
-                          </div>
-                        </div>
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-4">
+                              <div 
+                                className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+                                onClick={() => setActiveView("anatomy")}
+                              >
+                                <AnatomyChart
+                                   sets={sessionSets}
+                                   archivedWorkouts={archivedWorkouts}
+                                   compact={true}
+                                />
+                              </div>
+                              <div 
+                                className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+                                onClick={() => setActiveView("progress")}
+                              >
+                                <RadarChart
+                                   sessionSets={sessionSets}
+                                   archivedWorkouts={archivedWorkouts}
+                                   size={280}
+                                />
+                              </div>
+                            </div>
 
-                        <div className="mt-6 pt-4 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
-                          <span>ACTIVE SETS DETECTED: {sessionSets.length}</span>
-                          <button 
-                            onClick={() => setActiveView("anatomy")}
-                            className="text-gym-accent hover:text-white transition-colors uppercase tracking-wider font-bold"
-                          >
-                            DETAILED DIAGNOSTIC &rarr;
-                          </button>
-                        </div>
-                      </motion.div>
+                            <div className="mt-6 pt-4 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
+                              <span>ACTIVE SETS DETECTED: {sessionSets.length}</span>
+                              <button 
+                                onClick={() => setActiveView("anatomy")}
+                                className="text-gym-accent hover:text-white transition-colors uppercase tracking-wider font-bold"
+                              >
+                                DETAILED DIAGNOSTIC &rarr;
+                              </button>
+                            </div>
+                          </div>
+                        </Scroll3DItem>
+                      </div>
 
                       {/* Training Agenda Mapped */}
-                      <motion.div 
-                        variants={scrollPopInVariant}
-                        onClick={() => setActiveView("workout")}
-                        className="lg:col-span-4 bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between cursor-pointer hover:border-white/10 transition-all duration-300"
-                      >
-                        <div className="space-y-1 mb-6">
-                          <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest font-black">
-                            ROUTINE TIMELINE
-                          </span>
-                          <h3 className="text-2xl font-light tracking-tight text-white font-sans">
-                            Upcoming <span className="font-serif italic font-light">Agenda</span>
-                          </h3>
-                          <p className="text-xs text-white/40">
-                            Lifting schedule built around programmed kinetic clusters.
-                          </p>
-                        </div>
+                      <div className="lg:col-span-4">
+                        <Scroll3DItem className="h-full">
+                          <div 
+                            onClick={() => setActiveView("workout")}
+                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between cursor-pointer hover:border-white/10 transition-all duration-300 h-full"
+                          >
+                            <div className="space-y-1 mb-6">
+                              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest font-black">
+                                ROUTINE TIMELINE
+                              </span>
+                              <h3 className="text-2xl font-light tracking-tight text-white font-sans">
+                                Upcoming <span className="font-serif italic font-light">Agenda</span>
+                              </h3>
+                              <p className="text-xs text-white/40">
+                                Lifting schedule built around programmed kinetic clusters.
+                              </p>
+                            </div>
 
-                        <div className="flex-1 overflow-y-auto max-h-[220px] no-scrollbar space-y-4 pr-1">
-                          {(() => {
-                            const daysWithData = DAY_CONFIG.map((day, di) => ({
-                              day,
-                              di,
-                              exercises: currentDays[di] || [],
-                            })).filter((d) => d.exercises.length > 0);
+                            <div className="flex-1 overflow-y-auto max-h-[220px] no-scrollbar space-y-4 pr-1">
+                              {(() => {
+                                const daysWithData = DAY_CONFIG.map((day, di) => ({
+                                  day,
+                                  di,
+                                  exercises: currentDays[di] || [],
+                                })).filter((d) => d.exercises.length > 0);
 
-                            if (daysWithData.length === 0) {
-                              return (
-                                <div className="h-full flex flex-col items-center justify-center py-8 text-center space-y-2">
-                                  <Dumbbell className="w-6 h-6 text-white/10" />
-                                  <p className="text-white/30 font-serif italic text-xs">
-                                    No active routine mapped.
-                                  </p>
-                                </div>
-                              );
-                            }
-
-                            return (
-                              <div className="space-y-4">
-                                {daysWithData.map(({ day, di, exercises }) => (
-                                  <div key={di} className="border-l border-gym-accent/30 pl-3.5 space-y-2">
-                                    <div className="flex items-center justify-between">
-                                      <span className="text-[8px] font-mono text-gym-accent uppercase tracking-widest font-black">
-                                        DAY {day.label}
-                                      </span>
-                                      <span className="text-[10px] font-medium text-white/80">
-                                        {day.name}
-                                      </span>
+                                if (daysWithData.length === 0) {
+                                  return (
+                                    <div className="h-full flex flex-col items-center justify-center py-8 text-center space-y-2">
+                                      <Dumbbell className="w-6 h-6 text-white/10" />
+                                      <p className="text-white/30 font-serif italic text-xs">
+                                        No active routine mapped.
+                                      </p>
                                     </div>
-                                    <div className="space-y-1.5">
-                                      {exercises.map((ex, idx) => (
-                                        <div key={idx} className="flex justify-between items-center text-xs text-white/60">
-                                          <span className="font-light truncate max-w-[140px]">{ex.name}</span>
-                                          <span className="text-[7px] font-mono text-white/30 tracking-wider uppercase font-black px-1.5 py-0.5 bg-white/[0.02] border border-white/[0.05] rounded">
-                                            {ex.pool || "Target"}
+                                  );
+                                }
+
+                                return (
+                                  <div className="space-y-4">
+                                    {daysWithData.map(({ day, di, exercises }) => (
+                                      <div key={di} className="border-l border-gym-accent/30 pl-3.5 space-y-2">
+                                        <div className="flex items-center justify-between">
+                                          <span className="text-[8px] font-mono text-gym-accent uppercase tracking-widest font-black">
+                                            DAY {day.label}
+                                          </span>
+                                          <span className="text-[10px] font-medium text-white/80">
+                                            {day.name}
                                           </span>
                                         </div>
-                                      ))}
-                                    </div>
+                                        <div className="space-y-1.5">
+                                          {exercises.map((ex, idx) => (
+                                            <div key={idx} className="flex justify-between items-center text-xs text-white/60">
+                                              <span className="font-light truncate max-w-[140px]">{ex.name}</span>
+                                              <span className="text-[7px] font-mono text-white/30 tracking-wider uppercase font-black px-1.5 py-0.5 bg-white/[0.02] border border-white/[0.05] rounded">
+                                                {ex.pool || "Target"}
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ))}
                                   </div>
-                                ))}
-                              </div>
-                            );
-                          })()}
-                        </div>
+                                );
+                              })()}
+                            </div>
 
-                        <div className="mt-6 pt-4 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
-                          <span>NEXT SESSION PENDING</span>
-                          <span className="text-gym-accent uppercase tracking-wider font-bold">CONFIGURE &rarr;</span>
-                        </div>
-                      </motion.div>
-                    </motion.div>
+                            <div className="mt-6 pt-4 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
+                              <span>NEXT SESSION PENDING</span>
+                              <span className="text-gym-accent uppercase tracking-wider font-bold">CONFIGURE &rarr;</span>
+                            </div>
+                          </div>
+                        </Scroll3DItem>
+                      </div>
+                    </div>
 
                     {/* Spinal Depletion & CNS Fatigue Gauge widget */}
-                    <motion.div 
-                      initial="hidden"
-                      whileInView="show"
-                      viewport={{ once: false, margin: "-60px" }}
-                      variants={scrollPopInVariant}
-                      className="cursor-pointer" 
-                      onClick={() => setActiveView("progress")}
-                    >
-                      <SpinalDepletionWidget
-                        cnsFatigueAnalysis={cnsFatigueAnalysis}
-                        setActiveView={setActiveView}
-                      />
-                    </motion.div>
+                    <Scroll3DItem>
+                      <div 
+                        className="cursor-pointer" 
+                        onClick={() => setActiveView("progress")}
+                      >
+                        <SpinalDepletionWidget
+                          cnsFatigueAnalysis={cnsFatigueAnalysis}
+                          setActiveView={setActiveView}
+                        />
+                      </div>
+                    </Scroll3DItem>
 
                     {/* Section 2: Performance Dynamism (Trends Grid) */}
                     <div className="space-y-6">
@@ -7189,201 +7212,190 @@ export default function App() {
                         </h3>
                       </div>
 
-                      <motion.div
-                        initial="hidden"
-                        whileInView="show"
-                        viewport={{ once: false, margin: "-80px" }}
-                        variants={{
-                          hidden: { opacity: 0 },
-                          show: {
-                            opacity: 1,
-                            transition: {
-                              staggerChildren: 0.08,
-                            },
-                          },
-                        }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-6"
-                      >
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Graph 1: Weight Trend */}
-                        <motion.div
-                          variants={scrollPopInVariant}
-                          onClick={() => setActiveView("profile")}
-                          className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300"
-                        >
-                          <div className="mb-6 flex justify-between items-start">
-                            <div>
-                              <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
-                                BODYWEIGHT
-                              </span>
-                              <h4 className="text-base font-light text-white mt-1">Weight Density</h4>
-                            </div>
-                            <span className="text-lg font-mono font-bold text-gym-accent">
-                              {syncedProfile?.bodyweight
-                                ? `${syncedProfile.bodyweight} KG`
-                                : "N/A"}
-                            </span>
-                          </div>
-
-                          <div className="h-[120px] w-full">
-                            {weightHistory.length === 0 ? (
-                              <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
-                                <TrendingUp className="w-4 h-4 text-white/10 mb-1" />
-                                <span className="text-[9px] text-white/20 font-bold">No weight logs</span>
+                        <Scroll3DItem className="h-full">
+                          <div
+                            onClick={() => setActiveView("profile")}
+                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
+                          >
+                            <div className="mb-6 flex justify-between items-start">
+                              <div>
+                                <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
+                                  BODYWEIGHT
+                                </span>
+                                <h4 className="text-base font-light text-white mt-1">Weight Density</h4>
                               </div>
-                            ) : (
-                              <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart
-                                  data={(() => {
-                                    const grouped = weightHistory.reduce(
-                                      (acc, entry) => {
-                                        acc[entry.date] = entry;
-                                        return acc;
-                                      },
-                                      {} as Record<string, WeightEntry>,
-                                    );
-                                    return (
-                                      Object.values(grouped) as WeightEntry[]
-                                    ).sort(
-                                      (a, b) =>
-                                        new Date(a.date).getTime() -
-                                        new Date(b.date).getTime(),
-                                    );
-                                  })()}
-                                  margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
-                                >
-                                  <defs>
-                                    <linearGradient id="colorWeightConsole" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
-                                      <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                  <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} domain={["dataMin - 2", "dataMax + 2"]} />
-                                  <Area
-                                    type="monotonous"
-                                    dataKey="weight"
-                                    stroke={activeTheme.accent}
-                                    strokeWidth={1.5}
-                                    fillOpacity={1}
-                                    fill="url(#colorWeightConsole)"
-                                  />
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            )}
+                              <span className="text-lg font-mono font-bold text-gym-accent">
+                                {syncedProfile?.bodyweight
+                                  ? `${syncedProfile.bodyweight} KG`
+                                  : "N/A"}
+                              </span>
+                            </div>
+
+                            <div className="h-[120px] w-full">
+                              {weightHistory.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
+                                  <TrendingUp className="w-4 h-4 text-white/10 mb-1" />
+                                  <span className="text-[9px] text-white/20 font-bold">No weight logs</span>
+                                </div>
+                              ) : (
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart
+                                    data={(() => {
+                                      const grouped = weightHistory.reduce(
+                                        (acc, entry) => {
+                                          acc[entry.date] = entry;
+                                          return acc;
+                                        },
+                                        {} as Record<string, WeightEntry>,
+                                      );
+                                      return (
+                                        Object.values(grouped) as WeightEntry[]
+                                      ).sort(
+                                        (a, b) =>
+                                          new Date(a.date).getTime() -
+                                          new Date(b.date).getTime(),
+                                      );
+                                    })()}
+                                    margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                                  >
+                                    <defs>
+                                      <linearGradient id="colorWeightConsole" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
+                                        <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
+                                      </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                    <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} domain={["dataMin - 2", "dataMax + 2"]} />
+                                    <Area
+                                      type="monotonous"
+                                      dataKey="weight"
+                                      stroke={activeTheme.accent}
+                                      strokeWidth={1.5}
+                                      fillOpacity={1}
+                                      fill="url(#colorWeightConsole)"
+                                    />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              )}
+                            </div>
                           </div>
-                        </motion.div>
+                        </Scroll3DItem>
 
                         {/* Graph 2: Volume Trend */}
-                        <motion.div
-                          variants={scrollPopInVariant}
-                          onClick={() => setActiveView("progress")}
-                          className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300"
-                        >
-                          <div className="mb-6 flex justify-between items-start">
-                            <div>
-                              <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
-                                OUTPUT
-                              </span>
-                              <h4 className="text-base font-light text-white mt-1">Lifting Volume</h4>
-                            </div>
-                            <span className="text-lg font-mono font-bold text-gym-accent">
-                              {archivedWorkouts.length > 0
-                                ? `${Math.round(archivedWorkouts.reduce((acc, w) => acc + (w.totalVolume || 0), 0) / archivedWorkouts.length)} KG`
-                                : "0 KG"}
-                            </span>
-                          </div>
-
-                          <div className="h-[120px] w-full">
-                            {archivedWorkouts.length === 0 ? (
-                              <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
-                                <Activity className="w-4 h-4 text-white/10 mb-1" />
-                                <span className="text-[9px] text-white/20 font-bold">No volume logs</span>
+                        <Scroll3DItem className="h-full">
+                          <div
+                            onClick={() => setActiveView("progress")}
+                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
+                          >
+                            <div className="mb-6 flex justify-between items-start">
+                              <div>
+                                <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
+                                  OUTPUT
+                                </span>
+                                <h4 className="text-base font-light text-white mt-1">Lifting Volume</h4>
                               </div>
-                            ) : (
-                              <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart
-                                  data={getVolumeData()}
-                                  margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
-                                >
-                                  <defs>
-                                    <linearGradient id="colorVolumeConsole" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
-                                      <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                  <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                  <Area
-                                    type="monotonous"
-                                    dataKey="volume"
-                                    stroke={activeTheme.accent}
-                                    strokeWidth={1.5}
-                                    fillOpacity={1}
-                                    fill="url(#colorVolumeConsole)"
-                                  />
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            )}
+                              <span className="text-lg font-mono font-bold text-gym-accent">
+                                {archivedWorkouts.length > 0
+                                  ? `${Math.round(archivedWorkouts.reduce((acc, w) => acc + (w.totalVolume || 0), 0) / archivedWorkouts.length)} KG`
+                                  : "0 KG"}
+                              </span>
+                            </div>
+
+                            <div className="h-[120px] w-full">
+                              {archivedWorkouts.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
+                                  <Activity className="w-4 h-4 text-white/10 mb-1" />
+                                  <span className="text-[9px] text-white/20 font-bold">No volume logs</span>
+                                </div>
+                              ) : (
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart
+                                    data={getVolumeData()}
+                                    margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                                  >
+                                    <defs>
+                                      <linearGradient id="colorVolumeConsole" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
+                                        <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
+                                      </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                    <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                    <Area
+                                      type="monotonous"
+                                      dataKey="volume"
+                                      stroke={activeTheme.accent}
+                                      strokeWidth={1.5}
+                                      fillOpacity={1}
+                                      fill="url(#colorVolumeConsole)"
+                                    />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              )}
+                            </div>
                           </div>
-                        </motion.div>
+                        </Scroll3DItem>
 
                         {/* Graph 3: Calorie Outflow Trend */}
-                        <motion.div
-                          variants={scrollPopInVariant}
-                          onClick={() => setActiveView("progress")}
-                          className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300"
-                        >
-                          <div className="mb-6 flex justify-between items-start">
-                            <div>
-                              <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
-                                METABOLIC
-                              </span>
-                              <h4 className="text-base font-light text-white mt-1">Energy Burnout</h4>
-                            </div>
-                            <span className="text-lg font-mono font-bold text-gym-accent">
-                              {archivedWorkouts.length > 0
-                                ? `${Math.round(archivedWorkouts.reduce((sum, w) => sum + getWorkoutCalories(w), 0))} KCAL`
-                                : "0 KCAL"}
-                            </span>
-                          </div>
-
-                          <div className="h-[120px] w-full">
-                            {chronologicalDaysConsole.length === 0 ? (
-                              <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
-                                <Flame className="w-4 h-4 text-white/10 mb-1" />
-                                <span className="text-[9px] text-white/20 font-bold">No calorie logs</span>
+                        <Scroll3DItem className="h-full">
+                          <div
+                            onClick={() => setActiveView("progress")}
+                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
+                          >
+                            <div className="mb-6 flex justify-between items-start">
+                              <div>
+                                <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
+                                  METABOLIC
+                                </span>
+                                <h4 className="text-base font-light text-white mt-1">Energy Burnout</h4>
                               </div>
-                            ) : (
-                              <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart
-                                  data={chronologicalDaysConsole}
-                                  margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
-                                >
-                                  <defs>
-                                    <linearGradient id="colorCalorieConsole" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
-                                      <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                  <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                  <Area
-                                    type="monotonous"
-                                    dataKey="calories"
-                                    stroke={activeTheme.accent}
-                                    strokeWidth={1.5}
-                                    fillOpacity={1}
-                                    fill="url(#colorCalorieConsole)"
-                                  />
-                                </AreaChart>
-                              </ResponsiveContainer>
-                            )}
+                              <span className="text-lg font-mono font-bold text-gym-accent">
+                                {archivedWorkouts.length > 0
+                                  ? `${Math.round(archivedWorkouts.reduce((sum, w) => sum + getWorkoutCalories(w), 0))} KCAL`
+                                  : "0 KCAL"}
+                              </span>
+                            </div>
+
+                            <div className="h-[120px] w-full">
+                              {chronologicalDaysConsole.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
+                                  <Flame className="w-4 h-4 text-white/10 mb-1" />
+                                  <span className="text-[9px] text-white/20 font-bold">No calorie logs</span>
+                                </div>
+                              ) : (
+                                <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart
+                                    data={chronologicalDaysConsole}
+                                    margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                                  >
+                                    <defs>
+                                      <linearGradient id="colorCalorieConsole" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
+                                        <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
+                                      </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                    <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                    <Area
+                                      type="monotonous"
+                                      dataKey="calories"
+                                      stroke={activeTheme.accent}
+                                      strokeWidth={1.5}
+                                      fillOpacity={1}
+                                      fill="url(#colorCalorieConsole)"
+                                    />
+                                  </AreaChart>
+                                </ResponsiveContainer>
+                              )}
+                            </div>
                           </div>
-                        </motion.div>
-                      </motion.div>
+                        </Scroll3DItem>
+                      </div>
                     </div>
 
 
@@ -10828,26 +10840,30 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-8 pb-20"
               >
-                <div className="flex items-center justify-between mb-10">
-                  <div>
-                    <h3 className="text-xl font-light italic font-serif flex items-center gap-3">
-                      Session Records
-                    </h3>
-                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold mt-1">
-                      Archived workout intelligence
-                    </p>
-                  </div>
+                <Scroll3DItem>
+                  <div className="flex items-center justify-between mb-10">
+                    <div>
+                      <h3 className="text-xl font-light italic font-serif flex items-center gap-3">
+                        Session Records
+                      </h3>
+                      <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold mt-1">
+                        Archived workout intelligence
+                      </p>
+                    </div>
 
-                  <div className="flex items-center gap-4"></div>
-                </div>
+                    <div className="flex items-center gap-4"></div>
+                  </div>
+                </Scroll3DItem>
 
                 {archivedWorkouts.length === 0 && sessionSets.length === 0 ? (
-                  <div className="py-20 text-center bg-white/5 rounded-3xl border border-dashed border-white/10">
-                    <Dumbbell className="w-12 h-12 text-white/10 mx-auto mb-4" />
-                    <p className="text-white/30 font-medium">
-                      No archived sessions found.
-                    </p>
-                  </div>
+                  <Scroll3DItem>
+                    <div className="py-20 text-center bg-white/5 rounded-3xl border border-dashed border-white/10">
+                      <Dumbbell className="w-12 h-12 text-white/10 mx-auto mb-4" />
+                      <p className="text-white/30 font-medium">
+                        No archived sessions found.
+                      </p>
+                    </div>
+                  </Scroll3DItem>
                 ) : (
                   <div className="space-y-6">
                     {/* Active Performance Log Section */}
@@ -10857,23 +10873,25 @@ export default function App() {
                         animate={{ opacity: 1 }}
                         className="mb-12"
                       >
-                        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                          <h4 className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] flex items-center gap-3">
-                            <Activity className="w-4 h-4" />
-                            Active Performance Log
-                          </h4>
-                          <button
-                            onClick={() => {
-                              setActiveView("workout");
-                              setWorkoutInnerTab("program");
-                              saveSettings({ activeView: "workout" });
-                            }}
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gym-accent/10 hover:bg-gym-accent/20 border border-gym-accent/30 hover:border-gym-accent/60 text-gym-accent text-[9px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer"
-                          >
-                            <ClipboardList className="w-3.5 h-3.5" />
-                            Back to Plan
-                          </button>
-                        </div>
+                        <Scroll3DItem>
+                          <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+                            <h4 className="text-[10px] text-gym-accent font-bold uppercase tracking-[0.3em] flex items-center gap-3">
+                              <Activity className="w-4 h-4" />
+                              Active Performance Log
+                            </h4>
+                            <button
+                              onClick={() => {
+                                setActiveView("workout");
+                                setWorkoutInnerTab("program");
+                                saveSettings({ activeView: "workout" });
+                              }}
+                              className="flex items-center gap-1.5 px-3 py-1.5 bg-gym-accent/10 hover:bg-gym-accent/20 border border-gym-accent/30 hover:border-gym-accent/60 text-gym-accent text-[9px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer"
+                            >
+                              <ClipboardList className="w-3.5 h-3.5" />
+                              Back to Plan
+                            </button>
+                          </div>
+                        </Scroll3DItem>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {Object.entries(
@@ -10888,99 +10906,100 @@ export default function App() {
                             ),
                           ).map(
                             ([name, exerciseSets]: [string, SessionSet[]]) => (
-                              <div
-                                key={name}
-                                className="bg-black/65 border border-gym-accent/40 rounded-md p-4 relative overflow-hidden group backdrop-blur-md"
-                              >
-                                <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-bold text-white/60 uppercase">
-                                      {name}
+                              <Scroll3DItem key={name}>
+                                <div
+                                  className="bg-black/65 border border-gym-accent/40 rounded-md p-4 relative overflow-hidden group backdrop-blur-md h-full"
+                                >
+                                  <div className="flex items-center justify-between mb-4 border-b border-white/5 pb-2">
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-bold text-white/60 uppercase">
+                                        {name}
+                                      </span>
+                                      <button
+                                        onClick={() => {
+                                          const ex = findExerciseByName(name);
+                                          if (ex) setGuidanceEx(ex);
+                                        }}
+                                        className="p-1 text-white/10 hover:text-gym-accent transition-all cursor-pointer"
+                                        title="View Guidance"
+                                      >
+                                        <BookOpen className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                    <span className="text-[9px] text-gym-accent font-black uppercase tracking-widest">
+                                      {exerciseSets.length} Sets
                                     </span>
-                                    <button
-                                      onClick={() => {
-                                        const ex = findExerciseByName(name);
-                                        if (ex) setGuidanceEx(ex);
-                                      }}
-                                      className="p-1 text-white/10 hover:text-gym-accent transition-all cursor-pointer"
-                                      title="View Guidance"
-                                    >
-                                      <BookOpen className="w-3 h-3" />
-                                    </button>
                                   </div>
-                                  <span className="text-[9px] text-gym-accent font-black uppercase tracking-widest">
-                                    {exerciseSets.length} Sets
-                                  </span>
-                                </div>
-                                <div className="flex flex-col">
-                                  <AnimatePresence initial={false}>
-                                    {exerciseSets.map((s, idx) => {
-                                      const ex = findExerciseByName(name);
-                                      const isCardio = ex?.pool === "cardio";
-                                      return (
-                                        <motion.div
-                                          key={s.id || `session-${idx}`}
-                                          initial={{ height: 0, opacity: 0, marginBottom: 0 }}
-                                          animate={{ height: "auto", opacity: 1, marginBottom: 8 }}
-                                          exit={{ height: 0, opacity: 0, marginBottom: 0 }}
-                                          transition={{ duration: 0.2 }}
-                                          style={{ overflow: "hidden" }}
-                                        >
-                                          <div
-                                            className="flex items-center justify-between group/set"
+                                  <div className="flex flex-col">
+                                    <AnimatePresence initial={false}>
+                                      {exerciseSets.map((s, idx) => {
+                                        const ex = findExerciseByName(name);
+                                        const isCardio = ex?.pool === "cardio";
+                                        return (
+                                          <motion.div
+                                            key={s.id || `session-${idx}`}
+                                            initial={{ height: 0, opacity: 0, marginBottom: 0 }}
+                                            animate={{ height: "auto", opacity: 1, marginBottom: 8 }}
+                                            exit={{ height: 0, opacity: 0, marginBottom: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            style={{ overflow: "hidden" }}
                                           >
-                                            <div className="flex items-center gap-3 flex-wrap min-w-0">
-                                              {isCardio ? (
-                                                <>
-                                                  <span className="text-[11px] tabular-nums text-white/90">
-                                                    {s.weight} min
-                                                  </span>
-                                                  <span className="text-[11px] tabular-nums text-white/40">
-                                                    @
-                                                  </span>
-                                                  <span className="text-[11px] tabular-nums text-white/90">
-                                                    Lvl {s.reps}
-                                                  </span>
-                                                </>
-                                              ) : (
-                                                <>
-                                                  <span className="text-[11px] tabular-nums text-white/90">
-                                                    {s.weight}kg
-                                                  </span>
-                                                  <span className="text-[11px] tabular-nums text-white/40">
-                                                    ×
-                                                  </span>
-                                                  <span className="text-[11px] tabular-nums text-white/90">
-                                                    {s.reps}
-                                                  </span>
-                                                </>
-                                              )}
-                                              {s.notes && (
-                                                <span
-                                                  onClick={() => setViewingNote(s.notes)}
-                                                  className="px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/35 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
-                                                  title="Click to view full note"
-                                                >
-                                                  {s.notes}
-                                                </span>
-                                              )}
-                                            </div>
-                                            <button
-                                              onClick={() =>
-                                                s.id && handleDeleteSet(s.id)
-                                              }
-                                              className="opacity-80 hover:opacity-100 p-1 text-red-500 hover:text-red-400 transition-all cursor-pointer"
-                                              title="Delete set"
+                                            <div
+                                              className="flex items-center justify-between group/set"
                                             >
-                                              <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                                            </button>
-                                          </div>
-                                        </motion.div>
-                                      );
-                                    })}
-                                  </AnimatePresence>
+                                              <div className="flex items-center gap-3 flex-wrap min-w-0">
+                                                {isCardio ? (
+                                                  <>
+                                                    <span className="text-[11px] tabular-nums text-white/90">
+                                                      {s.weight} min
+                                                    </span>
+                                                    <span className="text-[11px] tabular-nums text-white/40">
+                                                      @
+                                                    </span>
+                                                    <span className="text-[11px] tabular-nums text-white/90">
+                                                      Lvl {s.reps}
+                                                    </span>
+                                                  </>
+                                                ) : (
+                                                  <>
+                                                    <span className="text-[11px] tabular-nums text-white/90">
+                                                      {s.weight}kg
+                                                    </span>
+                                                    <span className="text-[11px] tabular-nums text-white/40">
+                                                      ×
+                                                    </span>
+                                                    <span className="text-[11px] tabular-nums text-white/90">
+                                                      {s.reps}
+                                                    </span>
+                                                  </>
+                                                )}
+                                                {s.notes && (
+                                                  <span
+                                                    onClick={() => setViewingNote(s.notes)}
+                                                    className="px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/35 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
+                                                    title="Click to view full note"
+                                                  >
+                                                    {s.notes}
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <button
+                                                onClick={() =>
+                                                  s.id && handleDeleteSet(s.id)
+                                                }
+                                                className="opacity-80 hover:opacity-100 p-1 text-red-500 hover:text-red-400 transition-all cursor-pointer"
+                                                title="Delete set"
+                                              >
+                                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                              </button>
+                                            </div>
+                                          </motion.div>
+                                        );
+                                      })}
+                                    </AnimatePresence>
+                                  </div>
                                 </div>
-                              </div>
+                              </Scroll3DItem>
                             ),
                           )}
                         </div>
@@ -11007,7 +11026,8 @@ export default function App() {
                           );
 
                           return (
-                            <div className="mt-8 bg-[#0a0a0a]/80 border border-white/10 rounded-md p-6 relative overflow-hidden backdrop-blur-md">
+                            <Scroll3DItem>
+                              <div className="mt-8 bg-[#0a0a0a]/80 border border-white/10 rounded-md p-6 relative overflow-hidden backdrop-blur-md">
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                                 <div className="flex items-center gap-3">
                                   <Flame className="w-5 h-5 text-gym-accent animate-pulse" />
@@ -11190,38 +11210,41 @@ export default function App() {
                                 </div>
                               </div>
                             </div>
-                          );
+                          </Scroll3DItem>
+                        );
                         })()}
 
-                        <div className="mt-8 flex items-center justify-center gap-4">
-                          <button
-                            onClick={handleClearActiveSession}
-                            className="px-6 py-4 border border-red-500/20 text-red-500/60 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/10 transition-all cursor-pointer rounded-md"
-                          >
-                            Discard Session
-                          </button>
-                          <button
-                            onClick={handleArchiveWorkout}
-                            className="px-6 py-4 border border-gym-accent/30 text-gym-accent text-[10px] font-bold uppercase tracking-widest hover:bg-gym-accent/10 transition-all cursor-pointer rounded-md flex items-center gap-3"
-                          >
-                            <Save className="w-4 h-4 animate-pulse" />
-                            Capture Workout Session
-                          </button>
-                        </div>
+                        <Scroll3DItem>
+                          <div className="mt-8 flex items-center justify-center gap-4">
+                            <button
+                              onClick={handleClearActiveSession}
+                              className="px-6 py-4 border border-red-500/20 text-red-500/60 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/10 transition-all cursor-pointer rounded-md"
+                            >
+                              Discard Session
+                            </button>
+                            <button
+                              onClick={handleArchiveWorkout}
+                              className="px-6 py-4 border border-gym-accent/30 text-gym-accent text-[10px] font-bold uppercase tracking-widest hover:bg-gym-accent/10 transition-all cursor-pointer rounded-md flex items-center gap-3"
+                            >
+                              <Save className="w-4 h-4 animate-pulse" />
+                              Capture Workout Session
+                            </button>
+                          </div>
+                        </Scroll3DItem>
                       </motion.div>
                     )}
 
                     {/* Archived Sessions Section */}
                     {archivedWorkouts.length > 0 && (
                       <div className="space-y-8">
-                        <div className="flex items-center justify-between border-b border-white/5 pb-6">
-                          <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.3em] flex items-center gap-3">
-                            <History className="w-4 h-4 text-gym-accent" />
-                            Archived Evolutions
-                          </h4>
+                        <Scroll3DItem>
+                          <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                            <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.3em] flex items-center gap-3">
+                              <History className="w-4 h-4 text-gym-accent" />
+                              Archived Evolutions
+                            </h4>
 
-                          <div className="relative">
-                            <Scroll3DItem>
+                            <div className="relative">
                               <button
                                 onClick={() =>
                                   setShowHistoryMenu(!showHistoryMenu)
@@ -11241,7 +11264,6 @@ export default function App() {
                                   className={`w-3 h-3 transition-transform ${showHistoryMenu ? "rotate-180" : ""}`}
                                 />
                               </button>
-                            </Scroll3DItem>
 
                             <AnimatePresence>
                               {showHistoryMenu && (
@@ -11302,6 +11324,7 @@ export default function App() {
                             </AnimatePresence>
                           </div>
                         </div>
+                        </Scroll3DItem>
 
                         {/* Selected or Latest Workout Display */}
                         {(() => {
@@ -11313,32 +11336,30 @@ export default function App() {
 
                           if (!workout) {
                             return (
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="flex flex-col items-center justify-center p-20 border border-white/5 border-dashed rounded-md bg-white/[0.01]"
-                              >
-                                <History className="w-12 h-12 text-white/5 mb-6" />
-                                <h3 className="text-xl font-serif italic text-white/40 text-center px-10">
-                                  Sync Required: Select Another Session Date
-                                  Above
-                                </h3>
-                                <p className="text-[10px] text-gym-accent/30 uppercase tracking-[0.4em] font-black mt-4">
-                                  Evolutionary records are available in the
-                                  history explorer
-                                </p>
-                              </motion.div>
+                              <Scroll3DItem>
+                                <div
+                                  className="flex flex-col items-center justify-center p-20 border border-white/5 border-dashed rounded-md bg-white/[0.01]"
+                                >
+                                  <History className="w-12 h-12 text-white/5 mb-6" />
+                                  <h3 className="text-xl font-serif italic text-white/40 text-center px-10">
+                                    Sync Required: Select Another Session Date
+                                    Above
+                                  </h3>
+                                  <p className="text-[10px] text-gym-accent/30 uppercase tracking-[0.4em] font-black mt-4">
+                                    Evolutionary records are available in the
+                                    history explorer
+                                  </p>
+                                </div>
+                              </Scroll3DItem>
                             );
                           }
 
                           const dateObj = new Date(workout.date);
                           return (
-                            <motion.div
-                              key={workout.id}
-                              initial={{ opacity: 0, y: 20 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md"
-                            >
+                            <Scroll3DItem key={workout.id}>
+                              <div
+                                className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md"
+                              >
                               <div className="p-8 border-b border-white/5 bg-black/45 flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="flex items-center gap-8">
                                   <div className="w-16 h-16 bg-gym-accent/15 border border-gym-accent/30 rounded-md flex flex-col items-center justify-center">
@@ -11487,8 +11508,9 @@ export default function App() {
                                   </div>
                                 ))}
                               </div>
-                            </motion.div>
-                          );
+                            </div>
+                          </Scroll3DItem>
+                        );
                         })()}
                       </div>
                     )}
@@ -13545,7 +13567,7 @@ export default function App() {
                 })()}
 
                 {DAY_CONFIG.map((day, di) => (
-                  <div key={di} className="group">
+                  <div key={di} ref={di === 5 ? equipmentRef : undefined} className="group">
                     <Scroll3DItem>
                       <button
                         onClick={() =>
@@ -13770,8 +13792,11 @@ export default function App() {
                   </div>
                 ))}
 
-                {/* Back to Top Button */}
-                <div className="flex justify-center mt-6">
+                {/* Back to Top Button with dynamic scroll centering spacer and zero empty space below */}
+                <div 
+                  style={{ paddingTop: `${dynamicSpacer}px` }} 
+                  className="flex flex-col items-center justify-center pb-6"
+                >
                   <button
                     onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                     className="flex items-center gap-2 px-4 py-2 bg-black/60 border border-white/10 hover:border-gym-accent/35 rounded-md text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-gym-accent transition-all cursor-pointer group"
