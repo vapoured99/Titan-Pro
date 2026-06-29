@@ -1234,11 +1234,11 @@ export const Scroll3DItem = ({ children, className }: { children: React.ReactNod
   });
 
   // Interpolate based on viewport distance: 0 (bottom) -> 0.5 (center) -> 1 (top)
-  const scale = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.85, 0.95, 1.05, 0.95, 0.85]);
-  const opacity = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.4, 0.85, 1, 0.85, 0.4]);
-  const rotateX = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [22, 10, 0, -10, -22]);
-  const z = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-120, -40, 0, -40, -120]);
-  const y = useTransform(scrollYProgress, [0, 0.5, 1], [20, 0, -20]);
+  const scale = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.93, 0.97, 1.02, 0.97, 0.93]);
+  const opacity = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.6, 0.88, 1, 0.88, 0.6]);
+  const rotateX = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [12, 6, 0, -6, -12]);
+  const z = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-60, -20, 0, -20, -60]);
+  const y = useTransform(scrollYProgress, [0, 0.5, 1], [10, 0, -10]);
 
   return (
     <div style={{ perspective: "1000px" }} className="w-full">
@@ -7040,10 +7040,10 @@ export default function App() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="space-y-16 pb-16 animate-fade-in"
+                    className="space-y-4 md:space-y-5 pb-12 animate-fade-in"
                   >
                     {/* Minimalist Ultra-Sleek Header */}
-                    <div className="flex flex-row items-center justify-between border-b border-white/[0.03] pb-4 gap-4">
+                    <div className="flex flex-row items-center justify-between border-b border-white/[0.03] pb-3 gap-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
@@ -7057,26 +7057,26 @@ export default function App() {
 
 
                     {/* Section 1: Biomechanical Balance & Anatomy Mapped Side-by-Side */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5 items-stretch">
                       {/* Physiological Simulation Panel */}
                       <div className="lg:col-span-8">
                         <Scroll3DItem className="h-full">
-                          <div className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden group hover:border-white/10 transition-all duration-300 h-full">
+                          <div className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-5 md:p-6 flex flex-col justify-between relative overflow-hidden group hover:border-white/10 transition-all duration-300 h-full">
                             <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                             
-                            <div className="space-y-1 mb-6">
+                            <div className="space-y-1 mb-3">
                               <span className="text-[9px] font-mono text-gym-accent uppercase tracking-widest font-black">
                                 RECONSTRUCTED BIOMETRICS
                               </span>
-                              <h3 className="text-2xl font-light tracking-tight text-white font-sans">
+                              <h3 className="text-xl md:text-2xl font-light tracking-tight text-white font-sans">
                                 Physical <span className="font-serif italic font-light text-gym-accent">Symmetry</span>
                               </h3>
-                              <p className="text-xs text-white/40 max-w-md leading-relaxed">
+                              <p className="text-[11px] text-white/40 max-w-md leading-relaxed">
                                 Dynamic load mapping and active physical recruitment ratios computed from your history.
                               </p>
                             </div>
 
-                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-4">
+                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-2">
                               <div 
                                 className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform duration-300"
                                 onClick={() => setActiveView("anatomy")}
@@ -7099,7 +7099,7 @@ export default function App() {
                               </div>
                             </div>
 
-                            <div className="mt-6 pt-4 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
+                            <div className="mt-4 pt-3 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
                               <span>ACTIVE SETS DETECTED: {sessionSets.length}</span>
                               <button 
                                 onClick={() => setActiveView("anatomy")}
@@ -7117,16 +7117,16 @@ export default function App() {
                         <Scroll3DItem className="h-full">
                           <div 
                             onClick={() => setActiveView("workout")}
-                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between cursor-pointer hover:border-white/10 transition-all duration-300 h-full"
+                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-5 md:p-6 flex flex-col justify-between cursor-pointer hover:border-white/10 transition-all duration-300 h-full"
                           >
-                            <div className="space-y-1 mb-6">
+                            <div className="space-y-1 mb-3">
                               <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest font-black">
                                 ROUTINE TIMELINE
                               </span>
-                              <h3 className="text-2xl font-light tracking-tight text-white font-sans">
+                              <h3 className="text-xl md:text-2xl font-light tracking-tight text-white font-sans">
                                 Upcoming <span className="font-serif italic font-light">Agenda</span>
                               </h3>
-                              <p className="text-xs text-white/40">
+                              <p className="text-[11px] text-white/40">
                                 Lifting schedule built around programmed kinetic clusters.
                               </p>
                             </div>
@@ -7179,7 +7179,7 @@ export default function App() {
                               })()}
                             </div>
 
-                            <div className="mt-6 pt-4 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
+                            <div className="mt-4 pt-3 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
                               <span>NEXT SESSION PENDING</span>
                               <span className="text-gym-accent uppercase tracking-wider font-bold">CONFIGURE &rarr;</span>
                             </div>
@@ -7202,7 +7202,7 @@ export default function App() {
                     </Scroll3DItem>
 
                     {/* Section 2: Performance Dynamism (Trends Grid) */}
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       <div className="space-y-1">
                         <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest font-black">
                           PERFORMANCE DYNAMICS
@@ -7212,14 +7212,14 @@ export default function App() {
                         </h3>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Graph 1: Weight Trend */}
                         <Scroll3DItem className="h-full">
                           <div
                             onClick={() => setActiveView("profile")}
-                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
+                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-4 md:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
                           >
-                            <div className="mb-6 flex justify-between items-start">
+                            <div className="mb-4 flex justify-between items-start">
                               <div>
                                 <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
                                   BODYWEIGHT
@@ -7288,9 +7288,9 @@ export default function App() {
                         <Scroll3DItem className="h-full">
                           <div
                             onClick={() => setActiveView("progress")}
-                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
+                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-4 md:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
                           >
-                            <div className="mb-6 flex justify-between items-start">
+                            <div className="mb-4 flex justify-between items-start">
                               <div>
                                 <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
                                   OUTPUT
@@ -7344,9 +7344,9 @@ export default function App() {
                         <Scroll3DItem className="h-full">
                           <div
                             onClick={() => setActiveView("progress")}
-                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
+                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-4 md:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
                           >
-                            <div className="mb-6 flex justify-between items-start">
+                            <div className="mb-4 flex justify-between items-start">
                               <div>
                                 <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
                                   METABOLIC
@@ -7398,6 +7398,16 @@ export default function App() {
                       </div>
                     </div>
 
+                    {/* Back to Top Button for mobile/general scroll */}
+                    <div className="flex justify-center pt-8 pb-4">
+                      <button
+                        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                        className="flex items-center gap-2 px-4 py-2 bg-black/60 border border-white/10 hover:border-gym-accent/35 rounded-md text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-gym-accent transition-all cursor-pointer group"
+                      >
+                        <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
+                        Back to Top
+                      </button>
+                    </div>
 
                   </motion.div>
                 );
