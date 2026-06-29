@@ -33,6 +33,9 @@ import {
   Shield,
   Sparkles,
   BookOpen,
+  Terminal,
+  Workflow,
+  PersonStanding,
   Cloud,
   Download,
   Upload,
@@ -6702,20 +6705,20 @@ export default function App() {
             className="relative z-10 max-w-5xl mx-auto px-6 py-12 pb-32"
           >
         {/* Header */}
-        <header className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6 border-b border-gym-accent/20 pb-10">
-          <div className="flex flex-col items-start gap-1">
-            <span className="text-[10px] uppercase tracking-[0.3em] text-gym-accent font-bold">
+        <header className="flex flex-col md:flex-row items-stretch md:items-end justify-between mb-16 gap-6 border-b border-gym-accent/20 pb-10">
+          <div className="flex flex-col items-start gap-1 w-full md:w-auto">
+            <span className="text-[10px] uppercase tracking-[0.3em] text-gym-accent font-bold self-center md:self-start">
               Premium Session
             </span>
-            <h1 className="text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none">
+            <h1 className="text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none self-start md:self-start">
               Titan{" "}
               <span className="text-gym-accent accent-glow-strong">Pro</span>
             </h1>
           </div>
 
-          <div className="flex items-center gap-6">
-            <div className="flex flex-col items-end text-right">
-              <p className="text-[10px] text-theme-text-muted uppercase tracking-widest mb-0.5 flex items-center gap-2 justify-end">
+          <div className="flex items-center gap-6 justify-between md:justify-end w-full md:w-auto">
+            <div className="flex flex-col items-start md:items-end text-left md:text-right">
+              <p className="text-[10px] text-theme-text-muted uppercase tracking-widest mb-0.5 flex items-center gap-2 justify-start md:justify-end">
                 {new Date().toLocaleDateString("en-GB", {
                   weekday: "long",
                   day: "numeric",
@@ -6774,55 +6777,43 @@ export default function App() {
 
         {/* Tabs / Navigation */}
         <nav className="flex items-center mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth w-full">
-          <div className="flex items-center gap-6 md:gap-8 flex-nowrap w-full pr-8">
+          <div className="flex items-center gap-3 flex-nowrap w-full pr-8">
             {[
-              { id: "console", label: "Console", icon: LayoutDashboard },
-              { id: "workout", label: "Programming", icon: Dumbbell },
-              { id: "library", label: "Library", icon: Search },
-              { id: "progress", label: "Progress", icon: Scale },
-              { id: "anatomy", label: "Anatomy", icon: Layout },
-              { id: "session", label: "Session", icon: History },
+              { id: "console", label: "Console", icon: Terminal },
+              { id: "workout", label: "Programming", icon: Workflow },
+              { id: "library", label: "Library", icon: BookOpen },
+              { id: "progress", label: "Progress", icon: TrendingUp },
+              { id: "anatomy", label: "Anatomy", icon: PersonStanding },
+              { id: "session", label: "Session", icon: Zap },
               { id: "routines", label: "Routines", icon: Repeat },
               { id: "map", label: "Tactical Map", icon: Compass },
               { id: "gym_locator", label: "Gym Locator", icon: MapPin },
-            ].map((nav) => (
-              <button
-                key={nav.id}
-                onClick={() => {
-                  setActiveView(nav.id as any);
-                  saveSettings({ activeView: nav.id });
-                }}
-                className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 shrink-0 select-none ${
-                  activeView === nav.id
-                    ? "text-theme-text"
-                    : "text-theme-text-muted hover:text-theme-text"
-                }`}
-                title={nav.id === "routines" ? "Routines" : nav.label}
-              >
-                {nav.id === "routines" ? (
-                  <Repeat
-                    className={`w-4 h-4 shrink-0 ${activeView === "routines" ? "text-gym-accent" : ""}`}
-                  />
-                ) : null}
-                {nav.id === "map" ? (
-                  <Compass
-                    className={`w-4 h-4 shrink-0 ${activeView === "map" ? "text-gym-accent" : "text-theme-text-muted/65 hover:text-white"}`}
-                  />
-                ) : null}
-                {nav.id === "gym_locator" ? (
-                  <MapPin
-                    className={`w-4 h-4 shrink-0 ${activeView === "gym_locator" ? "text-gym-accent" : "text-theme-text-muted/65 hover:text-white"}`}
-                  />
-                ) : null}
-                {nav.id !== "routines" && nav.id !== "map" && nav.id !== "gym_locator" && nav.label}
-                {activeView === nav.id && (
-                  <motion.div
-                    layoutId="nav-underline"
-                    className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav"
-                  />
-                )}
-              </button>
-            ))}
+            ].map((nav) => {
+              const IconComponent = nav.icon;
+              return (
+                <button
+                  key={nav.id}
+                  onClick={() => {
+                    setActiveView(nav.id as any);
+                    saveSettings({ activeView: nav.id });
+                  }}
+                  className={`relative p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
+                    activeView === nav.id
+                      ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent"
+                      : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
+                  }`}
+                  title={nav.label}
+                >
+                  <IconComponent className="w-5 h-5" />
+                  {activeView === nav.id && (
+                    <motion.div
+                      layoutId="nav-underline"
+                      className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav"
+                    />
+                  )}
+                </button>
+              );
+            })}
 
             {/* Flexible spacer to push Avatar to the right side on desktop while allowing elegant sliding */}
             <div className="flex-grow min-w-[12px] md:min-w-[24px]" />
@@ -6836,17 +6827,14 @@ export default function App() {
                   setActiveView(nav.id as any);
                   saveSettings({ activeView: nav.id });
                 }}
-                className={`relative text-xs font-bold uppercase tracking-[0.2em] transition-all cursor-pointer pb-1 flex items-center gap-1.5 shrink-0 select-none mr-2 md:mr-4 ${
+                className={`relative p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none mr-2 md:mr-4 ${
                   activeView === nav.id
-                    ? "text-theme-text"
-                    : "text-theme-text-muted hover:text-theme-text"
+                    ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent"
+                    : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
                 }`}
                 title={nav.label}
               >
-                <Crown
-                  className={`w-4 h-4 shrink-0 ${activeView === "avatar" ? "text-gym-accent" : "text-theme-text-muted/65"}`}
-                />
-                {nav.label}
+                <Crown className="w-5 h-5" />
                 {activeView === nav.id && (
                   <motion.div
                     layoutId="nav-underline"
@@ -6950,35 +6938,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Level & XP Sleek HUD Progress Bar */}
-                    <div 
-                      onClick={() => setActiveView("avatar")}
-                      className="bg-gradient-to-r from-white/[0.01] to-transparent border-l-2 border-gym-accent px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.02] transition-all duration-300 rounded-r-lg"
-                    >
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-bold text-white/40 tracking-widest font-mono uppercase">
-                          ATHLETE LEVEL
-                        </span>
-                        <h3 className="text-xl font-bold tracking-tight text-white flex items-center gap-2 font-sans">
-                          RANK {level}
-                          <span className="text-xs text-gym-accent font-serif italic font-light">({activeOutfit.name})</span>
-                        </h3>
-                      </div>
-                      <div className="flex-1 max-w-md space-y-1">
-                        <div className="flex justify-between text-[9px] font-mono text-white/40">
-                          <span>{xp} XP</span>
-                          <span>{xpNeeded} XP FOR NEXT RANK</span>
-                        </div>
-                        <div className="w-full bg-white/[0.03] border border-white/[0.06] h-1.5 rounded-full overflow-hidden p-0">
-                          <motion.div
-                             initial={{ width: 0 }}
-                             animate={{ width: `${xpPercentage}%` }}
-                             className="h-full bg-gym-accent"
-                             transition={{ duration: 1.2, ease: "easeOut" }}
-                          />
-                        </div>
-                      </div>
-                    </div>
+
 
                     {/* Section 1: Biomechanical Balance & Anatomy Mapped Side-by-Side */}
                     <motion.div

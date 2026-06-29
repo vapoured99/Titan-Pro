@@ -165,10 +165,10 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
             {/* Floating Top Header inside visual banner */}
             <div className="absolute top-6 left-6 right-6 z-20 flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-gym-accent" />
+                <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
                 <span className="text-[8px] font-mono text-white/50 tracking-[0.2em] uppercase">// LIVE ATHLETE TELEMETRY</span>
               </div>
-              <span className="text-[8px] font-mono text-white/35 border border-white/10 px-3 py-1 rounded-full bg-black/40 backdrop-blur-sm tracking-widest uppercase">
+              <span className="text-[8px] font-mono text-white/80 border border-white/10 px-4 py-1.5 rounded-full bg-black/70 backdrop-blur-md tracking-widest uppercase shadow-md">
                 LEVEL {level} // {rankName}
               </span>
             </div>
