@@ -97,6 +97,46 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
 
   const athleteName = currentProfile?.name || currentUser?.displayName || currentUser?.email?.split('@')[0] || 'ATHLETE';
 
+  // Scroll and pop animation variants
+  const scrollPopVariant = {
+    hidden: { opacity: 0, scale: 0.9, y: 30 },
+    visible: { 
+      opacity: 1, 
+      scale: 1, 
+      y: 0,
+      transition: { 
+        type: "spring", 
+        stiffness: 160, 
+        damping: 18,
+        mass: 0.8
+      } 
+    }
+  };
+
+  const scrollZoomVariant = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        type: "spring", 
+        stiffness: 140, 
+        damping: 16 
+      } 
+    }
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.05
+      }
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-[#020202] text-white selection:bg-gym-accent selection:text-black font-sans flex flex-col justify-between overflow-x-hidden">
       
@@ -177,10 +217,19 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
             <div className="absolute inset-x-0 bottom-0 z-20 p-6 md:p-10 space-y-6">
               
               {/* Responsive Metrics HUD Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-12">
+              <motion.div 
+                variants={staggerContainer}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: false, margin: "-40px" }}
+                className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-12"
+              >
                 
                 {/* CNS Fatigue Stat */}
-                <div className="bg-black/60 backdrop-blur-md border border-white/[0.06] rounded-xl p-4 space-y-2">
+                <motion.div 
+                  variants={scrollPopVariant}
+                  className="bg-black/60 backdrop-blur-md border border-white/[0.06] rounded-xl p-4 space-y-2 hover:border-gym-accent/30 transition-colors"
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-[8px] font-mono text-white/40 tracking-wider uppercase font-bold">01 / CNS FATIGUE</span>
                     <Activity className="w-3.5 h-3.5" style={{ color: cnsHexColor }} />
@@ -193,10 +242,13 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
                       {cnsLabel}
                     </p>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Training Streak Stat */}
-                <div className="bg-black/60 backdrop-blur-md border border-white/[0.06] rounded-xl p-4 space-y-2">
+                <motion.div 
+                  variants={scrollPopVariant}
+                  className="bg-black/60 backdrop-blur-md border border-white/[0.06] rounded-xl p-4 space-y-2 hover:border-orange-400/30 transition-colors"
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-[8px] font-mono text-white/40 tracking-wider uppercase font-bold">02 / STREAK</span>
                     <Flame className="w-3.5 h-3.5 text-orange-400" />
@@ -209,10 +261,13 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
                       Active Cycle
                     </p>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Weekly Work Volume Stat */}
-                <div className="bg-black/60 backdrop-blur-md border border-white/[0.06] rounded-xl p-4 space-y-2">
+                <motion.div 
+                  variants={scrollPopVariant}
+                  className="bg-black/60 backdrop-blur-md border border-white/[0.06] rounded-xl p-4 space-y-2 hover:border-gym-accent/30 transition-colors"
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-[8px] font-mono text-white/40 tracking-wider uppercase font-bold">03 / WEEKLY LOAD</span>
                     <Zap className="w-3.5 h-3.5 text-gym-accent" />
@@ -225,10 +280,13 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
                       {weeklyWorkoutsCount} {weeklyWorkoutsCount === 1 ? 'SESSION' : 'SESSIONS'} / 7D
                     </p>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Body Metrics Stat */}
-                <div className="bg-black/60 backdrop-blur-md border border-white/[0.06] rounded-xl p-4 space-y-2">
+                <motion.div 
+                  variants={scrollPopVariant}
+                  className="bg-black/60 backdrop-blur-md border border-white/[0.06] rounded-xl p-4 space-y-2 hover:border-blue-400/30 transition-colors"
+                >
                   <div className="flex items-center justify-between">
                     <span className="text-[8px] font-mono text-white/40 tracking-wider uppercase font-bold">04 / WEIGHT</span>
                     <Scale className="w-3.5 h-3.5 text-blue-400" />
@@ -247,9 +305,9 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
                       )}
                     </p>
                   </div>
-                </div>
+                </motion.div>
 
-              </div>
+              </motion.div>
 
             </div>
           </div>
@@ -257,12 +315,19 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
 
         {/* Section 3: Clean, Spaced Statistics & System Module Navigation Grid */}
         <section className="max-w-7xl w-full mx-auto px-8 md:px-16 py-28 md:py-36">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16">
+          <motion.div 
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, margin: "-100px" }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-16"
+          >
             
             {/* Split Planner Module card */}
-            <div 
+            <motion.div 
+              variants={scrollPopVariant}
               onClick={() => handleNavigate("workout")}
-              className="space-y-4 group cursor-pointer"
+              className="space-y-4 group cursor-pointer bg-white/[0.01] hover:bg-white/[0.02] border border-white/0 hover:border-white/[0.04] p-5 rounded-xl transition-all duration-300"
             >
               <div className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-gym-accent group-hover:scale-125 transition-transform" />
@@ -281,12 +346,13 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
                   LAST SESSION: <span className="text-gym-accent">{lastWorkout.name?.toUpperCase()}</span>
                 </div>
               )}
-            </div>
+            </motion.div>
 
             {/* Muscle Mapping Module card */}
-            <div 
+            <motion.div 
+              variants={scrollPopVariant}
               onClick={() => handleNavigate("anatomy")}
-              className="space-y-4 group cursor-pointer"
+              className="space-y-4 group cursor-pointer bg-white/[0.01] hover:bg-white/[0.02] border border-white/0 hover:border-white/[0.04] p-5 rounded-xl transition-all duration-300"
             >
               <div className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-gym-accent group-hover:scale-125 transition-transform" />
@@ -303,12 +369,13 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
               <div className="text-[10px] font-mono text-white/30 border-t border-white/[0.04] pt-2 mt-1">
                 LIFETIME: <span className="text-white/60">{totalWorkouts} COMPLETED SESSIONS</span>
               </div>
-            </div>
+            </motion.div>
 
             {/* CNS Fatigue Module card */}
-            <div 
+            <motion.div 
+              variants={scrollPopVariant}
               onClick={() => handleNavigate("progress")}
-              className="space-y-4 group cursor-pointer"
+              className="space-y-4 group cursor-pointer bg-white/[0.01] hover:bg-white/[0.02] border border-white/0 hover:border-white/[0.04] p-5 rounded-xl transition-all duration-300"
             >
               <div className="flex items-center gap-2">
                 <span className="w-1 h-1 rounded-full bg-gym-accent group-hover:scale-125 transition-transform" />
@@ -325,10 +392,13 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
               <div className="text-[10px] font-mono text-white/30 border-t border-white/[0.04] pt-2 mt-1">
                 STATUS: <span className="font-semibold" style={{ color: cnsHexColor }}>{cnsLabel}</span>
               </div>
-            </div>
+            </motion.div>
 
             {/* Real Stats HUD Display panel */}
-            <div className="space-y-4 border-l border-white/[0.06] pl-6 md:pl-8">
+            <motion.div 
+              variants={scrollPopVariant}
+              className="space-y-4 border-l border-white/[0.06] pl-6 md:pl-8 py-2"
+            >
               <span className="text-[9px] font-mono text-white/30 tracking-widest block uppercase font-bold">
                 04 // METRIC OVERVIEW
               </span>
@@ -346,20 +416,26 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
                   RANK: {level} ({rankName})
                 </p>
               </div>
-            </div>
+            </motion.div>
 
-          </div>
+          </motion.div>
         </section>
 
         {/* Proceed to Application CTA section */}
         <section className="max-w-7xl w-full mx-auto px-8 md:px-16 pb-16 flex justify-center">
-          <button
+          <motion.button
+            variants={scrollZoomVariant}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: false, margin: "-40px" }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={onEnter}
             className="group inline-flex items-center gap-3 bg-white hover:bg-gym-accent hover:text-black text-black px-8 py-3.5 rounded-full font-mono text-[10px] uppercase tracking-[0.2em] transition-all duration-300 shadow-lg shadow-black/20 hover:shadow-gym-accent/10 cursor-pointer"
           >
             <span>PROCEED TO CONSOLE</span>
             <ArrowRight className="w-3.5 h-3.5 text-current transition-transform group-hover:translate-x-1" />
-          </button>
+          </motion.button>
         </section>
 
         {/* Simple & Minimalist Footer */}

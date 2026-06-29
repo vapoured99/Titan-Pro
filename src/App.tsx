@@ -6905,6 +6905,21 @@ export default function App() {
                   (a, b) => a.date.localeCompare(b.date),
                 );
 
+                const scrollPopInVariant = {
+                  hidden: { opacity: 0, scale: 0.92, y: 30 },
+                  show: {
+                    opacity: 1,
+                    scale: 1,
+                    y: 0,
+                    transition: {
+                      type: "spring",
+                      stiffness: 150,
+                      damping: 18,
+                      mass: 0.8
+                    },
+                  },
+                };
+
                 const cardVariants = {
                   hidden: { opacity: 0, y: 15 },
                   show: {
@@ -6944,7 +6959,7 @@ export default function App() {
                     <motion.div
                       initial="hidden"
                       whileInView="show"
-                      viewport={{ once: true, margin: "-50px" }}
+                      viewport={{ once: false, margin: "-80px" }}
                       variants={{
                         hidden: { opacity: 0 },
                         show: {
@@ -6957,7 +6972,10 @@ export default function App() {
                       className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch"
                     >
                       {/* Physiological Simulation Panel */}
-                      <div className="lg:col-span-8 bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden group">
+                      <motion.div 
+                        variants={scrollPopInVariant}
+                        className="lg:col-span-8 bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden group hover:border-white/10 transition-all duration-300"
+                      >
                         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                         
                         <div className="space-y-1 mb-6">
@@ -6978,9 +6996,9 @@ export default function App() {
                             onClick={() => setActiveView("anatomy")}
                           >
                             <AnatomyChart
-                              sets={sessionSets}
-                              archivedWorkouts={archivedWorkouts}
-                              compact={true}
+                               sets={sessionSets}
+                               archivedWorkouts={archivedWorkouts}
+                               compact={true}
                             />
                           </div>
                           <div 
@@ -6988,9 +7006,9 @@ export default function App() {
                             onClick={() => setActiveView("progress")}
                           >
                             <RadarChart
-                              sessionSets={sessionSets}
-                              archivedWorkouts={archivedWorkouts}
-                              size={280}
+                               sessionSets={sessionSets}
+                               archivedWorkouts={archivedWorkouts}
+                               size={280}
                             />
                           </div>
                         </div>
@@ -7004,10 +7022,11 @@ export default function App() {
                             DETAILED DIAGNOSTIC &rarr;
                           </button>
                         </div>
-                      </div>
+                      </motion.div>
 
                       {/* Training Agenda Mapped */}
-                      <div 
+                      <motion.div 
+                        variants={scrollPopInVariant}
                         onClick={() => setActiveView("workout")}
                         className="lg:col-span-4 bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between cursor-pointer hover:border-white/10 transition-all duration-300"
                       >
@@ -7075,16 +7094,23 @@ export default function App() {
                           <span>NEXT SESSION PENDING</span>
                           <span className="text-gym-accent uppercase tracking-wider font-bold">CONFIGURE &rarr;</span>
                         </div>
-                      </div>
+                      </motion.div>
                     </motion.div>
 
                     {/* Spinal Depletion & CNS Fatigue Gauge widget */}
-                    <div className="cursor-pointer" onClick={() => setActiveView("progress")}>
+                    <motion.div 
+                      initial="hidden"
+                      whileInView="show"
+                      viewport={{ once: false, margin: "-60px" }}
+                      variants={scrollPopInVariant}
+                      className="cursor-pointer" 
+                      onClick={() => setActiveView("progress")}
+                    >
                       <SpinalDepletionWidget
                         cnsFatigueAnalysis={cnsFatigueAnalysis}
                         setActiveView={setActiveView}
                       />
-                    </div>
+                    </motion.div>
 
                     {/* Section 2: Performance Dynamism (Trends Grid) */}
                     <div className="space-y-6">
@@ -7100,7 +7126,7 @@ export default function App() {
                       <motion.div
                         initial="hidden"
                         whileInView="show"
-                        viewport={{ once: true, margin: "-50px" }}
+                        viewport={{ once: false, margin: "-80px" }}
                         variants={{
                           hidden: { opacity: 0 },
                           show: {
@@ -7114,7 +7140,7 @@ export default function App() {
                       >
                         {/* Graph 1: Weight Trend */}
                         <motion.div
-                          variants={cardVariants}
+                          variants={scrollPopInVariant}
                           onClick={() => setActiveView("profile")}
                           className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300"
                         >
@@ -7184,7 +7210,7 @@ export default function App() {
 
                         {/* Graph 2: Volume Trend */}
                         <motion.div
-                          variants={cardVariants}
+                          variants={scrollPopInVariant}
                           onClick={() => setActiveView("progress")}
                           className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300"
                         >
@@ -7239,7 +7265,7 @@ export default function App() {
 
                         {/* Graph 3: Calorie Outflow Trend */}
                         <motion.div
-                          variants={cardVariants}
+                          variants={scrollPopInVariant}
                           onClick={() => setActiveView("progress")}
                           className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300"
                         >
