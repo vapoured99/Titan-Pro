@@ -31,6 +31,7 @@ import {
   Award,
   Crown,
   Shield,
+  Sparkles,
   BookOpen,
   Cloud,
   Download,
@@ -78,6 +79,7 @@ import {
 } from "recharts";
 import AnatomyChart from "./components/AnatomyChart";
 import AnatomyDashboard from "./components/AnatomyDashboard";
+import { ImmersiveLanding } from "./components/ImmersiveLanding";
 import Sparkline from "./components/Sparkline";
 import AICoach from "./components/AICoach";
 import RadarChart from "./components/RadarChart";
@@ -555,7 +557,7 @@ interface BodyFatEntry {
   timestamp: any;
 }
 
-const DAY_CONFIG = [
+export const DAY_CONFIG = [
   {
     label: "1",
     name: "Chest & Triceps",
@@ -643,7 +645,7 @@ export function getStopwatchDurationMs(profile: UserProfile | null): number {
   return totalMs;
 }
 
-const calculateCaloriesBurned = (
+export const calculateCaloriesBurned = (
   sets: SessionSet[],
   userProfile: UserProfile | null,
 ) => {
@@ -1286,6 +1288,8 @@ export default function App() {
     | "anatomy"
     | "avatar"
   >("console");
+  const [showLandingPage, setShowLandingPage] = useState<boolean>(false);
+  const [hasCheckedLanding, setHasCheckedLanding] = useState<boolean>(false);
   const [routines, setRoutines] = useState<any[]>([]);
   const [savingRoutineWorkout, setSavingRoutineWorkout] = useState<any | null>(
     null,
@@ -2429,18 +2433,6 @@ export default function App() {
     }
   };
 
-  // Trigger automatic profile leveling reset to Level 3 on first load for the logged-in user
-  useEffect(() => {
-    if (!currentUser) return;
-    const hasBeenReset =
-      localStorage.getItem(`gym_profile_reset_v4_${currentUser.uid}`) ===
-      "true";
-    if (!hasBeenReset) {
-      handleResetProfile().then(() => {
-        localStorage.setItem(`gym_profile_reset_v4_${currentUser.uid}`, "true");
-      });
-    }
-  }, [currentUser]);
 
   // Auth Listener
   useEffect(() => {
@@ -2476,6 +2468,65 @@ export default function App() {
         setCustomExercises([]);
       }
     }
+  }, [currentUser]);
+
+  // Landing Page Away Check
+  useEffect(() => {
+    if (currentUser && !hasCheckedLanding) {
+      const lastActiveKey = `titan_last_active_${currentUser.uid}`;
+      const lastActiveVal = localStorage.getItem(lastActiveKey);
+      
+      if (!lastActiveVal) {
+        // First login or cleared local storage
+        setShowLandingPage(true);
+      } else {
+        const lastActiveTime = parseInt(lastActiveVal, 10);
+        const diffMs = Date.now() - lastActiveTime;
+        const cutoffMs = 15 * 60 * 1000; // 15 minutes away-time cutoff
+        
+        if (diffMs > cutoffMs) {
+          setShowLandingPage(true);
+        } else {
+          setShowLandingPage(false);
+        }
+      }
+      setHasCheckedLanding(true);
+    } else if (!currentUser) {
+      setHasCheckedLanding(false);
+      setShowLandingPage(false);
+    }
+  }, [currentUser, hasCheckedLanding]);
+
+  // Heartbeat to update last active timestamp
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    const lastActiveKey = `titan_last_active_${currentUser.uid}`;
+    let lastSaved = 0;
+    
+    const updateLastActive = () => {
+      const now = Date.now();
+      if (now - lastSaved > 15000) { // Throttle updates: 15 seconds
+        localStorage.setItem(lastActiveKey, now.toString());
+        lastSaved = now;
+      }
+    };
+    
+    // Set immediate active timestamp
+    updateLastActive();
+    
+    window.addEventListener("mousedown", updateLastActive);
+    window.addEventListener("keydown", updateLastActive);
+    window.addEventListener("touchstart", updateLastActive);
+    
+    const interval = setInterval(updateLastActive, 30000);
+    
+    return () => {
+      window.removeEventListener("mousedown", updateLastActive);
+      window.removeEventListener("keydown", updateLastActive);
+      window.removeEventListener("touchstart", updateLastActive);
+      clearInterval(interval);
+    };
   }, [currentUser]);
 
   // Data Sync
@@ -2535,13 +2586,38 @@ export default function App() {
       try {
         const sDoc = await getDoc(doc(db, settingsPath));
         if (!sDoc.exists()) {
+          const isSpecialUser = currentUser.email === "d.castle@outlook.com";
+          const startingLevel = isSpecialUser ? 3 : 1;
+          const startingPoints = isSpecialUser ? 16 : 10;
           const initialProfile: UserProfile = {
             startDate: new Date().toISOString(),
             streakCount: 0,
             activeView: "console",
-            displayName: currentUser.displayName || "",
+            displayName: currentUser.displayName || "Athlete Specimen",
             photoURL: currentUser.photoURL || "",
-          };
+            avatarLevel: startingLevel,
+            avatarXp: 0,
+            avatarCredits: 5000,
+            unassignedPoints: startingPoints,
+            gridNodesUnlocked: ["p0"],
+            unlockedOutfits: ["vanguard_cadet"],
+            equippedOutfit: "vanguard_cadet",
+            equippedAura: "none",
+            equippedBackItem: "none",
+            equippedEmote: "none",
+            equippedTitle: "lifter",
+            equippedBorder: "none",
+            bodyweight: 75,
+            height: 175,
+            age: 28,
+            bodyFatPercent: 15,
+            sex: "male",
+            avatarPower: 10,
+            avatarKinetic: 10,
+            avatarSymmetry: 10,
+            avatarVelocity: 10,
+            avatarRecovery: 10,
+          } as any;
           await setDoc(doc(db, settingsPath), {
             ...initialProfile,
             updatedAt: serverTimestamp(),
@@ -3186,6 +3262,68 @@ export default function App() {
       );
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, path);
+    }
+  };
+
+  const handleRecalculateProgress = async () => {
+    if (!currentUser) return;
+    try {
+      let totalXp = 0;
+      let totalCredits = 0;
+      
+      archivedWorkouts.forEach((w) => {
+        totalXp += 400;
+        totalCredits += 250;
+        
+        if (Array.isArray(w.sets)) {
+          w.sets.forEach((s: any) => {
+            const isNewPB = s.isNewPB || false;
+            const xpEarned = Math.round((isNewPB ? 120 : 15) * 1.45);
+            const creditsEarned = isNewPB ? 80 : 10;
+            totalXp += xpEarned;
+            totalCredits += creditsEarned;
+          });
+        }
+      });
+      
+      const isSpecialUser = currentUser.email === "d.castle@outlook.com";
+      const startingLevel = isSpecialUser ? 3 : 1;
+      const startingPoints = isSpecialUser ? 16 : 10;
+      
+      let currentLevel = startingLevel;
+      let remainingXp = totalXp;
+      let unassignedPoints = startingPoints;
+      
+      const getXpNeeded = (lvl: number) => lvl * 500 + 2000;
+      
+      while (remainingXp >= getXpNeeded(currentLevel)) {
+        remainingXp -= getXpNeeded(currentLevel);
+        currentLevel += 1;
+        unassignedPoints += 3;
+      }
+      
+      const updatedData = {
+        avatarLevel: currentLevel,
+        avatarXp: remainingXp,
+        avatarCredits: (profile?.avatarCredits ?? 5000) + totalCredits,
+        unassignedPoints: unassignedPoints,
+      };
+      
+      setProfile((prev) => (prev ? { ...prev, ...updatedData } : null));
+      await saveSettings(updatedData);
+      
+      setToast({
+        message: `⚡ REINSTATED: Recalculated Level ${currentLevel} and ${remainingXp} XP from ${archivedWorkouts.length} logged sessions!`,
+        type: "success",
+      });
+      setTimeout(() => setToast(null), 5000);
+    } catch (e) {
+      console.error("Error recalculating progress:", e);
+      setToast({
+        message: "❌ Error recalculating progress from session history.",
+        type: "error",
+      });
+      setTimeout(() => setToast(null), 3000);
     }
   };
 
@@ -6536,7 +6674,33 @@ export default function App() {
         )}
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 py-12 pb-32">
+      <AnimatePresence mode="wait">
+        {showLandingPage ? (
+          <ImmersiveLanding
+            key="immersive-landing"
+            onEnter={() => setShowLandingPage(false)}
+            profile={profile}
+            currentUser={currentUser}
+            archivedWorkouts={archivedWorkouts}
+            currentDays={currentDays}
+            activeTheme={activeTheme}
+            playRestBeep={playRestBeep}
+            sessionSets={sessionSets}
+            cnsFatigueAnalysis={cnsFatigueAnalysis}
+            syncedProfile={syncedProfile || profile}
+            weightHistory={weightHistory}
+            volumeData={getVolumeData()}
+            setActiveView={setActiveView}
+          />
+        ) : (
+          <motion.div
+            key="workspace-main"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="relative z-10 max-w-5xl mx-auto px-6 py-12 pb-32"
+          >
         {/* Header */}
         <header className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6 border-b border-gym-accent/20 pb-10">
           <div className="flex flex-col items-start gap-1">
@@ -6572,6 +6736,13 @@ export default function App() {
             </div>
             <div className="h-10 w-px bg-white/10" />
             <div className="flex gap-2">
+              <button
+                onClick={() => setShowLandingPage(true)}
+                className="p-2.5 bg-white/5 border border-white/10 rounded-md text-theme-text-muted hover:text-theme-text hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center"
+                title="Cinematic Portal"
+              >
+                <Compass className="w-4 h-4 text-gym-accent" />
+              </button>
               <button
                 onClick={() => {
                   setActiveView("profile");
@@ -6765,45 +6936,51 @@ export default function App() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="space-y-8 pb-16 animate-fade-in"
+                    className="space-y-16 pb-16 animate-fade-in"
                   >
-                    {/* Header */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-6">
-                      <div>
-                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3">
-                          Athlete Command Console
-                        </h3>
-                        <p className="text-xs text-white/90 uppercase tracking-[0.25em] font-bold">
-                          Biometric &amp; Combat Readiness Command Center
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 bg-white/[0.02] border border-white/5 px-4 py-2 rounded-md text-xs font-mono text-white/60">
-                        <span className="w-2 h-2 rounded-full bg-gym-accent animate-pulse" />
-                        <span>SYS_STATUS: ONLINE</span>
-                        <div className="w-14 h-5 relative flex items-center justify-center opacity-75 border-l border-white/10 pl-3">
-                          <svg
-                            className="w-full h-full text-gym-accent"
-                            viewBox="0 0 100 30"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M 0,15 L 20,15 L 24,10 L 27,24 L 32,2 L 36,20 L 39,15 L 100,15"
-                              stroke="currentColor"
-                              strokeWidth="2.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              style={{
-                                strokeDasharray: "280",
-                                animation: "ecgPulse 2.5s linear infinite",
-                              }}
-                            />
-                          </svg>
+                    {/* Minimalist Ultra-Sleek Header */}
+                    <div className="flex flex-row items-center justify-between border-b border-white/[0.03] pb-4 gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
+                          <span className="text-[9px] text-gym-accent uppercase tracking-[0.4em] font-black font-mono">
+                            TITAN METRIC SYSTEM
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Bento Grid */}
+                    {/* Level & XP Sleek HUD Progress Bar */}
+                    <div 
+                      onClick={() => setActiveView("avatar")}
+                      className="bg-gradient-to-r from-white/[0.01] to-transparent border-l-2 border-gym-accent px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer hover:bg-white/[0.02] transition-all duration-300 rounded-r-lg"
+                    >
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-white/40 tracking-widest font-mono uppercase">
+                          ATHLETE LEVEL
+                        </span>
+                        <h3 className="text-xl font-bold tracking-tight text-white flex items-center gap-2 font-sans">
+                          RANK {level}
+                          <span className="text-xs text-gym-accent font-serif italic font-light">({activeOutfit.name})</span>
+                        </h3>
+                      </div>
+                      <div className="flex-1 max-w-md space-y-1">
+                        <div className="flex justify-between text-[9px] font-mono text-white/40">
+                          <span>{xp} XP</span>
+                          <span>{xpNeeded} XP FOR NEXT RANK</span>
+                        </div>
+                        <div className="w-full bg-white/[0.03] border border-white/[0.06] h-1.5 rounded-full overflow-hidden p-0">
+                          <motion.div
+                             initial={{ width: 0 }}
+                             animate={{ width: `${xpPercentage}%` }}
+                             className="h-full bg-gym-accent"
+                             transition={{ duration: 1.2, ease: "easeOut" }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 1: Biomechanical Balance & Anatomy Mapped Side-by-Side */}
                     <motion.div
                       initial="hidden"
                       whileInView="show"
@@ -6817,130 +6994,76 @@ export default function App() {
                           },
                         },
                       }}
-                      className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                      className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch"
                     >
-                      {/* Card 1: Radar Chart */}
-                      <motion.div
-                        variants={cardVariants}
-                        className="flex flex-col gap-4 h-full"
-                      >
-                        {/* Level & XP Progression Info */}
-                        <motion.div
-                          whileHover={{
-                            y: -3,
-                            scale: 1.01,
-                            borderColor: activeTheme.accent + "35",
-                            boxShadow: `0 8px 24px -10px ${activeTheme.accent}15`,
-                          }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 350,
-                            damping: 25,
-                          }}
-                          className="bg-black/70 border border-white/10 rounded-md p-4 backdrop-blur-md cursor-pointer"
-                        >
-                          <div className="flex justify-between items-baseline mb-1">
-                            <span className="text-xs font-bold text-white tracking-widest font-mono uppercase">
-                              LVL. {level}
-                            </span>
-                            <span className="text-[9px] text-white/40 font-mono font-bold">
-                              {xp} / {xpNeeded} XP
-                            </span>
-                          </div>
-                          <div className="w-full bg-white/5 border border-white/10 h-2 rounded-md overflow-hidden p-0.5">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${xpPercentage}%` }}
-                              className="h-full bg-gradient-to-r from-gym-accent to-gym-accent-light rounded-md"
-                              transition={{ duration: 1 }}
+                      {/* Physiological Simulation Panel */}
+                      <div className="lg:col-span-8 bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                        
+                        <div className="space-y-1 mb-6">
+                          <span className="text-[9px] font-mono text-gym-accent uppercase tracking-widest font-black">
+                            RECONSTRUCTED BIOMETRICS
+                          </span>
+                          <h3 className="text-2xl font-light tracking-tight text-white font-sans">
+                            Physical <span className="font-serif italic font-light text-gym-accent">Symmetry</span>
+                          </h3>
+                          <p className="text-xs text-white/40 max-w-md leading-relaxed">
+                            Dynamic load mapping and active physical recruitment ratios computed from your history.
+                          </p>
+                        </div>
+
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-8 items-center py-4">
+                          <div 
+                            className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+                            onClick={() => setActiveView("anatomy")}
+                          >
+                            <AnatomyChart
+                              sets={sessionSets}
+                              archivedWorkouts={archivedWorkouts}
+                              compact={true}
                             />
                           </div>
-                        </motion.div>
-
-                        {/* Biomechanical Balance Star Radar Chart */}
-                        <div className="flex-1">
-                          <RadarChart
-                            sessionSets={sessionSets}
-                            archivedWorkouts={archivedWorkouts}
-                            size={330}
-                          />
-                        </div>
-                      </motion.div>
-
-                      {/* Card 2: Anatomy */}
-                      <motion.div
-                        variants={cardVariants}
-                        whileHover={{
-                          y: -5,
-                          scale: 1.015,
-                          borderColor: activeTheme.accent + "35",
-                          boxShadow: `0 12px 30px -10px ${activeTheme.accent}20`,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 25,
-                        }}
-                        className="bg-black/70 border border-white/10 rounded-md p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md cursor-pointer"
-                      >
-                        <div>
-                          <h4 className="text-[10px] text-white uppercase font-black tracking-widest mb-1 font-mono">
-                            Physiological Evolution
-                          </h4>
-                          <p className="text-sm text-white/90 font-light leading-snug">
-                            Real-time dynamic muscle density simulation. Dark
-                            sectors denote untapped muscle pools.
-                          </p>
-                        </div>
-
-                        <div className="flex-1 flex items-center justify-center my-2">
-                          <AnatomyChart
-                            sets={sessionSets}
-                            archivedWorkouts={archivedWorkouts}
-                            compact={true}
-                          />
-                        </div>
-
-                        <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                          <div className="text-[9px] uppercase tracking-widest text-white/30 font-mono font-bold leading-tight">
-                            Recruited: {sessionSets.length} Sets Recorded
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setActiveView("anatomy")}
-                            className="text-[9px] text-gym-accent uppercase tracking-widest font-bold font-mono border-b border-gym-accent/20 hover:border-gym-accent transition-all cursor-pointer"
+                          <div 
+                            className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+                            onClick={() => setActiveView("progress")}
                           >
-                            ANATOMY_REPORT &rarr;
+                            <RadarChart
+                              sessionSets={sessionSets}
+                              archivedWorkouts={archivedWorkouts}
+                              size={280}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-6 pt-4 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
+                          <span>ACTIVE SETS DETECTED: {sessionSets.length}</span>
+                          <button 
+                            onClick={() => setActiveView("anatomy")}
+                            className="text-gym-accent hover:text-white transition-colors uppercase tracking-wider font-bold"
+                          >
+                            DETAILED DIAGNOSTIC &rarr;
                           </button>
                         </div>
-                      </motion.div>
+                      </div>
 
-                      {/* Card 3: Next Exercises */}
-                      <motion.div
-                        variants={cardVariants}
-                        whileHover={{
-                          y: -5,
-                          scale: 1.015,
-                          borderColor: activeTheme.accent + "35",
-                          boxShadow: `0 12px 30px -10px ${activeTheme.accent}20`,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 25,
-                        }}
-                        className="bg-black/70 border border-white/10 rounded-md p-6 flex flex-col justify-between h-full min-h-[380px] backdrop-blur-md cursor-pointer"
+                      {/* Training Agenda Mapped */}
+                      <div 
+                        onClick={() => setActiveView("workout")}
+                        className="lg:col-span-4 bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-8 flex flex-col justify-between cursor-pointer hover:border-white/10 transition-all duration-300"
                       >
-                        <div>
-                          <h4 className="text-[10px] text-white uppercase font-black tracking-widest mb-1 font-mono">
-                            Next Active Exercises
-                          </h4>
-                          <p className="text-sm text-white/90 font-light leading-snug">
-                            Mapped from training programming active modules.
+                        <div className="space-y-1 mb-6">
+                          <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest font-black">
+                            ROUTINE TIMELINE
+                          </span>
+                          <h3 className="text-2xl font-light tracking-tight text-white font-sans">
+                            Upcoming <span className="font-serif italic font-light">Agenda</span>
+                          </h3>
+                          <p className="text-xs text-white/40">
+                            Lifting schedule built around programmed kinetic clusters.
                           </p>
                         </div>
 
-                        <div className="flex-1 my-4 overflow-y-auto max-h-[190px] no-scrollbar pr-1">
+                        <div className="flex-1 overflow-y-auto max-h-[220px] no-scrollbar space-y-4 pr-1">
                           {(() => {
                             const daysWithData = DAY_CONFIG.map((day, di) => ({
                               day,
@@ -6950,17 +7073,11 @@ export default function App() {
 
                             if (daysWithData.length === 0) {
                               return (
-                                <div className="h-full flex flex-col items-center justify-center py-6 text-center">
-                                  <Dumbbell className="w-8 h-8 text-white/10 mb-2" />
-                                  <p className="text-white/40 font-light font-serif italic text-xs leading-normal">
+                                <div className="h-full flex flex-col items-center justify-center py-8 text-center space-y-2">
+                                  <Dumbbell className="w-6 h-6 text-white/10" />
+                                  <p className="text-white/30 font-serif italic text-xs">
                                     No active routine mapped.
                                   </p>
-                                  <button
-                                    onClick={() => setActiveView("workout")}
-                                    className="mt-3 text-[9px] text-gym-accent font-bold uppercase tracking-widest border-b border-gym-accent/30 hover:border-gym-accent transition-all cursor-pointer"
-                                  >
-                                    Load Routine In Programming
-                                  </button>
                                 </div>
                               );
                             }
@@ -6968,29 +7085,21 @@ export default function App() {
                             return (
                               <div className="space-y-4">
                                 {daysWithData.map(({ day, di, exercises }) => (
-                                  <div
-                                    key={di}
-                                    className="border-l border-gym-accent/20 pl-3"
-                                  >
-                                    <div className="flex items-center justify-between mb-1.5">
-                                      <span className="text-[8px] font-mono text-gym-accent uppercase tracking-widest font-bold">
+                                  <div key={di} className="border-l border-gym-accent/30 pl-3.5 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-[8px] font-mono text-gym-accent uppercase tracking-widest font-black">
                                         DAY {day.label}
                                       </span>
-                                      <span className="text-[9px] font-light text-white/70 italic font-serif">
+                                      <span className="text-[10px] font-medium text-white/80">
                                         {day.name}
                                       </span>
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1.5">
                                       {exercises.map((ex, idx) => (
-                                        <div
-                                          key={idx}
-                                          className="flex justify-between items-center text-xs text-white/80 py-0.5 hover:text-white transition-colors"
-                                        >
-                                          <span className="font-light truncate max-w-[150px]">
-                                            {ex.name}
-                                          </span>
-                                          <span className="text-[8px] font-mono text-white/30 tracking-wider uppercase font-bold px-1.5 py-0.5 bg-white/[0.02] border border-white/5 rounded-md">
-                                            {ex.pool || ex.muscleGroup || "Gym"}
+                                        <div key={idx} className="flex justify-between items-center text-xs text-white/60">
+                                          <span className="font-light truncate max-w-[140px]">{ex.name}</span>
+                                          <span className="text-[7px] font-mono text-white/30 tracking-wider uppercase font-black px-1.5 py-0.5 bg-white/[0.02] border border-white/[0.05] rounded">
+                                            {ex.pool || "Target"}
                                           </span>
                                         </div>
                                       ))}
@@ -7002,378 +7111,230 @@ export default function App() {
                           })()}
                         </div>
 
-                        <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                          <div className="text-[9px] uppercase tracking-widest text-white/30 font-mono font-bold leading-tight">
-                            Tactical Agenda Mapped
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => setActiveView("workout")}
-                            className="text-[9px] text-gym-accent uppercase tracking-widest font-bold font-mono border-b border-gym-accent/20 hover:border-gym-accent transition-all cursor-pointer"
-                          >
-                            EDIT_PROGRAM &rarr;
-                          </button>
+                        <div className="mt-6 pt-4 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
+                          <span>NEXT SESSION PENDING</span>
+                          <span className="text-gym-accent uppercase tracking-wider font-bold">CONFIGURE &rarr;</span>
                         </div>
-                      </motion.div>
+                      </div>
                     </motion.div>
 
                     {/* Spinal Depletion & CNS Fatigue Gauge widget */}
-                    <SpinalDepletionWidget
-                      cnsFatigueAnalysis={cnsFatigueAnalysis}
-                      setActiveView={setActiveView}
-                    />
+                    <div className="cursor-pointer" onClick={() => setActiveView("progress")}>
+                      <SpinalDepletionWidget
+                        cnsFatigueAnalysis={cnsFatigueAnalysis}
+                        setActiveView={setActiveView}
+                      />
+                    </div>
 
-                    {/* Third Row: Micro Progress Graphs */}
-                    <motion.div
-                      initial="hidden"
-                      whileInView="show"
-                      viewport={{ once: true, margin: "-50px" }}
-                      variants={{
-                        hidden: { opacity: 0 },
-                        show: {
-                          opacity: 1,
-                          transition: {
-                            staggerChildren: 0.08,
-                          },
-                        },
-                      }}
-                      className="grid grid-cols-1 md:grid-cols-3 gap-6"
-                    >
-                      {/* Graph 1: Weight Trend */}
+                    {/* Section 2: Performance Dynamism (Trends Grid) */}
+                    <div className="space-y-6">
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest font-black">
+                          PERFORMANCE DYNAMICS
+                        </span>
+                        <h3 className="text-2xl font-light tracking-tight text-white font-sans">
+                          Metric <span className="font-serif italic font-light text-gym-accent">Trends</span>
+                        </h3>
+                      </div>
+
                       <motion.div
-                        variants={cardVariants}
-                        whileHover={{
-                          y: -5,
-                          scale: 1.015,
-                          borderColor: activeTheme.accent + "35",
-                          boxShadow: `0 12px 30px -10px ${activeTheme.accent}20`,
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, margin: "-50px" }}
+                        variants={{
+                          hidden: { opacity: 0 },
+                          show: {
+                            opacity: 1,
+                            transition: {
+                              staggerChildren: 0.08,
+                            },
+                          },
                         }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 25,
-                        }}
-                        className="bg-black/70 border border-white/10 rounded-md p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
+                        className="grid grid-cols-1 md:grid-cols-3 gap-6"
                       >
-                        <div className="mb-4">
-                          <div className="flex justify-between items-baseline">
-                            <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">
-                              Weight Density
-                            </h4>
-                             <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">
+                        {/* Graph 1: Weight Trend */}
+                        <motion.div
+                          variants={cardVariants}
+                          onClick={() => setActiveView("profile")}
+                          className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300"
+                        >
+                          <div className="mb-6 flex justify-between items-start">
+                            <div>
+                              <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
+                                BODYWEIGHT
+                              </span>
+                              <h4 className="text-base font-light text-white mt-1">Weight Density</h4>
+                            </div>
+                            <span className="text-lg font-mono font-bold text-gym-accent">
                               {syncedProfile?.bodyweight
                                 ? `${syncedProfile.bodyweight} KG`
                                 : "N/A"}
                             </span>
                           </div>
-                          <p className="text-xs text-white/80 font-normal tracking-wide mt-0.5">
-                            Dynamic change tracking over time
-                          </p>
-                        </div>
 
-                        <div className="h-[120px] w-full">
-                          {weightHistory.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-md border border-dashed border-white/5">
-                              <TrendingUp className="w-5 h-5 text-white/10 mb-1" />
-                              <span className="text-[9px] text-white/20 font-bold">
-                                No weight logs recorded
+                          <div className="h-[120px] w-full">
+                            {weightHistory.length === 0 ? (
+                              <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
+                                <TrendingUp className="w-4 h-4 text-white/10 mb-1" />
+                                <span className="text-[9px] text-white/20 font-bold">No weight logs</span>
+                              </div>
+                            ) : (
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart
+                                  data={(() => {
+                                    const grouped = weightHistory.reduce(
+                                      (acc, entry) => {
+                                        acc[entry.date] = entry;
+                                        return acc;
+                                      },
+                                      {} as Record<string, WeightEntry>,
+                                    );
+                                    return (
+                                      Object.values(grouped) as WeightEntry[]
+                                    ).sort(
+                                      (a, b) =>
+                                        new Date(a.date).getTime() -
+                                        new Date(b.date).getTime(),
+                                    );
+                                  })()}
+                                  margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                                >
+                                  <defs>
+                                    <linearGradient id="colorWeightConsole" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
+                                      <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                  <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} domain={["dataMin - 2", "dataMax + 2"]} />
+                                  <Area
+                                    type="monotonous"
+                                    dataKey="weight"
+                                    stroke={activeTheme.accent}
+                                    strokeWidth={1.5}
+                                    fillOpacity={1}
+                                    fill="url(#colorWeightConsole)"
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            )}
+                          </div>
+                        </motion.div>
+
+                        {/* Graph 2: Volume Trend */}
+                        <motion.div
+                          variants={cardVariants}
+                          onClick={() => setActiveView("progress")}
+                          className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300"
+                        >
+                          <div className="mb-6 flex justify-between items-start">
+                            <div>
+                              <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
+                                OUTPUT
                               </span>
+                              <h4 className="text-base font-light text-white mt-1">Lifting Volume</h4>
                             </div>
-                          ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart
-                                data={(() => {
-                                  const grouped = weightHistory.reduce(
-                                    (acc, entry) => {
-                                      acc[entry.date] = entry;
-                                      return acc;
-                                    },
-                                    {} as Record<string, WeightEntry>,
-                                  );
-                                  return (
-                                    Object.values(grouped) as WeightEntry[]
-                                  ).sort(
-                                    (a, b) =>
-                                      new Date(a.date).getTime() -
-                                      new Date(b.date).getTime(),
-                                  );
-                                })()}
-                                margin={{
-                                  top: 5,
-                                  right: 5,
-                                  left: -25,
-                                  bottom: 5,
-                                }}
-                              >
-                                <defs>
-                                  <linearGradient
-                                    id="colorWeightConsole"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="5%"
-                                      stopColor={activeTheme.accent}
-                                      stopOpacity={0.25}
-                                    />
-                                    <stop
-                                      offset="95%"
-                                      stopColor={activeTheme.accent}
-                                      stopOpacity={0}
-                                    />
-                                  </linearGradient>
-                                </defs>
-                                <CartesianGrid
-                                  strokeDasharray="3 3"
-                                  stroke="#ffffff03"
-                                  vertical={false}
-                                />
-                                <XAxis
-                                  dataKey="date"
-                                  stroke="#ffffff15"
-                                  tick={{ fontSize: 8 }}
-                                />
-                                <YAxis
-                                  stroke="#ffffff15"
-                                  tick={{ fontSize: 8 }}
-                                  domain={["dataMin - 2", "dataMax + 2"]}
-                                />
-                                <Area
-                                  type="monotonous"
-                                  dataKey="weight"
-                                  stroke={activeTheme.accent}
-                                  strokeWidth={1.5}
-                                  fillOpacity={1}
-                                  fill="url(#colorWeightConsole)"
-                                />
-                              </AreaChart>
-                            </ResponsiveContainer>
-                          )}
-                        </div>
-                      </motion.div>
-
-                      {/* Graph 2: Volume Trend */}
-                      <motion.div
-                        variants={cardVariants}
-                        whileHover={{
-                          y: -5,
-                          scale: 1.015,
-                          borderColor: activeTheme.accent + "35",
-                          boxShadow: `0 12px 30px -10px ${activeTheme.accent}20`,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 25,
-                        }}
-                        className="bg-black/70 border border-white/10 rounded-md p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
-                      >
-                        <div className="mb-4">
-                          <div className="flex justify-between items-baseline">
-                            <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">
-                              Volume Progression
-                            </h4>
-                            <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">
+                            <span className="text-lg font-mono font-bold text-gym-accent">
                               {archivedWorkouts.length > 0
-                                ? `${Math.round(archivedWorkouts.reduce((acc, w) => acc + (w.totalVolume || 0), 0) / archivedWorkouts.length)} KG (avg)`
+                                ? `${Math.round(archivedWorkouts.reduce((acc, w) => acc + (w.totalVolume || 0), 0) / archivedWorkouts.length)} KG`
                                 : "0 KG"}
                             </span>
                           </div>
-                          <p className="text-xs text-white/80 font-normal tracking-wide mt-0.5">
-                            Lifting volumes across physical cycles
-                          </p>
-                        </div>
 
-                        <div className="h-[120px] w-full">
-                          {archivedWorkouts.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-md border border-dashed border-white/5">
-                              <Activity className="w-5 h-5 text-white/10 mb-1" />
-                              <span className="text-[9px] text-white/20 font-bold">
-                                No sessions completed yet
+                          <div className="h-[120px] w-full">
+                            {archivedWorkouts.length === 0 ? (
+                              <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
+                                <Activity className="w-4 h-4 text-white/10 mb-1" />
+                                <span className="text-[9px] text-white/20 font-bold">No volume logs</span>
+                              </div>
+                            ) : (
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart
+                                  data={getVolumeData()}
+                                  margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                                >
+                                  <defs>
+                                    <linearGradient id="colorVolumeConsole" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
+                                      <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                  <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                  <Area
+                                    type="monotonous"
+                                    dataKey="volume"
+                                    stroke={activeTheme.accent}
+                                    strokeWidth={1.5}
+                                    fillOpacity={1}
+                                    fill="url(#colorVolumeConsole)"
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            )}
+                          </div>
+                        </motion.div>
+
+                        {/* Graph 3: Calorie Outflow Trend */}
+                        <motion.div
+                          variants={cardVariants}
+                          onClick={() => setActiveView("progress")}
+                          className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-6 flex flex-col justify-between cursor-pointer transition-all duration-300"
+                        >
+                          <div className="mb-6 flex justify-between items-start">
+                            <div>
+                              <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
+                                METABOLIC
                               </span>
+                              <h4 className="text-base font-light text-white mt-1">Energy Burnout</h4>
                             </div>
-                          ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart
-                                data={getVolumeData()}
-                                margin={{
-                                  top: 5,
-                                  right: 5,
-                                  left: -25,
-                                  bottom: 5,
-                                }}
-                              >
-                                <defs>
-                                  <linearGradient
-                                    id="colorVolumeConsole"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="5%"
-                                      stopColor={activeTheme.accent}
-                                      stopOpacity={0.25}
-                                    />
-                                    <stop
-                                      offset="95%"
-                                      stopColor={activeTheme.accent}
-                                      stopOpacity={0}
-                                    />
-                                  </linearGradient>
-                                </defs>
-                                <CartesianGrid
-                                  strokeDasharray="3 3"
-                                  stroke="#ffffff03"
-                                  vertical={false}
-                                />
-                                <XAxis
-                                  dataKey="date"
-                                  stroke="#ffffff15"
-                                  tick={{ fontSize: 8 }}
-                                />
-                                <YAxis
-                                  stroke="#ffffff15"
-                                  tick={{ fontSize: 8 }}
-                                />
-                                <Area
-                                  type="monotonous"
-                                  dataKey="volume"
-                                  stroke={activeTheme.accent}
-                                  strokeWidth={1.5}
-                                  fillOpacity={1}
-                                  fill="url(#colorVolumeConsole)"
-                                />
-                              </AreaChart>
-                            </ResponsiveContainer>
-                          )}
-                        </div>
-                      </motion.div>
-
-                      {/* Graph 3: Calorie Outflow Trend */}
-                      <motion.div
-                        variants={cardVariants}
-                        whileHover={{
-                          y: -5,
-                          scale: 1.015,
-                          borderColor: activeTheme.accent + "35",
-                          boxShadow: `0 12px 30px -10px ${activeTheme.accent}20`,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 25,
-                        }}
-                        className="bg-black/70 border border-white/10 rounded-md p-5 flex flex-col justify-between backdrop-blur-md cursor-pointer"
-                      >
-                        <div className="mb-4">
-                          <div className="flex justify-between items-baseline">
-                            <h4 className="text-[10px] text-white uppercase font-black tracking-widest font-mono">
-                              Caloric Expenditure
-                            </h4>
-                            <span className="text-xs font-bold text-gym-accent font-mono tabular-nums">
+                            <span className="text-lg font-mono font-bold text-gym-accent">
                               {archivedWorkouts.length > 0
                                 ? `${Math.round(archivedWorkouts.reduce((sum, w) => sum + getWorkoutCalories(w), 0))} KCAL`
                                 : "0 KCAL"}
                             </span>
                           </div>
-                          <p className="text-xs text-white/80 font-normal tracking-wide mt-0.5">
-                            Dynamic active energy burnout
-                          </p>
-                        </div>
 
-                        <div className="h-[120px] w-full">
-                          {chronologicalDaysConsole.length === 0 ? (
-                            <div className="h-full flex flex-col items-center justify-center bg-white/[0.02] rounded-md border border-dashed border-white/5">
-                              <Flame className="w-5 h-5 text-white/10 mb-1" />
-                              <span className="text-[9px] text-white/20 font-bold">
-                                No calories burned logged yet
-                              </span>
-                            </div>
-                          ) : (
-                            <ResponsiveContainer width="100%" height="100%">
-                              <AreaChart
-                                data={chronologicalDaysConsole}
-                                margin={{
-                                  top: 5,
-                                  right: 5,
-                                  left: -25,
-                                  bottom: 5,
-                                }}
-                              >
-                                <defs>
-                                  <linearGradient
-                                    id="colorCalorieConsole"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                  >
-                                    <stop
-                                      offset="5%"
-                                      stopColor={activeTheme.accent}
-                                      stopOpacity={0.25}
-                                    />
-                                    <stop
-                                      offset="95%"
-                                      stopColor={activeTheme.accent}
-                                      stopOpacity={0}
-                                    />
-                                  </linearGradient>
-                                </defs>
-                                <CartesianGrid
-                                  strokeDasharray="3 3"
-                                  stroke="#ffffff03"
-                                  vertical={false}
-                                />
-                                <XAxis
-                                  dataKey="date"
-                                  stroke="#ffffff15"
-                                  tick={{ fontSize: 8 }}
-                                />
-                                <YAxis
-                                  stroke="#ffffff15"
-                                  tick={{ fontSize: 8 }}
-                                />
-                                <Area
-                                  type="monotonous"
-                                  dataKey="calories"
-                                  stroke={activeTheme.accent}
-                                  strokeWidth={1.5}
-                                  fillOpacity={1}
-                                  fill="url(#colorCalorieConsole)"
-                                />
-                              </AreaChart>
-                            </ResponsiveContainer>
-                          )}
-                        </div>
+                          <div className="h-[120px] w-full">
+                            {chronologicalDaysConsole.length === 0 ? (
+                              <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
+                                <Flame className="w-4 h-4 text-white/10 mb-1" />
+                                <span className="text-[9px] text-white/20 font-bold">No calorie logs</span>
+                              </div>
+                            ) : (
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart
+                                  data={chronologicalDaysConsole}
+                                  margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                                >
+                                  <defs>
+                                    <linearGradient id="colorCalorieConsole" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
+                                      <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                  <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
+                                  <Area
+                                    type="monotonous"
+                                    dataKey="calories"
+                                    stroke={activeTheme.accent}
+                                    strokeWidth={1.5}
+                                    fillOpacity={1}
+                                    fill="url(#colorCalorieConsole)"
+                                  />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            )}
+                          </div>
+                        </motion.div>
                       </motion.div>
-                    </motion.div>
+                    </div>
 
-                    {/* AI Tactical Operative Coach (extended to full width) */}
-                    <motion.div
-                      variants={cardVariants}
-                      whileHover={{
-                        y: -3,
-                        borderColor: activeTheme.accent + "35",
-                        boxShadow: `0 8px 24px -10px ${activeTheme.accent}12`,
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 350,
-                        damping: 25,
-                      }}
-                      className="mt-8 cursor-pointer"
-                    >
-                      <AICoach
-                        sets={sessionSets}
-                        archivedWorkouts={archivedWorkouts}
-                        userId={profile?.id || "anonymous"}
-                      />
-                    </motion.div>
+
                   </motion.div>
                 );
               })()
@@ -12624,6 +12585,7 @@ export default function App() {
                       </div>
                     </div>
 
+
                     {/* Volume Gamification Section */}
                     <div className="bg-black/85 border border-gym-accent/25 rounded-lg p-8 relative overflow-hidden">
                       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gym-accent/30 to-transparent" />
@@ -17026,7 +16988,9 @@ export default function App() {
             </div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
+      )}
+      </AnimatePresence>
     </div>
   );
 }

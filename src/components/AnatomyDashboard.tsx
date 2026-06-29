@@ -29,6 +29,7 @@ import {
 } from 'recharts';
 import D3RadarChart from './D3RadarChart';
 import { HypertrophicAdaptationPredictor } from './HypertrophicAdaptationPredictor';
+import AICoach from './AICoach';
 import { POOLS } from '../data/exercises';
 
 interface SessionSet {
@@ -2426,6 +2427,15 @@ export default function AnatomyDashboard({
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+
+      {/* Tactical Analyst AI Coach */}
+      <div className="mt-8">
+        <AICoach
+          sets={sessionSets}
+          archivedWorkouts={archivedWorkouts}
+          userId={profile?.id || "anonymous"}
+        />
       </div>
 
     </div>
