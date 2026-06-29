@@ -8583,6 +8583,17 @@ export default function App() {
                     </AnimatePresence>
                   </div>
                 ))}
+
+                {/* Back to Top Button for library */}
+                <div className="flex justify-center pt-8 pb-4">
+                  <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="flex items-center gap-2 px-4 py-2 bg-black/60 border border-white/10 hover:border-gym-accent/35 rounded-md text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-gym-accent transition-all cursor-pointer group"
+                  >
+                    <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
+                    Back to Top
+                  </button>
+                </div>
               </motion.div>
             ) : activeView === "progress" ? (
               <motion.div
