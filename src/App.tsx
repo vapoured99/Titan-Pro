@@ -65,7 +65,7 @@ import {
   ClipboardList,
   Star,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import {
   BarChart,
   Bar,
@@ -1223,6 +1223,41 @@ const getLibraryCategoryIcon = (key: string) => {
     default:
       return <Dumbbell className="w-5 h-5 text-gym-accent" />;
   }
+};
+
+// Reusable 3D Perspective Scroll Item Component with barrel-roll effect
+export const Scroll3DItem = ({ children, className }: { children: React.ReactNode; className?: string; key?: React.Key }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start end", "end start"]
+  });
+
+  // Interpolate based on viewport distance: 0 (bottom) -> 0.5 (center) -> 1 (top)
+  const scale = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.85, 0.95, 1.05, 0.95, 0.85]);
+  const opacity = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.4, 0.85, 1, 0.85, 0.4]);
+  const rotateX = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [22, 10, 0, -10, -22]);
+  const z = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-120, -40, 0, -40, -120]);
+  const y = useTransform(scrollYProgress, [0, 0.5, 1], [20, 0, -20]);
+
+  return (
+    <div style={{ perspective: "1000px" }} className="w-full">
+      <motion.div
+        ref={ref}
+        style={{
+          scale,
+          opacity,
+          rotateX,
+          z,
+          y,
+          transformStyle: "preserve-3d",
+        }}
+        className={className}
+      >
+        {children}
+      </motion.div>
+    </div>
+  );
 };
 
 export default function App() {
@@ -6786,6 +6821,37 @@ export default function App() {
               { id: "anatomy", label: "Anatomy", icon: PersonStanding },
               { id: "session", label: "Session", icon: Zap },
               { id: "routines", label: "Routines", icon: Repeat },
+            ].map((nav) => {
+              const IconComponent = nav.icon;
+              return (
+                <button
+                  key={nav.id}
+                  onClick={() => {
+                    setActiveView(nav.id as any);
+                    saveSettings({ activeView: nav.id });
+                  }}
+                  className={`relative p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
+                    activeView === nav.id
+                      ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent"
+                      : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
+                  }`}
+                  title={nav.label}
+                >
+                  <IconComponent className="w-5 h-5" />
+                  {activeView === nav.id && (
+                    <motion.div
+                      layoutId="nav-underline"
+                      className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav"
+                    />
+                  )}
+                </button>
+              );
+            })}
+
+            {/* Even spacing between Routines and Map/GymLocator */}
+            <div className="flex-grow min-w-[12px] md:min-w-[24px]" />
+
+            {[
               { id: "map", label: "Tactical Map", icon: Compass },
               { id: "gym_locator", label: "Gym Locator", icon: MapPin },
             ].map((nav) => {
@@ -6815,7 +6881,7 @@ export default function App() {
               );
             })}
 
-            {/* Flexible spacer to push Avatar to the right side on desktop while allowing elegant sliding */}
+            {/* Even spacing between Map/GymLocator and Avatar */}
             <div className="flex-grow min-w-[12px] md:min-w-[24px]" />
 
             {[
@@ -7694,32 +7760,34 @@ export default function App() {
                         </span>
                       </div>
                     ) : (
-                      <button
-                        onClick={() =>
-                          setExpandedLibrarySections((prev) => ({
-                            ...prev,
-                            [section.title]: !prev[section.title],
-                          }))
-                        }
-                        className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-                            {getLibraryCategoryIcon(section.key)}
+                      <Scroll3DItem>
+                        <button
+                          onClick={() =>
+                            setExpandedLibrarySections((prev) => ({
+                              ...prev,
+                              [section.title]: !prev[section.title],
+                            }))
+                          }
+                          className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
+                              {getLibraryCategoryIcon(section.key)}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <h3 className="text-lg font-light italic font-serif text-white/90">
+                                {section.title}
+                              </h3>
+                              <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
+                                {section.list.length} Ex.
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-lg font-light italic font-serif text-white/90">
-                              {section.title}
-                            </h3>
-                            <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
-                              {section.list.length} Ex.
-                            </span>
-                          </div>
-                        </div>
-                        <ChevronDown
-                          className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-all ${expandedLibrarySections[section.title] ? "rotate-180" : ""}`}
-                        />
-                      </button>
+                          <ChevronDown
+                            className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-all ${expandedLibrarySections[section.title] ? "rotate-180" : ""}`}
+                          />
+                        </button>
+                      </Scroll3DItem>
                     )}
 
                     <AnimatePresence>
@@ -7739,11 +7807,9 @@ export default function App() {
                                   (ce) => ce.name.toLowerCase() === ex.name.toLowerCase()
                                 );
                                 return (
-                                  <div
-                                    key={ex.name}
-                                    className="bg-black/60 border border-white/10 rounded-md p-5 hover:border-white/35 transition-all group flex flex-col justify-between"
-                                  >
-                                    <div>
+                                  <Scroll3DItem key={ex.name}>
+                                    <div className="bg-black/60 border border-white/10 rounded-md p-5 hover:border-white/35 transition-all group flex flex-col justify-between h-full">
+                                      <div>
                                       {/* Title Row - full width, wraps nicely, no truncation cutoff */}
                                       <div className="flex items-start justify-between gap-3 mb-2.5">
                                         <div className="flex items-start gap-2.5 min-w-0 flex-1">
@@ -7865,7 +7931,8 @@ export default function App() {
                                         <span>Log Set</span>
                                       </button>
                                     </div>
-                                  </div>
+                                    </div>
+                                  </Scroll3DItem>
                                 );
                               };
 
@@ -8505,32 +8572,34 @@ export default function App() {
               >
                 {/* Weight Tracking Section */}
                 <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <button
-                    onClick={() =>
-                      setExpandedProgressSections((prev) => ({
-                        ...prev,
-                        weight: !prev.weight,
-                      }))
-                    }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                        <Scale className="w-5 h-5" />
+                  <Scroll3DItem>
+                    <button
+                      onClick={() =>
+                        setExpandedProgressSections((prev) => ({
+                          ...prev,
+                          weight: !prev.weight,
+                        }))
+                      }
+                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                          <Scale className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                            Weight Tracking
+                          </h3>
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                            Physical progression tracking
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                          Weight Tracking
-                        </h3>
-                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                          Physical progression tracking
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.weight ? "rotate-180" : ""}`}
-                    />
-                  </button>
+                      <ChevronDown
+                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.weight ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </Scroll3DItem>
 
                   <AnimatePresence>
                     {expandedProgressSections.weight && (
@@ -8810,10 +8879,8 @@ export default function App() {
                                       {[...weightHistory]
                                         .reverse()
                                         .map((entry, i) => (
-                                          <div
-                                            key={entry.id || i}
-                                            className="flex items-center justify-between px-6 py-3.5 hover:bg-white/[0.02] transition-colors group"
-                                          >
+                                          <Scroll3DItem key={entry.id || i}>
+                                            <div className="flex items-center justify-between px-6 py-3.5 hover:bg-white/[0.02] transition-colors group">
                                             <div className="flex flex-col gap-0.5">
                                               <div className="flex items-baseline gap-1.5">
                                                 <span className="text-base font-medium text-white">
@@ -8873,7 +8940,8 @@ export default function App() {
                                                 <Trash2 className="w-3.5 h-3.5 text-red-500" />
                                               </button>
                                             )}
-                                          </div>
+                                            </div>
+                                          </Scroll3DItem>
                                         ))}
                                     </div>
                                   )}
@@ -8889,32 +8957,34 @@ export default function App() {
 
                 {/* Body Fat Tracking Section */}
                 <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <button
-                    onClick={() =>
-                      setExpandedProgressSections((prev) => ({
-                        ...prev,
-                        bodyFat: !prev.bodyFat,
-                      }))
-                    }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                        <Percent className="w-5 h-5" />
+                  <Scroll3DItem>
+                    <button
+                      onClick={() =>
+                        setExpandedProgressSections((prev) => ({
+                          ...prev,
+                          bodyFat: !prev.bodyFat,
+                        }))
+                      }
+                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                          <Percent className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                            Body Fat Tracking
+                          </h3>
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                            Body fat percentage progression
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                          Body Fat Tracking
-                        </h3>
-                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                          Body fat percentage progression
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.bodyFat ? "rotate-180" : ""}`}
-                    />
-                  </button>
+                      <ChevronDown
+                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.bodyFat ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </Scroll3DItem>
 
                   <AnimatePresence>
                     {expandedProgressSections.bodyFat && (
@@ -9279,32 +9349,34 @@ export default function App() {
 
                 {/* Workout Frequency Heatmap Section */}
                 <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <button
-                    onClick={() =>
-                      setExpandedProgressSections((prev) => ({
-                        ...prev,
-                        workoutCalendar: !prev.workoutCalendar,
-                      }))
-                    }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                        <Activity className="w-5 h-5" />
+                  <Scroll3DItem>
+                    <button
+                      onClick={() =>
+                        setExpandedProgressSections((prev) => ({
+                          ...prev,
+                          workoutCalendar: !prev.workoutCalendar,
+                        }))
+                      }
+                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                          <Activity className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                            Workout Frequency
+                          </h3>
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                            Past 3 months activity heatmap
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                          Workout Frequency
-                        </h3>
-                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                          Past 3 months activity heatmap
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.workoutCalendar ? "rotate-180" : ""}`}
-                    />
-                  </button>
+                      <ChevronDown
+                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.workoutCalendar ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </Scroll3DItem>
 
                   <AnimatePresence>
                     {expandedProgressSections.workoutCalendar && (
@@ -9327,32 +9399,34 @@ export default function App() {
 
                 {/* Trending Section */}
                 <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <button
-                    onClick={() =>
-                      setExpandedProgressSections((prev) => ({
-                        ...prev,
-                        trending: !prev.trending,
-                      }))
-                    }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                        <TrendingUp className="w-5 h-5" />
+                  <Scroll3DItem>
+                    <button
+                      onClick={() =>
+                        setExpandedProgressSections((prev) => ({
+                          ...prev,
+                          trending: !prev.trending,
+                        }))
+                      }
+                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                          <TrendingUp className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                            Trending
+                          </h3>
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                            Volume & Output Analysis
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                          Trending
-                        </h3>
-                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                          Volume & Output Analysis
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.trending ? "rotate-180" : ""}`}
-                    />
-                  </button>
+                      <ChevronDown
+                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.trending ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </Scroll3DItem>
 
                   <AnimatePresence>
                     {expandedProgressSections.trending && (
@@ -9550,32 +9624,34 @@ export default function App() {
 
                 {/* Personal Records Feed Section */}
                 <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <button
-                    onClick={() =>
-                      setExpandedProgressSections((prev) => ({
-                        ...prev,
-                        personalRecords: !prev.personalRecords,
-                      }))
-                    }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                        <Trophy className="w-5 h-5 animate-pulse" />
+                  <Scroll3DItem>
+                    <button
+                      onClick={() =>
+                        setExpandedProgressSections((prev) => ({
+                          ...prev,
+                          personalRecords: !prev.personalRecords,
+                        }))
+                      }
+                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                          <Trophy className="w-5 h-5 animate-pulse" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                            Personal Records Feed
+                          </h3>
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                            PB accomplishments with date stamps and weight details
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                          Personal Records Feed
-                        </h3>
-                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                          PB accomplishments with date stamps and weight details
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.personalRecords ? "rotate-180" : ""}`}
-                    />
-                  </button>
+                      <ChevronDown
+                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.personalRecords ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </Scroll3DItem>
 
                   <AnimatePresence>
                     {expandedProgressSections.personalRecords && (
@@ -10026,32 +10102,34 @@ export default function App() {
                 </div>
                 {/* Exercise Progression Tracker Section */}
                 <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <button
-                    onClick={() =>
-                      setExpandedProgressSections((prev) => ({
-                        ...prev,
-                        exercises: !prev.exercises,
-                      }))
-                    }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                        <Dumbbell className="w-5 h-5" />
+                  <Scroll3DItem>
+                    <button
+                      onClick={() =>
+                        setExpandedProgressSections((prev) => ({
+                          ...prev,
+                          exercises: !prev.exercises,
+                        }))
+                      }
+                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                          <Dumbbell className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                            Exercise Progression Tracker
+                          </h3>
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                            Database search & visual progress benchmarking across historical sets
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                          Exercise Progression Tracker
-                        </h3>
-                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                          Database search & visual progress benchmarking across historical sets
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.exercises ? "rotate-180" : ""}`}
-                    />
-                  </button>
+                      <ChevronDown
+                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.exercises ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </Scroll3DItem>
 
                   <AnimatePresence>
                     {expandedProgressSections.exercises && (
@@ -10322,32 +10400,34 @@ export default function App() {
 
                 {/* Calorie Tracker Section */}
                 <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <button
-                    onClick={() =>
-                      setExpandedProgressSections((prev) => ({
-                        ...prev,
-                        calorieTracker: !prev.calorieTracker,
-                      }))
-                    }
-                    className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                        <Flame className="w-5 h-5 animate-pulse" />
+                  <Scroll3DItem>
+                    <button
+                      onClick={() =>
+                        setExpandedProgressSections((prev) => ({
+                          ...prev,
+                          calorieTracker: !prev.calorieTracker,
+                        }))
+                      }
+                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+                          <Flame className="w-5 h-5 animate-pulse" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
+                            Calorie Tracker
+                          </h3>
+                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                            Comprehensive metabolic & training energy output
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                          Calorie Tracker
-                        </h3>
-                        <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                          Comprehensive metabolic & training energy output
-                        </p>
-                      </div>
-                    </div>
-                    <ChevronDown
-                      className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.calorieTracker ? "rotate-180" : ""}`}
-                    />
-                  </button>
+                      <ChevronDown
+                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.calorieTracker ? "rotate-180" : ""}`}
+                      />
+                    </button>
+                  </Scroll3DItem>
 
                   <AnimatePresence>
                     {expandedProgressSections.calorieTracker && (
@@ -11141,25 +11221,27 @@ export default function App() {
                           </h4>
 
                           <div className="relative">
-                            <button
-                              onClick={() =>
-                                setShowHistoryMenu(!showHistoryMenu)
-                              }
-                              className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
-                            >
-                              <History className="w-3 h-3" />
-                              {selectedWorkoutId &&
-                              archivedWorkouts.find(
-                                (w) => w.id === selectedWorkoutId,
-                              )
-                                ? archivedWorkouts.find(
-                                    (w) => w.id === selectedWorkoutId,
-                                  )?.date
-                                : "History Explorer"}
-                              <ChevronDown
-                                className={`w-3 h-3 transition-transform ${showHistoryMenu ? "rotate-180" : ""}`}
-                              />
-                            </button>
+                            <Scroll3DItem>
+                              <button
+                                onClick={() =>
+                                  setShowHistoryMenu(!showHistoryMenu)
+                                }
+                                className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
+                              >
+                                <History className="w-3 h-3" />
+                                {selectedWorkoutId &&
+                                archivedWorkouts.find(
+                                  (w) => w.id === selectedWorkoutId,
+                                )
+                                  ? archivedWorkouts.find(
+                                      (w) => w.id === selectedWorkoutId,
+                                    )?.date
+                                  : "History Explorer"}
+                                <ChevronDown
+                                  className={`w-3 h-3 transition-transform ${showHistoryMenu ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                            </Scroll3DItem>
 
                             <AnimatePresence>
                               {showHistoryMenu && (
@@ -11648,83 +11730,97 @@ export default function App() {
 
                         {/* Favorites Dropdown Select */}
                         <div className="relative">
-                          <button
-                            type="button"
-                            onClick={() => setBuilderFavDropdownOpen(!builderFavDropdownOpen)}
-                            className="w-full flex items-center justify-between gap-2 px-3 py-2.5 bg-black/40 border border-white/10 rounded-md text-xs text-white/80 hover:bg-white/[0.02] hover:border-white/20 transition-all cursor-pointer select-none"
-                            id="builder-favorites-dropdown-btn"
-                          >
-                            <div className="flex items-center gap-2">
-                              <Star className={`w-3.5 h-3.5 ${favoriteExercises.length > 0 ? "text-amber-400 fill-amber-400/20" : "text-white/30"}`} />
-                              <span className="font-medium text-white/90">
-                                Favorites Quick-Add ({favoriteExercises.length})
-                              </span>
-                            </div>
-                            <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-300 ${builderFavDropdownOpen ? "rotate-180" : ""}`} />
-                          </button>
-
-                          {builderFavDropdownOpen && (
-                            <>
-                              {/* Overlay for dismissing dropdown */}
-                              <div 
-                                className="fixed inset-0 z-40 cursor-default" 
-                                onClick={() => setBuilderFavDropdownOpen(false)} 
-                              />
-                              <div className="absolute left-0 right-0 mt-1 bg-[#0f0f0f] border border-white/10 rounded-md shadow-[0_10px_30px_rgba(0,0,0,0.8)] max-h-[280px] overflow-y-auto z-50 p-2 space-y-3 custom-scrollbar">
-                                {(() => {
-                                  const groupedFavs = getFavoriteExercisesByCategory();
-                                  if (groupedFavs.length === 0) {
-                                    return (
-                                      <div className="text-center py-5 text-white/30 text-[10px] font-mono">
-                                        No favorites saved yet.<br />
-                                        <span className="text-[9px] text-white/15">Star exercises in the Library first.</span>
-                                      </div>
-                                    );
-                                  }
-                                  return groupedFavs.map((group) => (
-                                    <div key={group.categoryTitle} className="space-y-1">
-                                      <div className="flex items-center gap-1.5 border-b border-white/5 pb-1 ml-1 mt-1.5">
-                                        <div className="w-1 h-2.5 bg-gym-accent rounded-[1px]" />
-                                        <span className="text-[9px] font-black uppercase tracking-wider text-white/40 font-mono">
-                                          {group.categoryTitle}
-                                        </span>
-                                      </div>
-                                      <div className="space-y-0.5">
-                                        {group.list.map((ex) => {
-                                          const isAdded = newRoutineExercises.some(r => r.exerciseName.toLowerCase() === ex.name.toLowerCase());
-                                          return (
-                                            <button
-                                              key={ex.name}
-                                              type="button"
-                                              onClick={() => {
-                                                handleAddExercise(ex.name);
-                                                setBuilderFavDropdownOpen(false);
-                                              }}
-                                              disabled={isAdded}
-                                              className={`w-full text-left px-2 py-1.5 rounded-md text-[11px] transition-all flex items-center justify-between gap-3 ${
-                                                isAdded 
-                                                  ? "bg-emerald-500/5 text-emerald-400 opacity-60 cursor-not-allowed" 
-                                                  : "hover:bg-white/5 text-white/80 cursor-pointer"
-                                              }`}
-                                            >
-                                              <span className="truncate">{ex.name}</span>
-                                              {isAdded ? (
-                                                <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-400">
-                                                  Added
-                                                </span>
-                                              ) : (
-                                                <Plus className="w-3 h-3 text-white/20" />
-                                              )}
-                                            </button>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  ));
-                                })()}
+                          <Scroll3DItem>
+                            <button
+                              type="button"
+                              onClick={() => setBuilderFavDropdownOpen(!builderFavDropdownOpen)}
+                              className="w-full flex items-center justify-between gap-2 px-3 py-2.5 bg-black/40 border border-white/10 rounded-md text-xs text-white/80 hover:bg-white/[0.02] hover:border-white/20 transition-all cursor-pointer select-none"
+                              id="builder-favorites-dropdown-btn"
+                            >
+                              <div className="flex items-center gap-2">
+                                <Star className={`w-3.5 h-3.5 ${favoriteExercises.length > 0 ? "text-amber-400 fill-amber-400/20" : "text-white/30"}`} />
+                                <span className="font-medium text-white/90">
+                                  Favorites Quick-Add ({favoriteExercises.length})
+                                </span>
                               </div>
-                            </>
-                          )}
+                              <ChevronDown className={`w-3.5 h-3.5 text-white/30 transition-transform duration-300 ${builderFavDropdownOpen ? "rotate-180" : ""}`} />
+                            </button>
+                          </Scroll3DItem>
+
+                          <AnimatePresence>
+                            {builderFavDropdownOpen && (
+                              <>
+                                {/* Overlay for dismissing dropdown */}
+                                <div 
+                                  className="fixed inset-0 z-40 cursor-default" 
+                                  onClick={() => setBuilderFavDropdownOpen(false)} 
+                                />
+                                <motion.div
+                                  initial={{ opacity: 0, y: -12, rotateX: -18, scale: 0.94 }}
+                                  animate={{ opacity: 1, y: 0, rotateX: 0, scale: 1 }}
+                                  exit={{ opacity: 0, y: -12, rotateX: -18, scale: 0.94 }}
+                                  transition={{ type: "spring", stiffness: 180, damping: 18 }}
+                                  style={{ transformOrigin: "top center", perspective: 1000 }}
+                                  className="absolute left-0 right-0 mt-1 bg-[#0f0f0f] border border-white/10 rounded-md shadow-[0_10px_30px_rgba(0,0,0,0.8)] max-h-[280px] overflow-y-auto z-50 p-2 space-y-3 custom-scrollbar"
+                                >
+                                  {(() => {
+                                    const groupedFavs = getFavoriteExercisesByCategory();
+                                    if (groupedFavs.length === 0) {
+                                      return (
+                                        <div className="text-center py-5 text-white/30 text-[10px] font-mono">
+                                          No favorites saved yet.<br />
+                                          <span className="text-[9px] text-white/15">Star exercises in the Library first.</span>
+                                        </div>
+                                      );
+                                    }
+                                    return groupedFavs.map((group) => (
+                                      <div key={group.categoryTitle} className="space-y-1">
+                                        <div className="flex items-center gap-1.5 border-b border-white/5 pb-1 ml-1 mt-1.5">
+                                          <div className="w-1 h-2.5 bg-gym-accent rounded-[1px]" />
+                                          <span className="text-[9px] font-black uppercase tracking-wider text-white/40 font-mono">
+                                            {group.categoryTitle}
+                                          </span>
+                                        </div>
+                                        <div className="space-y-0.5">
+                                          {group.list.map((ex) => {
+                                            const isAdded = newRoutineExercises.some(r => r.exerciseName.toLowerCase() === ex.name.toLowerCase());
+                                            return (
+                                              <Scroll3DItem key={ex.name}>
+                                                <button
+                                                  initial="hidden"
+                                                  animate="show"
+                                                type="button"
+                                                onClick={() => {
+                                                  handleAddExercise(ex.name);
+                                                  setBuilderFavDropdownOpen(false);
+                                                }}
+                                                disabled={isAdded}
+                                                className={`w-full text-left px-2 py-1.5 rounded-md text-[11px] transition-all flex items-center justify-between gap-3 ${
+                                                  isAdded 
+                                                    ? "bg-emerald-500/5 text-emerald-400 opacity-60 cursor-not-allowed" 
+                                                    : "hover:bg-white/5 text-white/80 cursor-pointer"
+                                                }`}
+                                              >
+                                                <span className="truncate">{ex.name}</span>
+                                                {isAdded ? (
+                                                  <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-400">
+                                                    Added
+                                                  </span>
+                                                ) : (
+                                                  <Plus className="w-3 h-3 text-white/20" />
+                                                )}
+                                                </button>
+                                              </Scroll3DItem>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    ));
+                                  })()}
+                                </motion.div>
+                              </>
+                            )}
+                          </AnimatePresence>
                         </div>
 
                         {/* Filter Toggle tabs: All vs Favorites */}
@@ -12111,43 +12207,42 @@ export default function App() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                               {selectedRoutineMuscleGroups.map((item) => (
-                                <div
-                                  key={item.group}
-                                  className="bg-white/[0.01] border border-white/5 rounded-md p-4 flex flex-col justify-between hover:bg-white/[0.03] hover:border-white/10 transition-all group/item"
-                                >
-                                  <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-1.5 min-w-0">
-                                      <span className="text-gym-accent group-hover/item:text-gym-accent/80 shrink-0">
-                                        {getMuscleGroupIcon(item.group)}
-                                      </span>
-                                      <span className="text-[10px] text-white/80 font-bold uppercase tracking-wider truncate">
-                                        {item.group}
+                                <Scroll3DItem key={item.group}>
+                                  <div className="bg-white/[0.01] border border-white/5 rounded-md p-4 flex flex-col justify-between hover:bg-white/[0.03] hover:border-white/10 transition-all group/item h-full">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="text-gym-accent group-hover/item:text-gym-accent/80 shrink-0">
+                                          {getMuscleGroupIcon(item.group)}
+                                        </span>
+                                        <span className="text-[10px] text-white/80 font-bold uppercase tracking-wider truncate">
+                                          {item.group}
+                                        </span>
+                                      </div>
+                                      <span className="text-[9px] text-white/40 font-mono font-bold">
+                                        x{item.count}
                                       </span>
                                     </div>
-                                    <span className="text-[9px] text-white/40 font-mono font-bold">
-                                      x{item.count}
-                                    </span>
-                                  </div>
 
-                                  <div>
-                                    <div className="flex items-baseline justify-between mb-1.5">
-                                      <span className="text-[15px] font-black text-white group-hover/item:text-gym-accent transition-colors font-mono tracking-tight">
-                                        {item.percentage}%
-                                      </span>
-                                      <span className="text-[7px] text-white/20 uppercase tracking-widest font-bold">
-                                        Emphasis
-                                      </span>
-                                    </div>
-                                    <div className="w-full bg-white/5 h-1 rounded-md overflow-hidden font-mono">
-                                      <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${item.percentage}%` }}
-                                        transition={{ duration: 0.8, ease: "easeOut" }}
-                                        className="bg-gym-accent h-full rounded-md shadow-[0_0_8px_rgba(255,231,101,0.35)]"
-                                      />
+                                    <div>
+                                      <div className="flex items-baseline justify-between mb-1.5">
+                                        <span className="text-[15px] font-black text-white group-hover/item:text-gym-accent transition-colors font-mono tracking-tight">
+                                          {item.percentage}%
+                                        </span>
+                                        <span className="text-[7px] text-white/20 uppercase tracking-widest font-bold">
+                                          Emphasis
+                                        </span>
+                                      </div>
+                                      <div className="w-full bg-white/5 h-1 rounded-md overflow-hidden font-mono">
+                                        <motion.div
+                                          initial={{ width: 0 }}
+                                          animate={{ width: `${item.percentage}%` }}
+                                          transition={{ duration: 0.8, ease: "easeOut" }}
+                                          className="bg-gym-accent h-full rounded-md shadow-[0_0_8px_rgba(255,231,101,0.35)]"
+                                        />
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
+                                </Scroll3DItem>
                               ))}
                             </div>
 
@@ -12161,43 +12256,42 @@ export default function App() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                   {selectedRoutineSecondaryMuscleGroups.map((item) => (
-                                    <div
-                                      key={item.group}
-                                      className="bg-white/[0.005] border border-white/5 rounded-md p-3.5 flex flex-col justify-between hover:bg-white/[0.02] hover:border-white/10 transition-all group/item"
-                                    >
-                                      <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                          <span className="text-white/40 group-hover/item:text-gym-accent/60 shrink-0">
-                                            {getMuscleGroupIcon(item.group)}
-                                          </span>
-                                          <span className="text-[9px] text-white/70 font-semibold uppercase tracking-wider truncate">
-                                            {item.group}
+                                    <Scroll3DItem key={item.group}>
+                                      <div className="bg-white/[0.005] border border-white/5 rounded-md p-3.5 flex flex-col justify-between hover:bg-white/[0.02] hover:border-white/10 transition-all group/item h-full">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <div className="flex items-center gap-1.5 min-w-0">
+                                            <span className="text-white/40 group-hover/item:text-gym-accent/60 shrink-0">
+                                              {getMuscleGroupIcon(item.group)}
+                                            </span>
+                                            <span className="text-[9px] text-white/70 font-semibold uppercase tracking-wider truncate">
+                                              {item.group}
+                                            </span>
+                                          </div>
+                                          <span className="text-[8px] text-white/30 font-mono">
+                                            x{item.count}
                                           </span>
                                         </div>
-                                        <span className="text-[8px] text-white/30 font-mono">
-                                          x{item.count}
-                                        </span>
-                                      </div>
 
-                                      <div>
-                                        <div className="flex items-baseline justify-between mb-1">
-                                          <span className="text-[12px] font-bold text-white/90 group-hover/item:text-gym-accent transition-colors font-mono">
-                                            {item.percentage}%
-                                          </span>
-                                          <span className="text-[6px] text-white/20 uppercase tracking-widest font-bold">
-                                            Synergy Contribution
-                                          </span>
-                                        </div>
-                                        <div className="w-full bg-white/5 h-[3px] rounded-md overflow-hidden font-mono">
-                                          <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${item.percentage}%` }}
-                                            transition={{ duration: 0.8, ease: "easeOut" }}
-                                            className="bg-white/40 h-full rounded-md"
-                                          />
+                                        <div>
+                                          <div className="flex items-baseline justify-between mb-1">
+                                            <span className="text-[12px] font-bold text-white/90 group-hover/item:text-gym-accent transition-colors font-mono">
+                                              {item.percentage}%
+                                            </span>
+                                            <span className="text-[6px] text-white/20 uppercase tracking-widest font-bold">
+                                              Synergy Contribution
+                                            </span>
+                                          </div>
+                                          <div className="w-full bg-white/5 h-[3px] rounded-md overflow-hidden font-mono">
+                                            <motion.div
+                                              initial={{ width: 0 }}
+                                              animate={{ width: `${item.percentage}%` }}
+                                              transition={{ duration: 0.8, ease: "easeOut" }}
+                                              className="bg-white/40 h-full rounded-md"
+                                            />
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
+                                    </Scroll3DItem>
                                   ))}
                                 </div>
                               </div>
@@ -12215,32 +12309,34 @@ export default function App() {
 
                       return (
                         <div key={di} className="group">
-                          <button
-                            onClick={() =>
-                              setExpandedRoutinesDays((prev) => ({
-                                ...prev,
-                                [di]: !isOpen,
-                              }))
-                            }
-                            className="w-full flex items-center justify-between p-6 rounded-md bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
-                          >
-                            <div className="flex items-center gap-4">
-                              <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
-                                {day.icon}
+                          <Scroll3DItem>
+                            <button
+                              onClick={() =>
+                                setExpandedRoutinesDays((prev) => ({
+                                  ...prev,
+                                  [di]: !isOpen,
+                                }))
+                              }
+                              className="w-full flex items-center justify-between p-6 rounded-md bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
+                                  {day.icon}
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <h3 className="text-lg font-light italic font-serif text-white/90">
+                                    {day.name}
+                                  </h3>
+                                  <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
+                                    {categoryRoutines.length} Saved
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-3">
-                                <h3 className="text-lg font-light italic font-serif text-white/90">
-                                  {day.name}
-                                </h3>
-                                <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
-                                  {categoryRoutines.length} Saved
-                                </span>
-                              </div>
-                            </div>
-                            <ChevronDown
-                              className={`w-4 h-4 transition-transform duration-500 ${isOpen ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
-                            />
-                          </button>
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform duration-500 ${isOpen ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
+                              />
+                            </button>
+                          </Scroll3DItem>
 
                       <AnimatePresence>
                         {isOpen && (
@@ -13450,43 +13546,45 @@ export default function App() {
 
                 {DAY_CONFIG.map((day, di) => (
                   <div key={di} className="group">
-                    <button
-                      onClick={() =>
-                        setExpandedDays((prev) => ({
-                          ...prev,
-                          [di]: !prev[di],
-                        }))
-                      }
-                      className={`w-full flex items-center justify-between p-6 rounded-md border transition-all cursor-pointer group backdrop-blur-md ${
-                        lastLoadedDayIndex === di
-                          ? "bg-gym-accent/[0.04] border-gym-accent shadow-md shadow-gym-accent/10"
-                          : "bg-black/70 border-white/15 hover:bg-white/[0.04] hover:border-white/25"
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-                          {day.icon}
+                    <Scroll3DItem>
+                      <button
+                        onClick={() =>
+                          setExpandedDays((prev) => ({
+                            ...prev,
+                            [di]: !prev[di],
+                          }))
+                        }
+                        className={`w-full flex items-center justify-between p-6 rounded-md border transition-all cursor-pointer group backdrop-blur-md ${
+                          lastLoadedDayIndex === di
+                            ? "bg-gym-accent/[0.04] border-gym-accent shadow-md shadow-gym-accent/10"
+                            : "bg-black/70 border-white/15 hover:bg-white/[0.04] hover:border-white/25"
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
+                            {day.icon}
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-lg font-light italic font-serif text-white/90">
+                              {day.name}
+                            </h3>
+                            <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
+                              {currentDays[di]?.length || 0} Ex.
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-lg font-light italic font-serif text-white/90">
-                            {day.name}
-                          </h3>
-                          <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
-                            {currentDays[di]?.length || 0} Ex.
-                          </span>
+                        <div className="flex items-center gap-4">
+                          {!expandedDays[di] && currentDays[di]?.length === 0 && (
+                            <span className="text-[9px] text-gym-accent font-bold uppercase tracking-widest opacity-60 group-hover:opacity-100">
+                              Click to Create Plan
+                            </span>
+                          )}
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform duration-500 ${expandedDays[di] ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
+                          />
                         </div>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        {!expandedDays[di] && currentDays[di]?.length === 0 && (
-                          <span className="text-[9px] text-gym-accent font-bold uppercase tracking-widest opacity-60 group-hover:opacity-100">
-                            Click to Create Plan
-                          </span>
-                        )}
-                        <ChevronDown
-                          className={`w-4 h-4 transition-transform duration-500 ${expandedDays[di] ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
-                        />
-                      </div>
-                    </button>
+                      </button>
+                    </Scroll3DItem>
 
                     <AnimatePresence>
                       {expandedDays[di] && (
@@ -13671,6 +13769,17 @@ export default function App() {
                     </AnimatePresence>
                   </div>
                 ))}
+
+                {/* Back to Top Button */}
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="flex items-center gap-2 px-4 py-2 bg-black/60 border border-white/10 hover:border-gym-accent/35 rounded-md text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-gym-accent transition-all cursor-pointer group"
+                  >
+                    <ArrowUp className="w-3.5 h-3.5 text-white/30 group-hover:text-gym-accent transition-colors" />
+                    Back to Top
+                  </button>
+                </div>
                   </>
                 )}
               </motion.div>
@@ -15565,41 +15674,42 @@ export default function App() {
                       {filteredAlternatives.length > 0 ? (
                         filteredAlternatives.map((alt) => {
                           return (
-                            <div
-                              key={alt.name}
-                              onClick={() => {
-                                executeSwap(swappingExercise.dayIndex, swappingExercise.exIndex, alt);
-                                setSwapSearch("");
-                              }}
-                              className="group p-4 bg-white/[0.01] border border-white/5 hover:border-gym-accent/30 hover:bg-gym-accent/[0.02] rounded-md transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                            >
-                              <div className="space-y-1.5 flex-1 pr-4">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="text-base font-semibold text-white/90 group-hover:text-gym-accent transition-colors leading-snug">
-                                    {alt.name}
-                                  </h4>
-                                  {alt.category && (
-                                    <span
-                                      className={`text-[8px] px-1.5 py-0.2 rounded-md font-black uppercase tracking-[0.1em] ${
-                                        alt.category === "compound"
-                                          ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                          : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
-                                      }`}
-                                    >
-                                      {alt.category}
-                                    </span>
+                            <Scroll3DItem key={alt.name}>
+                              <div
+                                onClick={() => {
+                                  executeSwap(swappingExercise.dayIndex, swappingExercise.exIndex, alt);
+                                  setSwapSearch("");
+                                }}
+                                className="group p-4 bg-white/[0.01] border border-white/5 hover:border-gym-accent/30 hover:bg-gym-accent/[0.02] rounded-md transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                              >
+                                <div className="space-y-1.5 flex-1 pr-4">
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="text-base font-semibold text-white/90 group-hover:text-gym-accent transition-colors leading-snug">
+                                      {alt.name}
+                                    </h4>
+                                    {alt.category && (
+                                      <span
+                                        className={`text-[8px] px-1.5 py-0.2 rounded-md font-black uppercase tracking-[0.1em] ${
+                                          alt.category === "compound"
+                                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                            : "bg-purple-500/15 text-purple-300 border border-purple-500/20"
+                                        }`}
+                                      >
+                                        {alt.category}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {alt.instructions && alt.instructions.length > 0 && (
+                                    <p className="text-[10px] text-white/40 leading-relaxed font-light line-clamp-2">
+                                      💡 {alt.instructions[0]}
+                                    </p>
                                   )}
                                 </div>
-                                {alt.instructions && alt.instructions.length > 0 && (
-                                  <p className="text-[10px] text-white/40 leading-relaxed font-light line-clamp-2">
-                                    💡 {alt.instructions[0]}
-                                  </p>
-                                )}
+                                <span className="shrink-0 px-4 py-2 border border-white/10 group-hover:border-gym-accent group-hover:bg-gym-accent group-hover:text-black hover:bg-gym-accent text-white/60 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer whitespace-nowrap text-center">
+                                  Swap & Replace
+                                </span>
                               </div>
-                              <span className="shrink-0 px-4 py-2 border border-white/10 group-hover:border-gym-accent group-hover:bg-gym-accent group-hover:text-black hover:bg-gym-accent text-white/60 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer whitespace-nowrap text-center">
-                                Swap & Replace
-                              </span>
-                            </div>
+                            </Scroll3DItem>
                           );
                         })
                       ) : (

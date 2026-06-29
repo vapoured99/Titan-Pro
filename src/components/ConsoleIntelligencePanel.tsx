@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Scroll3DItem } from '../App';
 import { motion } from 'motion/react';
 import { Activity, Zap, Clock, ShieldAlert, Cpu, BarChart3, TrendingUp, Info } from 'lucide-react';
 
@@ -390,7 +391,8 @@ export default function ConsoleIntelligencePanel({
   };
 
   return (
-    <div className="mt-8 bg-gradient-to-b from-[#090a0d] to-[#040405] border border-white/10 rounded-lg p-6 relative overflow-hidden shadow-2xl">
+    <Scroll3DItem>
+      <div className="mt-8 bg-gradient-to-b from-[#090a0d] to-[#040405] border border-white/10 rounded-lg p-6 relative overflow-hidden shadow-2xl">
       {/* Background cyber grid and subtle ambient neon glow spheres */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none" />
       <div className="absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gym-accent/5 rounded-full blur-[100px] pointer-events-none" />
@@ -713,5 +715,6 @@ export default function ConsoleIntelligencePanel({
 
       </div>
     </div>
+    </Scroll3DItem>
   );
 }

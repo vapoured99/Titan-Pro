@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { Scroll3DItem } from '../App';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Activity, 
@@ -1196,7 +1197,8 @@ export default function AnatomyDashboard({
     <div className="space-y-6" id="anatomy-dashboard">
 
       {/* ────────────────── DROP DOWN 1: PHYSIOLOGICAL ANALYSIS ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
+      <Scroll3DItem>
+        <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('physiological')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -1208,7 +1210,7 @@ export default function AnatomyDashboard({
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                1 &mdash; Physiological Analysis
+                Physiological Analysis
               </h4>
               <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
                 Real-Time Muscle Stimulation Mapping & Recovery Grid
@@ -1361,9 +1363,11 @@ export default function AnatomyDashboard({
           )}
         </AnimatePresence>
       </div>
+      </Scroll3DItem>
 
       {/* ────────────────── DROP DOWN 2: MUSCULAR RADAR ANALYSIS ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
+      <Scroll3DItem>
+        <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('radar')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -1375,7 +1379,7 @@ export default function AnatomyDashboard({
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                2 &mdash; Muscular Radar Analysis
+                Muscular Radar Analysis
               </h4>
               <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
                 Dynamic Biomechanical Symmetry Map & Volume Breakdown
@@ -1756,9 +1760,11 @@ export default function AnatomyDashboard({
           )}
         </AnimatePresence>
       </div>
+      </Scroll3DItem>
 
       {/* ────────────────── DROP DOWN 3: BIOMECHANICAL STRUCTURAL LOAD ALERTER ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
+      <Scroll3DItem>
+        <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('biomechanical')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -1770,7 +1776,7 @@ export default function AnatomyDashboard({
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                3 &mdash; Muscle Balance & Joint Safety
+                Muscle Balance & Joint Safety
               </h4>
               <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
                 Rolling 30-Day Push/Pull Ratios & Postural Joint Safety
@@ -2105,9 +2111,11 @@ export default function AnatomyDashboard({
           )}
         </AnimatePresence>
       </div>
+      </Scroll3DItem>
 
       {/* ────────────────── DROP DOWN 4: RELATIVE STRENGTH RADAR ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
+      <Scroll3DItem>
+        <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
         <button
           onClick={() => toggleSection('strength')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -2119,7 +2127,7 @@ export default function AnatomyDashboard({
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                4 &mdash; Relative Strength Radar
+                Relative Strength Radar
               </h4>
               <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
                 D3 concentric muscle group development comparison against baseline 1RMs
@@ -2157,9 +2165,11 @@ export default function AnatomyDashboard({
           )}
         </AnimatePresence>
       </div>
+      </Scroll3DItem>
 
       {/* ────────────────── DROP DOWN 5: DYNAMIC CNS FATIGUE INDEX ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md mt-4">
+      <Scroll3DItem>
+        <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md mt-4">
         <button
           onClick={() => toggleSection('cnsFatigue')}
           className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -2171,7 +2181,7 @@ export default function AnatomyDashboard({
             </div>
             <div>
               <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                5 &mdash; Central Nervous System (CNS) Fatigue Index
+                Central Nervous System (CNS) Fatigue Index
               </h4>
               <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
                 Dynamic fatigue index & joint-shear risk based on 72h compound spinal loading
@@ -2428,15 +2438,18 @@ export default function AnatomyDashboard({
           )}
         </AnimatePresence>
       </div>
+      </Scroll3DItem>
 
       {/* Tactical Analyst AI Coach */}
-      <div className="mt-8">
-        <AICoach
-          sets={sessionSets}
-          archivedWorkouts={archivedWorkouts}
-          userId={profile?.id || "anonymous"}
-        />
-      </div>
+      <Scroll3DItem>
+        <div className="mt-8">
+          <AICoach
+            sets={sessionSets}
+            archivedWorkouts={archivedWorkouts}
+            userId={profile?.id || "anonymous"}
+          />
+        </div>
+      </Scroll3DItem>
 
     </div>
   );

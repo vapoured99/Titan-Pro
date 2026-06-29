@@ -249,16 +249,14 @@ export default function RadarChart({
       <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20" />
 
       {/* Header Info */}
-      <div className="w-full text-center mb-1 pb-1 border-b border-white/5 flex flex-col items-center">
-        <span className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-mono font-bold block">Biomechanical Balance</span>
-        <span className="text-[11px] text-gym-accent uppercase font-bold tracking-widest font-mono">Muscular Spider Web Matrix</span>
-      </div>
-
-      {/* Toggle Comparison Mode Button */}
-      <div className="flex items-center gap-2 mt-1 mb-2 z-10">
+      <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 mb-2 pb-2 border-b border-white/5">
+        <div className="text-left">
+          <span className="text-[9px] text-white/40 uppercase tracking-[0.2em] font-mono font-bold block">Biomechanical Balance</span>
+          <span className="text-[11px] text-gym-accent uppercase font-bold tracking-widest font-mono">Muscular Spider Web Matrix</span>
+        </div>
         <button 
           onClick={() => setComparisonMode(prev => !prev)}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-md border text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer self-start sm:self-auto ${
             comparisonMode 
               ? 'bg-gym-accent/10 border-gym-accent/40 text-gym-accent shadow-[0_0_10px_rgba(34,197,110,0.15)]' 
               : 'bg-white/5 border-white/10 text-white/40 hover:text-white/80 hover:border-white/20'
@@ -266,12 +264,12 @@ export default function RadarChart({
           title="Toggle overlay comparing today's workout with your historical exercise volume summaries"
         >
           <span className={`w-1.5 h-1.5 rounded-full ${comparisonMode ? 'bg-[#22c55e] animate-pulse' : 'bg-white/25'}`} />
-          {comparisonMode ? 'Viewing Workout Comparison' : 'Toggle Comparison Mode'}
+          {comparisonMode ? 'Viewing Workout Comparison' : 'Toggle Comparison'}
         </button>
       </div>
 
       {/* SVG Canvas and Tooltip Container */}
-      <div className="relative flex items-center justify-center w-full" style={{ height: size }}>
+      <div className="relative flex items-center justify-center w-full mt-7 mb-2" style={{ height: size }}>
         <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full overflow-visible">
           <defs>
             {/* Primary active session fill gradient */}
