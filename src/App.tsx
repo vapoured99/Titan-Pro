@@ -1341,6 +1341,7 @@ export default function App() {
     | "avatar"
   >("console");
   const [showLandingPage, setShowLandingPage] = useState<boolean>(false);
+  const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   const [hasCheckedLanding, setHasCheckedLanding] = useState<boolean>(false);
   const [routines, setRoutines] = useState<any[]>([]);
   const [savingRoutineWorkout, setSavingRoutineWorkout] = useState<any | null>(
@@ -1863,6 +1864,19 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [toast]);
+
+  // Listen for scroll events to show/hide "Back to Top" button on routines view
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 400) {
+        setShowScrollTop(true);
+      } else {
+        setShowScrollTop(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Global Rest Tracker audio helper
   const playRestBeep = (frequency = 880, duration = 0.15) => {
@@ -6830,24 +6844,26 @@ export default function App() {
               >
                 <Compass className="w-4 h-4 text-gym-accent" />
               </button>
-              <button
-                onClick={() => {
-                  setActiveView("profile");
-                  saveSettings({ activeView: "profile" });
-                }}
-                className={`p-1 border rounded-full transition-all cursor-pointer flex items-center justify-center overflow-hidden w-10 h-10 ${activeView === "profile" ? "border-gym-accent bg-gym-accent/10" : "border-white/10 bg-white/5 hover:border-white/20"}`}
-                title="Profile"
-              >
-                {profile?.photoURL || currentUser.photoURL ? (
-                  <img
-                    src={profile?.photoURL || currentUser.photoURL || ""}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <UserIcon className="w-4 h-4 text-theme-text-muted" />
-                )}
-              </button>
+              <div className="relative group/profile">
+                <button
+                  onClick={() => {
+                    setActiveView("profile");
+                    saveSettings({ activeView: "profile" });
+                  }}
+                  className={`p-1 border rounded-full transition-all cursor-pointer flex items-center justify-center overflow-hidden w-10 h-10 ${activeView === "profile" ? "border-gym-accent bg-gym-accent/10" : "border-white/10 bg-white/5 hover:border-white/20"}`}
+                  title="Profile"
+                >
+                  {profile?.photoURL || currentUser.photoURL ? (
+                    <img
+                      src={profile?.photoURL || currentUser.photoURL || ""}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <UserIcon className="w-4 h-4 text-theme-text-muted" />
+                  )}
+                </button>
+              </div>
               <button
                 onClick={handleLogout}
                 className="p-2.5 bg-white/5 border border-white/10 rounded-md text-theme-text-muted hover:text-theme-text hover:bg-white/10 transition-all cursor-pointer"
@@ -12594,8 +12610,35 @@ export default function App() {
                     </div>
                   );
                 })}
+
+                {/* Static Back to top button at the end of the routines list */}
+                <div className="pt-8 flex justify-center pb-4">
+                  <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 hover:border-gym-accent hover:text-gym-accent rounded-md text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer group"
+                  >
+                    <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
+                    <span>Back to the Top</span>
+                  </button>
+                </div>
                   </>
                 )}
+
+                {/* Floating Back to top button for the routines page */}
+                <AnimatePresence>
+                  {showScrollTop && (
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                      className="fixed bottom-6 right-6 z-[160] p-3 rounded-full bg-[#0a0a0a] border border-white/10 hover:border-gym-accent text-white hover:text-gym-accent shadow-[0_4px_20px_rgba(0,0,0,0.8)] transition-all cursor-pointer flex items-center justify-center group"
+                      title="Back to Top"
+                    >
+                      <ArrowUp className="w-5 h-5 transition-transform group-hover:-translate-y-0.5" />
+                    </motion.button>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ) : activeView === "map" ? (
               <motion.div
@@ -12689,7 +12732,7 @@ export default function App() {
                           currentUser.displayName ||
                           "Athlete Profile"}
                       </h3>
-                      <p className="text-[10px] text-white/30 uppercase tracking-[0.4em] font-black">
+                      <p className="text-[10px] text-white/30 uppercase tracking-[0.4em] font-black mb-6">
                         Archive Identity
                       </p>
                     </div>
