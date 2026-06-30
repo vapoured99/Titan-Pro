@@ -2067,7 +2067,7 @@ export default function App() {
   const [setDifficulties, setSetDifficulties] = useState<Record<string, "easy" | "moderate" | "hard">>({});
   const [scrollY, setScrollY] = useState(0);
   const equipmentRef = useRef<HTMLDivElement>(null);
-  const [dynamicSpacer, setDynamicSpacer] = useState(120);
+  const [dynamicSpacer, setDynamicSpacer] = useState(32);
 
   useEffect(() => {
     const updateSpacer = () => {
@@ -2078,7 +2078,7 @@ export default function App() {
         // Calculate the spacer height so that the element's center aligns perfectly with the viewport center at max scroll:
         // spacerHeight = vh / 2 - elHeight / 2 - 68 (68px accounts for Back to Top button height and minimal bottom padding)
         const spaceBelow = vh / 2 - elHeight / 2;
-        const calculatedSpacer = Math.max(16, spaceBelow - 68);
+        const calculatedSpacer = Math.min(32, Math.max(16, spaceBelow - 68));
         setDynamicSpacer(calculatedSpacer);
       }
     };
@@ -8906,23 +8906,25 @@ export default function App() {
                           </div>
 
                           <div className="mt-6">
-                            <button
-                              onClick={() =>
-                                setShowWeightHistoryList(!showWeightHistoryList)
-                              }
-                              type="button"
-                              className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
-                            >
-                              <span className="flex items-center gap-2">
-                                <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
-                                {showWeightHistoryList
-                                  ? "Hide Weight Logs"
-                                  : `View Weight Logs (${weightHistory.length})`}
-                              </span>
-                              <ChevronDown
-                                className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showWeightHistoryList ? "rotate-180" : ""}`}
-                              />
-                            </button>
+                            <Scroll3DItem>
+                              <button
+                                onClick={() =>
+                                  setShowWeightHistoryList(!showWeightHistoryList)
+                                }
+                                type="button"
+                                className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
+                              >
+                                <span className="flex items-center gap-2">
+                                  <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
+                                  {showWeightHistoryList
+                                    ? "Hide Weight Logs"
+                                    : `View Weight Logs (${weightHistory.length})`}
+                                </span>
+                                <ChevronDown
+                                  className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showWeightHistoryList ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                            </Scroll3DItem>
 
                             <AnimatePresence>
                               {showWeightHistoryList && (
@@ -9295,25 +9297,27 @@ export default function App() {
                           </div>
 
                           <div className="mt-6">
-                            <button
-                              onClick={() =>
-                                setShowBodyFatHistoryList(
-                                  !showBodyFatHistoryList,
-                                )
-                              }
-                              type="button"
-                              className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
-                            >
-                              <span className="flex items-center gap-2">
-                                <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
-                                {showBodyFatHistoryList
-                                  ? "Hide Body Fat Logs"
-                                  : `View Body Fat Logs (${bodyFatHistory.length})`}
-                              </span>
-                              <ChevronDown
-                                className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showBodyFatHistoryList ? "rotate-180" : ""}`}
-                              />
-                            </button>
+                            <Scroll3DItem>
+                              <button
+                                onClick={() =>
+                                  setShowBodyFatHistoryList(
+                                    !showBodyFatHistoryList,
+                                  )
+                                }
+                                type="button"
+                                className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
+                              >
+                                <span className="flex items-center gap-2">
+                                  <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
+                                  {showBodyFatHistoryList
+                                    ? "Hide Body Fat Logs"
+                                    : `View Body Fat Logs (${bodyFatHistory.length})`}
+                                </span>
+                                <ChevronDown
+                                  className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showBodyFatHistoryList ? "rotate-180" : ""}`}
+                                />
+                              </button>
+                            </Scroll3DItem>
 
                             <AnimatePresence>
                               {showBodyFatHistoryList && (
@@ -10745,23 +10749,25 @@ export default function App() {
                                       Daily Energy Output History
                                     </h4>
                                     {sortedDays.length > 0 && (
-                                      <button
-                                        onClick={() =>
-                                          setShowCalorieHistoryList(
-                                            !showCalorieHistoryList,
-                                          )
-                                        }
-                                        className="flex items-center gap-2 group cursor-pointer"
-                                      >
-                                        <span className="text-[9px] text-white/40 uppercase tracking-widest font-bold group-hover:text-gym-accent transition-colors">
-                                          {showCalorieHistoryList
-                                            ? "Hide History Log"
-                                            : `Show History Log (${sortedDays.length})`}
-                                        </span>
-                                        <ChevronDown
-                                          className={`w-3.5 h-3.5 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showCalorieHistoryList ? "rotate-180" : ""}`}
-                                        />
-                                      </button>
+                                      <Scroll3DItem>
+                                        <button
+                                          onClick={() =>
+                                            setShowCalorieHistoryList(
+                                              !showCalorieHistoryList,
+                                            )
+                                          }
+                                          className="flex items-center gap-2 group cursor-pointer"
+                                        >
+                                          <span className="text-[9px] text-white/40 uppercase tracking-widest font-bold group-hover:text-gym-accent transition-colors">
+                                            {showCalorieHistoryList
+                                              ? "Hide History Log"
+                                              : `Show History Log (${sortedDays.length})`}
+                                          </span>
+                                          <ChevronDown
+                                            className={`w-3.5 h-3.5 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showCalorieHistoryList ? "rotate-180" : ""}`}
+                                          />
+                                        </button>
+                                      </Scroll3DItem>
                                     )}
                                   </div>
 
@@ -11296,25 +11302,27 @@ export default function App() {
                             </h4>
 
                             <div className="relative">
-                              <button
-                                onClick={() =>
-                                  setShowHistoryMenu(!showHistoryMenu)
-                                }
-                                className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
-                              >
-                                <History className="w-3 h-3" />
-                                {selectedWorkoutId &&
-                                archivedWorkouts.find(
-                                  (w) => w.id === selectedWorkoutId,
-                                )
-                                  ? archivedWorkouts.find(
-                                      (w) => w.id === selectedWorkoutId,
-                                    )?.date
-                                  : "History Explorer"}
-                                <ChevronDown
-                                  className={`w-3 h-3 transition-transform ${showHistoryMenu ? "rotate-180" : ""}`}
-                                />
-                              </button>
+                              <Scroll3DItem>
+                                <button
+                                  onClick={() =>
+                                    setShowHistoryMenu(!showHistoryMenu)
+                                  }
+                                  className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
+                                >
+                                  <History className="w-3 h-3" />
+                                  {selectedWorkoutId &&
+                                  archivedWorkouts.find(
+                                    (w) => w.id === selectedWorkoutId,
+                                  )
+                                    ? archivedWorkouts.find(
+                                        (w) => w.id === selectedWorkoutId,
+                                      )?.date
+                                    : "History Explorer"}
+                                  <ChevronDown
+                                    className={`w-3 h-3 transition-transform ${showHistoryMenu ? "rotate-180" : ""}`}
+                                  />
+                                </button>
+                              </Scroll3DItem>
 
                             <AnimatePresence>
                               {showHistoryMenu && (
@@ -13642,7 +13650,15 @@ export default function App() {
                 })()}
 
                 {DAY_CONFIG.map((day, di) => (
-                  <div key={di} ref={di === 5 ? equipmentRef : undefined} className="group">
+                  <div
+                    key={di}
+                    ref={di === 5 ? equipmentRef : undefined}
+                    className={`border rounded-md overflow-hidden bg-black/70 backdrop-blur-md mb-4 transition-all ${
+                      lastLoadedDayIndex === di
+                        ? "border-gym-accent shadow-md shadow-gym-accent/10"
+                        : "border-white/15"
+                    }`}
+                  >
                     <Scroll3DItem>
                       <button
                         onClick={() =>
@@ -13651,10 +13667,12 @@ export default function App() {
                             [di]: !prev[di],
                           }))
                         }
-                        className={`w-full flex items-center justify-between p-6 rounded-md border transition-all cursor-pointer group backdrop-blur-md ${
+                        className={`w-full flex items-center justify-between p-6 text-left transition-all cursor-pointer group ${
+                          expandedDays[di] ? "border-b border-white/15" : ""
+                        } ${
                           lastLoadedDayIndex === di
-                            ? "bg-gym-accent/[0.04] border-gym-accent shadow-md shadow-gym-accent/10"
-                            : "bg-black/70 border-white/15 hover:bg-white/[0.04] hover:border-white/25"
+                            ? "bg-gym-accent/[0.04]"
+                            : "hover:bg-white/[0.04]"
                         }`}
                       >
                         <div className="flex items-center gap-4">
@@ -13686,22 +13704,22 @@ export default function App() {
                     <AnimatePresence>
                       {expandedDays[di] && (
                         <motion.div
-                          initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                          initial={{ height: 0, opacity: 0 }}
                           animate={{
                             height: "auto",
                             opacity: 1,
-                            marginTop: 12,
                           }}
-                          exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                          exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <motion.div
-                            key={lastLoadedDayIndex === di ? `grid-loaded-active-${di}` : `grid-loaded-idle-${di}`}
-                            initial={{ opacity: 0, y: 15 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6"
-                          >
+                          <div className="p-6 bg-black/40 space-y-4">
+                            <motion.div
+                              key={lastLoadedDayIndex === di ? `grid-loaded-active-${di}` : `grid-loaded-idle-${di}`}
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.5, ease: "easeOut" }}
+                              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6"
+                            >
                             {currentDays[di]?.map((ex, ei) => {
                               const resolvedEx = findExerciseByName(ex.name);
                               const poolKey = resolvedEx?.pool || ex.pool;
@@ -13861,6 +13879,7 @@ export default function App() {
                               </span>
                             </button>
                           </motion.div>
+                          </div>
                         </motion.div>
                       )}
                     </AnimatePresence>

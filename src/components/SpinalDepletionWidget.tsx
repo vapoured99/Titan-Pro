@@ -63,7 +63,7 @@ export const SpinalDepletionWidget: React.FC<SpinalDepletionWidgetProps> = ({
       initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      className="relative overflow-hidden bg-black/70 border border-white/10 rounded-md p-6 select-none backdrop-blur-md"
+      className="relative overflow-hidden bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-6 select-none hover:border-white/10 transition-all duration-300"
       id="spinal-gauge-hero-card"
     >
       {/* Abstract Corner Radial Glow */}
