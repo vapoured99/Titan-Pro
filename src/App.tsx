@@ -1228,6 +1228,15 @@ const getLibraryCategoryIcon = (key: string) => {
 // Reusable 3D Perspective Scroll Item Component with barrel-roll effect
 export const Scroll3DItem = ({ children, className }: { children: React.ReactNode; className?: string; key?: React.Key }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"]
@@ -1239,6 +1248,14 @@ export const Scroll3DItem = ({ children, className }: { children: React.ReactNod
   const rotateX = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [12, 6, 0, -6, -12]);
   const z = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-60, -20, 0, -20, -60]);
   const y = useTransform(scrollYProgress, [0, 0.5, 1], [10, 0, -10]);
+
+  if (isMobile) {
+    return (
+      <div className={`w-full ${className || ""}`}>
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div style={{ perspective: "1000px" }} className="w-full">
@@ -11259,7 +11276,7 @@ export default function App() {
                     {archivedWorkouts.length > 0 && (
                       <div className="space-y-8">
                         <Scroll3DItem>
-                          <div className="flex items-center justify-between border-b border-white/5 pb-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-4 sm:pb-6 gap-4">
                             <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.3em] flex items-center gap-3">
                               <History className="w-4 h-4 text-gym-accent" />
                               Archived Evolutions
@@ -11381,41 +11398,41 @@ export default function App() {
                               <div
                                 className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md"
                               >
-                              <div className="p-8 border-b border-white/5 bg-black/45 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                <div className="flex items-center gap-8">
-                                  <div className="w-16 h-16 bg-gym-accent/15 border border-gym-accent/30 rounded-md flex flex-col items-center justify-center">
-                                    <span className="text-xl font-light text-gym-accent">
+                              <div className="p-4 sm:p-8 border-b border-white/5 bg-black/45 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
+                                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gym-accent/15 border border-gym-accent/30 rounded-md flex flex-col items-center justify-center shrink-0">
+                                    <span className="text-lg sm:text-xl font-light text-gym-accent">
                                       {dateObj.getDate()}
                                     </span>
-                                    <span className="text-[9px] font-black text-gym-accent/60 uppercase tracking-tighter">
+                                    <span className="text-[8px] sm:text-[9px] font-black text-gym-accent/60 uppercase tracking-tighter">
                                       {dateObj.toLocaleDateString("en-GB", {
                                         month: "short",
                                       })}
                                     </span>
                                   </div>
                                   <div>
-                                    <h4 className="text-3xl font-light italic font-serif text-white/90 mb-1">
+                                    <h4 className="text-2xl sm:text-3xl font-light italic font-serif text-white/90 mb-1.5">
                                       {dateObj.toLocaleDateString("en-GB", {
                                         weekday: "long",
                                       })}
                                     </h4>
-                                    <div className="flex items-center gap-6 flex-wrap">
-                                      <div className="flex items-center gap-2">
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                      <div className="flex items-center gap-1.5">
                                         <Activity className="w-3 h-3 text-gym-accent" />
-                                        <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">
+                                        <span className="text-[9px] sm:text-[10px] text-white/50 uppercase tracking-wider font-bold">
                                           {workout.totalVolume?.toLocaleString()}{" "}
-                                          kg Volume
+                                          kg Vol
                                         </span>
                                       </div>
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-1.5">
                                         <Dumbbell className="w-3 h-3 text-gym-accent" />
-                                        <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">
-                                          {workout.exercisesCount} Exercises
+                                        <span className="text-[9px] sm:text-[10px] text-white/50 uppercase tracking-wider font-bold">
+                                          {workout.exercisesCount} Ex
                                         </span>
                                       </div>
-                                      <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-1.5">
                                         <Flame className="w-3 h-3 text-gym-accent animate-pulse" />
-                                        <span className="text-[10px] text-white/50 uppercase tracking-widest font-bold">
+                                        <span className="text-[9px] sm:text-[10px] text-white/50 uppercase tracking-wider font-bold">
                                           {Math.round(
                                             workout.estimatedCalories ||
                                               calculateCaloriesBurned(
@@ -11429,12 +11446,12 @@ export default function App() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-3">
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
                                   <button
                                     onClick={() =>
                                       setSavingRoutineWorkout(workout)
                                     }
-                                    className="flex items-center gap-2 px-6 py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg shadow-gym-accent/5 rounded-md"
+                                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.3em] transition-all cursor-pointer group shadow-lg shadow-gym-accent/5 rounded-md w-full sm:w-auto"
                                   >
                                     <Save className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                                     Save Routine
@@ -11444,7 +11461,7 @@ export default function App() {
                                       handleDeleteWorkout(workout.id)
                                     }
                                     disabled={dataLoading}
-                                    className={`flex items-center gap-2 px-6 py-3 border rounded-md text-[10px] font-bold uppercase tracking-[0.3em] transition-all cursor-pointer group shadow-lg ${dataLoading ? "bg-white/5 border-white/10 text-white/20" : "bg-red-500/5 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-red-500/5"}`}
+                                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.3em] transition-all cursor-pointer group shadow-lg w-full sm:w-auto ${dataLoading ? "bg-white/5 border-white/10 text-white/20" : "bg-red-500/5 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-red-500/5"}`}
                                   >
                                     {dataLoading ? (
                                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -11458,7 +11475,7 @@ export default function App() {
                                 </div>
                               </div>
 
-                              <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                              <div className="p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                                 {Object.entries(
                                   workout.sets.reduce((acc: any, set: any) => {
                                     if (!acc[set.exerciseName])

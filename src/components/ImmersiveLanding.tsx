@@ -341,11 +341,22 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
               <p className="text-xs text-white/40 font-light leading-relaxed">
                 Design custom lifting protocols built around compound targets. 
               </p>
-              {lastWorkout && (
-                <div className="text-[10px] font-mono text-white/30 border-t border-white/[0.04] pt-2 mt-1">
-                  LAST SESSION: <span className="text-gym-accent">{lastWorkout.name?.toUpperCase()}</span>
-                </div>
-              )}
+              {lastWorkout && (() => {
+                let displayName = lastWorkout.name || lastWorkout.workoutName;
+                if (!displayName) {
+                  const d = new Date(lastWorkout.date);
+                  if (!isNaN(d.getTime())) {
+                    displayName = `Workout (${d.toLocaleDateString("en-GB", { day: "numeric", month: "short" })})`;
+                  } else {
+                    displayName = "Archived Workout";
+                  }
+                }
+                return (
+                  <div className="text-[10px] font-mono text-white/30 border-t border-white/[0.04] pt-2 mt-1">
+                    LAST SESSION: <span className="text-gym-accent">{displayName.toUpperCase()}</span>
+                  </div>
+                );
+              })()}
             </motion.div>
 
             {/* Muscle Mapping Module card */}
