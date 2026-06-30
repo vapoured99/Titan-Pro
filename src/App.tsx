@@ -1249,23 +1249,21 @@ export const Scroll3DItem = ({ children, className }: { children: React.ReactNod
   const dZ = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-60, -20, 0, -20, -60]);
   const dY = useTransform(scrollYProgress, [0, 0.5, 1], [10, 0, -10]);
 
-  // Mobile transforms - extremely subtle and tight to prevent any empty dead spaces
-  const mScale = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.98, 0.99, 1.0, 0.99, 0.98]);
-  const mOpacity = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.9, 0.95, 1, 0.95, 0.9]);
-  const mRotateX = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [3, 1.5, 0, -1.5, -3]);
-  const mZ = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-10, -3, 0, -3, -10]);
-  const mY = useTransform(scrollYProgress, [0, 0.5, 1], [3, 0, -3]);
+  // Mobile transforms - intense 3D barrel-roll, scale, and depth, but zero vertical shift to keep tight spacing
+  const mScale = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.94, 0.98, 1.02, 0.98, 0.94]);
+  const mOpacity = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.75, 0.92, 1, 0.92, 0.75]);
+  const mRotateX = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [14, 7, 0, -7, -14]);
+  const mZ = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-50, -15, 0, -15, -50]);
 
   return (
-    <div style={{ perspective: "1000px" }} className="w-full">
+    <div ref={ref} style={{ perspective: "1000px" }} className="w-full">
       <motion.div
-        ref={ref}
         style={{
           scale: isMobile ? mScale : dScale,
           opacity: isMobile ? mOpacity : dOpacity,
           rotateX: isMobile ? mRotateX : dRotateX,
           z: isMobile ? mZ : dZ,
-          y: isMobile ? mY : dY,
+          y: isMobile ? 0 : dY,
           transformStyle: "preserve-3d",
         }}
         className={className}
@@ -10878,7 +10876,7 @@ export default function App() {
                 className="space-y-8 pb-20"
               >
                 <Scroll3DItem>
-                  <div className="flex items-center justify-between mb-10">
+                  <div className="flex items-center justify-between mb-4 sm:mb-10">
                     <div>
                       <h3 className="text-xl font-light italic font-serif flex items-center gap-3">
                         Session Records
@@ -11273,9 +11271,9 @@ export default function App() {
 
                     {/* Archived Sessions Section */}
                     {archivedWorkouts.length > 0 && (
-                      <div className="space-y-8">
-                        <Scroll3DItem>
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-4 sm:pb-6 gap-4">
+                      <div className="space-y-3 sm:space-y-8">
+                        <div>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-2 sm:pb-6 gap-2.5 sm:gap-4">
                             <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.3em] flex items-center gap-3">
                               <History className="w-4 h-4 text-gym-accent" />
                               Archived Evolutions
@@ -11361,7 +11359,7 @@ export default function App() {
                             </AnimatePresence>
                           </div>
                         </div>
-                        </Scroll3DItem>
+                        </div>
 
                         {/* Selected or Latest Workout Display */}
                         {(() => {
@@ -11373,30 +11371,28 @@ export default function App() {
 
                           if (!workout) {
                             return (
-                              <Scroll3DItem>
-                                <div
-                                  className="flex flex-col items-center justify-center p-20 border border-white/5 border-dashed rounded-md bg-white/[0.01]"
-                                >
-                                  <History className="w-12 h-12 text-white/5 mb-6" />
-                                  <h3 className="text-xl font-serif italic text-white/40 text-center px-10">
-                                    Sync Required: Select Another Session Date
-                                    Above
-                                  </h3>
-                                  <p className="text-[10px] text-gym-accent/30 uppercase tracking-[0.4em] font-black mt-4">
-                                    Evolutionary records are available in the
-                                    history explorer
-                                  </p>
-                                </div>
-                              </Scroll3DItem>
+                              <div
+                                className="flex flex-col items-center justify-center p-20 border border-white/5 border-dashed rounded-md bg-white/[0.01]"
+                              >
+                                <History className="w-12 h-12 text-white/5 mb-6" />
+                                <h3 className="text-xl font-serif italic text-white/40 text-center px-10">
+                                  Sync Required: Select Another Session Date
+                                  Above
+                                </h3>
+                                <p className="text-[10px] text-gym-accent/30 uppercase tracking-[0.4em] font-black mt-4">
+                                  Evolutionary records are available in the
+                                  history explorer
+                                </p>
+                              </div>
                             );
                           }
 
                           const dateObj = new Date(workout.date);
                           return (
-                            <Scroll3DItem key={workout.id}>
-                              <div
-                                className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md"
-                              >
+                            <div
+                              key={workout.id}
+                              className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md"
+                            >
                               <div className="p-4 sm:p-8 border-b border-white/5 bg-black/45 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
                                   <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gym-accent/15 border border-gym-accent/30 rounded-md flex flex-col items-center justify-center shrink-0">
@@ -11546,8 +11542,7 @@ export default function App() {
                                 ))}
                               </div>
                             </div>
-                          </Scroll3DItem>
-                        );
+                          );
                         })()}
                       </div>
                     )}
