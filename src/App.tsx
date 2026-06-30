@@ -1242,37 +1242,30 @@ export const Scroll3DItem = ({ children, className }: { children: React.ReactNod
     offset: ["start end", "end start"]
   });
 
-  // Interpolate based on viewport distance: 0 (bottom) -> 0.5 (center) -> 1 (top)
-  const scale = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.93, 0.97, 1.02, 0.97, 0.93]);
-  const opacity = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.6, 0.88, 1, 0.88, 0.6]);
-  const rotateX = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [12, 6, 0, -6, -12]);
-  const z = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-60, -20, 0, -20, -60]);
-  const y = useTransform(scrollYProgress, [0, 0.5, 1], [10, 0, -10]);
+  // Desktop transforms - fuller depth and movement
+  const dScale = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.93, 0.97, 1.02, 0.97, 0.93]);
+  const dOpacity = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.6, 0.88, 1, 0.88, 0.6]);
+  const dRotateX = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [12, 6, 0, -6, -12]);
+  const dZ = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-60, -20, 0, -20, -60]);
+  const dY = useTransform(scrollYProgress, [0, 0.5, 1], [10, 0, -10]);
 
-  if (isMobile) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-20px" }}
-        transition={{ duration: 0.45, ease: "easeOut" }}
-        className={`w-full ${className || ""}`}
-      >
-        {children}
-      </motion.div>
-    );
-  }
+  // Mobile transforms - extremely subtle and tight to prevent any empty dead spaces
+  const mScale = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.98, 0.99, 1.0, 0.99, 0.98]);
+  const mOpacity = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [0.9, 0.95, 1, 0.95, 0.9]);
+  const mRotateX = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [3, 1.5, 0, -1.5, -3]);
+  const mZ = useTransform(scrollYProgress, [0, 0.35, 0.5, 0.65, 1], [-10, -3, 0, -3, -10]);
+  const mY = useTransform(scrollYProgress, [0, 0.5, 1], [3, 0, -3]);
 
   return (
     <div style={{ perspective: "1000px" }} className="w-full">
       <motion.div
         ref={ref}
         style={{
-          scale,
-          opacity,
-          rotateX,
-          z,
-          y,
+          scale: isMobile ? mScale : dScale,
+          opacity: isMobile ? mOpacity : dOpacity,
+          rotateX: isMobile ? mRotateX : dRotateX,
+          z: isMobile ? mZ : dZ,
+          y: isMobile ? mY : dY,
           transformStyle: "preserve-3d",
         }}
         className={className}
