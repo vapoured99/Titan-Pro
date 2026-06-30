@@ -1777,6 +1777,92 @@ export const BORDERS = [
   }
 ];
 
+export function getAuraLockStatus(auraId: string, profile: any): { isLocked: boolean; reason?: string } {
+  if (!profile) return { isLocked: false };
+  if (auraId === 'none') return { isLocked: false };
+
+  const isUnlocked = (id: string) => id === 'none' || !!profile[`unlocked_aura_${id}`];
+
+  // 10% DMG (emerald_overdrive, cyber_shard) are available by default
+  if (auraId === 'emerald_overdrive' || auraId === 'cyber_shard') {
+    return { isLocked: false };
+  }
+
+  // 15% DMG (void_core) requires any 10% DMG aura
+  if (auraId === 'void_core') {
+    const has10 = isUnlocked('emerald_overdrive') || isUnlocked('cyber_shard');
+    if (!has10) {
+      return { isLocked: true, reason: 'Requires purchasing a 10% DMG Aura first (Emerald Overdrive or Cyber Shard)' };
+    }
+    return { isLocked: false };
+  }
+
+  // 20% DMG (hyper_blue_plasma) requires 15% DMG aura
+  if (auraId === 'hyper_blue_plasma') {
+    const has15 = isUnlocked('void_core');
+    if (!has15) {
+      return { isLocked: true, reason: 'Requires purchasing the 15% DMG Aura first (Void Core)' };
+    }
+    return { isLocked: false };
+  }
+
+  // 25% DMG (crimson_flare, golden_halo) requires 20% DMG aura
+  if (auraId === 'crimson_flare' || auraId === 'golden_halo') {
+    const has20 = isUnlocked('hyper_blue_plasma');
+    if (!has20) {
+      return { isLocked: true, reason: 'Requires purchasing the 20% DMG Aura first (Hyper Blue Plasma)' };
+    }
+    return { isLocked: false };
+  }
+
+  // 30% DMG (shadow_smoke) requires any 25% DMG aura
+  if (auraId === 'shadow_smoke') {
+    const has25 = isUnlocked('crimson_flare') || isUnlocked('golden_halo');
+    if (!has25) {
+      return { isLocked: true, reason: 'Requires purchasing a 25% DMG Aura first (Crimson Flare or Golden Crown)' };
+    }
+    return { isLocked: false };
+  }
+
+  // 35% DMG (aether_light) requires 30% DMG aura
+  if (auraId === 'aether_light') {
+    const has30 = isUnlocked('shadow_smoke');
+    if (!has30) {
+      return { isLocked: true, reason: 'Requires purchasing the 30% DMG Aura first (Shadow Smoke)' };
+    }
+    return { isLocked: false };
+  }
+
+  return { isLocked: false };
+}
+
+export function getEmoteLockStatus(emoteId: string, equippedOutfit: string, profile: any): { isLocked: boolean; reason?: string } {
+  if (!profile) return { isLocked: false };
+  if (emoteId === 'none' || emoteId === 'flex_mode') return { isLocked: false };
+
+  const isUnlocked = (id: string) => id === 'none' || !!profile[`unlocked_emote_${equippedOutfit}_${id}`];
+
+  if (emoteId === 'power_charge') {
+    if (!isUnlocked('flex_mode')) {
+      return { isLocked: true, reason: 'Requires purchasing "Flex Mode" emote first' };
+    }
+  }
+
+  if (emoteId === 'savage_roar') {
+    if (!isUnlocked('power_charge')) {
+      return { isLocked: true, reason: 'Requires purchasing "Power Charge" emote first' };
+    }
+  }
+
+  if (emoteId === 'final_form') {
+    if (!isUnlocked('savage_roar')) {
+      return { isLocked: true, reason: 'Requires purchasing "Savage Roar" emote first' };
+    }
+  }
+
+  return { isLocked: false };
+}
+
 export default function AvatarPanel({ profile, setProfile, saveSettings, setToast, archivedWorkouts, currentUser }: AvatarPanelProps) {
   const [activeTab, setActiveTab] = useState<'operatives' | 'auras' | 'emotes' | 'titles' | 'operativeBorders'>('operatives');
 
@@ -2498,6 +2584,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         setProfile(prev => prev ? { ...prev, ...updated } : null);
         await saveSettings(updated);
       } else {
+        const progressionLock = getAuraLockStatus(itemId, profile);
+        if (progressionLock.isLocked) {
+          setToast({ message: progressionLock.reason || 'Locked by progression', type: 'info' });
+          return;
+        }
         if (credits < price) {
           setToast({ message: `Insufficient Coins to purchase ${itemName}!`, type: 'info' });
           return;
@@ -2514,7 +2605,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
     }
     else if (category === 'emotes') {
       const dbKey = `unlocked_emote_${equippedOutfit}_${itemId}`;
-      const isUnlocked = itemId === 'none' || itemId === 'flex_mode' || (profile as any)?.[dbKey];
+      const isUnlocked = itemId === 'none' || (profile as any)?.[dbKey];
       if (isUnlocked) {
         const updated = { 
           [`equippedEmote_${equippedOutfit}`]: itemId,
@@ -2523,6 +2614,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
         setProfile(prev => prev ? { ...prev, ...updated } : null);
         await saveSettings(updated);
       } else {
+        const progressionLock = getEmoteLockStatus(itemId, equippedOutfit, profile);
+        if (progressionLock.isLocked) {
+          setToast({ message: progressionLock.reason || 'Locked by progression', type: 'info' });
+          return;
+        }
         if (credits < price) {
           setToast({ message: `Insufficient Coins to purchase ${itemName}!`, type: 'info' });
           return;
@@ -3995,8 +4091,9 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   {/* Category 2: Emotes / Poses */}
                   {activeTab === 'emotes' && EMOTES.map((emote) => {
                     const dbKey = `unlocked_emote_${equippedOutfit}_${emote.id}`;
-                    const isUnlocked = emote.id === 'none' || emote.id === 'flex_mode' || (profile as any)?.[dbKey];
+                    const isUnlocked = emote.id === 'none' || (profile as any)?.[dbKey];
                     const isEquipped = equippedEmote === emote.id;
+                    const progressionLock = getEmoteLockStatus(emote.id, equippedOutfit, profile);
 
                     return (
                       <div 
@@ -4007,18 +4104,28 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                             ? 'border-gym-accent bg-gym-accent/[0.04] shadow-inner' 
                             : isUnlocked 
                               ? 'border-white/10 hover:border-white/30 hover:bg-zinc-900/40' 
-                              : 'border-white/5 opacity-80 hover:opacity-100'
+                              : progressionLock.isLocked
+                                ? 'border-red-500/10 opacity-70 cursor-not-allowed hover:bg-red-950/[0.02]'
+                                : 'border-white/5 opacity-80 hover:opacity-100 hover:bg-zinc-900/10'
                         }`}
                       >
                         <div>
                           <div className="flex items-center justify-between mb-1.5 border-b border-white/5 pb-1.5 font-sans">
                             <div className="flex items-center gap-2 min-w-0">
-                              <Activity className="w-3.5 h-3.5 text-gym-accent shrink-0 animate-pulse" />
-                              <h5 className="text-white font-bold leading-none font-mono uppercase tracking-wide text-[12px] truncate">{emote.name}</h5>
+                              <Activity className={`w-3.5 h-3.5 shrink-0 ${progressionLock.isLocked ? 'text-red-500/50' : 'text-gym-accent animate-pulse'}`} />
+                              <h5 className={`font-bold leading-none font-mono uppercase tracking-wide text-[12px] truncate ${progressionLock.isLocked ? 'text-white/50' : 'text-white'}`}>{emote.name}</h5>
                             </div>
-                            {!isUnlocked && <Lock className="w-3 h-3 text-white/30 shrink-0" />}
+                            {!isUnlocked && (
+                              <Lock className={`w-3 h-3 shrink-0 ${progressionLock.isLocked ? 'text-red-500 animate-pulse' : 'text-white/30'}`} />
+                            )}
                           </div>
-                          <p className="text-[9.5px] text-white/40 leading-normal font-sans line-clamp-2 mt-1">{emote.desc}</p>
+                          <p className="text-[9.5px] leading-normal font-sans line-clamp-2 mt-1">
+                            {progressionLock.isLocked ? (
+                              <span className="text-red-400/90 font-semibold font-mono tracking-wide">{progressionLock.reason}</span>
+                            ) : (
+                              <span className="text-white/40">{emote.desc}</span>
+                            )}
+                          </p>
                         </div>
 
                         <div className="border-t border-white/5 pt-2.5 flex items-center justify-between mt-auto relative z-10">
@@ -4031,6 +4138,8 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                               </div>
                             ) : isUnlocked ? (
                               <span className="text-[8.5px] font-mono uppercase font-black text-white/40 tracking-wider hover:text-white transition-colors">Equip</span>
+                            ) : progressionLock.isLocked ? (
+                              <span className="text-[8px] font-mono uppercase font-bold text-red-500/50 tracking-wider">PROGRESS LOCKED</span>
                             ) : (
                               <div className="bg-white/[0.01] border border-white/10 text-amber-400 font-extrabold text-[9.5px] font-mono px-2 py-0.5 rounded-md flex items-center gap-1 transition-all">
                                 <Coins className="w-3" /> {emote.price.toLocaleString()}

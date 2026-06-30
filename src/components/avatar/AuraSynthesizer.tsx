@@ -1,6 +1,6 @@
 import React from 'react';
-import { Coins } from 'lucide-react';
-import { AURAS } from '../AvatarPanel';
+import { Coins, Lock } from 'lucide-react';
+import { AURAS, getAuraLockStatus } from '../AvatarPanel';
 
 interface AuraSynthesizerProps {
   profile: any;
@@ -25,6 +25,7 @@ export const AuraSynthesizer: React.FC<AuraSynthesizerProps> = ({
           const dbKey = `unlocked_aura_${aura.id}`;
           const isUnlocked = aura.id === 'none' || !!profile?.[dbKey];
           const isEquipped = equippedAura === aura.id;
+          const progressionLock = getAuraLockStatus(aura.id, profile);
           
           return (
             <div 
@@ -34,24 +35,35 @@ export const AuraSynthesizer: React.FC<AuraSynthesizerProps> = ({
                   ? 'bg-zinc-900 border-fuchsia-500/50 shadow-md shadow-fuchsia-950/30' 
                   : isUnlocked 
                     ? 'bg-zinc-900/40 border-white/10 hover:border-white/20' 
-                    : 'bg-zinc-950/70 border-white/5 opacity-80'
+                    : progressionLock.isLocked
+                      ? 'bg-red-950/[0.01] border-red-500/10 opacity-70'
+                      : 'bg-zinc-950/70 border-white/5 opacity-80'
               }`}
             >
               <div className="flex justify-between items-start">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="text-xs font-bold text-white font-sans uppercase font-mono">{aura.name}</h4>
+                    <h4 className={`text-xs font-bold font-sans uppercase font-mono ${progressionLock.isLocked ? 'text-white/50' : 'text-white'}`}>{aura.name}</h4>
                     {isEquipped && (
                       <span className="text-[7.5px] bg-fuchsia-500/20 text-fuchsia-300 border border-fuchsia-500/30 font-bold font-mono uppercase px-1 rounded-md">Current</span>
                     )}
+                    {!isUnlocked && (
+                      <Lock className={`w-3 h-3 ${progressionLock.isLocked ? 'text-red-500 animate-pulse' : 'text-white/30'}`} />
+                    )}
                   </div>
-                  <p className="text-[10px] text-white/50 mt-1 max-w-[260px] line-clamp-2 leading-relaxed">{aura.desc}</p>
+                  <p className="text-[10px] mt-1 max-w-[260px] line-clamp-2 leading-relaxed">
+                    {progressionLock.isLocked ? (
+                      <span className="text-red-400 font-semibold font-mono">{progressionLock.reason}</span>
+                    ) : (
+                      <span className="text-white/50">{aura.desc}</span>
+                    )}
+                  </p>
                 </div>
 
                 {/* Stat multipliers representation */}
                 <div className="text-right">
                   <span className="text-[7px] text-white/40 block uppercase font-mono tracking-wider">Aura Buff Matrix</span>
-                  <span className="text-[11px] font-black font-mono text-cyan-400 font-bold">
+                  <span className={`text-[11px] font-black font-mono font-bold ${progressionLock.isLocked ? 'text-red-500/50' : 'text-cyan-400'}`}>
                     {Object.values(aura.statMultiplier).every(v => v === 1) 
                       ? "Base" 
                       : `+${Math.round((aura.statMultiplier.power - 1) * 100)}% DMG`}
@@ -79,6 +91,14 @@ export const AuraSynthesizer: React.FC<AuraSynthesizerProps> = ({
                     }`}
                   >
                     {isEquipped ? 'ACTIVE MATRIX' : 'ENGAGE AURA'}
+                  </button>
+                ) : progressionLock.isLocked ? (
+                  <button
+                    disabled
+                    className="bg-zinc-900/50 text-red-500/40 border border-red-500/5 px-3 py-1.5 rounded text-[9px] font-bold font-mono tracking-wider cursor-not-allowed flex items-center gap-1.5"
+                  >
+                    <Lock className="w-3 h-3 text-red-500/40" />
+                    PROGRESS LOCKED
                   </button>
                 ) : (
                   <button

@@ -95,6 +95,7 @@ import GymLocator from "./components/GymLocator";
 import WorkoutCalendarHeatmap from "./components/WorkoutCalendarHeatmap";
 import { SpinalDepletionWidget } from "./components/SpinalDepletionWidget";
 import ConsoleIntelligencePanel from "./components/ConsoleIntelligencePanel";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import {
   auth,
   db,
@@ -2039,6 +2040,20 @@ export default function App() {
     personalRecords: true,
     exercises: false,
   });
+  const [activeProgressSlide, setActiveProgressSlide] = useState<string>("weight");
+
+  useEffect(() => {
+    setExpandedProgressSections({
+      weight: activeProgressSlide === "weight",
+      bodyFat: activeProgressSlide === "bodyFat",
+      workoutCalendar: activeProgressSlide === "workoutCalendar",
+      trending: activeProgressSlide === "trending",
+      personalRecords: activeProgressSlide === "personalRecords",
+      exercises: activeProgressSlide === "exercises",
+      calorieTracker: activeProgressSlide === "calorieTracker",
+    });
+  }, [activeProgressSlide]);
+
   const [exerciseProgressSearchQuery, setExerciseProgressSearchQuery] = useState("");
   const [selectedExerciseProgress, setSelectedExerciseProgress] = useState<string | null>(null);
   const [pbSearchQuery, setPbSearchQuery] = useState("");
@@ -2193,13 +2208,13 @@ export default function App() {
     setShowBodyFatHistoryList(false);
     setShowCalorieHistoryList(false);
     setExpandedProgressSections({
-      weight: false,
-      bodyFat: false,
-      workoutCalendar: false,
-      trending: false,
-      personalRecords: false,
-      exercises: false,
-      calorieTracker: false,
+      weight: activeProgressSlide === "weight",
+      bodyFat: activeProgressSlide === "bodyFat",
+      workoutCalendar: activeProgressSlide === "workoutCalendar",
+      trending: activeProgressSlide === "trending",
+      personalRecords: activeProgressSlide === "personalRecords",
+      exercises: activeProgressSlide === "exercises",
+      calorieTracker: activeProgressSlide === "calorieTracker",
     });
     setExpandedLibrarySections({});
     setExpandedWorkouts({});
@@ -8633,46 +8648,121 @@ export default function App() {
                 exit={{ opacity: 0, y: -10 }}
                 className="space-y-6"
               >
-                {/* Weight Tracking Section */}
-                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <Scroll3DItem>
-                    <button
-                      onClick={() =>
-                        setExpandedProgressSections((prev) => ({
-                          ...prev,
-                          weight: !prev.weight,
-                        }))
-                      }
-                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                          <Scale className="w-5 h-5" />
+                {(() => {
+                  const slides = [
+                    { id: "weight", label: "Body Weight", icon: Scale, subtitle: "Physical weight progression tracking" },
+                    { id: "bodyFat", label: "Body Fat", icon: Percent, subtitle: "Adipose tissue metric telemetry" },
+                    { id: "workoutCalendar", label: "Consistency Map", icon: Calendar, subtitle: "Weekly activation density & consistency heatmap" },
+                    { id: "trending", label: "Volume Trends", icon: TrendingUp, subtitle: "Volume, reps & frequency tracking trends" },
+                    { id: "personalRecords", label: "Milestones", icon: Trophy, subtitle: "Personal records & milestones feed" },
+                    { id: "exercises", label: "Exercise Progress", icon: Activity, subtitle: "Individual movement timeline graphing" },
+                    { id: "calorieTracker", label: "Energy Output", icon: Flame, subtitle: "Metabolic and training calorie output tracker" },
+                  ];
+
+                  const currentIndex = slides.findIndex(s => s.id === activeProgressSlide);
+                  const activeSlide = slides[currentIndex] || slides[0];
+
+                  const handlePrev = () => {
+                    const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
+                    setActiveProgressSlide(slides[prevIndex].id);
+                  };
+
+                  const handleNext = () => {
+                    const nextIndex = (currentIndex + 1) % slides.length;
+                    setActiveProgressSlide(slides[nextIndex].id);
+                  };
+
+                  const SlideIcon = activeSlide.icon;
+
+                  return (
+                    <div className="space-y-6 select-none">
+                      {/* Carousel Tab Navigator */}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-gym-accent font-black uppercase tracking-[0.25em] font-mono">
+                            OPERATIVE PROGRESS METRICS
+                          </span>
+                          <span className="text-[9px] text-white/30 font-mono font-bold">
+                            SLIDE {currentIndex + 1} OF {slides.length}
+                          </span>
                         </div>
-                        <div>
-                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                            Weight Tracking
-                          </h3>
-                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                            Physical progression tracking
-                          </p>
+                        
+                        {/* Horizontal scrolling strip of modern high-tech pills */}
+                        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 pt-1 border-b border-white/5 scroll-smooth touch-pan-x flex-nowrap">
+                          {slides.map((slide) => {
+                            const IsSelected = slide.id === activeProgressSlide;
+                            const IconComp = slide.icon;
+                            return (
+                              <button
+                                key={slide.id}
+                                onClick={() => setActiveProgressSlide(slide.id)}
+                                className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full border text-[10px] font-mono uppercase tracking-[0.1em] transition-all duration-300 cursor-pointer shrink-0 ${
+                                  IsSelected
+                                    ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_15px_rgba(212,255,0,0.06)]"
+                                    : "bg-[#090909]/40 border-white/5 text-white/40 hover:text-white/70 hover:border-white/10"
+                                }`}
+                              >
+                                <IconComp className={`w-3.5 h-3.5 ${IsSelected ? "animate-pulse" : ""}`} />
+                                <span className="font-bold">{slide.label}</span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
-                      <ChevronDown
-                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.weight ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  </Scroll3DItem>
 
-                  <AnimatePresence>
-                    {expandedProgressSections.weight && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <div className="px-6 pb-10 pt-4">
+                      {/* Active Slide Glassmorphic Container */}
+                      <div className="relative overflow-hidden bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-6 md:p-8 shadow-2xl transition-all duration-300">
+                        {/* Interactive glow effect in the corner */}
+                        <div className="absolute top-0 right-10 w-44 h-44 bg-gym-accent/[0.02] rounded-full blur-3xl -z-10" />
+                        
+                        {/* Active Header with Navigation buttons */}
+                        <div className="flex items-center justify-between gap-4 pb-6 border-b border-white/5 mb-6">
+                          <div className="flex items-center gap-4">
+                            <div className="w-11 h-11 rounded-lg bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent shrink-0 shadow-sm shadow-gym-accent/10">
+                              <SlideIcon className="w-5 h-5 animate-pulse" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg md:text-xl font-light italic font-serif flex items-center gap-3 text-white">
+                                {activeSlide.label}
+                              </h3>
+                              <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold font-mono mt-0.5">
+                                {activeSlide.subtitle}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Circular Nav Buttons */}
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              onClick={handlePrev}
+                              className="w-8 h-8 rounded-full border border-white/10 bg-white/[0.02] hover:border-gym-accent/40 hover:text-gym-accent hover:bg-gym-accent/5 flex items-center justify-center transition-all cursor-pointer"
+                              title="Previous metric"
+                            >
+                              <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={handleNext}
+                              className="w-8 h-8 rounded-full border border-white/10 bg-white/[0.02] hover:border-gym-accent/40 hover:text-gym-accent hover:bg-gym-accent/5 flex items-center justify-center transition-all cursor-pointer"
+                              title="Next metric"
+                            >
+                              <ChevronRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Slide Content */}
+                        <div className="w-full">
+                          {/* Weight Tracking Section */}
+                          <div className={`${activeProgressSlide === "weight" ? "" : "hidden"}`}>
+                            <AnimatePresence>
+                              {expandedProgressSections.weight && (
+                                <motion.div
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 0.25 }}
+                                >
+                                  <div className="px-0 pb-0 pt-0">
                           <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-10 pb-8 border-b border-white/5">
                             <div className="flex flex-wrap items-center gap-4">
                               <div className="relative">
@@ -8745,7 +8835,7 @@ export default function App() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, ease: "easeOut" }}
                               >
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height="100%" key={`${activeView}_${activeProgressSlide}`}>
                                   <AreaChart
                                     data={(() => {
                                       const grouped = weightHistory.reduce(
@@ -9021,45 +9111,16 @@ export default function App() {
                 </div>
 
                 {/* Body Fat Tracking Section */}
-                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <Scroll3DItem>
-                    <button
-                      onClick={() =>
-                        setExpandedProgressSections((prev) => ({
-                          ...prev,
-                          bodyFat: !prev.bodyFat,
-                        }))
-                      }
-                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                          <Percent className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                            Body Fat Tracking
-                          </h3>
-                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                            Body fat percentage progression
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronDown
-                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.bodyFat ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  </Scroll3DItem>
-
+                <div className={`${activeProgressSlide === "bodyFat" ? "" : "hidden"}`}>
                   <AnimatePresence>
                     {expandedProgressSections.bodyFat && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
                       >
-                        <div className="px-6 pb-10 pt-4">
+                        <div className="px-0 pb-0 pt-0">
                           <div className="flex flex-col md:flex-row md:items-center justify-end gap-4 mb-10 pb-8 border-b border-white/5">
                             <div className="flex flex-wrap items-center gap-4">
                               <div className="relative">
@@ -9136,7 +9197,7 @@ export default function App() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, ease: "easeOut" }}
                               >
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height="100%" key={`${activeView}_${activeProgressSlide}`}>
                                   <AreaChart
                                     data={(() => {
                                       const grouped = bodyFatHistory.reduce(
@@ -9415,45 +9476,16 @@ export default function App() {
                 </div>
 
                 {/* Workout Frequency Heatmap Section */}
-                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <Scroll3DItem>
-                    <button
-                      onClick={() =>
-                        setExpandedProgressSections((prev) => ({
-                          ...prev,
-                          workoutCalendar: !prev.workoutCalendar,
-                        }))
-                      }
-                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                          <Activity className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                            Workout Frequency
-                          </h3>
-                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                            Past 3 months activity heatmap
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronDown
-                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.workoutCalendar ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  </Scroll3DItem>
-
+                <div className={`${activeProgressSlide === "workoutCalendar" ? "" : "hidden"}`}>
                   <AnimatePresence>
                     {expandedProgressSections.workoutCalendar && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
                       >
-                        <div className="px-6 pb-10 pt-4">
+                        <div className="px-0 pb-0 pt-0">
                           <WorkoutCalendarHeatmap
                             archivedWorkouts={archivedWorkouts}
                             activeTheme={activeTheme}
@@ -9465,45 +9497,16 @@ export default function App() {
                 </div>
 
                 {/* Trending Section */}
-                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <Scroll3DItem>
-                    <button
-                      onClick={() =>
-                        setExpandedProgressSections((prev) => ({
-                          ...prev,
-                          trending: !prev.trending,
-                        }))
-                      }
-                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                          <TrendingUp className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                            Trending
-                          </h3>
-                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                            Volume & Output Analysis
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronDown
-                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.trending ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  </Scroll3DItem>
-
+                <div className={`${activeProgressSlide === "trending" ? "" : "hidden"}`}>
                   <AnimatePresence>
                     {expandedProgressSections.trending && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
                       >
-                        <div className="px-6 pb-10 pt-4">
+                        <div className="px-0 pb-0 pt-0">
                           <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5">
                             <div className="flex bg-white/5 p-1 rounded-md">
                               {(["day", "week", "month"] as const).map((tf) => (
@@ -9541,7 +9544,7 @@ export default function App() {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.8, ease: "easeOut" }}
                               >
-                                <ResponsiveContainer width="100%" height="100%">
+                                <ResponsiveContainer width="100%" height="100%" key={`${activeView}_${activeProgressSlide}`}>
                                   <AreaChart
                                     data={getVolumeData()}
                                     margin={{
@@ -9690,45 +9693,16 @@ export default function App() {
                 </div>
 
                 {/* Personal Records Feed Section */}
-                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <Scroll3DItem>
-                    <button
-                      onClick={() =>
-                        setExpandedProgressSections((prev) => ({
-                          ...prev,
-                          personalRecords: !prev.personalRecords,
-                        }))
-                      }
-                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                          <Trophy className="w-5 h-5 animate-pulse" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                            Personal Records Feed
-                          </h3>
-                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                            PB accomplishments with date stamps and weight details
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronDown
-                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.personalRecords ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  </Scroll3DItem>
-
+                <div className={`${activeProgressSlide === "personalRecords" ? "" : "hidden"}`}>
                   <AnimatePresence>
                     {expandedProgressSections.personalRecords && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
                       >
-                        <div className="px-6 pb-10 pt-4">
+                        <div className="px-0 pb-0 pt-0">
                           {/* Search & Sorting Toolbar */}
                           <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mb-6 pb-6 border-b border-white/5">
                             {/* Search bar */}
@@ -10168,45 +10142,16 @@ export default function App() {
                   </AnimatePresence>
                 </div>
                 {/* Exercise Progression Tracker Section */}
-                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <Scroll3DItem>
-                    <button
-                      onClick={() =>
-                        setExpandedProgressSections((prev) => ({
-                          ...prev,
-                          exercises: !prev.exercises,
-                        }))
-                      }
-                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                          <Dumbbell className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                            Exercise Progression Tracker
-                          </h3>
-                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                            Database search & visual progress benchmarking across historical sets
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronDown
-                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.exercises ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  </Scroll3DItem>
-
+                <div className={`${activeProgressSlide === "exercises" ? "" : "hidden"}`}>
                   <AnimatePresence>
                     {expandedProgressSections.exercises && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
                       >
-                        <div className="px-6 pb-10 pt-4">
+                        <div className="px-0 pb-0 pt-0">
                           {/* Search bar & selector */}
                           <div className="relative mb-6">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
@@ -10406,7 +10351,7 @@ export default function App() {
 
                                         {/* Chart plotting */}
                                         <div className="w-full h-[180px] font-mono text-[9px] relative z-10">
-                                          <ResponsiveContainer width="100%" height="100%">
+                                          <ResponsiveContainer width="100%" height="100%" key={`${activeView}_${activeProgressSlide}`}>
                                             <RechartsLineChart
                                               data={chartPoints}
                                               margin={{ top: 10, right: 15, left: -25, bottom: 0 }}
@@ -10466,45 +10411,16 @@ export default function App() {
                 </div>
 
                 {/* Calorie Tracker Section */}
-                <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-                  <Scroll3DItem>
-                    <button
-                      onClick={() =>
-                        setExpandedProgressSections((prev) => ({
-                          ...prev,
-                          calorieTracker: !prev.calorieTracker,
-                        }))
-                      }
-                      className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
-                          <Flame className="w-5 h-5 animate-pulse" />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
-                            Calorie Tracker
-                          </h3>
-                          <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
-                            Comprehensive metabolic & training energy output
-                          </p>
-                        </div>
-                      </div>
-                      <ChevronDown
-                        className={`w-5 h-5 text-white/20 group-hover:text-gym-accent transition-all ${expandedProgressSections.calorieTracker ? "rotate-180" : ""}`}
-                      />
-                    </button>
-                  </Scroll3DItem>
-
+                <div className={`${activeProgressSlide === "calorieTracker" ? "" : "hidden"}`}>
                   <AnimatePresence>
                     {expandedProgressSections.calorieTracker && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3 }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.25 }}
                       >
-                        <div className="px-6 pb-10 pt-4">
+                        <div className="px-0 pb-0 pt-0">
                           {(() => {
                             const getWorkoutCalories = (w: any) => {
                               if (w.sets && w.sets.length > 0) {
@@ -10598,6 +10514,7 @@ export default function App() {
                                         <ResponsiveContainer
                                           width="100%"
                                           height="100%"
+                                          key={`${activeView}_${activeProgressSlide}`}
                                         >
                                           <AreaChart
                                             data={chronologicalDays}
@@ -10840,6 +10757,12 @@ export default function App() {
                     )}
                   </AnimatePresence>
                 </div>
+
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Progress Report Trigger Button */}
                 <div className="flex justify-center pt-8 pb-4">
