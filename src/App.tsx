@@ -1251,9 +1251,15 @@ export const Scroll3DItem = ({ children, className }: { children: React.ReactNod
 
   if (isMobile) {
     return (
-      <div className={`w-full ${className || ""}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-20px" }}
+        transition={{ duration: 0.45, ease: "easeOut" }}
+        className={`w-full ${className || ""}`}
+      >
         {children}
-      </div>
+      </motion.div>
     );
   }
 
