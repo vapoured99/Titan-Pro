@@ -2109,6 +2109,7 @@ export default function App() {
   );
   const [selectedLibraryCategory, setSelectedLibraryCategory] =
     useState<string>("chest");
+  const [activeLibraryCarouselIndex, setActiveLibraryCarouselIndex] = useState(0);
   const [showProgressReport, setShowProgressReport] = useState(false);
   const [isExportingReport, setIsExportingReport] = useState(false);
   const [reportCardScale, setReportCardScale] = useState(1);
@@ -7271,7 +7272,7 @@ export default function App() {
                     <Scroll3DItem>
                       <div 
                         className="cursor-pointer" 
-                        onClick={() => setActiveView("progress")}
+                        onClick={() => setActiveView("anatomy")}
                       >
                         <SpinalDepletionWidget
                           cnsFatigueAnalysis={cnsFatigueAnalysis}
@@ -7517,7 +7518,7 @@ export default function App() {
                         className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer ${libraryViewMode === "deck" ? "bg-gym-accent text-black font-black" : "text-white/40 hover:text-white hover:bg-white/5"}`}
                       >
                         <LayoutGrid className="w-3.5 h-3.5" />
-                        Visual Deck
+                        Carousel
                       </button>
                       <button
                         onClick={() => setLibraryViewMode("list")}
@@ -7568,184 +7569,476 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Visual Category Deck Selectors for Deck Mode */}
-                {libraryViewMode === "deck" && !searchQuery && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8 text-left">
-                    {[
-                      {
-                        key: "chest",
-                        label: "Chest",
-                        icon: Crown,
-                        desc: "Chest Compound Lifts",
-                      },
-                      {
-                        key: "triceps",
-                        label: "Triceps",
-                        icon: Crown,
-                        desc: "Elbow Pushdowns & Extensions",
-                      },
-                      {
-                        key: "back",
-                        label: "Back",
-                        icon: ArrowUpDown,
-                        desc: "Lats, Rows & Pulls",
-                      },
-                      {
-                        key: "biceps",
-                        label: "Biceps",
-                        icon: ArrowUpDown,
-                        desc: "Arm Flexion & Pulldowns",
-                      },
-                      {
-                        key: "shoulders",
-                        label: "Shoulders",
-                        icon: Target,
-                        desc: "Delts & Broad Support",
-                      },
-                      {
-                        key: "forearms",
-                        label: "Forearms",
-                        icon: Target,
-                        desc: "Grip & Wrist Strength",
-                      },
-                      {
-                        key: "legs",
-                        label: "Legs",
-                        icon: ArrowDown,
-                        desc: "Quads, Calves & Glutes",
-                      },
-                      {
-                        key: "core",
-                        label: "Core",
-                        icon: ArrowDown,
-                        desc: "Abs & Rigid Bracing",
-                      },
-                      {
-                        key: "cardio",
-                        label: "Cardio",
-                        icon: Flame,
-                        desc: "Heart Rate & Conditioning",
-                      },
-                      {
-                        key: "equipment",
-                        label: "Equipment",
-                        icon: Sliders,
-                        desc: "Cables, Bands & Setups",
-                      },
-                    ].map((sec) => {
-                      const MetaIcon = sec.icon;
-                      const isActive = selectedLibraryCategory === sec.key;
-                      let listCount = 0;
-                      if (sec.key === "chest") {
-                        listCount =
-                          (combinedPools["upper_chest"]?.length || 0) +
-                          (combinedPools["middle_chest"]?.length || 0) +
-                          (combinedPools["lower_chest"]?.length || 0);
-                      } else if (sec.key === "back") {
-                        listCount =
-                          (combinedPools["upper_back"]?.length || 0) +
-                          (combinedPools["lower_back"]?.length || 0);
-                      } else if (sec.key === "shoulders") {
-                        listCount =
-                          (combinedPools["front_delts"]?.length || 0) +
-                          (combinedPools["side_delts"]?.length || 0) +
-                          (combinedPools["rear_delts"]?.length || 0);
-                      } else if (sec.key === "biceps") {
-                        listCount =
-                          (combinedPools["long_biceps"]?.length || 0) +
-                          (combinedPools["short_biceps"]?.length || 0) +
-                          (combinedPools["brachialis"]?.length || 0);
-                      } else if (sec.key === "triceps") {
-                        listCount =
-                          (combinedPools["long_triceps"]?.length || 0) +
-                          (combinedPools["lateral_triceps"]?.length || 0) +
-                          (combinedPools["medial_triceps"]?.length || 0);
-                      } else if (sec.key === "legs") {
-                        listCount =
-                          (combinedPools["quads"]?.length || 0) +
-                          (combinedPools["hamstrings"]?.length || 0) +
-                          (combinedPools["calves"]?.length || 0);
-                      } else if (sec.key === "core") {
-                        listCount =
-                          (combinedPools["upper_core"]?.length || 0) +
-                          (combinedPools["lower_core"]?.length || 0) +
-                          (combinedPools["obliques"]?.length || 0);
-                      } else {
-                        listCount = combinedPools[sec.key]?.length || 0;
-                      }
+                {libraryViewMode === "deck" && (
+                  // CAROUSEL VIEW MODE
+                  <div className="space-y-6 select-none text-left">
+                    {/* Carousel Tab Navigator */}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-gym-accent font-black uppercase tracking-[0.25em] font-mono">
+                          TACTICAL EXERCISE DIRECTORY
+                        </span>
+                        {(() => {
+                          const categoriesList = [
+                            { key: "chest", label: "Chest" },
+                            { key: "triceps", label: "Triceps" },
+                            { key: "back", label: "Back" },
+                            { key: "biceps", label: "Biceps" },
+                            { key: "shoulders", label: "Shoulders" },
+                            { key: "forearms", label: "Forearms" },
+                            { key: "legs", label: "Legs" },
+                            { key: "core", label: "Core" },
+                            { key: "cardio", label: "Cardio" },
+                            { key: "equipment", label: "Equipment" },
+                          ];
+                          const activeCatIndex = categoriesList.findIndex(c => c.key === selectedLibraryCategory);
+                          const safeIndex = activeCatIndex >= 0 ? activeCatIndex : 0;
 
-                      return (
-                        <button
-                          key={sec.key}
-                          onClick={() => setSelectedLibraryCategory(sec.key)}
-                          className={`text-left p-4 rounded-md border cursor-pointer transition-all duration-300 relative overflow-hidden group flex flex-col justify-between h-28 ${
-                            isActive
-                              ? "bg-black/90"
-                              : "bg-black/40 border-white/10 hover:border-white/30 hover:bg-black/60"
-                          }`}
-                          style={
-                            isActive
-                              ? {
-                                  borderColor: `rgba(${activeTheme.accentRgb}, 0.4)`,
-                                  backgroundImage: `linear-gradient(to bottom right, rgba(${activeTheme.accentRgb}, 0.12), transparent)`,
-                                  boxShadow: `0 0 15px rgba(${activeTheme.accentRgb}, 0.18)`,
-                                }
-                              : undefined
+                          let list: Exercise[] = [];
+                          const catKey = selectedLibraryCategory;
+                          if (catKey === "chest") {
+                            list = [
+                              ...(combinedPools["upper_chest"] || []),
+                              ...(combinedPools["middle_chest"] || []),
+                              ...(combinedPools["lower_chest"] || []),
+                            ];
+                          } else if (catKey === "back") {
+                            list = [
+                              ...(combinedPools["upper_back"] || []),
+                              ...(combinedPools["lower_back"] || []),
+                            ];
+                          } else if (catKey === "shoulders") {
+                            list = [
+                              ...(combinedPools["front_delts"] || []),
+                              ...(combinedPools["side_delts"] || []),
+                              ...(combinedPools["rear_delts"] || []),
+                            ];
+                          } else if (catKey === "biceps") {
+                            list = [
+                              ...(combinedPools["long_biceps"] || []),
+                              ...(combinedPools["short_biceps"] || []),
+                              ...(combinedPools["brachialis"] || []),
+                            ];
+                          } else if (catKey === "triceps") {
+                            list = [
+                              ...(combinedPools["long_triceps"] || []),
+                              ...(combinedPools["lateral_triceps"] || []),
+                              ...(combinedPools["medial_triceps"] || []),
+                            ];
+                          } else if (catKey === "legs") {
+                            list = [
+                              ...(combinedPools["quads"] || []),
+                              ...(combinedPools["hamstrings"] || []),
+                              ...(combinedPools["calves"] || []),
+                            ];
+                          } else if (catKey === "core") {
+                            list = [
+                              ...(combinedPools["upper_core"] || []),
+                              ...(combinedPools["lower_core"] || []),
+                              ...(combinedPools["obliques"] || []),
+                            ];
+                          } else {
+                            list = combinedPools[catKey] || [];
                           }
-                        >
-                          <div className="absolute right-0 bottom-0 top-0 w-1/3 bg-gradient-to-l from-white/[0.015] to-transparent pointer-events-none" />
 
-                          <div className="flex items-start justify-between">
-                            <div
-                              className={`w-8 h-8 rounded-md flex items-center justify-center border transition-all ${
-                                isActive
-                                  ? ""
-                                  : "bg-white/5 border-white/10 text-white/45 group-hover:text-white"
-                              }`}
-                              style={
-                                isActive
-                                  ? {
-                                      backgroundColor: `rgba(${activeTheme.accentRgb}, 0.1)`,
-                                      borderColor: `rgba(${activeTheme.accentRgb}, 0.3)`,
-                                      color: activeTheme.accent,
-                                    }
-                                  : undefined
-                              }
-                            >
-                              <MetaIcon className="w-4 h-4" />
-                            </div>
-                            <span
-                              className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider transition-all ${
-                                isActive
-                                  ? "font-black"
-                                  : "bg-white/10 text-white/50 font-bold"
-                              }`}
-                              style={
-                                isActive
-                                  ? {
-                                      backgroundColor: `rgba(${activeTheme.accentRgb}, 0.2)`,
-                                      color: activeTheme.accent,
-                                    }
-                                  : undefined
-                              }
-                            >
-                              {listCount}
+                          const filteredList = list.filter(
+                            (ex) =>
+                              ex.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              ex.pool.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              (ex.category && ex.category.toLowerCase().includes(searchQuery.toLowerCase())),
+                          );
+
+                          return (
+                            <span className="text-[9px] text-white/30 font-mono font-bold uppercase tracking-wider">
+                              CATEGORY {safeIndex + 1} OF {categoriesList.length} ({filteredList.length} MOVEMENTS)
                             </span>
-                          </div>
+                          );
+                        })()}
+                      </div>
+                      
+                      {/* Horizontal scrolling strip of modern high-tech pills */}
+                      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 pt-1 border-b border-white/5 scroll-smooth touch-pan-x flex-nowrap">
+                        {[
+                          { key: "chest", label: "Chest" },
+                          { key: "triceps", label: "Triceps" },
+                          { key: "back", label: "Back" },
+                          { key: "biceps", label: "Biceps" },
+                          { key: "shoulders", label: "Shoulders" },
+                          { key: "forearms", label: "Forearms" },
+                          { key: "legs", label: "Legs" },
+                          { key: "core", label: "Core" },
+                          { key: "cardio", label: "Cardio" },
+                          { key: "equipment", label: "Equipment" },
+                        ].map((sec) => {
+                          const IsSelected = sec.key === selectedLibraryCategory;
+                          let listCount = 0;
+                          if (sec.key === "chest") {
+                            listCount =
+                              (combinedPools["upper_chest"]?.length || 0) +
+                              (combinedPools["middle_chest"]?.length || 0) +
+                              (combinedPools["lower_chest"]?.length || 0);
+                          } else if (sec.key === "back") {
+                            listCount =
+                              (combinedPools["upper_back"]?.length || 0) +
+                              (combinedPools["lower_back"]?.length || 0);
+                          } else if (sec.key === "shoulders") {
+                            listCount =
+                              (combinedPools["front_delts"]?.length || 0) +
+                              (combinedPools["side_delts"]?.length || 0) +
+                              (combinedPools["rear_delts"]?.length || 0);
+                          } else if (sec.key === "biceps") {
+                            listCount =
+                              (combinedPools["long_biceps"]?.length || 0) +
+                              (combinedPools["short_biceps"]?.length || 0) +
+                              (combinedPools["brachialis"]?.length || 0);
+                          } else if (sec.key === "triceps") {
+                            listCount =
+                              (combinedPools["long_triceps"]?.length || 0) +
+                              (combinedPools["lateral_triceps"]?.length || 0) +
+                              (combinedPools["medial_triceps"]?.length || 0);
+                          } else if (sec.key === "legs") {
+                            listCount =
+                              (combinedPools["quads"]?.length || 0) +
+                              (combinedPools["hamstrings"]?.length || 0) +
+                              (combinedPools["calves"]?.length || 0);
+                          } else if (sec.key === "core") {
+                            listCount =
+                              (combinedPools["upper_core"]?.length || 0) +
+                              (combinedPools["lower_core"]?.length || 0) +
+                              (combinedPools["obliques"]?.length || 0);
+                          } else {
+                            listCount = combinedPools[sec.key]?.length || 0;
+                          }
 
-                          <div className="mt-auto">
-                            <h4
-                              className={`text-xs font-bold uppercase tracking-wider ${isActive ? "text-white" : "text-white/70 group-hover:text-white"}`}
+                          return (
+                            <button
+                              key={sec.key}
+                              onClick={() => {
+                                setSelectedLibraryCategory(sec.key);
+                                setActiveLibraryCarouselIndex(0);
+                              }}
+                              className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full border text-[10px] font-mono uppercase tracking-[0.1em] transition-all duration-300 cursor-pointer shrink-0 ${
+                                IsSelected
+                                  ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_15px_rgba(212,255,0,0.06)]"
+                                  : "bg-[#090909]/40 border-white/5 text-white/40 hover:text-white/70 hover:border-white/10"
+                              }`}
+                              style={
+                                IsSelected
+                                  ? {
+                                      borderColor: `rgba(${activeTheme.accentRgb}, 0.5)`,
+                                      color: activeTheme.accent,
+                                      backgroundColor: `rgba(${activeTheme.accentRgb}, 0.08)`,
+                                      boxShadow: `0 0 15px rgba(${activeTheme.accentRgb}, 0.1)`,
+                                    }
+                                  : undefined
+                              }
                             >
-                              {sec.label}
-                            </h4>
-                            <p className="text-[8px] text-white/40 tracking-wider font-light mt-0.5 truncate leading-none font-mono">
-                              {sec.desc}
-                            </p>
+                              <div className="flex items-center justify-center shrink-0">
+                                {getLibraryCategoryIcon(sec.key)}
+                              </div>
+                              <span className="font-bold">{sec.label}</span>
+                              <span className="text-[8px] bg-white/10 text-white/50 px-1.5 py-0.2 rounded-full font-bold">
+                                {listCount}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Active Slide Glassmorphic Container */}
+                    <div className="relative overflow-hidden bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-6 md:p-8 shadow-2xl transition-all duration-300">
+                      {/* Interactive glow effect in the corner */}
+                      <div 
+                        className="absolute top-0 right-10 w-44 h-44 rounded-full blur-3xl -z-10 transition-all duration-300" 
+                        style={{ backgroundColor: `rgba(${activeTheme.accentRgb}, 0.02)` }}
+                      />
+
+                      {(() => {
+                        const categoriesList = [
+                          { key: "chest", label: "Chest", desc: "Chest Compound Lifts" },
+                          { key: "triceps", label: "Triceps", desc: "Elbow Pushdowns & Extensions" },
+                          { key: "back", label: "Back", desc: "Lats, Rows & Pulls" },
+                          { key: "biceps", label: "Biceps", desc: "Arm Flexion & Pulldowns" },
+                          { key: "shoulders", label: "Shoulders", desc: "Delts & Broad Support" },
+                          { key: "forearms", label: "Forearms", desc: "Grip & Wrist Strength" },
+                          { key: "legs", label: "Legs", desc: "Quads, Calves & Glutes" },
+                          { key: "core", label: "Core", desc: "Abs & Rigid Bracing" },
+                          { key: "cardio", label: "Cardio", desc: "Heart Rate & Conditioning" },
+                          { key: "equipment", label: "Equipment", desc: "Cables, Bands & Setups" },
+                        ];
+
+                        const activeCatIndex = categoriesList.findIndex(c => c.key === selectedLibraryCategory);
+                        const activeCat = categoriesList[activeCatIndex >= 0 ? activeCatIndex : 0];
+
+                        let list: Exercise[] = [];
+                        const catKey = selectedLibraryCategory;
+                        if (catKey === "chest") {
+                          list = [
+                            ...(combinedPools["upper_chest"] || []),
+                            ...(combinedPools["middle_chest"] || []),
+                            ...(combinedPools["lower_chest"] || []),
+                          ];
+                        } else if (catKey === "back") {
+                          list = [
+                            ...(combinedPools["upper_back"] || []),
+                            ...(combinedPools["lower_back"] || []),
+                          ];
+                        } else if (catKey === "shoulders") {
+                          list = [
+                            ...(combinedPools["front_delts"] || []),
+                            ...(combinedPools["side_delts"] || []),
+                            ...(combinedPools["rear_delts"] || []),
+                          ];
+                        } else if (catKey === "biceps") {
+                          list = [
+                            ...(combinedPools["long_biceps"] || []),
+                            ...(combinedPools["short_biceps"] || []),
+                            ...(combinedPools["brachialis"] || []),
+                          ];
+                        } else if (catKey === "triceps") {
+                          list = [
+                            ...(combinedPools["long_triceps"] || []),
+                            ...(combinedPools["lateral_triceps"] || []),
+                            ...(combinedPools["medial_triceps"] || []),
+                          ];
+                        } else if (catKey === "legs") {
+                          list = [
+                            ...(combinedPools["quads"] || []),
+                            ...(combinedPools["hamstrings"] || []),
+                            ...(combinedPools["calves"] || []),
+                          ];
+                        } else if (catKey === "core") {
+                          list = [
+                            ...(combinedPools["upper_core"] || []),
+                            ...(combinedPools["lower_core"] || []),
+                            ...(combinedPools["obliques"] || []),
+                          ];
+                        } else {
+                          list = combinedPools[catKey] || [];
+                        }
+
+                        let filteredList = list.filter(
+                          (ex) =>
+                            ex.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            ex.pool.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            (ex.category && ex.category.toLowerCase().includes(searchQuery.toLowerCase())),
+                        );
+
+                        const sortedList = filteredList.sort((a, b) => a.name.localeCompare(b.name));
+
+                        const handlePrev = () => {
+                          const prevIndex = (activeCatIndex - 1 + categoriesList.length) % categoriesList.length;
+                          setSelectedLibraryCategory(categoriesList[prevIndex].key);
+                        };
+
+                        const handleNext = () => {
+                          const nextIndex = (activeCatIndex + 1) % categoriesList.length;
+                          setSelectedLibraryCategory(categoriesList[nextIndex].key);
+                        };
+
+                        if (sortedList.length === 0) {
+                          return (
+                            <div className="text-center py-12">
+                              <p className="text-sm text-white/40 font-mono">No movements identified in this category matching search query.</p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div>
+                            {/* Active Header with Category Navigation buttons */}
+                            <div className="flex items-center justify-between gap-4 pb-6 border-b border-white/5 mb-6">
+                              <div className="flex items-center gap-4 min-w-0">
+                                <div 
+                                  className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 shadow-sm transition-all"
+                                  style={{
+                                    backgroundColor: `rgba(${activeTheme.accentRgb}, 0.1)`,
+                                    border: `1px solid rgba(${activeTheme.accentRgb}, 0.2)`,
+                                    color: activeTheme.accent,
+                                    boxShadow: `0 0 10px rgba(${activeTheme.accentRgb}, 0.1)`,
+                                  }}
+                                >
+                                  {getLibraryCategoryIcon(activeCat.key)}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="text-lg md:text-xl font-light italic font-serif text-white break-words uppercase tracking-wider">
+                                      {activeCat.label} MOVEMENTS
+                                    </h3>
+                                  </div>
+                                  <p className="text-[10px] font-mono text-white/40 tracking-wider font-light mt-0.5">
+                                    {activeCat.desc} • {sortedList.length} EXERCISES
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Circular Nav Buttons to cycle categories */}
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  onClick={handlePrev}
+                                  className="w-8 h-8 rounded-full border border-white/10 bg-white/[0.02] hover:bg-white/5 flex items-center justify-center transition-all cursor-pointer"
+                                  style={{
+                                    borderColor: `rgba(${activeTheme.accentRgb}, 0.1)`,
+                                  }}
+                                  title="Previous Category"
+                                >
+                                  <ChevronLeft className="w-4 h-4 text-white/60 hover:text-white" />
+                                </button>
+                                <button
+                                  onClick={handleNext}
+                                  className="w-8 h-8 rounded-full border border-white/10 bg-white/[0.02] hover:bg-white/5 flex items-center justify-center transition-all cursor-pointer"
+                                  style={{
+                                    borderColor: `rgba(${activeTheme.accentRgb}, 0.1)`,
+                                  }}
+                                  title="Next Category"
+                                >
+                                  <ChevronRight className="w-4 h-4 text-white/60 hover:text-white" />
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Beautiful Grid displaying the whole list of exercises */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto pr-2 no-scrollbar">
+                              {sortedList.map((activeExercise) => {
+                                const Icon = iconMap[activeExercise.icon] || Dumbbell;
+                                const isCustom = customExercises.some(
+                                  (ce) => ce.name.toLowerCase() === activeExercise.name.toLowerCase()
+                                );
+                                return (
+                                  <div 
+                                    key={activeExercise.name}
+                                    className="bg-[#090909]/40 hover:bg-[#0c0c0c]/80 border border-white/[0.04] hover:border-white/10 rounded-xl p-4 flex flex-col justify-between transition-all duration-300 relative group"
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex items-center gap-3 min-w-0">
+                                        <div 
+                                          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all"
+                                          style={{
+                                            backgroundColor: `rgba(${activeTheme.accentRgb}, 0.06)`,
+                                            border: `1px solid rgba(${activeTheme.accentRgb}, 0.1)`,
+                                            color: activeTheme.accent,
+                                          }}
+                                        >
+                                          <Icon className="w-4 h-4" />
+                                        </div>
+                                        <div className="min-w-0">
+                                          <h4 className="text-sm font-semibold text-white truncate group-hover:text-gym-accent transition-colors leading-snug">
+                                            {activeExercise.name}
+                                          </h4>
+                                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                            {activeExercise.category && (
+                                              <span
+                                                className={`text-[7px] px-1 py-0.2 rounded font-bold uppercase tracking-wider ${
+                                                  activeExercise.category === "compound"
+                                                    ? "bg-amber-500/10 text-amber-500/80"
+                                                    : "bg-purple-500/15 text-purple-400"
+                                                }`}
+                                              >
+                                                {activeExercise.category}
+                                              </span>
+                                            )}
+                                            {activeExercise.pool && (
+                                              <span className="text-[7px] font-mono uppercase tracking-wider text-white/30">
+                                                {activeExercise.pool}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex items-center gap-1 shrink-0">
+                                        <button
+                                          onClick={() => toggleFavoriteExercise(activeExercise.name)}
+                                          className="p-1 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                                          title={favoriteExercises.includes(activeExercise.name) ? "Remove from Favorites" : "Add to Favorites"}
+                                        >
+                                          <Star
+                                            className={`w-3.5 h-3.5 transition-colors ${
+                                              favoriteExercises.includes(activeExercise.name)
+                                                ? "text-amber-400 fill-amber-400"
+                                                : "text-white/20 hover:text-white/60"
+                                            }`}
+                                          />
+                                        </button>
+                                        {isCustom && (
+                                          <button
+                                            onClick={() => handlePermanentlyDeleteCustomExercise(activeExercise.name)}
+                                            className="px-1.5 py-0.5 rounded-[1px] border border-red-500/20 bg-red-950/10 hover:bg-red-600 hover:text-white text-red-400 text-[7px] font-bold uppercase tracking-widest transition-all cursor-pointer"
+                                            title="Delete Movement"
+                                          >
+                                            Delete
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Setup biomechanics */}
+                                    <p className="text-[11px] text-white/50 leading-relaxed font-sans my-3 line-clamp-2 min-h-[32px]">
+                                      {activeExercise.instructions && activeExercise.instructions.length > 0 
+                                        ? activeExercise.instructions.join(" ") 
+                                        : "No specific setup biomechanics documented."}
+                                    </p>
+
+                                    {/* Sparkline & Personal Best inline */}
+                                    <div className="flex items-center justify-between gap-2 border-t border-white/5 pt-3 mt-1 text-[10px] font-mono">
+                                      <div className="flex flex-col">
+                                        <span className="text-[7px] text-white/30 uppercase tracking-wider">Performance Wave</span>
+                                        <div className="mt-0.5 scale-90 origin-left">
+                                          <Sparkline
+                                            exName={activeExercise.name}
+                                            sessionSets={sessionSets}
+                                            archivedWorkouts={archivedWorkouts}
+                                            width={100}
+                                            height={20}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="text-right">
+                                        <span className="text-[7px] text-white/30 uppercase tracking-wider block">PR WEIGHT</span>
+                                        <span className="font-bold uppercase tracking-wide" style={{ color: activeTheme.accent }}>
+                                          {personalBests[activeExercise.name] ? `${personalBests[activeExercise.name].weight} KG` : "N/A"}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    {/* Quick Actions */}
+                                    <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-white/5">
+                                      <button
+                                        onClick={() => setGuidanceEx(activeExercise)}
+                                        className="py-1.5 px-2 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all text-[9px] tracking-wider uppercase font-semibold rounded-md flex items-center justify-center gap-1 cursor-pointer"
+                                        title="Show Guidance"
+                                      >
+                                        <BookOpen className="w-3.5 h-3.5" />
+                                        <span>Guide</span>
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          setLoggingEx(activeExercise);
+                                          setPopupWeight("");
+                                          setPopupReps("");
+                                          setPopupNotes("");
+                                          setPopupDifficulty("moderate");
+                                        }}
+                                        className="py-1.5 px-2 text-[9px] uppercase font-black tracking-widest transition-all rounded-md flex items-center justify-center gap-1 font-mono cursor-pointer"
+                                        style={{
+                                          backgroundColor: activeTheme.accent,
+                                          color: "#000000",
+                                        }}
+                                        title="Log Set"
+                                      >
+                                        <Plus className="w-3.5 h-3.5 text-black stroke-[3px]" />
+                                        <span>Log</span>
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </button>
-                      );
-                    })}
+                        );
+                      })()}
+                    </div>
                   </div>
                 )}
 
@@ -7832,6 +8125,9 @@ export default function App() {
                     };
                   });
 
+                  if (libraryViewMode === "deck" && !searchQuery) {
+                    return [];
+                  }
                   if (
                     searchQuery.trim().length > 0 ||
                     libraryViewMode === "list"

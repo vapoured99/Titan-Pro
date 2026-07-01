@@ -770,7 +770,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
               {compact ? "Front View" : "Front Primary"}
             </h4>
           </div>
-          <svg viewBox="0 0 200 400" className={compact ? "w-full max-w-[120px] h-auto" : "w-full max-w-[210px] h-auto"}>
+          <svg viewBox={compact ? "50 35 100 320" : "0 0 200 400"} className={compact ? "w-full max-w-[190px] h-auto" : "w-full max-w-[210px] h-auto"}>
             {/* Cybernetic High-Contrast SVG Glow Filters */}
             <defs>
               <filter id="glow-red" x="-30%" y="-30%" width="160%" height="160%">
@@ -948,7 +948,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
               {compact ? "Rear View" : "Rear Primary"}
             </h4>
           </div>
-          <svg viewBox="0 0 200 400" className={compact ? "w-full max-w-[120px] h-auto" : "w-full max-w-[210px] h-auto"}>
+          <svg viewBox={compact ? "50 35 100 320" : "0 0 200 400"} className={compact ? "w-full max-w-[190px] h-auto" : "w-full max-w-[210px] h-auto"}>
             {/* Stylized Body Outline - Back */}
             <g fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth={compact ? "1" : "1.25"}>
               <path d={bodyOutlinePath} />
