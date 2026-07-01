@@ -6928,7 +6928,7 @@ export default function App() {
 
         {/* Tabs / Navigation */}
         <nav className="flex items-center mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth w-full">
-          <div className="flex items-center gap-3 flex-nowrap w-full pr-8">
+          <div className="flex items-center gap-3 flex-nowrap w-full pr-0">
             {[
               { id: "console", label: "Console", icon: Terminal },
               { id: "workout", label: "Programming", icon: Workflow },
@@ -7009,7 +7009,7 @@ export default function App() {
                   setActiveView(nav.id as any);
                   saveSettings({ activeView: nav.id });
                 }}
-                className={`relative p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none mr-2 md:mr-4 ${
+                className={`relative p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
                   activeView === nav.id
                     ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent"
                     : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
