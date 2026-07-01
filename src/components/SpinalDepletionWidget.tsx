@@ -249,7 +249,8 @@ export const SpinalDepletionWidget: React.FC<SpinalDepletionWidgetProps> = ({
             </div>
             <div className="h-6 w-px bg-white/5 self-center" />
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setActiveView("anatomy");
               }}
               className="ml-auto text-[9px] text-gym-accent font-extrabold uppercase tracking-wider border border-gym-accent/20 hover:border-gym-accent/60 bg-gym-accent/5 hover:bg-gym-accent/10 px-3 py-1.5 rounded-md transition-all duration-200 cursor-pointer flex items-center gap-1.5 font-mono hover:scale-[1.02] active:scale-[0.98]"

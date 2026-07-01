@@ -255,7 +255,10 @@ export default function RadarChart({
           <span className="text-[11px] text-gym-accent uppercase font-bold tracking-widest font-mono">Muscular Spider Web Matrix</span>
         </div>
         <button 
-          onClick={() => setComparisonMode(prev => !prev)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setComparisonMode(prev => !prev);
+          }}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[8px] font-black uppercase tracking-widest transition-all cursor-pointer self-start sm:self-auto ${
             comparisonMode 
               ? 'bg-gym-accent/10 border-gym-accent/40 text-gym-accent shadow-[0_0_10px_rgba(34,197,110,0.15)]' 

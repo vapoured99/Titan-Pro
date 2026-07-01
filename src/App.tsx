@@ -7133,8 +7133,7 @@ export default function App() {
                                 />
                               </div>
                               <div 
-                                className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform duration-300"
-                                onClick={() => setActiveView("progress")}
+                                className="flex items-center justify-center transition-transform duration-300"
                               >
                                 <RadarChart
                                    sessionSets={sessionSets}
