@@ -1635,6 +1635,41 @@ export default function App() {
     };
   }, [sessionSets, archivedWorkouts]);
 
+  const averageVolume7Days = useMemo(() => {
+    if (!sessionSummary || !archivedWorkouts || archivedWorkouts.length === 0) return null;
+    const sessionDate = new Date(sessionSummary.date);
+    if (isNaN(sessionDate.getTime())) return null;
+
+    const sevenDaysAgo = new Date(sessionDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    const recentWorkouts = archivedWorkouts.filter(w => {
+      const wDate = new Date(w.date);
+      if (isNaN(wDate.getTime())) return false;
+      return wDate >= sevenDaysAgo && w.date !== sessionSummary.date;
+    });
+
+    if (recentWorkouts.length === 0) {
+      const priorWorkouts = archivedWorkouts.filter(w => w.date !== sessionSummary.date);
+      if (priorWorkouts.length === 0) return null;
+      const totalVolumeSum = priorWorkouts.reduce((sum, w) => sum + (w.totalVolume || 0), 0);
+      return totalVolumeSum / priorWorkouts.length;
+    }
+
+    const totalVolumeSum = recentWorkouts.reduce((sum, w) => sum + (w.totalVolume || 0), 0);
+    return totalVolumeSum / recentWorkouts.length;
+  }, [sessionSummary, archivedWorkouts]);
+
+  const volumeComparison = useMemo(() => {
+    if (averageVolume7Days === null || averageVolume7Days === 0 || !sessionSummary) return null;
+    const currentVolume = sessionSummary.totalVolume;
+    if (currentVolume > averageVolume7Days) {
+      return "higher";
+    } else if (currentVolume < averageVolume7Days * 0.8) {
+      return "significantly_lower";
+    }
+    return "normal";
+  }, [averageVolume7Days, sessionSummary]);
+
   const combinedPools: Record<string, Exercise[]> = useMemo(() => {
     const merged: Record<string, Exercise[]> = { ...POOLS };
     customExercises.forEach((ex) => {
@@ -16875,20 +16910,63 @@ export default function App() {
                   {/* Grid of Key Performance Indicators */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {/* Volume KPI */}
-                    <div className="bg-white/[0.02] border border-white/5 p-4 rounded-md hover:border-gym-accent/20 transition-all flex flex-col justify-between">
+                    <div className={`bg-white/[0.02] border p-4 rounded-md transition-all flex flex-col justify-between relative overflow-hidden ${
+                      volumeComparison === "higher"
+                        ? "border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)] bg-emerald-500/[0.02]"
+                        : volumeComparison === "significantly_lower"
+                        ? "border-red-500/30 shadow-[0_0_15px_rgba(239,68,68,0.15)] bg-red-500/[0.02]"
+                        : "border-white/5 hover:border-gym-accent/20"
+                    }`}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[8px] text-white/40 uppercase tracking-widest font-black">
                           Total Volume
                         </span>
-                        <Zap className="w-4 h-4 text-gym-accent/80" />
+                        <Zap className={`w-4 h-4 ${
+                          volumeComparison === "higher"
+                            ? "text-emerald-400"
+                            : volumeComparison === "significantly_lower"
+                            ? "text-red-400"
+                            : "text-gym-accent/80"
+                        }`} />
                       </div>
                       <div>
-                        <span className="text-2xl font-bold font-mono text-white tracking-tight">
-                          {sessionSummary.totalVolume.toLocaleString()}
-                        </span>
-                        <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">
-                          kg
-                        </span>
+                        <div className="flex items-baseline justify-between">
+                          <div>
+                            <span className="text-2xl font-bold font-mono text-white tracking-tight">
+                              {sessionSummary.totalVolume.toLocaleString()}
+                            </span>
+                            <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest ml-1">
+                              kg
+                            </span>
+                          </div>
+                          
+                          {/* Indicator badge or percentage */}
+                          {averageVolume7Days !== null && averageVolume7Days > 0 && (
+                            <div className="flex flex-col items-end">
+                              {volumeComparison === "higher" && (
+                                <span className="text-[9px] font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-0.5">
+                                  ▲ {Math.round(((sessionSummary.totalVolume - averageVolume7Days) / averageVolume7Days) * 100)}%
+                                </span>
+                              )}
+                              {volumeComparison === "significantly_lower" && (
+                                <span className="text-[9px] font-mono font-bold text-red-400 uppercase tracking-wider flex items-center gap-0.5">
+                                  ▼ {Math.round(((averageVolume7Days - sessionSummary.totalVolume) / averageVolume7Days) * 100)}%
+                                </span>
+                              )}
+                              {volumeComparison === "normal" && (
+                                <span className="text-[8px] font-mono text-white/30 uppercase tracking-wider">
+                                  {Math.round((sessionSummary.totalVolume / averageVolume7Days) * 100)}% of avg
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {averageVolume7Days !== null && averageVolume7Days > 0 && (
+                          <span className="text-[7.5px] text-white/30 uppercase tracking-widest block mt-1.5 font-mono">
+                            7-day Avg: {Math.round(averageVolume7Days).toLocaleString()} kg
+                          </span>
+                        )}
                       </div>
                     </div>
 
