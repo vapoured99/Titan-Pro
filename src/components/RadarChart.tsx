@@ -16,6 +16,7 @@ interface RadarChartProps {
   sessionSets?: SessionSet[];
   archivedWorkouts?: any[];
   size?: number;
+  plain?: boolean;
 }
 
 // Muscle mapping helper
@@ -50,7 +51,8 @@ const findMuscleGroup = (exerciseName: string): string | null => {
 export default function RadarChart({
   sessionSets = [],
   archivedWorkouts = [],
-  size = 240
+  size = 240,
+  plain = false
 }: RadarChartProps) {
   const accentColor = '#22c55e'; // Gym-accent green
   const comparisonColor = '#0ea5e9'; // Historical sky blue
@@ -118,13 +120,46 @@ export default function RadarChart({
       }
     };
 
+    // Robust date extraction helper for workouts
+    const getWorkoutDateStr = (workout: any): string => {
+      if (!workout) return "";
+      if (workout.date) {
+        return workout.date.substring(0, 10);
+      }
+      if (workout.timestamp) {
+        if (typeof workout.timestamp.seconds === 'number') {
+          return new Date(workout.timestamp.seconds * 1000).toISOString().split('T')[0];
+        }
+        if (workout.timestamp instanceof Date) {
+          return workout.timestamp.toISOString().split('T')[0];
+        }
+        if (typeof workout.timestamp === 'string') {
+          return workout.timestamp.substring(0, 10);
+        }
+      }
+      return "";
+    };
+
+    const isTodayWorkout = (workout: any): boolean => {
+      const dStr = getWorkoutDateStr(workout);
+      if (!dStr) return false;
+      const todayUTC = new Date().toISOString().split('T')[0];
+      const localDate = new Date();
+      const offset = localDate.getTimezoneOffset();
+      const local = new Date(localDate.getTime() - (offset * 60 * 1000));
+      const todayLocal = local.toISOString().split('T')[0];
+      const todayCA = new Date().toLocaleDateString('en-CA');
+      return dStr === todayUTC || dStr === todayLocal || dStr === todayCA;
+    };
+
     // Calculate from current active sets
     sessionSets.forEach(s => processSet(s.exerciseName, true));
 
     // Calculate from past workouts
     archivedWorkouts.forEach(w => {
       if (w?.sets && Array.isArray(w.sets)) {
-        w.sets.forEach((s: any) => processSet(s.exerciseName, false));
+        const isToday = isTodayWorkout(w);
+        w.sets.forEach((s: any) => processSet(s.exerciseName, isToday));
       }
     });
 
@@ -238,15 +273,23 @@ export default function RadarChart({
     <motion.div 
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, scale: 1.015, borderColor: 'rgba(34, 197, 110, 0.35)', boxShadow: '0 12px 30px -10px rgba(34, 197, 110, 0.16)' }}
+      whileHover={plain ? undefined : { y: -4, scale: 1.015, borderColor: 'rgba(34, 197, 110, 0.35)', boxShadow: '0 12px 30px -10px rgba(34, 197, 110, 0.16)' }}
       transition={{ type: "spring", stiffness: 350, damping: 25 }}
-      className="flex flex-col items-center justify-between p-4 bg-black/60 border border-white/10 rounded-md backdrop-blur-md relative h-full min-h-[410px]"
+      className={
+        plain
+          ? "flex flex-col items-center justify-between w-full h-full relative overflow-visible"
+          : "flex flex-col items-center justify-between p-4 bg-black/60 border border-white/10 rounded-md backdrop-blur-md relative h-full min-h-[410px] overflow-visible"
+      }
     >
       {/* Decorative corners */}
-      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20" />
-      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20" />
-      <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/20" />
-      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20" />
+      {!plain && (
+        <>
+          <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20" />
+          <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20" />
+          <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/20" />
+          <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20" />
+        </>
+      )}
 
       {/* Header Info */}
       <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 mb-2 pb-2 border-b border-white/5">
@@ -272,7 +315,7 @@ export default function RadarChart({
       </div>
 
       {/* SVG Canvas and Tooltip Container */}
-      <div className="relative flex items-center justify-center w-full mt-7 mb-2" style={{ height: size }}>
+      <div className="relative w-[240px] h-[240px] flex items-center justify-center mx-auto mt-7 mb-2 overflow-visible">
         <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full overflow-visible">
           <defs>
             {/* Primary active session fill gradient */}
@@ -612,7 +655,7 @@ export default function RadarChart({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute z-40 p-3 bg-black/95 border border-white/15 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.85)] flex flex-col pointer-events-none text-left min-w-[140px] select-none"
+              className="absolute z-[9999] p-3 bg-black/95 border border-white/15 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.85)] flex flex-col pointer-events-none text-left min-w-[140px] select-none"
               style={{ 
                 left: activeTooltip.x, 
                 top: activeTooltip.y + 12,

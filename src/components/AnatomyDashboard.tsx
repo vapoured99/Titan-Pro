@@ -1418,7 +1418,7 @@ export default function AnatomyDashboard({
                   {/* Radar Web Card */}
                   <div className="lg:col-span-5 p-4 bg-zinc-950/40 border border-white/5 rounded-md flex flex-col items-center justify-center relative w-full h-full min-h-[385px]">
                     <div className="w-full max-w-[340px] flex flex-col items-center justify-center">
-                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={300} />
+                      <RadarChart sessionSets={sessionSets} archivedWorkouts={archivedWorkouts} size={300} plain={true} />
                       <span className="text-[9px] uppercase tracking-[0.2em] font-mono font-bold text-white/30 mt-4 block text-center">
                         Biomechanical Volume Web
                       </span>

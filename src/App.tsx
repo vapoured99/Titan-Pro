@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import ConsoleDView from "./components/ConsoleDView";
 import {
   ChevronDown,
   X,
@@ -64,6 +65,7 @@ import {
   FileText,
   ClipboardList,
   Star,
+  Cpu,
 } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import {
@@ -1329,7 +1331,7 @@ export default function App() {
   );
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
   const [activeView, setActiveView] = useState<
-    | "console"
+    | "console_d"
     | "workout"
     | "library"
     | "progress"
@@ -1340,7 +1342,7 @@ export default function App() {
     | "profile"
     | "anatomy"
     | "avatar"
-  >("console");
+  >("console_d");
   const [showLandingPage, setShowLandingPage] = useState<boolean>(false);
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   const [hasCheckedLanding, setHasCheckedLanding] = useState<boolean>(false);
@@ -1380,6 +1382,8 @@ export default function App() {
   const [builderSearch, setBuilderSearch] = useState("");
   const [newRoutinePeriodization, setNewRoutinePeriodization] = useState<"hypertrophy" | "strength" | "deload">("hypertrophy");
   const [shuffleTrigger, setShuffleTrigger] = useState(0);
+  const [consoleBetaTab, setConsoleBetaTab] = useState<"strength" | "hypertrophy" | "neural" | "endurance">("strength");
+  const [consoleCProfile, setConsoleCProfile] = useState<"hyper" | "flow" | "power" | "recovery">("flow");
 
   const [customExercises, setCustomExercises] = useState<Exercise[]>(() => {
     const saved = localStorage.getItem("gym_custom_exercises");
@@ -6930,7 +6934,7 @@ export default function App() {
         <nav className="flex items-center mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth w-full">
           <div className="flex items-center gap-3 flex-nowrap w-full pr-0">
             {[
-              { id: "console", label: "Console", icon: Terminal },
+              { id: "console_d", label: "Console D", icon: Brain },
               { id: "workout", label: "Programming", icon: Workflow },
               { id: "library", label: "Library", icon: BookOpen },
               { id: "progress", label: "Progress", icon: TrendingUp },
@@ -7040,7 +7044,7 @@ export default function App() {
               >
                 <Loader2 className="w-8 h-8 text-gym-accent animate-spin" />
               </motion.div>
-            ) : activeView === "console" ? (
+            ) : activeView === "never_active_alpha" ? (
               (() => {
                 const level = profile?.avatarLevel ?? 1;
                 const xp = profile?.avatarXp ?? 0;
@@ -7087,33 +7091,39 @@ export default function App() {
                   (a, b) => a.date.localeCompare(b.date),
                 );
 
-                const scrollPopInVariant = {
-                  hidden: { opacity: 0, scale: 0.92, y: 30 },
-                  show: {
-                    opacity: 1,
-                    scale: 1,
-                    y: 0,
-                    transition: {
-                      type: "spring",
-                      stiffness: 150,
-                      damping: 18,
-                      mass: 0.8
-                    },
-                  },
+                // Neural Recruitment load calculations based on logged sets
+                const getRecruitmentScores = () => {
+                  const scores: Record<string, number> = {
+                    Chest: 25,
+                    Back: 20,
+                    Legs: 30,
+                    Shoulders: 25,
+                    Core: 40,
+                    Arms: 20,
+                  };
+                  sessionSets.forEach(set => {
+                    const exName = (set.exerciseName || "").toLowerCase();
+                    if (exName.includes("chest") || exName.includes("press") || exName.includes("fly")) {
+                      scores.Chest += 15;
+                    } else if (exName.includes("back") || exName.includes("row") || exName.includes("pull") || exName.includes("chin") || exName.includes("lat")) {
+                      scores.Back += 15;
+                    } else if (exName.includes("squat") || exName.includes("leg") || exName.includes("calf") || exName.includes("quad") || exName.includes("glute") || exName.includes("lunge")) {
+                      scores.Legs += 15;
+                    } else if (exName.includes("shoulder") || exName.includes("press") || exName.includes("lateral") || exName.includes("delt")) {
+                      scores.Shoulders += 15;
+                    } else if (exName.includes("abs") || exName.includes("crunch") || exName.includes("plank") || exName.includes("core")) {
+                      scores.Core += 15;
+                    } else {
+                      scores.Arms += 10;
+                    }
+                  });
+                  Object.keys(scores).forEach(k => {
+                    scores[k] = Math.min(100, scores[k]);
+                  });
+                  return scores;
                 };
 
-                const cardVariants = {
-                  hidden: { opacity: 0, y: 15 },
-                  show: {
-                    opacity: 1,
-                    y: 0,
-                    transition: {
-                      type: "spring",
-                      stiffness: 260,
-                      damping: 24,
-                    },
-                  },
-                };
+                const recruitment = getRecruitmentScores();
 
                 return (
                   <motion.div
@@ -7121,375 +7131,306 @@ export default function App() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="space-y-4 md:space-y-5 pb-12 animate-fade-in"
+                    className="space-y-6 pb-12 text-left"
                   >
-                    {/* Minimalist Ultra-Sleek Header */}
-                    <div className="flex flex-row items-center justify-between border-b border-white/[0.03] pb-3 gap-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
-                          <span className="text-[9px] text-gym-accent uppercase tracking-[0.4em] font-black font-mono">
-                            TITAN METRIC SYSTEM
-                          </span>
+                    {/* SECTION 1: SYSTEM HUD HEADER */}
+                    <div className="bg-[#070707] border border-red-500/10 rounded-xl p-5 relative overflow-hidden group shadow-[inset_0_1px_3px_rgba(255,0,0,0.05)]">
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full blur-3xl pointer-events-none" />
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                            <span className="text-[10px] text-red-500 font-mono font-bold tracking-[0.3em] uppercase">
+                              Tactical Command HUD // DELTA DECK
+                            </span>
+                          </div>
+                          <h2 className="text-2xl md:text-3xl font-light font-sans text-white tracking-tight">
+                            Console <span className="font-serif italic font-light text-red-400">Alpha</span>
+                          </h2>
+                          <p className="text-xs text-white/40 font-mono font-light">
+                            COGNITIVE INDEX: <span className="text-white/80">ONLINE</span> • RECONSTRUCTED MODEL V1.9.4
+                          </p>
+                        </div>
+                        {/* Dynamic Stat Bento Pill Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                          <div className="bg-white/[0.02] border border-white/5 rounded-lg p-3 font-mono">
+                            <span className="text-[8px] text-white/30 block tracking-wider uppercase">Neuromuscular</span>
+                            <span className="text-sm font-black text-red-400">{recruitment.Chest + recruitment.Back}%</span>
+                          </div>
+                          <div className="bg-white/[0.02] border border-white/5 rounded-lg p-3 font-mono">
+                            <span className="text-[8px] text-white/30 block tracking-wider uppercase">Spinal Depletion</span>
+                            <span className="text-sm font-black text-amber-500">{cnsFatigueAnalysis.depletionScore}%</span>
+                          </div>
+                          <div className="bg-white/[0.02] border border-white/5 rounded-lg p-3 font-mono">
+                            <span className="text-[8px] text-white/30 block tracking-wider uppercase">Reflex Multiplier</span>
+                            <span className="text-sm font-black text-emerald-400">1.82x</span>
+                          </div>
+                          <div className="bg-white/[0.02] border border-white/5 rounded-lg p-3 font-mono">
+                            <span className="text-[8px] text-white/30 block tracking-wider uppercase">Cumulative Load</span>
+                            <span className="text-sm font-black text-white">{(archivedWorkouts.length * 12).toLocaleString()} KG</span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
+                    {/* SECTION 2: PHYSICAL RECONSTRUCTION AND NEUROMUSCULAR MATRIX */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+                      {/* Left Side: Physiological Model */}
+                      <div className="lg:col-span-7 flex flex-col justify-between">
+                        <div className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-red-500/20 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group transition-all duration-300 h-full">
+                          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-500/20 to-transparent" />
+                          
+                          <div className="space-y-1 mb-4">
+                            <span className="text-[9px] font-mono text-red-400 uppercase tracking-widest font-black">
+                              Neural Interface Mapping
+                            </span>
+                            <h3 className="text-xl font-light text-white font-sans">
+                              Physical <span className="font-serif italic text-red-400">Recruitment Mapping</span>
+                            </h3>
+                            <p className="text-[11px] text-white/40 leading-relaxed">
+                              Live feedback of active neuromuscular load computed from current session clusters.
+                            </p>
+                          </div>
 
-
-                    {/* Section 1: Biomechanical Balance & Anatomy Mapped Side-by-Side */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5 items-stretch">
-                      {/* Physiological Simulation Panel */}
-                      <div className="lg:col-span-8">
-                        <Scroll3DItem className="h-full">
-                          <div className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-5 md:p-6 flex flex-col justify-between relative overflow-hidden group hover:border-white/10 transition-all duration-300 h-full">
-                            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-                            
-                            <div className="space-y-1 mb-3">
-                              <span className="text-[9px] font-mono text-gym-accent uppercase tracking-widest font-black">
-                                RECONSTRUCTED BIOMETRICS
-                              </span>
-                              <h3 className="text-xl md:text-2xl font-light tracking-tight text-white font-sans">
-                                Physical <span className="font-serif italic font-light text-gym-accent">Symmetry</span>
-                              </h3>
-                              <p className="text-[11px] text-white/40 max-w-md leading-relaxed">
-                                Dynamic load mapping and active physical recruitment ratios computed from your history.
-                              </p>
+                          {/* Two high-contrast larger graphics side-by-side */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-4 flex-1">
+                            <div 
+                              className="flex items-center justify-center cursor-pointer hover:scale-[1.03] transition-all duration-300 bg-black/40 border border-white/[0.02] rounded-xl p-3"
+                              onClick={() => setActiveView("anatomy")}
+                              title="Click to view detailed diagnostics"
+                            >
+                              <AnatomyChart
+                                 sets={sessionSets}
+                                 archivedWorkouts={archivedWorkouts}
+                                 compact={true}
+                              />
                             </div>
-
-                            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-2">
-                              <div 
-                                className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-transform duration-300"
-                                onClick={() => setActiveView("anatomy")}
-                              >
-                                <AnatomyChart
-                                   sets={sessionSets}
-                                   archivedWorkouts={archivedWorkouts}
-                                   compact={true}
-                                />
-                              </div>
-                              <div 
-                                className="flex items-center justify-center transition-transform duration-300"
-                              >
-                                <RadarChart
-                                   sessionSets={sessionSets}
-                                   archivedWorkouts={archivedWorkouts}
-                                   size={280}
-                                />
-                              </div>
-                            </div>
-
-                            <div className="mt-4 pt-3 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
-                              <span>ACTIVE SETS DETECTED: {sessionSets.length}</span>
-                              <button 
-                                onClick={() => setActiveView("anatomy")}
-                                className="text-gym-accent hover:text-white transition-colors uppercase tracking-wider font-bold"
-                              >
-                                DETAILED DIAGNOSTIC &rarr;
-                              </button>
+                            <div 
+                              className="flex items-center justify-center bg-black/40 border border-white/[0.02] rounded-xl p-3"
+                            >
+                              <RadarChart
+                                 sessionSets={sessionSets}
+                                 archivedWorkouts={archivedWorkouts}
+                                 size={240}
+                                 plain={true}
+                              />
                             </div>
                           </div>
-                        </Scroll3DItem>
+
+                          <div className="mt-4 pt-3 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
+                            <span>RECRUITED PATHWAYS: ACTIVE</span>
+                            <button 
+                              onClick={() => setActiveView("anatomy")}
+                              className="text-red-400 hover:text-white transition-colors uppercase tracking-wider font-bold"
+                            >
+                              DETAILED BIOMECHANICS &rarr;
+                            </button>
+                          </div>
+                        </div>
                       </div>
 
-                      {/* Training Agenda Mapped */}
-                      <div className="lg:col-span-4">
-                        <Scroll3DItem className="h-full">
-                          <div 
-                            onClick={() => setActiveView("workout")}
-                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-5 md:p-6 flex flex-col justify-between cursor-pointer hover:border-white/10 transition-all duration-300 h-full"
-                          >
-                            <div className="space-y-1 mb-3">
-                              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest font-black">
-                                ROUTINE TIMELINE
-                              </span>
-                              <h3 className="text-xl md:text-2xl font-light tracking-tight text-white font-sans">
-                                Upcoming <span className="font-serif italic font-light">Agenda</span>
-                              </h3>
-                              <p className="text-[11px] text-white/40">
-                                Lifting schedule built around programmed kinetic clusters.
-                              </p>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto max-h-[220px] no-scrollbar space-y-4 pr-1">
-                              {(() => {
-                                const daysWithData = DAY_CONFIG.map((day, di) => ({
-                                  day,
-                                  di,
-                                  exercises: currentDays[di] || [],
-                                })).filter((d) => d.exercises.length > 0);
-
-                                if (daysWithData.length === 0) {
-                                  return (
-                                    <div className="h-full flex flex-col items-center justify-center py-8 text-center space-y-2">
-                                      <Dumbbell className="w-6 h-6 text-white/10" />
-                                      <p className="text-white/30 font-serif italic text-xs">
-                                        No active routine mapped.
-                                      </p>
-                                    </div>
-                                  );
-                                }
-
-                                return (
-                                  <div className="space-y-4">
-                                    {daysWithData.map(({ day, di, exercises }) => (
-                                      <div key={di} className="border-l border-gym-accent/30 pl-3.5 space-y-2">
-                                        <div className="flex items-center justify-between">
-                                          <span className="text-[8px] font-mono text-gym-accent uppercase tracking-widest font-black">
-                                            DAY {day.label}
-                                          </span>
-                                          <span className="text-[10px] font-medium text-white/80">
-                                            {day.name}
-                                          </span>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                          {exercises.map((ex, idx) => (
-                                            <div key={idx} className="flex justify-between items-center text-xs text-white/60">
-                                              <span className="font-light truncate max-w-[140px]">{ex.name}</span>
-                                              <span className="text-[7px] font-mono text-white/30 tracking-wider uppercase font-black px-1.5 py-0.5 bg-white/[0.02] border border-white/[0.05] rounded">
-                                                {ex.pool || "Target"}
-                                              </span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                );
-                              })()}
-                            </div>
-
-                            <div className="mt-4 pt-3 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
-                              <span>NEXT SESSION PENDING</span>
-                              <span className="text-gym-accent uppercase tracking-wider font-bold">CONFIGURE &rarr;</span>
-                            </div>
+                      {/* Right Side: Neuromuscular Capacity & Capacity Metrics */}
+                      <div className="lg:col-span-5 flex flex-col justify-between">
+                        <div className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-red-500/20 rounded-xl p-5 md:p-6 flex flex-col justify-between transition-all duration-300 h-full relative overflow-hidden">
+                          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-500/20 to-transparent" />
+                          
+                          <div className="space-y-1 mb-5">
+                            <span className="text-[9px] font-mono text-red-400 uppercase tracking-widest font-black">
+                              Neural Recruitment Levels
+                            </span>
+                            <h3 className="text-xl font-light text-white font-sans">
+                              Somatic <span className="font-serif italic text-red-400">Torque Matrix</span>
+                            </h3>
+                            <p className="text-[11px] text-white/40">
+                              Estimated electrical fiber recruitment based on volume peaks.
+                            </p>
                           </div>
-                        </Scroll3DItem>
+
+                          <div className="space-y-3 flex-1 flex flex-col justify-center">
+                            {Object.entries(recruitment).map(([muscle, score]) => (
+                              <div key={muscle} className="space-y-1">
+                                <div className="flex justify-between items-center text-xs font-mono">
+                                  <span className="text-white/70">{muscle} Core</span>
+                                  <span className={score > 60 ? "text-red-400 font-bold" : "text-white/40"}>{score}% Capacity</span>
+                                </div>
+                                <div className="h-1.5 w-full bg-white/[0.02] border border-white/5 rounded-full overflow-hidden">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${score}%` }}
+                                    transition={{ duration: 1, ease: "easeOut" }}
+                                    className="h-full rounded-full bg-gradient-to-r from-red-600 to-red-400 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="bg-red-500/5 border border-red-500/10 rounded-lg p-3 mt-4 text-[11px] text-red-300 font-mono flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping" />
+                            <span>Neural fatigue status: MODERATE. Recovery cycle normal.</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Spinal Depletion & CNS Fatigue Gauge widget */}
-                    <Scroll3DItem>
-                      <div 
-                        className="cursor-pointer" 
-                        onClick={() => setActiveView("anatomy")}
-                      >
-                        <SpinalDepletionWidget
-                          cnsFatigueAnalysis={cnsFatigueAnalysis}
-                          setActiveView={setActiveView}
-                        />
-                      </div>
-                    </Scroll3DItem>
+                    {/* CNS FATIGUE PANEL */}
+                    <div className="cursor-pointer" onClick={() => setActiveView("anatomy")}>
+                      <SpinalDepletionWidget
+                        cnsFatigueAnalysis={cnsFatigueAnalysis}
+                        setActiveView={setActiveView}
+                      />
+                    </div>
 
-                    {/* Section 2: Performance Dynamism (Trends Grid) */}
-                    <div className="space-y-4">
-                      <div className="space-y-1">
-                        <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest font-black">
-                          PERFORMANCE DYNAMICS
+                    {/* SECTION 3: SYSTEM STRESS VS SYSTEM RECOVERY GRAPHS */}
+                    <div className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-5 md:p-6 relative overflow-hidden">
+                      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                        <div>
+                          <span className="text-[9px] font-mono text-red-400 uppercase tracking-widest font-black">
+                            BIO-STRESS RECONSTRUCTION
+                          </span>
+                          <h3 className="text-xl font-light text-white font-sans mt-0.5">
+                            Cumulative <span className="font-serif italic text-red-400">Stress & CNS Equilibrium</span>
+                          </h3>
+                        </div>
+                        <span className="text-xs text-white/30 font-mono bg-white/[0.02] px-3 py-1 border border-white/5 rounded-lg">
+                          HISTORICAL RANGE: PAST 10 SESSIONS
                         </span>
-                        <h3 className="text-2xl font-light tracking-tight text-white font-sans">
-                          Metric <span className="font-serif italic font-light text-gym-accent">Trends</span>
-                        </h3>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Graph 1: Weight Trend */}
-                        <Scroll3DItem className="h-full">
-                          <div
-                            onClick={() => setActiveView("profile")}
-                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-4 md:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
-                          >
-                            <div className="mb-4 flex justify-between items-start">
-                              <div>
-                                <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
-                                  BODYWEIGHT
-                                </span>
-                                <h4 className="text-base font-light text-white mt-1">Weight Density</h4>
-                              </div>
-                              <span className="text-lg font-mono font-bold text-gym-accent">
-                                {syncedProfile?.bodyweight
-                                  ? `${syncedProfile.bodyweight} KG`
-                                  : "N/A"}
-                              </span>
-                            </div>
-
-                            <div className="h-[120px] w-full">
-                              {weightHistory.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
-                                  <TrendingUp className="w-4 h-4 text-white/10 mb-1" />
-                                  <span className="text-[9px] text-white/20 font-bold">No weight logs</span>
-                                </div>
-                              ) : (
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart
-                                    data={(() => {
-                                      const grouped = weightHistory.reduce(
-                                        (acc, entry) => {
-                                          acc[entry.date] = entry;
-                                          return acc;
-                                        },
-                                        {} as Record<string, WeightEntry>,
-                                      );
-                                      return (
-                                        Object.values(grouped) as WeightEntry[]
-                                      ).sort(
-                                        (a, b) =>
-                                          new Date(a.date).getTime() -
-                                          new Date(b.date).getTime(),
-                                      );
-                                    })()}
-                                    margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
-                                  >
-                                    <defs>
-                                      <linearGradient id="colorWeightConsole" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
-                                        <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                    <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} domain={["dataMin - 2", "dataMax + 2"]} />
-                                    <Area
-                                      type="monotonous"
-                                      dataKey="weight"
-                                      stroke={activeTheme.accent}
-                                      strokeWidth={1.5}
-                                      fillOpacity={1}
-                                      fill="url(#colorWeightConsole)"
-                                    />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              )}
-                            </div>
+                      <div className="h-[200px] w-full">
+                        {archivedWorkouts.length === 0 ? (
+                          <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
+                            <TrendingUp className="w-6 h-6 text-white/10 mb-2 animate-pulse" />
+                            <span className="text-[10px] text-white/30 font-mono">Insufficient historical volume logs</span>
                           </div>
-                        </Scroll3DItem>
-
-                        {/* Graph 2: Volume Trend */}
-                        <Scroll3DItem className="h-full">
-                          <div
-                            onClick={() => setActiveView("progress")}
-                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-4 md:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
-                          >
-                            <div className="mb-4 flex justify-between items-start">
-                              <div>
-                                <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
-                                  OUTPUT
-                                </span>
-                                <h4 className="text-base font-light text-white mt-1">Lifting Volume</h4>
-                              </div>
-                              <span className="text-lg font-mono font-bold text-gym-accent">
-                                {archivedWorkouts.length > 0
-                                  ? `${Math.round(archivedWorkouts.reduce((acc, w) => acc + (w.totalVolume || 0), 0) / archivedWorkouts.length)} KG`
-                                  : "0 KG"}
-                              </span>
-                            </div>
-
-                            <div className="h-[120px] w-full">
-                              {archivedWorkouts.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
-                                  <Activity className="w-4 h-4 text-white/10 mb-1" />
-                                  <span className="text-[9px] text-white/20 font-bold">No volume logs</span>
-                                </div>
-                              ) : (
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart
-                                    data={getVolumeData()}
-                                    margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
-                                  >
-                                    <defs>
-                                      <linearGradient id="colorVolumeConsole" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
-                                        <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                    <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                    <Area
-                                      type="monotonous"
-                                      dataKey="volume"
-                                      stroke={activeTheme.accent}
-                                      strokeWidth={1.5}
-                                      fillOpacity={1}
-                                      fill="url(#colorVolumeConsole)"
-                                    />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              )}
-                            </div>
-                          </div>
-                        </Scroll3DItem>
-
-                        {/* Graph 3: Calorie Outflow Trend */}
-                        <Scroll3DItem className="h-full">
-                          <div
-                            onClick={() => setActiveView("progress")}
-                            className="bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] hover:border-white/10 rounded-xl p-4 md:p-5 flex flex-col justify-between cursor-pointer transition-all duration-300 h-full"
-                          >
-                            <div className="mb-4 flex justify-between items-start">
-                              <div>
-                                <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest font-black">
-                                  METABOLIC
-                                </span>
-                                <h4 className="text-base font-light text-white mt-1">Energy Burnout</h4>
-                              </div>
-                              <span className="text-lg font-mono font-bold text-gym-accent">
-                                {archivedWorkouts.length > 0
-                                  ? `${Math.round(archivedWorkouts.reduce((sum, w) => sum + getWorkoutCalories(w), 0))} KCAL`
-                                  : "0 KCAL"}
-                              </span>
-                            </div>
-
-                            <div className="h-[120px] w-full">
-                              {chronologicalDaysConsole.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-lg border border-dashed border-white/[0.05]">
-                                  <Flame className="w-4 h-4 text-white/10 mb-1" />
-                                  <span className="text-[9px] text-white/20 font-bold">No calorie logs</span>
-                                </div>
-                              ) : (
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart
-                                    data={chronologicalDaysConsole}
-                                    margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
-                                  >
-                                    <defs>
-                                      <linearGradient id="colorCalorieConsole" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={activeTheme.accent} stopOpacity={0.15} />
-                                        <stop offset="95%" stopColor={activeTheme.accent} stopOpacity={0} />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                    <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.2)" }} />
-                                    <Area
-                                      type="monotonous"
-                                      dataKey="calories"
-                                      stroke={activeTheme.accent}
-                                      strokeWidth={1.5}
-                                      fillOpacity={1}
-                                      fill="url(#colorCalorieConsole)"
-                                    />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              )}
-                            </div>
-                          </div>
-                        </Scroll3DItem>
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart
+                              data={chronologicalDaysConsole.map((d, index) => ({
+                                date: d.date.slice(5),
+                                stress: Math.round(d.calories * 0.15 + d.count * 10),
+                                recovery: Math.round(100 - (d.calories * 0.05)),
+                              }))}
+                              margin={{ top: 5, right: 5, left: -25, bottom: 5 }}
+                            >
+                              <defs>
+                                <linearGradient id="colorStressAlpha" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2} />
+                                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                                </linearGradient>
+                                <linearGradient id="colorRecoveryAlpha" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                              <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                              <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                              <Tooltip 
+                                contentStyle={{ backgroundColor: "#090909", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}
+                                labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
+                                itemStyle={{ fontSize: "12px" }}
+                              />
+                              <Area
+                                type="monotone"
+                                name="System Strain"
+                                dataKey="stress"
+                                stroke="#ef4444"
+                                strokeWidth={2}
+                                fillOpacity={1}
+                                fill="url(#colorStressAlpha)"
+                              />
+                              <Area
+                                type="monotone"
+                                name="CNS Baseline"
+                                dataKey="recovery"
+                                stroke="#3b82f6"
+                                strokeWidth={2}
+                                fillOpacity={1}
+                                fill="url(#colorRecoveryAlpha)"
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
+                        )}
                       </div>
                     </div>
 
-                    {/* Back to Top Button for mobile/general scroll */}
+                    {/* SECTION 4: GLOWING TACTICAL TELEMETRY LOGGER */}
+                    <div className="bg-black border border-white/[0.03] rounded-xl p-5 font-mono text-xs">
+                      <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-3">
+                        <span className="text-red-400 font-bold uppercase tracking-wider text-[10px]">COGNITIVE LOG DATA STREAM</span>
+                        <span className="text-[9px] text-white/30">REFRESHING LIVE</span>
+                      </div>
+                      <div className="space-y-1.5 text-white/50 text-[11px] leading-relaxed max-h-[140px] overflow-y-auto no-scrollbar">
+                        <div className="text-emerald-400 font-semibold">[INIT] Somatic kernel initialized successfully.</div>
+                        <div className="text-white/30">[SYS] Standard muscular recruitment model mapped to {sessionSets.length} sets.</div>
+                        {sessionSets.slice(-3).map((set, idx) => (
+                          <div key={idx} className="text-red-300">
+                            [LOG] Set mapped successfully: {set.exerciseName} // {set.weight} KG x {set.reps} REPS (难度: {set.difficulty})
+                          </div>
+                        ))}
+                        {archivedWorkouts.slice(-2).map((w, idx) => (
+                          <div key={idx} className="text-white/40">
+                            [ARCHIVE] Completed Workout cluster ID: {w.id.slice(0, 8)} • Calories: {getWorkoutCalories(w)} KCAL
+                          </div>
+                        ))}
+                        <div className="text-white/20">[IDLE] Scanning spinal pressure nodes... All clear. Ready for next kinetic input.</div>
+                      </div>
+                    </div>
+
+                    {/* Back to Top Button */}
                     <div className="flex justify-center pt-8 pb-4">
                       <button
                         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                        className="flex items-center gap-2 px-4 py-2 bg-black/60 border border-white/10 hover:border-gym-accent/35 rounded-md text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-gym-accent transition-all cursor-pointer group"
+                        className="flex items-center gap-2 px-4 py-2 bg-black/60 border border-white/10 hover:border-red-500/35 rounded-md text-[10px] font-black uppercase tracking-[0.2em] text-white/60 hover:text-red-400 transition-all cursor-pointer group"
                       >
                         <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
                         Back to Top
                       </button>
                     </div>
-
                   </motion.div>
+                );
+              })()
+            ) : activeView === "console_d" ? (
+              (() => {
+                const getWorkoutCalories = (w: any) => {
+                  if (w.sets && w.sets.length > 0) {
+                    return calculateCaloriesBurned(w.sets, profile);
+                  }
+                  return w.estimatedCalories || w.caloriesBurned || 0;
+                };
+
+                const dailyMapConsole: Record<
+                  string,
+                  { date: string; calories: number; count: number }
+                > = {};
+                archivedWorkouts.forEach((w) => {
+                  const cal = getWorkoutCalories(w);
+                  const d = w.date || new Date().toISOString().split("T")[0];
+                  if (!dailyMapConsole[d]) {
+                    dailyMapConsole[d] = { date: d, calories: 0, count: 0 };
+                  }
+                  dailyMapConsole[d].calories += cal;
+                  dailyMapConsole[d].count += 1;
+                });
+                const sortedDaysConsole = Object.values(dailyMapConsole).sort(
+                  (a, b) => b.date.localeCompare(a.date),
+                );
+                const chronologicalDaysConsole = [...sortedDaysConsole].sort(
+                  (a, b) => a.date.localeCompare(b.date),
+                );
+
+                return (
+                  <ConsoleDView
+                    profile={profile}
+                    syncedProfile={syncedProfile}
+                    archivedWorkouts={archivedWorkouts}
+                    sessionSets={sessionSets}
+                    cnsFatigueAnalysis={cnsFatigueAnalysis}
+                    chronologicalDaysConsole={chronologicalDaysConsole}
+                    activeTheme={activeTheme}
+                    setActiveView={setActiveView}
+                  />
                 );
               })()
             ) : activeView === "library" ? (
@@ -17505,3 +17446,11 @@ export default function App() {
     </div>
   );
 }
+
+
+// ==========================================
+// DELEGATIONS TO MODULAR ATHLETIC CONSOLES
+// ==========================================
+export { default as ConsoleBetaView } from "./components/ConsoleBetaView";
+export { default as ConsoleCView } from "./components/ConsoleCView";
+export { default as ConsoleDView } from "./components/ConsoleDView";
