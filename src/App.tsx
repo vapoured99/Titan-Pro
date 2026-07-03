@@ -92,8 +92,7 @@ import D3RadarChart from "./components/D3RadarChart";
 import AvatarPanel, { OUTFITS, TITLES } from "./components/AvatarPanel";
 import { AvatarDisplayCard } from "./components/AvatarDisplayCard";
 import { TransparentCharacter } from "./components/TransparentCharacter";
-import TacticalMap from "./components/TacticalMap";
-import GymLocator from "./components/GymLocator";
+
 import WorkoutCalendarHeatmap from "./components/WorkoutCalendarHeatmap";
 import { SpinalDepletionWidget } from "./components/SpinalDepletionWidget";
 import ConsoleIntelligencePanel from "./components/ConsoleIntelligencePanel";
@@ -1325,6 +1324,7 @@ export default function App() {
   const [manualRestTime, setManualRestTime] = useState<number>(90);
   const [manualRestActive, setManualRestActive] = useState<boolean>(false);
   const [manualRestTarget, setManualRestTarget] = useState<number>(90);
+  const [restTimerEnabled, setRestTimerEnabled] = useState<boolean>(false);
   // State for session view selection
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
     null,
@@ -1337,8 +1337,6 @@ export default function App() {
     | "progress"
     | "session"
     | "routines"
-    | "map"
-    | "gym_locator"
     | "profile"
     | "anatomy"
     | "avatar"
@@ -1953,17 +1951,19 @@ export default function App() {
   // Sound chime and start manual rest countdown on new set logged (any source)
   useEffect(() => {
     if (sessionSets.length > prevRestSetsLengthRef.current) {
-      playRestBeep(1200, 0.1);
-      setManualRestTime(manualRestTarget);
-      setManualRestActive(true);
+      if (restTimerEnabled) {
+        playRestBeep(1200, 0.1);
+        setManualRestTime(manualRestTarget);
+        setManualRestActive(true);
+      }
     }
     prevRestSetsLengthRef.current = sessionSets.length;
-  }, [sessionSets.length, manualRestTarget]);
+  }, [sessionSets.length, manualRestTarget, restTimerEnabled]);
 
   // Manual timer countdown ticker
   useEffect(() => {
     let timer: any = null;
-    if (manualRestActive && manualRestTime > 0) {
+    if (restTimerEnabled && manualRestActive && manualRestTime > 0) {
       timer = setInterval(() => {
         setManualRestTime((prev) => {
           if (prev <= 1) {
@@ -1980,7 +1980,7 @@ export default function App() {
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [manualRestActive, manualRestTime]);
+  }, [manualRestActive, manualRestTime, restTimerEnabled]);
 
   // Reset/wipe Active Rest Tracker completely if formattedProgram is empty
   useEffect(() => {
@@ -4223,15 +4223,42 @@ export default function App() {
       return;
     }
 
-    if (totalBuilder > 0) {
-      const nextDays = currentDays.map((day) => {
-        return [...day].sort((a, b) => {
-          const catA = a.category || "isolation";
-          const catB = b.category || "isolation";
+    // Helper to group and sort exercises within their muscle groups
+    const sortExercisesMuscleGroupWise = (exercises: Exercise[]) => {
+      const muscleGroupsOrder: string[] = [];
+      const exercisesByGroup: Record<string, Exercise[]> = {};
+
+      exercises.forEach((ex) => {
+        const resolved = findExerciseByName(ex.name) || ex;
+        const group = (resolved.muscleGroup || resolved.pool || "other").toLowerCase();
+        if (!exercisesByGroup[group]) {
+          exercisesByGroup[group] = [];
+          muscleGroupsOrder.push(group);
+        }
+        exercisesByGroup[group].push(ex);
+      });
+
+      const sorted: Exercise[] = [];
+      muscleGroupsOrder.forEach((group) => {
+        const groupExs = exercisesByGroup[group];
+        groupExs.sort((a, b) => {
+          const resA = findExerciseByName(a.name) || a;
+          const resB = findExerciseByName(b.name) || b;
+          const catA = resA.category || a.category || "isolation";
+          const catB = resB.category || b.category || "isolation";
           if (catA === "compound" && catB !== "compound") return -1;
           if (catA !== "compound" && catB === "compound") return 1;
           return 0;
         });
+        sorted.push(...groupExs);
+      });
+
+      return sorted;
+    };
+
+    if (totalBuilder > 0) {
+      const nextDays = currentDays.map((day) => {
+        return sortExercisesMuscleGroupWise(day);
       });
       setCurrentDays(nextDays);
       saveWorkout(nextDays);
@@ -4239,23 +4266,16 @@ export default function App() {
 
     if (totalFormatted > 0) {
       const nextFormatted = formattedProgram.map((item) => {
-        const sortedExercises = [...item.exercises].sort((a, b) => {
-          const catA = a.category || "isolation";
-          const catB = b.category || "isolation";
-          if (catA === "compound" && catB !== "compound") return -1;
-          if (catA !== "compound" && catB === "compound") return 1;
-          return 0;
-        });
         return {
           ...item,
-          exercises: sortedExercises
+          exercises: sortExercisesMuscleGroupWise(item.exercises)
         };
       });
       setFormattedProgram(nextFormatted);
     }
 
     setToast({
-      message: "Exercises reorganized: Compounds first, then Isolations!",
+      message: "Exercises reorganized: Compounds first within each muscle group!",
       type: "success",
     });
   };
@@ -6934,78 +6954,13 @@ export default function App() {
         <nav className="flex items-center mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth w-full">
           <div className="flex items-center gap-3 flex-nowrap w-full pr-0">
             {[
-              { id: "console_d", label: "Console D", icon: Brain },
-              { id: "workout", label: "Programming", icon: Workflow },
-              { id: "library", label: "Library", icon: BookOpen },
-              { id: "progress", label: "Progress", icon: TrendingUp },
-              { id: "anatomy", label: "Anatomy", icon: PersonStanding },
-              { id: "session", label: "Session", icon: Zap },
-              { id: "routines", label: "Routines", icon: Repeat },
-            ].map((nav) => {
-              const IconComponent = nav.icon;
-              return (
-                <button
-                  key={nav.id}
-                  onClick={() => {
-                    setActiveView(nav.id as any);
-                    saveSettings({ activeView: nav.id });
-                  }}
-                  className={`relative p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
-                    activeView === nav.id
-                      ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent"
-                      : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
-                  }`}
-                  title={nav.label}
-                >
-                  <IconComponent className="w-5 h-5" />
-                  {activeView === nav.id && (
-                    <motion.div
-                      layoutId="nav-underline"
-                      className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav"
-                    />
-                  )}
-                </button>
-              );
-            })}
-
-            {/* Even spacing between Routines and Map/GymLocator */}
-            <div className="flex-grow min-w-[12px] md:min-w-[24px]" />
-
-            {[
-              { id: "map", label: "Tactical Map", icon: Compass },
-              { id: "gym_locator", label: "Gym Locator", icon: MapPin },
-            ].map((nav) => {
-              const IconComponent = nav.icon;
-              return (
-                <button
-                  key={nav.id}
-                  onClick={() => {
-                    setActiveView(nav.id as any);
-                    saveSettings({ activeView: nav.id });
-                  }}
-                  className={`relative p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
-                    activeView === nav.id
-                      ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent"
-                      : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
-                  }`}
-                  title={nav.label}
-                >
-                  <IconComponent className="w-5 h-5" />
-                  {activeView === nav.id && (
-                    <motion.div
-                      layoutId="nav-underline"
-                      className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav"
-                    />
-                  )}
-                </button>
-              );
-            })}
-
-            {/* Even spacing between Map/GymLocator and Avatar */}
-            <div className="flex-grow min-w-[12px] md:min-w-[24px]" />
-
-            {[
-              { id: "avatar", label: "Avatar", icon: Crown, isAvatar: true },
+              { id: "console_d", label: "Console" },
+              { id: "workout", label: "Workout" },
+              { id: "library", label: "Library" },
+              { id: "progress", label: "Progress" },
+              { id: "anatomy", label: "Anatomy" },
+              { id: "session", label: "Session" },
+              { id: "routines", label: "Routines" },
             ].map((nav) => (
               <button
                 key={nav.id}
@@ -7013,14 +6968,16 @@ export default function App() {
                   setActiveView(nav.id as any);
                   saveSettings({ activeView: nav.id });
                 }}
-                className={`relative p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
+                className={`relative px-4 py-2 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
                   activeView === nav.id
-                    ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent"
+                    ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent font-bold"
                     : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
                 }`}
                 title={nav.label}
               >
-                <Crown className="w-5 h-5" />
+                <span className="font-mono text-xs uppercase tracking-wider">
+                  {nav.label}
+                </span>
                 {activeView === nav.id && (
                   <motion.div
                     layoutId="nav-underline"
@@ -7029,6 +6986,31 @@ export default function App() {
                 )}
               </button>
             ))}
+
+            <div className="flex-grow" />
+
+            <button
+              onClick={() => {
+                setActiveView("avatar");
+                saveSettings({ activeView: "avatar" });
+              }}
+              className={`relative px-4 py-2 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
+                activeView === "avatar"
+                  ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent font-bold"
+                  : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
+              }`}
+              title="Avatar"
+            >
+              <span className="font-mono text-xs uppercase tracking-wider">
+                Avatar
+              </span>
+              {activeView === "avatar" && (
+                <motion.div
+                  layoutId="nav-underline"
+                  className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav"
+                />
+              )}
+            </button>
           </div>
         </nav>
 
@@ -7709,6 +7691,35 @@ export default function App() {
                           { key: "equipment", label: "Equipment", desc: "Cables, Bands & Setups" },
                         ];
 
+                        const POOL_LABELS: Record<string, string> = {
+                          upper_chest: "Upper Chest",
+                          middle_chest: "Middle Chest",
+                          lower_chest: "Lower Chest",
+                          upper_back: "Upper Back",
+                          lower_back: "Lower Back",
+                          lats: "Latissimus Dorsi (Lats)",
+                          rhomboids_traps: "Rhomboids & Traps (Upper/Mid Back)",
+                          erector_spinae: "Erector Spinae (Lower Back)",
+                          front_delts: "Front Delts (Anterior)",
+                          side_delts: "Side Delts (Lateral)",
+                          rear_delts: "Rear Delts (Posterior)",
+                          quads: "Quadriceps (Anterior Thigh)",
+                          hamstrings: "Hamstrings (Posterior Thigh)",
+                          calves: "Calves (Lower Leg)",
+                          long_biceps: "Long Head (Outer Biceps)",
+                          short_biceps: "Short Head (Inner Biceps)",
+                          brachialis: "Brachialis (Under Biceps)",
+                          long_triceps: "Long Head (Back Triceps)",
+                          lateral_triceps: "Lateral Head (Outer Triceps)",
+                          medial_triceps: "Medial Head (Lower Triceps)",
+                          forearms: "Forearms & Grip",
+                          upper_core: "Upper Abs",
+                          lower_core: "Lower Abs",
+                          obliques: "Obliques & Rotators",
+                          cardio: "Cardio & Endurance",
+                          equipment: "Equipment & Accessories"
+                        };
+
                         const activeCatIndex = categoriesList.findIndex(c => c.key === selectedLibraryCategory);
                         const activeCat = categoriesList[activeCatIndex >= 0 ? activeCatIndex : 0];
 
@@ -7786,6 +7797,48 @@ export default function App() {
                           );
                         }
 
+                        // Group sortedList by pool or back scientific categories
+                        const exercisesByPool: Record<string, Exercise[]> = {};
+                        const poolOrder: string[] = [];
+
+                        sortedList.forEach((ex) => {
+                          let p = ex.pool || "other";
+                          if (selectedLibraryCategory === "back") {
+                            const resolved = findExerciseByName(ex.name) || ex;
+                            const mg = resolved.muscleGroup || ex.muscleGroup;
+                            if (mg === "lats") {
+                              p = "lats";
+                            } else if (mg === "rhomboids_traps") {
+                              p = "rhomboids_traps";
+                            } else if (mg === "erector_spinae" || p === "lower_back") {
+                              p = "erector_spinae";
+                            } else {
+                              p = "rhomboids_traps"; // default fallback for back
+                            }
+                          }
+                          if (!exercisesByPool[p]) {
+                            exercisesByPool[p] = [];
+                            poolOrder.push(p);
+                          }
+                          exercisesByPool[p].push(ex);
+                        });
+
+                        if (selectedLibraryCategory === "back") {
+                          const backOrder = ["lats", "rhomboids_traps", "erector_spinae"];
+                          const finalBackOrder: string[] = [];
+                          backOrder.forEach((k) => {
+                            if (exercisesByPool[k]) {
+                              finalBackOrder.push(k);
+                            }
+                          });
+                          Object.keys(exercisesByPool).forEach((k) => {
+                            if (!finalBackOrder.includes(k)) {
+                              finalBackOrder.push(k);
+                            }
+                          });
+                          poolOrder.splice(0, poolOrder.length, ...finalBackOrder);
+                        }
+
                         return (
                           <div>
                             {/* Active Header with Category Navigation buttons */}
@@ -7839,138 +7892,158 @@ export default function App() {
                               </div>
                             </div>
 
-                            {/* Beautiful Grid displaying the whole list of exercises */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[550px] overflow-y-auto pr-2 no-scrollbar">
-                              {sortedList.map((activeExercise) => {
-                                const Icon = iconMap[activeExercise.icon] || Dumbbell;
-                                const isCustom = customExercises.some(
-                                  (ce) => ce.name.toLowerCase() === activeExercise.name.toLowerCase()
-                                );
+                            {/* Beautiful Grid displaying the list of exercises grouped by sub-muscle category */}
+                            <div className="space-y-8 max-h-[550px] overflow-y-auto pr-2 no-scrollbar text-left">
+                              {poolOrder.map((poolKey) => {
+                                const exercisesInPool = exercisesByPool[poolKey];
+                                const poolLabel = POOL_LABELS[poolKey] || poolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
                                 return (
-                                  <div 
-                                    key={activeExercise.name}
-                                    className="bg-[#090909]/40 hover:bg-[#0c0c0c]/80 border border-white/[0.04] hover:border-white/10 rounded-xl p-4 flex flex-col justify-between transition-all duration-300 relative group"
-                                  >
-                                    <div className="flex items-start justify-between gap-2">
-                                      <div className="flex items-center gap-3 min-w-0">
-                                        <div 
-                                          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all"
-                                          style={{
-                                            backgroundColor: `rgba(${activeTheme.accentRgb}, 0.06)`,
-                                            border: `1px solid rgba(${activeTheme.accentRgb}, 0.1)`,
-                                            color: activeTheme.accent,
-                                          }}
-                                        >
-                                          <Icon className="w-4 h-4" />
-                                        </div>
-                                        <div className="min-w-0">
-                                          <h4 className="text-sm font-semibold text-white truncate group-hover:text-gym-accent transition-colors leading-snug">
-                                            {activeExercise.name}
-                                          </h4>
-                                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                            {activeExercise.category && (
-                                              <span
-                                                className={`text-[7px] px-1 py-0.2 rounded font-bold uppercase tracking-wider ${
-                                                  activeExercise.category === "compound"
-                                                    ? "bg-amber-500/10 text-amber-500/80"
-                                                    : "bg-purple-500/15 text-purple-400"
-                                                }`}
-                                              >
-                                                {activeExercise.category}
-                                              </span>
-                                            )}
-                                            {activeExercise.pool && (
-                                              <span className="text-[7px] font-mono uppercase tracking-wider text-white/30">
-                                                {activeExercise.pool}
-                                              </span>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
+                                  <div key={poolKey} className="space-y-3">
+                                    <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                                      <span className="w-1 h-3.5 bg-gym-accent rounded-full" style={{ backgroundColor: activeTheme.accent }} />
+                                      <h4 className="text-xs font-mono font-black uppercase tracking-widest text-white/85">
+                                        {poolLabel}
+                                      </h4>
+                                      <span className="text-[10px] font-mono text-white/30">
+                                        ({exercisesInPool.length} {exercisesInPool.length === 1 ? "movement" : "movements"})
+                                      </span>
+                                    </div>
 
-                                      <div className="flex items-center gap-1 shrink-0">
-                                        <button
-                                          onClick={() => toggleFavoriteExercise(activeExercise.name)}
-                                          className="p-1 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
-                                          title={favoriteExercises.includes(activeExercise.name) ? "Remove from Favorites" : "Add to Favorites"}
-                                        >
-                                          <Star
-                                            className={`w-3.5 h-3.5 transition-colors ${
-                                              favoriteExercises.includes(activeExercise.name)
-                                                ? "text-amber-400 fill-amber-400"
-                                                : "text-white/20 hover:text-white/60"
-                                            }`}
-                                          />
-                                        </button>
-                                        {isCustom && (
-                                          <button
-                                            onClick={() => handlePermanentlyDeleteCustomExercise(activeExercise.name)}
-                                            className="px-1.5 py-0.5 rounded-[1px] border border-red-500/20 bg-red-950/10 hover:bg-red-600 hover:text-white text-red-400 text-[7px] font-bold uppercase tracking-widest transition-all cursor-pointer"
-                                            title="Delete Movement"
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                      {exercisesInPool.map((activeExercise) => {
+                                        const Icon = iconMap[activeExercise.icon] || Dumbbell;
+                                        const isCustom = customExercises.some(
+                                          (ce) => ce.name.toLowerCase() === activeExercise.name.toLowerCase()
+                                        );
+                                        return (
+                                          <div 
+                                            key={activeExercise.name}
+                                            className="bg-[#090909]/40 hover:bg-[#0c0c0c]/80 border border-white/[0.04] hover:border-white/10 rounded-xl p-4 flex flex-col justify-between transition-all duration-300 relative group"
                                           >
-                                            Delete
-                                          </button>
-                                        )}
-                                      </div>
-                                    </div>
+                                            <div className="flex items-start justify-between gap-2">
+                                              <div className="flex items-center gap-3 min-w-0">
+                                                <div 
+                                                  className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-all"
+                                                  style={{
+                                                    backgroundColor: `rgba(${activeTheme.accentRgb}, 0.06)`,
+                                                    border: `1px solid rgba(${activeTheme.accentRgb}, 0.1)`,
+                                                    color: activeTheme.accent,
+                                                  }}
+                                                >
+                                                  <Icon className="w-4 h-4" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                  <h4 className="text-sm font-semibold text-white truncate group-hover:text-gym-accent transition-colors leading-snug">
+                                                    {activeExercise.name}
+                                                  </h4>
+                                                  <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                                    {activeExercise.category && (
+                                                      <span
+                                                        className={`text-[7px] px-1 py-0.2 rounded font-bold uppercase tracking-wider ${
+                                                          activeExercise.category === "compound"
+                                                            ? "bg-amber-500/10 text-amber-500/80"
+                                                            : "bg-purple-500/15 text-purple-400"
+                                                        }`}
+                                                      >
+                                                        {activeExercise.category}
+                                                      </span>
+                                                    )}
+                                                    {activeExercise.pool && (
+                                                      <span className="text-[7px] font-mono uppercase tracking-wider text-white/30">
+                                                        {activeExercise.pool}
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                </div>
+                                              </div>
 
-                                    {/* Setup biomechanics */}
-                                    <p className="text-[11px] text-white/50 leading-relaxed font-sans my-3 line-clamp-2 min-h-[32px]">
-                                      {activeExercise.instructions && activeExercise.instructions.length > 0 
-                                        ? activeExercise.instructions.join(" ") 
-                                        : "No specific setup biomechanics documented."}
-                                    </p>
+                                              <div className="flex items-center gap-1 shrink-0">
+                                                <button
+                                                  onClick={() => toggleFavoriteExercise(activeExercise.name)}
+                                                  className="p-1 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                                                  title={favoriteExercises.includes(activeExercise.name) ? "Remove from Favorites" : "Add to Favorites"}
+                                                >
+                                                  <Star
+                                                    className={`w-3.5 h-3.5 transition-colors ${
+                                                      favoriteExercises.includes(activeExercise.name)
+                                                        ? "text-amber-400 fill-amber-400"
+                                                        : "text-white/20 hover:text-white/60"
+                                                    }`}
+                                                  />
+                                                </button>
+                                                {isCustom && (
+                                                  <button
+                                                    onClick={() => handlePermanentlyDeleteCustomExercise(activeExercise.name)}
+                                                    className="px-1.5 py-0.5 rounded-[1px] border border-red-500/20 bg-red-950/10 hover:bg-red-600 hover:text-white text-red-400 text-[7px] font-bold uppercase tracking-widest transition-all cursor-pointer"
+                                                    title="Delete Movement"
+                                                  >
+                                                    Delete
+                                                  </button>
+                                                )}
+                                              </div>
+                                            </div>
 
-                                    {/* Sparkline & Personal Best inline */}
-                                    <div className="flex items-center justify-between gap-2 border-t border-white/5 pt-3 mt-1 text-[10px] font-mono">
-                                      <div className="flex flex-col">
-                                        <span className="text-[7px] text-white/30 uppercase tracking-wider">Performance Wave</span>
-                                        <div className="mt-0.5 scale-90 origin-left">
-                                          <Sparkline
-                                            exName={activeExercise.name}
-                                            sessionSets={sessionSets}
-                                            archivedWorkouts={archivedWorkouts}
-                                            width={100}
-                                            height={20}
-                                          />
-                                        </div>
-                                      </div>
-                                      <div className="text-right">
-                                        <span className="text-[7px] text-white/30 uppercase tracking-wider block">PR WEIGHT</span>
-                                        <span className="font-bold uppercase tracking-wide" style={{ color: activeTheme.accent }}>
-                                          {personalBests[activeExercise.name] ? `${personalBests[activeExercise.name].weight} KG` : "N/A"}
-                                        </span>
-                                      </div>
-                                    </div>
+                                            {/* Setup biomechanics */}
+                                            <p className="text-[11px] text-white/50 leading-relaxed font-sans my-3 line-clamp-2 min-h-[32px]">
+                                              {activeExercise.instructions && activeExercise.instructions.length > 0 
+                                                ? activeExercise.instructions.join(" ") 
+                                                : "No specific setup biomechanics documented."}
+                                            </p>
 
-                                    {/* Quick Actions */}
-                                    <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-white/5">
-                                      <button
-                                        onClick={() => setGuidanceEx(activeExercise)}
-                                        className="py-1.5 px-2 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all text-[9px] tracking-wider uppercase font-semibold rounded-md flex items-center justify-center gap-1 cursor-pointer"
-                                        title="Show Guidance"
-                                      >
-                                        <BookOpen className="w-3.5 h-3.5" />
-                                        <span>Guide</span>
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          setLoggingEx(activeExercise);
-                                          setPopupWeight("");
-                                          setPopupReps("");
-                                          setPopupNotes("");
-                                          setPopupDifficulty("moderate");
-                                        }}
-                                        className="py-1.5 px-2 text-[9px] uppercase font-black tracking-widest transition-all rounded-md flex items-center justify-center gap-1 font-mono cursor-pointer"
-                                        style={{
-                                          backgroundColor: activeTheme.accent,
-                                          color: "#000000",
-                                        }}
-                                        title="Log Set"
-                                      >
-                                        <Plus className="w-3.5 h-3.5 text-black stroke-[3px]" />
-                                        <span>Log</span>
-                                      </button>
+                                            {/* Sparkline & Personal Best inline */}
+                                            <div className="flex items-center justify-between gap-2 border-t border-white/5 pt-3 mt-1 text-[10px] font-mono">
+                                              <div className="flex flex-col">
+                                                <span className="text-[7px] text-white/30 uppercase tracking-wider">Performance Wave</span>
+                                                <div className="mt-0.5 scale-90 origin-left">
+                                                  <Sparkline
+                                                    exName={activeExercise.name}
+                                                    sessionSets={sessionSets}
+                                                    archivedWorkouts={archivedWorkouts}
+                                                    width={100}
+                                                    height={20}
+                                                  />
+                                                </div>
+                                              </div>
+                                              <div className="text-right">
+                                                <span className="text-[7px] text-white/30 uppercase tracking-wider block">PR WEIGHT</span>
+                                                <span className="font-bold uppercase tracking-wide" style={{ color: activeTheme.accent }}>
+                                                  {personalBests[activeExercise.name] ? `${personalBests[activeExercise.name].weight} KG` : "N/A"}
+                                                </span>
+                                              </div>
+                                            </div>
+
+                                            {/* Quick Actions */}
+                                            <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-white/5">
+                                              <button
+                                                onClick={() => setGuidanceEx(activeExercise)}
+                                                className="py-1.5 px-2 bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-white/20 transition-all text-[9px] tracking-wider uppercase font-semibold rounded-md flex items-center justify-center gap-1 cursor-pointer"
+                                                title="Show Guidance"
+                                              >
+                                                <BookOpen className="w-3.5 h-3.5" />
+                                                <span>Guide</span>
+                                              </button>
+                                              <button
+                                                onClick={() => {
+                                                  setLoggingEx(activeExercise);
+                                                  setPopupWeight("");
+                                                  setPopupReps("");
+                                                  setPopupNotes("");
+                                                  setPopupDifficulty("moderate");
+                                                }}
+                                                className="py-1.5 px-2 text-[9px] uppercase font-black tracking-widest transition-all rounded-md flex items-center justify-center gap-1 font-mono cursor-pointer"
+                                                style={{
+                                                  backgroundColor: activeTheme.accent,
+                                                  color: "#000000",
+                                                }}
+                                                title="Log Set"
+                                              >
+                                                <Plus className="w-3.5 h-3.5 text-black stroke-[3px]" />
+                                                <span>Log</span>
+                                              </button>
+                                            </div>
+                                          </div>
+                                        );
+                                      })}
                                     </div>
                                   </div>
                                 );
@@ -12842,26 +12915,6 @@ export default function App() {
                   )}
                 </AnimatePresence>
               </motion.div>
-            ) : activeView === "map" ? (
-              <motion.div
-                key="map-view"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-3 pb-20"
-              >
-                <TacticalMap />
-              </motion.div>
-            ) : activeView === "gym_locator" ? (
-              <motion.div
-                key="gym-locator-view"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-3 pb-20"
-              >
-                <GymLocator />
-              </motion.div>
             ) : activeView === "avatar" ? (
               <motion.div
                 key="avatar"
@@ -13614,11 +13667,11 @@ export default function App() {
                             </h4>
                             <span className="text-white/20 font-mono text-[9px]">|</span>
                             <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-white/40">
-                              {manualRestActive ? "COUNTDOWN ACTIVE" : "STANDBY"}
+                              {!restTimerEnabled ? "DISABLED" : manualRestActive ? "COUNTDOWN ACTIVE" : "STANDBY"}
                             </span>
                           </div>
                           <div className="flex items-baseline gap-2 mt-1.5">
-                            <span className="text-4xl font-black font-mono tracking-tight tabular-nums leading-none text-white">
+                            <span className={`text-4xl font-black font-mono tracking-tight tabular-nums leading-none transition-colors ${restTimerEnabled ? "text-white" : "text-white/30"}`}>
                               {(() => {
                                 const secs = manualRestTime;
                                 const m = Math.floor(secs / 60);
@@ -13634,20 +13687,50 @@ export default function App() {
                       </div>
 
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4 lg:self-center shrink-0">
+                        {/* Status Toggle Button */}
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-[8px] font-mono font-bold text-white/35 uppercase tracking-widest">
+                            Chronometer Status
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextVal = !restTimerEnabled;
+                              setRestTimerEnabled(nextVal);
+                              if (!nextVal) {
+                                setManualRestActive(false);
+                              }
+                              playRestBeep(nextVal ? 1000 : 500, 0.08);
+                              setToast({ message: nextVal ? "Rest Chronometer Enabled!" : "Rest Chronometer Disabled!", type: "info" });
+                            }}
+                            className={`px-3 py-1.5 rounded-md text-[9px] font-mono font-black uppercase tracking-wider transition-all border cursor-pointer flex items-center gap-1.5 h-[26px] ${
+                              restTimerEnabled
+                                ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/25"
+                                : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10"
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${restTimerEnabled ? "bg-emerald-400 animate-pulse" : "bg-white/30"}`} />
+                            {restTimerEnabled ? "Enabled" : "Disabled"}
+                          </button>
+                        </div>
+
                         {/* Target config based on mode */}
                         <div className="flex flex-col gap-1.5">
                           <span className="text-[8px] font-mono font-bold text-white/35 uppercase tracking-widest">
                             Manual Countdown
                           </span>
-                          <div className="flex items-center gap-1.5 bg-black/40 p-0.5 rounded-md border border-white/5 h-[26px]">
+                          <div className={`flex items-center gap-1.5 bg-black/40 p-0.5 rounded-md border border-white/5 h-[26px] ${!restTimerEnabled ? "opacity-50" : ""}`}>
                             <button
                               type="button"
+                              disabled={!restTimerEnabled}
                               onClick={() => {
                                 setManualRestActive(!manualRestActive);
                                 playRestBeep(880, 0.05);
                               }}
                               className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider transition-all border cursor-pointer leading-none h-full ${
-                                manualRestActive
+                                !restTimerEnabled
+                                  ? "bg-transparent border-transparent text-white/20 cursor-not-allowed"
+                                  : manualRestActive
                                   ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25"
                                   : "bg-cyan-500/15 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25"
                               }`}
@@ -13656,24 +13739,30 @@ export default function App() {
                             </button>
                             <button
                               type="button"
+                              disabled={!restTimerEnabled}
                               onClick={() => {
                                 setManualRestTime(manualRestTarget);
                                 setManualRestActive(false);
                                 playRestBeep(440, 0.08);
                               }}
-                              className="px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none h-full"
+                              className={`px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-wider bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 transition-all cursor-pointer leading-none h-full ${
+                                !restTimerEnabled ? "text-white/10 cursor-not-allowed border-white/5" : ""
+                              }`}
                             >
                               Reset
                             </button>
                             <select
                               value={manualRestTarget}
+                              disabled={!restTimerEnabled}
                               onChange={(e) => {
                                 const val = Number(e.target.value);
                                 setManualRestTarget(val);
                                 setManualRestTime(val);
                                 setManualRestActive(false);
                               }}
-                              className="bg-black/80 border border-white/10 text-white/70 rounded-md text-[9px] px-1 py-0.5 font-mono focus:outline-none cursor-pointer h-full"
+                              className={`bg-black/80 border border-white/10 text-white/70 rounded-md text-[9px] px-1 py-0.5 font-mono focus:outline-none cursor-pointer h-full ${
+                                !restTimerEnabled ? "text-white/25 border-white/5 cursor-not-allowed" : ""
+                              }`}
                             >
                               {[30, 45, 60, 90, 120, 180].map((sec) => (
                                 <option key={sec} value={sec}>
@@ -16994,7 +17083,8 @@ export default function App() {
 
         {/* Floating Sticky Rest Timer Banner */}
         <AnimatePresence>
-          {activeView === "workout" &&
+          {restTimerEnabled &&
+            activeView === "workout" &&
             workoutInnerTab === "program" &&
             formattedProgram.length > 0 &&
             scrollY > 350 && (

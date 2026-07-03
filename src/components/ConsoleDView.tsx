@@ -586,53 +586,31 @@ export default function ConsoleDView({
         return (
           <div className="h-full w-full flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-mono px-1">
-              <span className="text-white/40">INTERACTIVE WEIGHT LOGS (PAST 10)</span>
+              <span className="text-white/40">PHYSICAL WEIGHT TIMELINE (PAST 10)</span>
               <span className="text-emerald-400 font-bold">Body Weight (kg)</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2 items-center">
-              <div className="md:col-span-3 h-[160px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={weightHistory} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
-                    <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
-                      labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
-                      itemStyle={{ fontSize: "11px", color: "#22c55e" }}
-                    />
-                    <Line
-                      type="monotone"
-                      name="Weight"
-                      dataKey="value"
-                      stroke="#22c55e"
-                      strokeWidth={2.5}
-                      dot={{ r: 4, stroke: '#1c1917', strokeWidth: 1.5, fill: '#22c55e' }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <form onSubmit={handleAddWeight} className="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex flex-col justify-between space-y-2 h-[150px]">
-                <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-white/30 block">Log Weight</span>
-                <div className="flex items-center bg-black/60 border border-white/10 rounded-md p-1">
-                  <input
-                    type="number"
-                    step="0.1"
-                    placeholder="80.5"
-                    value={inputWeight}
-                    onChange={(e) => setInputWeight(e.target.value)}
-                    className="bg-transparent text-white font-mono text-xs w-full px-2 outline-none"
+            <div className="h-[180px] w-full mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weightHistory} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                  <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
+                    labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
+                    itemStyle={{ fontSize: "11px", color: "#22c55e" }}
                   />
-                  <span className="text-[9px] font-mono font-bold text-white/40 pr-2">kg</span>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-1.5 bg-emerald-500 hover:bg-emerald-600 text-black text-[9px] font-mono font-black uppercase tracking-widest rounded transition-colors cursor-pointer"
-                >
-                  Save Log
-                </button>
-              </form>
+                  <Line
+                    type="monotone"
+                    name="Weight"
+                    dataKey="value"
+                    stroke="#22c55e"
+                    strokeWidth={2.5}
+                    dot={{ r: 4, stroke: '#1c1917', strokeWidth: 1.5, fill: '#22c55e' }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
         );
@@ -640,53 +618,31 @@ export default function ConsoleDView({
         return (
           <div className="h-full w-full flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-mono px-1">
-              <span className="text-white/40">DYNAMIC ADIPOSE TRACKING</span>
+              <span className="text-white/40">ADIPOSE TRACKING TIMELINE</span>
               <span className="text-emerald-400 font-bold">Body Fat (%)</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2 items-center">
-              <div className="md:col-span-3 h-[160px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={fatHistory} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
-                    <YAxis domain={['dataMin - 0.5', 'dataMax + 0.5']} stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
-                    <Tooltip
-                      contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
-                      labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
-                      itemStyle={{ fontSize: "11px", color: "#22c55e" }}
-                    />
-                    <Line
-                      type="monotone"
-                      name="Body Fat %"
-                      dataKey="value"
-                      stroke="#22c55e"
-                      strokeWidth={2.5}
-                      dot={{ r: 4, stroke: '#1c1917', strokeWidth: 1.5, fill: '#22c55e' }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-              <form onSubmit={handleAddFat} className="bg-white/[0.02] border border-white/5 rounded-xl p-3 flex flex-col justify-between space-y-2 h-[150px]">
-                <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-white/30 block">Log Body Fat</span>
-                <div className="flex items-center bg-black/60 border border-white/10 rounded-md p-1">
-                  <input
-                    type="number"
-                    step="0.1"
-                    placeholder="14.5"
-                    value={inputFat}
-                    onChange={(e) => setInputFat(e.target.value)}
-                    className="bg-transparent text-white font-mono text-xs w-full px-2 outline-none"
+            <div className="h-[180px] w-full mt-2">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={fatHistory} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                  <YAxis domain={['dataMin - 0.5', 'dataMax + 0.5']} stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
+                    labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
+                    itemStyle={{ fontSize: "11px", color: "#22c55e" }}
                   />
-                  <span className="text-[9px] font-mono font-bold text-white/40 pr-2">%</span>
-                </div>
-                <button
-                  type="submit"
-                  className="w-full py-1.5 bg-emerald-500 hover:bg-emerald-600 text-black text-[9px] font-mono font-black uppercase tracking-widest rounded transition-colors cursor-pointer"
-                >
-                  Save Log
-                </button>
-              </form>
+                  <Line
+                    type="monotone"
+                    name="Body Fat %"
+                    dataKey="value"
+                    stroke="#22c55e"
+                    strokeWidth={2.5}
+                    dot={{ r: 4, stroke: '#1c1917', strokeWidth: 1.5, fill: '#22c55e' }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
         );
