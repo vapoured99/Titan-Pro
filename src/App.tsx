@@ -125,6 +125,7 @@ import {
   onSnapshot,
 } from "./lib/firebase";
 import { Exercise, POOLS, getSecondaryMusclesForExercise } from "./data/exercises";
+import AIPlanActive, { AIPlanExercise } from "./components/AIPlanActive";
 
 // --- Background Images ---
 import ironTempleBg from "./assets/images/iron_temple_bg_1779282140548.png";
@@ -544,7 +545,7 @@ interface SessionSet {
   date: string;
   timestamp: any;
   notes?: string;
-  difficulty?: "easy" | "moderate" | "hard";
+  difficulty?: "easy" | "moderate" | "hard" | "failure";
   source?: string;
 }
 
@@ -1297,7 +1298,32 @@ export default function App() {
     [],
     [],
   ]);
-  const [workoutInnerTab, setWorkoutInnerTab] = useState<"builder" | "program">("builder");
+  const [workoutInnerTab, setWorkoutInnerTab] = useState<"builder" | "program" | "ai_program">("builder");
+  const [aiPlanExercises, setAiPlanExercises] = useState<AIPlanExercise[]>(() => {
+    try {
+      const saved = localStorage.getItem("gym_ai_plan_exercises");
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [aiWorkoutActive, setAiWorkoutActive] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("gym_ai_workout_active") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const [showAICelebrationModal, setShowAICelebrationModal] = useState(false);
+  const [aiCelebrationStats, setAICelebrationStats] = useState<{
+    durationSec: number;
+    completedSetsCount: number;
+    totalVolume: number;
+    calculatedCalories: number;
+    somaticFeedbackText: string;
+  } | null>(null);
   const [formattedProgram, setFormattedProgram] = useState<{ dayIndex: number; dayName: string; exercises: Exercise[] }[]>([]);
   const [sessionSummary, setSessionSummary] = useState<{
     totalVolume: number;
@@ -1358,7 +1384,7 @@ export default function App() {
   const [popupWeight, setPopupWeight] = useState("");
   const [popupReps, setPopupReps] = useState("");
   const [popupNotes, setPopupNotes] = useState("");
-  const [popupDifficulty, setPopupDifficulty] = useState<"easy" | "moderate" | "hard">("moderate");
+  const [popupDifficulty, setPopupDifficulty] = useState<"easy" | "moderate" | "hard" | "failure">("moderate");
   const [swappingExercise, setSwappingExercise] = useState<{
     dayIndex: number;
     exIndex: number;
@@ -2119,7 +2145,7 @@ export default function App() {
   const [reportCardScale, setReportCardScale] = useState(1);
   const [reportCardHeight, setReportCardHeight] = useState<number | null>(null);
   const [avatarImgBase64, setAvatarImgBase64] = useState<string | null>(null);
-  const [setDifficulties, setSetDifficulties] = useState<Record<string, "easy" | "moderate" | "hard">>({});
+  const [setDifficulties, setSetDifficulties] = useState<Record<string, "easy" | "moderate" | "hard" | "failure">>({});
   const [scrollY, setScrollY] = useState(0);
   const equipmentRef = useRef<HTMLDivElement>(null);
   const [dynamicSpacer, setDynamicSpacer] = useState(32);
@@ -4289,8 +4315,9 @@ export default function App() {
       (sum, item) => sum + item.exercises.length,
       0,
     );
-    if (totalBuilder === 0 && totalPlan === 0) {
-      setToast({ message: "No exercises in plan builder or plan to remove.", type: "info" });
+    const totalAIPlan = aiPlanExercises.length;
+    if (totalBuilder === 0 && totalPlan === 0 && totalAIPlan === 0) {
+      setToast({ message: "No exercises in plan builder, plan, or AI plan to remove.", type: "info" });
       return;
     }
 
@@ -4299,8 +4326,13 @@ export default function App() {
     setExpandedDays({});
     saveWorkout(clearedDays);
     setFormattedProgram([]);
+    setAiPlanExercises([]);
+    setAiWorkoutActive(false);
+    localStorage.removeItem("gym_ai_plan_exercises");
+    localStorage.removeItem("gym_ai_workout_active");
+    localStorage.removeItem("gym_ai_workout_start_time");
     setToast({
-      message: "All exercises have been cleared from plan builder and plan!",
+      message: "All exercises have been cleared from plan builder, plan, and AI plan!",
       type: "success",
     });
   };
@@ -4374,11 +4406,34 @@ export default function App() {
     });
 
     setFormattedProgram(mergedProgram);
-    setWorkoutInnerTab("program");
 
-    if (newlyAddedCount > 0) {
+    // Also add to the AI Plan page (aiPlanExercises)
+    const planExercisesFlattened = nextCurrentDays.flatMap((dayExs) => dayExs || []);
+    const mergedAIPlanExercises = [...aiPlanExercises];
+    let newlyAddedToAICount = 0;
+
+    planExercisesFlattened.forEach((ex) => {
+      const alreadyInAI = mergedAIPlanExercises.some(
+        (a) => a.exercise.name.toLowerCase() === ex.name.toLowerCase()
+      );
+      if (!alreadyInAI) {
+        mergedAIPlanExercises.push({
+          exercise: ex,
+          targetSets: 3,
+          targetReps: "10",
+        });
+        newlyAddedToAICount++;
+      }
+    });
+
+    setAiPlanExercises(mergedAIPlanExercises);
+    localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(mergedAIPlanExercises));
+
+    setWorkoutInnerTab("ai_program");
+
+    if (newlyAddedCount > 0 || newlyAddedToAICount > 0) {
       setToast({
-        message: `Successfully added ${newlyAddedCount} new exercise(s) to your program! Total: ${totalSelected}.`,
+        message: `Successfully updated program & added exercises to Plan!`,
         type: "success",
       });
     } else {
@@ -4394,7 +4449,7 @@ export default function App() {
     weight: string,
     reps: string,
     notes: string = "",
-    difficulty?: "easy" | "moderate" | "hard",
+    difficulty?: "easy" | "moderate" | "hard" | "failure",
     source?: "formatted_program" | "session",
   ) => {
     if (!weight || !currentUser) return;
@@ -5277,6 +5332,12 @@ export default function App() {
 
       // Update local state for instant feedback
       setCurrentDays([[], [], [], [], [], []]);
+      setFormattedProgram([]);
+      setAiPlanExercises([]);
+      setAiWorkoutActive(false);
+      localStorage.removeItem("gym_ai_plan_exercises");
+      localStorage.removeItem("gym_ai_workout_active");
+      localStorage.removeItem("gym_ai_workout_start_time");
 
       // Trigger the Session Summary Modal
       setSessionSummary(computedSummary);
@@ -5722,7 +5783,26 @@ export default function App() {
       }).filter(item => item.exercises.length > 0);
 
       setFormattedProgram(mergedProgram);
-      setWorkoutInnerTab("program");
+
+      // Also add to the AI Plan page (aiPlanExercises)
+      const planExercisesFlattened = nextCurrentDays.flatMap((dayExs) => dayExs || []);
+      const mergedAIPlanExercises = [...aiPlanExercises];
+      planExercisesFlattened.forEach((ex) => {
+        const alreadyInAI = mergedAIPlanExercises.some(
+          (a) => a.exercise.name.toLowerCase() === ex.name.toLowerCase()
+        );
+        if (!alreadyInAI) {
+          mergedAIPlanExercises.push({
+            exercise: ex,
+            targetSets: 3,
+            targetReps: "10",
+          });
+        }
+      });
+      setAiPlanExercises(mergedAIPlanExercises);
+      localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(mergedAIPlanExercises));
+
+      setWorkoutInnerTab("ai_program");
 
       setActiveView("workout");
       await saveSettings({ activeView: "workout" });
@@ -6391,7 +6471,7 @@ export default function App() {
               <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
                 Set Intensity (How'd it feel?)
               </span>
-              <div className="grid grid-cols-3 gap-1 p-1 bg-black/40 rounded-xl border border-white/5">
+              <div className="grid grid-cols-4 gap-1 p-1 bg-black/40 rounded-xl border border-white/5">
                 <button
                   type="button"
                   onClick={() =>
@@ -6439,6 +6519,22 @@ export default function App() {
                   }`}
                 >
                   🔥 Struggle
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSetDifficulties((prev) => ({
+                      ...prev,
+                      [ex.name]: "failure",
+                    }))
+                  }
+                  className={`py-1.5 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-lg border transition-all cursor-pointer text-center ${
+                    (setDifficulties[ex.name] || "moderate") === "failure"
+                      ? "bg-purple-500/15 border-purple-500/35 text-purple-400 font-black shadow-[0_0_8px_rgba(168,85,247,0.1)]"
+                      : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                  }`}
+                >
+                  💀 Failure
                 </button>
               </div>
             </div>
@@ -8024,21 +8120,37 @@ export default function App() {
                                               </button>
                                               <button
                                                 onClick={() => {
-                                                  setLoggingEx(activeExercise);
-                                                  setPopupWeight("");
-                                                  setPopupReps("");
-                                                  setPopupNotes("");
-                                                  setPopupDifficulty("moderate");
+                                                  const alreadyInAI = aiPlanExercises.some(
+                                                    (a) => a.exercise.name.toLowerCase() === activeExercise.name.toLowerCase()
+                                                  );
+                                                  if (!alreadyInAI) {
+                                                    const nextAIPlan = [...aiPlanExercises, {
+                                                      exercise: activeExercise,
+                                                      targetSets: 3,
+                                                      targetReps: "10"
+                                                    }];
+                                                    setAiPlanExercises(nextAIPlan);
+                                                    localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlan));
+                                                    setToast({
+                                                      message: `"${activeExercise.name}" has been added straight to your Plan!`,
+                                                      type: "success"
+                                                    });
+                                                  } else {
+                                                    setToast({
+                                                      message: `"${activeExercise.name}" is already in your Plan.`,
+                                                      type: "info"
+                                                    });
+                                                  }
                                                 }}
                                                 className="py-1.5 px-2 text-[9px] uppercase font-black tracking-widest transition-all rounded-md flex items-center justify-center gap-1 font-mono cursor-pointer"
                                                 style={{
                                                   backgroundColor: activeTheme.accent,
                                                   color: "#000000",
                                                 }}
-                                                title="Log Set"
+                                                title="Add to Plan"
                                               >
                                                 <Plus className="w-3.5 h-3.5 text-black stroke-[3px]" />
-                                                <span>Log</span>
+                                                <span>Add to Plan</span>
                                               </button>
                                             </div>
                                           </div>
@@ -8329,17 +8441,33 @@ export default function App() {
                                       
                                       <button
                                         onClick={() => {
-                                          setLoggingEx(ex);
-                                          setPopupWeight("");
-                                          setPopupReps("");
-                                          setPopupNotes("");
-                                          setPopupDifficulty("moderate");
+                                          const alreadyInAI = aiPlanExercises.some(
+                                            (a) => a.exercise.name.toLowerCase() === ex.name.toLowerCase()
+                                          );
+                                          if (!alreadyInAI) {
+                                            const nextAIPlan = [...aiPlanExercises, {
+                                              exercise: ex,
+                                              targetSets: 3,
+                                              targetReps: "10"
+                                            }];
+                                            setAiPlanExercises(nextAIPlan);
+                                            localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlan));
+                                            setToast({
+                                              message: `"${ex.name}" has been added straight to your Plan!`,
+                                              type: "success"
+                                            });
+                                          } else {
+                                            setToast({
+                                              message: `"${ex.name}" is already in your Plan.`,
+                                              type: "info"
+                                            });
+                                          }
                                         }}
                                         className="p-2.5 bg-gym-accent hover:bg-gym-accent/95 text-black text-[9.5px] uppercase font-black tracking-widest transition-all rounded-md flex-1 flex items-center justify-center gap-1.5 font-mono cursor-pointer shadow-md shadow-gym-accent/10 active:scale-[0.98]"
-                                        title="Log a new completed set"
+                                        title="Add to Plan"
                                       >
                                         <Plus className="w-3.5 h-3.5 text-black stroke-[3px]" />
-                                        <span>Log Set</span>
+                                        <span>Add to Plan</span>
                                       </button>
                                     </div>
                                     </div>
@@ -11206,12 +11334,12 @@ export default function App() {
                             <button
                               onClick={() => {
                                 setActiveView("workout");
-                                setWorkoutInnerTab("program");
+                                setWorkoutInnerTab("ai_program");
                                 saveSettings({ activeView: "workout" });
                               }}
                               className="flex items-center gap-1.5 px-3 py-1.5 bg-gym-accent/10 hover:bg-gym-accent/20 border border-gym-accent/30 hover:border-gym-accent/60 text-gym-accent text-[9px] font-bold uppercase tracking-wider rounded-md transition-all cursor-pointer"
                             >
-                              <ClipboardList className="w-3.5 h-3.5" />
+                              <Activity className="w-3.5 h-3.5" />
                               Back to Plan
                             </button>
                           </div>
@@ -12720,8 +12848,8 @@ export default function App() {
                                       }`}
                                     >
                                       <div className="p-5 border-b border-white/5 bg-white/[0.02]">
-                                        <div className="flex items-start justify-between gap-4">
-                                          <div className="flex-1 min-w-0">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                          <div className="min-w-0">
                                             {editingRoutineId === routine.id ? (
                                               <div className="space-y-2">
                                                 <input
@@ -12790,45 +12918,45 @@ export default function App() {
                                                 </button>
                                               </div>
                                             )}
-                                            <div className="mt-1">
-                                              <span className="text-[8px] text-white/30 uppercase tracking-widest font-mono">
-                                                Recorded {routine.date}
-                                              </span>
-                                            </div>
                                           </div>
-                                          <div className="flex items-center gap-1.5">
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleLoadRoutineToActiveSession(
-                                                  routine,
-                                                );
-                                              }}
-                                              className="px-2.5 py-1.5 bg-gym-accent/15 border border-gym-accent/25 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] font-bold uppercase tracking-wider transition-all rounded-md cursor-pointer"
-                                              title="Load sets into today's active session"
-                                            >
-                                              Use Routine
-                                            </button>
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handlePreloadToBuilder(routine);
-                                              }}
-                                              className="px-2.5 py-1.5 bg-white/5 border border-white/10 hover:border-gym-accent/40 hover:text-gym-accent text-white/70 text-[9px] font-bold uppercase tracking-wider transition-all rounded-md cursor-pointer whitespace-nowrap"
-                                              title="Tweak, edit, or adjust this routine in custom builder"
-                                            >
-                                              Modify & Tweak
-                                            </button>
-                                            <button
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDeleteRoutine(routine.id!);
-                                              }}
-                                              className="p-1.5 border border-red-500/10 hover:border-red-500/35 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 transition-colors rounded-md cursor-pointer"
-                                              title="Delete routine"
-                                            >
-                                              <Trash2 className="w-3.5 h-3.5 text-red-500" />
-                                            </button>
+                                          <div className="flex flex-col sm:items-end gap-1.5 shrink-0">
+                                            <div className="flex items-center gap-1.5">
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleLoadRoutineToActiveSession(
+                                                    routine,
+                                                  );
+                                                }}
+                                                className="px-2.5 py-1.5 bg-gym-accent/15 border border-gym-accent/25 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] font-bold uppercase tracking-wider transition-all rounded-md cursor-pointer"
+                                                title="Load sets into today's active session"
+                                              >
+                                                Use Routine
+                                              </button>
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handlePreloadToBuilder(routine);
+                                                }}
+                                                className="px-2.5 py-1.5 bg-white/5 border border-white/10 hover:border-gym-accent/40 hover:text-gym-accent text-white/70 text-[9px] font-bold uppercase tracking-wider transition-all rounded-md cursor-pointer whitespace-nowrap"
+                                                title="Tweak, edit, or adjust this routine in custom builder"
+                                              >
+                                                Modify & Tweak
+                                              </button>
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDeleteRoutine(routine.id!);
+                                                }}
+                                                className="p-1.5 border border-red-500/10 hover:border-red-500/35 hover:bg-red-500/10 text-red-500/60 hover:text-red-500 transition-colors rounded-md cursor-pointer"
+                                                title="Delete routine"
+                                              >
+                                                <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                                              </button>
+                                            </div>
+                                            <span className="text-[8px] text-white/30 uppercase tracking-widest font-mono">
+                                              Recorded {routine.date}
+                                            </span>
                                           </div>
                                         </div>
                                       </div>
@@ -13609,10 +13737,10 @@ export default function App() {
                 </div>
 
                 {/* Programming Page Sub-Tabs */}
-                <div className="flex items-center gap-3 border-b border-white/5 pb-2 mb-6">
+                <div className="flex flex-wrap items-center gap-3 border-b border-white/5 pb-2 mb-6">
                   <button
                     onClick={() => setWorkoutInnerTab("builder")}
-                    className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer ${
+                    className={`flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer ${
                       workoutInnerTab === "builder"
                         ? "border-gym-accent text-gym-accent"
                         : "border-transparent text-white/45 hover:text-white/75"
@@ -13622,14 +13750,14 @@ export default function App() {
                     1. Plan Builder
                   </button>
                   <button
-                    onClick={() => setWorkoutInnerTab("program")}
-                    className={`flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer ${
-                      workoutInnerTab === "program"
+                    onClick={() => setWorkoutInnerTab("ai_program")}
+                    className={`flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer ${
+                      workoutInnerTab === "ai_program"
                         ? "border-gym-accent text-gym-accent"
                         : "border-transparent text-white/45 hover:text-white/75"
                     }`}
                   >
-                    <ClipboardList className="w-3.5 h-3.5" />
+                    <Activity className="w-3.5 h-3.5 text-cyan-400" />
                     2. Plan
                   </button>
                   <button
@@ -13637,14 +13765,120 @@ export default function App() {
                       setActiveView("session");
                       saveSettings({ activeView: "session" });
                     }}
-                    className="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 border-transparent text-white/45 hover:text-white/75 transition-all cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 border-transparent text-white/45 hover:text-white/75 transition-all cursor-pointer"
                   >
                     <History className="w-3.5 h-3.5 text-gym-accent/70" />
                     3. Session
                   </button>
                 </div>
 
-                {workoutInnerTab === "program" ? (
+                {workoutInnerTab === "ai_program" ? (
+                  <motion.div
+                    key="ai-program-tab"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-6"
+                  >
+                    {!aiWorkoutActive && aiPlanExercises.length > 0 ? (
+                      <div className="bg-black/60 border border-white/10 rounded-xl p-8 text-center max-w-md mx-auto my-12 backdrop-blur-md">
+                        <Sparkles className="w-12 h-12 text-gym-accent/30 mx-auto mb-4 animate-pulse" />
+                        <h4 className="text-base font-bold text-white mb-2 uppercase tracking-wider">Plan Ready</h4>
+                        <p className="text-xs text-white/40 leading-relaxed mb-6">
+                          {aiPlanExercises.length} exercise{aiPlanExercises.length > 1 ? "s" : ""} loaded from your Plan Builder. Launch live neuromuscular tracking.
+                        </p>
+                        <div className="space-y-2 mb-6 max-h-48 overflow-y-auto text-left border-t border-b border-white/5 py-3 pr-2">
+                          {aiPlanExercises.map((exItem, i) => (
+                            <div key={i} className="flex items-center justify-between text-xs text-white/80 py-2 px-3 font-mono bg-white/[0.02] border border-white/5 border-l-2 border-l-gym-accent rounded-md">
+                              <span className="truncate pr-2">{exItem.exercise.name}</span>
+                              <span className="text-[10px] text-gym-accent uppercase tracking-wider bg-gym-accent/10 border border-gym-accent/20 px-1.5 py-0.5 rounded shrink-0">
+                                {exItem.targetSets}s × {exItem.targetReps}r
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() => {
+                              setAiWorkoutActive(true);
+                              localStorage.setItem("gym_ai_workout_active", "true");
+                              localStorage.setItem("gym_ai_workout_start_time", Date.now().toString());
+                              setToast({ message: "Routine Tracking Engaged!", type: "success" });
+                            }}
+                            className="w-full py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black border border-gym-accent font-mono font-black text-[10px] uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-md"
+                          >
+                            Engage & Track Workout
+                          </button>
+                          <button
+                            onClick={() => {
+                              setAiPlanExercises([]);
+                              localStorage.removeItem("gym_ai_plan_exercises");
+                              setToast({ message: "Plan exercises reset.", type: "info" });
+                            }}
+                            className="w-full py-2.5 bg-white/[0.02] border border-white/10 text-white/40 hover:text-white/85 text-[10px] font-mono uppercase tracking-wider rounded-lg transition-all cursor-pointer"
+                          >
+                            Reset Plan
+                          </button>
+                        </div>
+                      </div>
+                    ) : aiWorkoutActive && aiPlanExercises.length > 0 ? (
+                      <AIPlanActive
+                        activeExercises={aiPlanExercises}
+                        personalBests={personalBests}
+                        sessionSets={sessionSets}
+                        archivedWorkouts={archivedWorkouts}
+                        onSaveSet={handleSaveSet}
+                        onDeleteSet={handleDeleteSet}
+                        onFinishWorkout={(durationSec, completedSetsCount, totalVolume, calculatedCalories, somaticFeedbackText) => {
+                          setAiWorkoutActive(false);
+                          setAICelebrationStats({
+                            durationSec,
+                            completedSetsCount,
+                            totalVolume,
+                            calculatedCalories,
+                            somaticFeedbackText
+                          });
+                          setShowAICelebrationModal(true);
+                          playRestBeep(880, 0.2);
+                          setTimeout(() => playRestBeep(1100, 0.2), 150);
+                          setTimeout(() => playRestBeep(1320, 0.4), 300);
+                        }}
+                        onDeactivate={() => {
+                          setAiWorkoutActive(false);
+                          localStorage.removeItem("gym_ai_workout_active");
+                          localStorage.removeItem("gym_ai_workout_start_time");
+                          localStorage.removeItem("gym_ai_set_inputs");
+                          setToast({ message: "AI Routine Tracking Deactivated.", type: "info" });
+                          setWorkoutInnerTab("builder");
+                        }}
+                        playRestBeep={playRestBeep}
+                        restTimerEnabled={restTimerEnabled}
+                        setRestTimerEnabled={setRestTimerEnabled}
+                        manualRestTime={manualRestTime}
+                        setManualRestTime={setManualRestTime}
+                        manualRestActive={manualRestActive}
+                        setManualRestActive={setManualRestActive}
+                        manualRestTarget={manualRestTarget}
+                        setManualRestTarget={setManualRestTarget}
+                        userProfile={profile}
+                      />
+                    ) : (
+                      <div className="bg-black/60 border border-white/10 rounded-xl p-8 text-center max-w-md mx-auto my-12 backdrop-blur-md">
+                        <Sparkles className="w-12 h-12 text-gym-accent/30 mx-auto mb-4 animate-pulse" />
+                        <h4 className="text-base font-bold text-white mb-2">No Exercises in Plan</h4>
+                        <p className="text-xs text-white/40 leading-relaxed mb-6">
+                          Go to the Plan Builder, select exercises, and press "BUILD" to automatically populate your Plan.
+                        </p>
+                        <button
+                          onClick={() => setWorkoutInnerTab("builder")}
+                          className="px-5 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black border border-gym-accent font-mono font-black text-[10px] uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-md"
+                        >
+                          Go to Plan Builder
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                ) : workoutInnerTab === "program" && false ? (
                   <motion.div
                     key="formatted-program-tab"
                     initial={{ opacity: 0, y: 10 }}
@@ -13932,6 +14166,83 @@ export default function App() {
                   );
                 })()}
 
+                {/* Selected Exercises Selection Deck Widget */}
+                {(() => {
+                  const allSelectedExercises = currentDays.flatMap((dayExs, dayIdx) => 
+                    dayExs.map((ex, exIdx) => ({
+                      exercise: ex,
+                      dayIdx,
+                      exIdx,
+                      categoryName: DAY_CONFIG[dayIdx]?.name || `Day ${dayIdx + 1}`
+                    }))
+                  );
+
+                  if (allSelectedExercises.length === 0) return null;
+
+                  return (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-black/60 border border-gym-accent/20 rounded-md p-4 mb-5 backdrop-blur-md relative overflow-hidden accent-shadow-card"
+                    >
+                      <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-gym-accent" />
+                      
+                      <div className="flex items-center justify-between border-b border-white/5 pb-2.5 mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent">
+                            <Dumbbell className="w-3 h-3 animate-pulse" />
+                          </div>
+                          <div>
+                            <h4 className="text-[10px] font-black uppercase text-gym-accent tracking-[0.2em] font-mono leading-none">
+                              Selection Queue
+                            </h4>
+                            <p className="text-[9px] text-white/30 font-mono mt-1">
+                              Quick-review your selected exercises before building
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] font-mono font-bold bg-gym-accent/10 border border-gym-accent/25 text-gym-accent px-2 py-0.5 rounded-full uppercase tracking-wider">
+                            {allSelectedExercises.length} selected
+                          </span>
+                          <button
+                            type="button"
+                            onClick={handleClearAllExercises}
+                            className="text-[9px] font-mono text-white/40 hover:text-red-400 uppercase tracking-wider transition-colors cursor-pointer border border-white/10 hover:border-red-500/30 bg-white/[0.02] px-2 py-0.5 rounded"
+                            title="Clear all selections"
+                          >
+                            Clear All
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5 max-h-[140px] overflow-y-auto pr-1.5 custom-scrollbar">
+                        {allSelectedExercises.map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2 bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-gym-accent/30 pl-2.5 pr-1 py-1 rounded-md transition-all text-xs text-white/95 group"
+                          >
+                            <span className="font-semibold text-[11px] text-white/90 truncate max-w-[150px] sm:max-w-[200px]">
+                              {item.exercise.name}
+                            </span>
+                            <span className="text-[8px] font-mono font-bold text-white/35 border border-white/5 bg-white/[0.01] px-1 py-0.5 rounded shrink-0 uppercase tracking-wide">
+                              {item.categoryName.split(" & ")[0]}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveExerciseFromPlan(item.dayIdx, item.exIdx)}
+                              className="p-0.5 hover:bg-white/10 text-white/20 hover:text-red-400 rounded transition-all cursor-pointer shrink-0"
+                              title={`Remove ${item.exercise.name}`}
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+
                 {DAY_CONFIG.map((day, di) => (
                   <div
                     key={di}
@@ -14204,6 +14515,114 @@ export default function App() {
             )}
           </AnimatePresence>
         </main>
+
+        {/* AI Plan Celebration Modal */}
+        <AnimatePresence>
+          {showAICelebrationModal && aiCelebrationStats && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 font-sans">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowAICelebrationModal(false)}
+                className="absolute inset-0 bg-black/90 backdrop-blur-md"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 30 }}
+                className="relative w-full max-w-xl bg-gradient-to-b from-[#0e1117] to-[#07090e] border border-cyan-500/20 rounded-2xl overflow-hidden p-6 shadow-[0_0_50px_rgba(6,182,212,0.15)] max-h-[90vh] overflow-y-auto"
+              >
+                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-500 via-gym-accent to-purple-500" />
+                
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 mx-auto bg-cyan-500/15 border border-cyan-500/30 rounded-full flex items-center justify-center mb-4 shadow-[0_0_15px_rgba(6,182,212,0.25)]">
+                    <Sparkles className="w-8 h-8 text-cyan-400 animate-pulse" />
+                  </div>
+                  <h3 className="text-xl font-black font-mono tracking-wider uppercase text-white bg-gradient-to-r from-cyan-400 to-gym-accent bg-clip-text text-transparent">
+                    Somatic Session Finalized
+                  </h3>
+                  <p className="text-[10px] font-mono text-cyan-400/60 uppercase tracking-widest mt-1">
+                    AI Diagnostic Report Completed
+                  </p>
+                </div>
+
+                {/* Metrics Summary Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6">
+                  <div className="p-3.5 bg-white/[0.02] border border-white/5 rounded-xl text-center">
+                    <span className="text-[8px] font-mono text-white/35 uppercase block mb-1">Duration</span>
+                    <span className="text-sm font-black font-mono text-white">
+                      {Math.floor(aiCelebrationStats.durationSec / 60)} min
+                    </span>
+                  </div>
+                  <div className="p-3.5 bg-white/[0.02] border border-white/5 rounded-xl text-center">
+                    <span className="text-[8px] font-mono text-white/35 uppercase block mb-1">Logged Sets</span>
+                    <span className="text-sm font-black font-mono text-cyan-400">
+                      {aiCelebrationStats.completedSetsCount} Sets
+                    </span>
+                  </div>
+                  <div className="p-3.5 bg-white/[0.02] border border-white/5 rounded-xl text-center">
+                    <span className="text-[8px] font-mono text-white/35 uppercase block mb-1">Volume</span>
+                    <span className="text-sm font-black font-mono text-gym-accent">
+                      {aiCelebrationStats.totalVolume.toLocaleString()} kg
+                    </span>
+                  </div>
+                  <div className="p-3.5 bg-white/[0.02] border border-white/5 rounded-xl text-center">
+                    <span className="text-[8px] font-mono text-white/35 uppercase block mb-1">Energy Spent</span>
+                    <span className="text-sm font-black font-mono text-orange-400">
+                      {aiCelebrationStats.calculatedCalories} kcal
+                    </span>
+                  </div>
+                </div>
+
+                {/* AI Somatic Diagnostics Text */}
+                <div className="p-4 bg-cyan-950/10 border border-cyan-500/20 rounded-xl space-y-2 mb-6">
+                  <div className="flex items-center gap-2 text-[9px] font-mono font-black text-cyan-400 uppercase tracking-widest">
+                    <Activity className="w-4 h-4 text-cyan-400 shrink-0" />
+                    Neural & Mechanical Feedback
+                  </div>
+                  <p className="text-[11px] text-white/80 leading-relaxed font-mono">
+                    {aiCelebrationStats.somaticFeedbackText}
+                  </p>
+                </div>
+
+                {/* Gamification Level-Up Box */}
+                <div className="p-4 bg-purple-950/10 border border-purple-500/20 rounded-xl space-y-3 mb-6">
+                  <div className="flex items-center justify-between text-[9px] font-mono font-black text-purple-400 uppercase tracking-widest">
+                    <span className="flex items-center gap-1.5">
+                      <Award className="w-4 h-4 text-purple-400 shrink-0" />
+                      Gamification rewards applied
+                    </span>
+                    <span>+150 XP • +100 Credits</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-[9.5px] font-mono text-white/50">
+                      <span>Level {profile?.avatarLevel || 1}</span>
+                      <span>{profile?.avatarXp || 0} / {((profile?.avatarLevel || 1) * 500 + 2000)} XP</span>
+                    </div>
+                    <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        style={{ width: `${Math.min(100, ((profile?.avatarXp || 0) / ((profile?.avatarLevel || 1) * 500 + 2000)) * 100)}%` }}
+                        className="bg-purple-500 h-full rounded-full transition-all duration-700"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Close Button */}
+                <button
+                  onClick={() => {
+                    setShowAICelebrationModal(false);
+                    setAICelebrationStats(null);
+                  }}
+                  className="w-full py-3.5 bg-cyan-500 hover:bg-cyan-500/90 text-black font-mono font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg shadow-cyan-500/10 hover:scale-[1.01]"
+                >
+                  Synchronize & Close Report
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
         {/* Add Favorite Exercise Modal */}
         <AnimatePresence>
@@ -15704,7 +16123,7 @@ export default function App() {
                           <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
                             Set Intensity (How'd it feel?)
                           </span>
-                          <div className="grid grid-cols-3 gap-1 p-0.5 bg-black/35 rounded-md border border-white/5">
+                          <div className="grid grid-cols-4 gap-1 p-0.5 bg-black/35 rounded-md border border-white/5">
                             <button
                               type="button"
                               onClick={() => setPopupDifficulty("easy")}
@@ -15737,6 +16156,17 @@ export default function App() {
                               }`}
                             >
                               🔥 Struggle
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPopupDifficulty("failure")}
+                              className={`py-1 text-[8.5px] font-mono uppercase tracking-wider font-extrabold rounded-md border transition-all cursor-pointer text-center ${
+                                popupDifficulty === "failure"
+                                  ? "bg-purple-500/15 border-purple-500/35 text-purple-400 font-black shadow-[0_0_8px_rgba(168,85,247,0.1)]"
+                                  : "bg-transparent border-transparent text-white/40 hover:text-white/60 hover:bg-white/[0.02]"
+                              }`}
+                            >
+                              💀 Failure
                             </button>
                           </div>
                         </div>
@@ -17085,8 +17515,8 @@ export default function App() {
         <AnimatePresence>
           {restTimerEnabled &&
             activeView === "workout" &&
-            workoutInnerTab === "program" &&
-            formattedProgram.length > 0 &&
+            workoutInnerTab === "ai_program" &&
+            aiPlanExercises.length > 0 &&
             scrollY > 350 && (
               <motion.div
                 initial={{ opacity: 0, y: 50, x: "-50%" }}
