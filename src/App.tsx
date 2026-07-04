@@ -12637,14 +12637,14 @@ export default function App() {
                             </h4>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 max-w-full">
                             <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold whitespace-nowrap">
                               Select Routine:
                             </label>
                             <select
                               value={selectedRoutineId || ""}
                               onChange={(e) => setSelectedRoutineId(e.target.value)}
-                              className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer min-w-[200px] max-w-[320px] shadow-md"
+                              className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-3 py-2.5 focus:outline-none transition-all cursor-pointer w-full sm:w-auto min-w-[150px] max-w-full sm:max-w-[320px] shadow-md"
                             >
                               {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
                                 <option key={r.id || ri} value={r.id}>
