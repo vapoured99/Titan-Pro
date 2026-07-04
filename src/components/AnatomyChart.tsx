@@ -259,6 +259,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
             if (['long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rawGroup)) {
               return 'triceps';
             }
+            if (['lats', 'rhomboids_traps', 'upper_back'].includes(rawGroup)) {
+              return 'upper_back';
+            }
+            if (['erector_spinae', 'lower_back'].includes(rawGroup)) {
+              return 'lower_back';
+            }
             return rawGroup;
           }
         }
@@ -284,6 +290,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
         }
         if (['long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rawGroup)) {
           return 'triceps';
+        }
+        if (['lats', 'rhomboids_traps', 'upper_back'].includes(rawGroup)) {
+          return 'upper_back';
+        }
+        if (['erector_spinae', 'lower_back'].includes(rawGroup)) {
+          return 'lower_back';
         }
         return rawGroup;
       }

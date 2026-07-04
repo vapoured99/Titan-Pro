@@ -69,7 +69,7 @@ const getMuscleGroup = (ex: Exercise): string => {
   if (pool.includes("chest")) return "Chest";
   if (pool.includes("back")) return "Back";
   if (pool.includes("delt") || pool.includes("shoulder")) return "Shoulders";
-  if (pool.includes("bicep") || pool.includes("tricep") || pool.includes("arm")) return "Arms";
+  if (pool.includes("bicep") || pool.includes("tricep") || pool.includes("arm") || pool.includes("brachialis")) return "Arms";
   if (pool.includes("quad") || pool.includes("hamstring") || pool.includes("calf") || pool.includes("leg")) return "Legs";
   if (pool.includes("abs") || pool.includes("oblique") || pool.includes("core") || pool.includes("cardio")) return "Core & Cardio";
   return "Other";

@@ -96,7 +96,7 @@ export default function AnatomyDashboard({
     if (!rawGroup) return 'Other';
     const rg = rawGroup.toLowerCase();
     if (['chest', 'upper_chest', 'middle_chest', 'lower_chest'].includes(rg)) return 'Chest';
-    if (['back', 'upper_back', 'lower_back', 'lats'].includes(rg)) return 'Back';
+    if (['back', 'upper_back', 'lower_back', 'lats', 'rhomboids_traps', 'erector_spinae'].includes(rg)) return 'Back';
     if (['shoulders', 'front_delts', 'side_delts', 'rear_delts'].includes(rg)) return 'Shoulders';
     if (['quads', 'hamstrings', 'glutes', 'calves', 'legs'].includes(rg)) return 'Legs';
     if (['biceps', 'long_biceps', 'short_biceps', 'brachialis'].includes(rg)) return 'Biceps';
@@ -658,8 +658,8 @@ export default function AnatomyDashboard({
       if (['upper_chest', 'middle_chest', 'lower_chest', 'chest'].includes(rg)) return 'chest';
       if (['long_biceps', 'short_biceps', 'brachialis', 'biceps'].includes(rg)) return 'biceps';
       if (['long_triceps', 'lateral_triceps', 'medial_triceps', 'triceps'].includes(rg)) return 'triceps';
-      if (['back', 'upper_back', 'lats'].includes(rg)) return 'upper_back';
-      if (['lower_back'].includes(rg)) return 'lower_back';
+      if (['back', 'upper_back', 'lats', 'rhomboids_traps'].includes(rg)) return 'upper_back';
+      if (['lower_back', 'erector_spinae'].includes(rg)) return 'lower_back';
       if (['quads'].includes(rg)) return 'quads';
       if (['hamstrings'].includes(rg)) return 'hamstrings';
       if (['glutes'].includes(rg)) return 'glutes';
