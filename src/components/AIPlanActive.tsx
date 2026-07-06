@@ -31,7 +31,8 @@ interface AIPlanActiveProps {
     reps: string,
     notes?: string,
     difficulty?: "easy" | "moderate" | "hard" | "failure",
-    source?: string
+    source?: string,
+    duration?: string
   ) => Promise<void>;
   onDeleteSet?: (setId: string) => Promise<void>;
   onFinishWorkout: (

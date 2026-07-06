@@ -535,6 +535,8 @@ interface PB {
   bestReps: number;
   bestDate: string;
   exerciseName: string;
+  lastDuration?: number;
+  bestDuration?: number;
 }
 
 interface SessionSet {
@@ -547,6 +549,76 @@ interface SessionSet {
   notes?: string;
   difficulty?: "easy" | "moderate" | "hard" | "failure";
   source?: string;
+  duration?: number;
+}
+
+export function getExerciseMetrics(exerciseName: string, pool?: string) {
+  const nameLower = (exerciseName || "").toLowerCase();
+  const poolLower = (pool || "").toLowerCase();
+
+  // 1. Cardio pool is a special case:
+  if (
+    poolLower === "cardio" ||
+    nameLower.includes("running") ||
+    nameLower.includes("cycling") ||
+    nameLower.includes("treadmill") ||
+    nameLower.includes("rowing machine") ||
+    nameLower.includes("jump rope") ||
+    nameLower.includes("battle ropes")
+  ) {
+    return {
+      weightLabel: "Time (min)",
+      repsLabel: "Speed / Lvl",
+      durationLabel: "",
+      showWeight: true,
+      showReps: true,
+      showDuration: false,
+      isCardio: true,
+    };
+  }
+
+  // 2. Assisted Pull ups are standard, ignore changes (reps and weight)
+  if (nameLower.includes("assisted pull")) {
+    return {
+      weightLabel: "Weight (kg)",
+      repsLabel: "Reps",
+      durationLabel: "",
+      showWeight: true,
+      showReps: true,
+      showDuration: false,
+    };
+  }
+
+  // 3. Holds, hangs, planks, L-Sits, wall sit, hollow body, stretches
+  if (
+    nameLower.includes("hold") ||
+    nameLower.includes("hang") ||
+    nameLower.includes("plank") ||
+    nameLower.includes("l-sit") ||
+    nameLower.includes("wall sit") ||
+    nameLower.includes("hollow body") ||
+    nameLower.includes("stretching") ||
+    nameLower.includes("stretch")
+  ) {
+    return {
+      weightLabel: "Weight (kg)", // e.g. weighted holds
+      repsLabel: "Reps",         // optional, e.g. how many reps of the hold
+      durationLabel: "Time (sec)", // time held
+      showWeight: true,
+      showReps: true,
+      showDuration: true,
+    };
+  }
+
+  // 4. Default strength exercises (Weight + Reps + optional Time)
+  return {
+    weightLabel: "Weight (kg)",
+    repsLabel: "Reps",
+    durationLabel: "Time (sec)",
+    showWeight: true,
+    showReps: true,
+    showDuration: true,
+  };
 }
 
 interface WeightEntry {
@@ -1383,6 +1455,7 @@ export default function App() {
   const [loggingEx, setLoggingEx] = useState<Exercise | null>(null);
   const [popupWeight, setPopupWeight] = useState("");
   const [popupReps, setPopupReps] = useState("");
+  const [popupDuration, setPopupDuration] = useState("");
   const [popupNotes, setPopupNotes] = useState("");
   const [popupDifficulty, setPopupDifficulty] = useState<"easy" | "moderate" | "hard" | "failure">("moderate");
   const [swappingExercise, setSwappingExercise] = useState<{
@@ -4451,10 +4524,15 @@ export default function App() {
     notes: string = "",
     difficulty?: "easy" | "moderate" | "hard" | "failure",
     source?: "formatted_program" | "session",
+    duration?: string,
   ) => {
-    if (!weight || !currentUser) return;
-    const nWeight = parseFloat(weight) || 0;
-    const nReps = parseInt(reps) || 0;
+    if (!currentUser) return;
+    if (!weight && !reps && !duration) return;
+
+    const nWeight = weight ? parseFloat(weight) || 0 : 0;
+    const nReps = reps ? parseInt(reps) || 0 : 0;
+    const nDuration = duration ? parseInt(duration) || 0 : 0;
+
     const dateStr = new Date().toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
@@ -4464,9 +4542,12 @@ export default function App() {
     const existing = personalBests[exName];
     let isNewPB = false;
     const isAssisted = exName.toLowerCase().includes("assisted pull");
+    const metrics = getExerciseMetrics(exName);
 
     if (!existing) {
-      isNewPB = true;
+      if (nWeight > 0 || nReps > 0 || nDuration > 0) {
+        isNewPB = true;
+      }
     } else {
       if (isAssisted) {
         if (nWeight < existing.bestWeight) {
@@ -4475,10 +4556,18 @@ export default function App() {
           isNewPB = true;
         }
       } else {
-        if (nWeight > existing.bestWeight) {
-          isNewPB = true;
-        } else if (nWeight === existing.bestWeight && nReps > existing.bestReps) {
-          isNewPB = true;
+        if (metrics.showDuration) {
+          if (nDuration > (existing.bestDuration || 0)) {
+            isNewPB = true;
+          } else if (nDuration === (existing.bestDuration || 0) && nWeight > (existing.bestWeight || 0)) {
+            isNewPB = true;
+          }
+        } else {
+          if (nWeight > existing.bestWeight) {
+            isNewPB = true;
+          } else if (nWeight === existing.bestWeight && nReps > existing.bestReps) {
+            isNewPB = true;
+          }
         }
       }
     }
@@ -4491,6 +4580,8 @@ export default function App() {
       bestWeight: isNewPB ? nWeight : existing?.bestWeight || nWeight,
       bestReps: isNewPB ? nReps : existing?.bestReps || nReps,
       bestDate: isNewPB ? dateStr : existing?.bestDate || dateStr,
+      lastDuration: nDuration,
+      bestDuration: isNewPB ? nDuration : existing?.bestDuration || nDuration,
     };
 
     setFlashMessage((prev) => ({
@@ -4510,6 +4601,7 @@ export default function App() {
       notes: notes.trim(),
       source: source || "session",
       ...(difficulty ? { difficulty } : {}),
+      ...(nDuration > 0 ? { duration: nDuration } : {}),
     };
 
     // Optimistic Update
@@ -4615,6 +4707,8 @@ export default function App() {
         setTimeout(() => setToast(null), 3000);
       }
 
+      const p1 = setDoc(doc(db, pbsPath), updatedPB);
+
       const p2 = setDoc(doc(db, setsPath), {
         exerciseName: exName,
         weight: nWeight,
@@ -4623,6 +4717,7 @@ export default function App() {
         timestamp: serverTimestamp(),
         notes: notes.trim(),
         ...(difficulty ? { difficulty } : {}),
+        ...(nDuration > 0 ? { duration: nDuration } : {}),
       });
 
       const p3 = setDoc(
@@ -4636,7 +4731,7 @@ export default function App() {
         { merge: true },
       );
 
-      await Promise.all([p2, p3]);
+      await Promise.all([p1, p2, p3]);
     } catch (err) {
       // Revert optimistic update if needed, but for now just log
       handleFirestoreError(
@@ -6421,37 +6516,56 @@ export default function App() {
         <div className="mt-auto flex flex-col w-full">
           {/* Training Console Box */}
           <div className="flex flex-col gap-3.5 mb-4 bg-white/[0.02] border border-white/[0.06] p-4 rounded-xl w-full hover:bg-white/[0.04] transition-all duration-300">
-            {/* Input Row: Weight & Reps */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col">
-                <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
-                  {ex.pool === "cardio"
-                    ? "Time (min)"
-                    : "Weight (kg)"}
-                </span>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  placeholder="0"
-                  id={`w-${di}-${ei}`}
-                  className="w-full bg-black/20 border border-white/10 hover:border-white/20 focus:border-gym-accent focus:bg-black/40 rounded-xl py-2 px-3 text-sm font-semibold focus:outline-none transition-all text-white font-mono text-center"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
-                  {ex.pool === "cardio"
-                    ? "Speed / Lvl"
-                    : "Reps"}
-                </span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  placeholder="0"
-                  id={`r-${di}-${ei}`}
-                  className="w-full bg-black/20 border border-white/10 hover:border-white/20 focus:border-gym-accent focus:bg-black/40 rounded-xl py-2 px-3 text-sm font-semibold focus:outline-none transition-all text-white font-mono text-center"
-                />
-              </div>
-            </div>
+            {/* Input Row: Weight, Reps, & Duration */}
+            {(() => {
+              const metrics = getExerciseMetrics(ex.name, ex.pool);
+              return (
+                <div className={`grid ${metrics.showDuration ? "grid-cols-3" : "grid-cols-2"} gap-3`}>
+                  {metrics.showWeight && (
+                    <div className="flex flex-col">
+                      <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
+                        {metrics.weightLabel}
+                      </span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        placeholder="0"
+                        id={`w-${di}-${ei}`}
+                        className="w-full bg-black/20 border border-white/10 hover:border-white/20 focus:border-gym-accent focus:bg-black/40 rounded-xl py-2 px-3 text-sm font-semibold focus:outline-none transition-all text-white font-mono text-center"
+                      />
+                    </div>
+                  )}
+                  {metrics.showReps && (
+                    <div className="flex flex-col">
+                      <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
+                        {metrics.repsLabel}
+                      </span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="0"
+                        id={`r-${di}-${ei}`}
+                        className="w-full bg-black/20 border border-white/10 hover:border-white/20 focus:border-gym-accent focus:bg-black/40 rounded-xl py-2 px-3 text-sm font-semibold focus:outline-none transition-all text-white font-mono text-center"
+                      />
+                    </div>
+                  )}
+                  {metrics.showDuration && (
+                    <div className="flex flex-col">
+                      <span className="text-[8px] text-white/35 uppercase tracking-widest mb-1.5 font-bold font-mono">
+                        {metrics.durationLabel}
+                      </span>
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="0"
+                        id={`dur-${di}-${ei}`}
+                        className="w-full bg-black/20 border border-white/10 hover:border-white/20 focus:border-gym-accent focus:bg-black/40 rounded-xl py-2 px-3 text-sm font-semibold focus:outline-none transition-all text-white font-mono text-center"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Input Row: Set Notes */}
             <div className="flex flex-col">
@@ -6573,6 +6687,20 @@ export default function App() {
                 month: "short",
               });
 
+              const ghostMetrics = [];
+              if (ghostSet.weight !== undefined && ghostSet.weight > 0) {
+                ghostMetrics.push(`${ghostSet.weight}kg`);
+              }
+              if (ghostSet.reps !== undefined && ghostSet.reps > 0) {
+                ghostMetrics.push(`${ghostSet.reps} reps`);
+              }
+              if (ghostSet.duration !== undefined && ghostSet.duration > 0) {
+                ghostMetrics.push(`${ghostSet.duration}s`);
+              }
+              if (ghostMetrics.length === 0) {
+                ghostMetrics.push(`${ghostSet.weight}kg × ${ghostSet.reps}`);
+              }
+
               return (
                 <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-xl px-3 py-2 mt-1 text-[10px]">
                   <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
@@ -6584,7 +6712,7 @@ export default function App() {
                       Ghost Set {nextSetIndex + 1} ({dateFormatted}):
                     </span>
                     <span className="text-gym-accent font-mono font-bold shrink-0">
-                      {ghostSet.weight}kg × {ghostSet.reps}
+                      {ghostMetrics.join(" × ")}
                     </span>
                   </div>
                   <button
@@ -6592,8 +6720,10 @@ export default function App() {
                     onClick={() => {
                       const wInput = document.getElementById(`w-${di}-${ei}`) as HTMLInputElement;
                       const rInput = document.getElementById(`r-${di}-${ei}`) as HTMLInputElement;
-                      if (wInput) wInput.value = ghostSet.weight.toString();
-                      if (rInput) rInput.value = ghostSet.reps.toString();
+                      const durInput = document.getElementById(`dur-${di}-${ei}`) as HTMLInputElement;
+                      if (wInput) wInput.value = ghostSet.weight ? ghostSet.weight.toString() : "";
+                      if (rInput) rInput.value = ghostSet.reps ? ghostSet.reps.toString() : "";
+                      if (durInput) durInput.value = ghostSet.duration ? ghostSet.duration.toString() : "";
                     }}
                     className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-md transition-all cursor-pointer whitespace-nowrap shrink-0"
                     title="Use ghost set target values"
@@ -6613,23 +6743,34 @@ export default function App() {
                 const rInput = document.getElementById(
                   `r-${di}-${ei}`,
                 ) as HTMLInputElement;
+                const durInput = document.getElementById(
+                  `dur-${di}-${ei}`,
+                ) as HTMLInputElement;
                 const nInput = document.getElementById(
                   `notes-${di}-${ei}`,
                 ) as HTMLInputElement;
-                const w = wInput?.value;
-                const r = rInput?.value;
+                const w = wInput?.value || "";
+                const r = rInput?.value || "";
+                const dur = durInput?.value || "";
                 const notes = nInput?.value || "";
                 const diff = setDifficulties[ex.name] || "moderate";
-                if (w && r) {
-                  handleSaveSet(ex.name, w, r, notes, diff, "formatted_program");
+                if (w || r || dur) {
+                  handleSaveSet(ex.name, w, r, notes, diff, "formatted_program", dur);
                   if (wInput) wInput.value = "";
                   if (rInput) rInput.value = "";
+                  if (durInput) durInput.value = "";
                   if (nInput) nInput.value = "";
                   // Reset difficulty back to moderate for next set
                   setSetDifficulties((prev) => ({
                     ...prev,
                     [ex.name]: "moderate",
                   }));
+                } else {
+                  setToast({
+                    message: "Please enter at least one tracking metric (Weight, Reps, or Time) to log.",
+                    type: "error",
+                  });
+                  setTimeout(() => setToast(null), 3000);
                 }
               }}
               className="w-full bg-gym-accent hover:bg-gym-accent-light text-black py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all hover:shadow-[0_4px_20px_rgba(255,231,101,0.25)] active:scale-[0.98] cursor-pointer text-center font-bold mt-1"
@@ -16010,6 +16151,7 @@ export default function App() {
                       setLoggingEx(null);
                       setPopupWeight("");
                       setPopupReps("");
+                      setPopupDuration("");
                       setPopupNotes("");
                       setPopupDifficulty("moderate");
                     }}
@@ -16062,6 +16204,7 @@ export default function App() {
                               setLoggingEx(null);
                               setPopupWeight("");
                               setPopupReps("");
+                              setPopupDuration("");
                               setPopupNotes("");
                               setPopupDifficulty("moderate");
                             }}
@@ -16076,34 +16219,58 @@ export default function App() {
                     <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
                       {/* Form Inputs */}
                       <div className="flex flex-col gap-3 bg-white/[0.01] border border-white/[0.04] p-4 rounded-md w-full">
-                        <div className="grid grid-cols-2 gap-3 w-full">
-                          <div className="flex flex-col">
-                            <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                              {resolvedEx.pool === "cardio" ? "Time (min)" : "Weight (kg)"}
-                            </span>
-                            <input
-                              type="number"
-                              inputMode="decimal"
-                              placeholder="0"
-                              value={popupWeight}
-                              onChange={(e) => setPopupWeight(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
-                            />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
-                              {resolvedEx.pool === "cardio" ? "Speed / Lvl" : "Reps"}
-                            </span>
-                            <input
-                              type="number"
-                              inputMode="numeric"
-                              placeholder="0"
-                              value={popupReps}
-                              onChange={(e) => setPopupReps(e.target.value)}
-                              className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono"
-                            />
-                          </div>
-                        </div>
+                        {(() => {
+                          const popupMetrics = getExerciseMetrics(resolvedEx.name, resolvedEx.pool);
+                          return (
+                            <div className={`grid ${popupMetrics.showDuration ? "grid-cols-3" : "grid-cols-2"} gap-3 w-full`}>
+                              {popupMetrics.showWeight && (
+                                <div className="flex flex-col">
+                                  <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                                    {popupMetrics.weightLabel}
+                                  </span>
+                                  <input
+                                    type="number"
+                                    inputMode="decimal"
+                                    placeholder="0"
+                                    value={popupWeight}
+                                    onChange={(e) => setPopupWeight(e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono text-center"
+                                  />
+                                </div>
+                              )}
+                              {popupMetrics.showReps && (
+                                <div className="flex flex-col">
+                                  <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                                    {popupMetrics.repsLabel}
+                                  </span>
+                                  <input
+                                    type="number"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    value={popupReps}
+                                    onChange={(e) => setPopupReps(e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono text-center"
+                                  />
+                                </div>
+                              )}
+                              {popupMetrics.showDuration && (
+                                <div className="flex flex-col">
+                                  <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
+                                    {popupMetrics.durationLabel}
+                                  </span>
+                                  <input
+                                    type="number"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    value={popupDuration}
+                                    onChange={(e) => setPopupDuration(e.target.value)}
+                                    className="w-full bg-black/40 border border-white/10 rounded-md py-1.5 px-2.5 text-sm font-light focus:outline-none focus:border-gym-accent focus:bg-black/60 transition-all text-white font-mono text-center"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
 
                         <div className="flex flex-col w-full">
                           <span className="text-[9px] text-white/30 uppercase tracking-widest mb-1 font-bold">
@@ -16205,6 +16372,20 @@ export default function App() {
                             month: "short",
                           });
 
+                          const ghostMetrics = [];
+                          if (ghostSet.weight !== undefined && ghostSet.weight > 0) {
+                            ghostMetrics.push(`${ghostSet.weight}kg`);
+                          }
+                          if (ghostSet.reps !== undefined && ghostSet.reps > 0) {
+                            ghostMetrics.push(`${ghostSet.reps} reps`);
+                          }
+                          if (ghostSet.duration !== undefined && ghostSet.duration > 0) {
+                            ghostMetrics.push(`${ghostSet.duration}s`);
+                          }
+                          if (ghostMetrics.length === 0) {
+                            ghostMetrics.push(`${ghostSet.weight}kg × ${ghostSet.reps}`);
+                          }
+
                           return (
                             <div className="flex items-center justify-between bg-gym-accent/[0.02] border border-gym-accent/15 rounded-md px-2.5 py-1.5 mt-1 text-[10px] w-full font-sans">
                               <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-2">
@@ -16216,14 +16397,15 @@ export default function App() {
                                   Ghost Set {nextSetIndex + 1} ({dateFormatted}):
                                 </span>
                                 <span className="text-gym-accent font-mono font-bold shrink-0">
-                                  {ghostSet.weight}kg × {ghostSet.reps}
+                                  {ghostMetrics.join(" × ")}
                                 </span>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setPopupWeight(ghostSet.weight.toString());
-                                  setPopupReps(ghostSet.reps.toString());
+                                  setPopupWeight(ghostSet.weight ? ghostSet.weight.toString() : "");
+                                  setPopupReps(ghostSet.reps ? ghostSet.reps.toString() : "");
+                                  setPopupDuration(ghostSet.duration ? ghostSet.duration.toString() : "");
                                 }}
                                 className="text-[9px] text-gym-accent/80 hover:text-gym-accent uppercase font-black tracking-wider bg-white/5 border border-white/10 hover:bg-gym-accent/10 hover:border-gym-accent/20 px-2 py-0.5 rounded-md transition-all cursor-pointer whitespace-nowrap shrink-0"
                                 title="Use ghost set target values"
@@ -16237,10 +16419,11 @@ export default function App() {
                         {/* Submit Button inside the popup */}
                         <button
                           onClick={async () => {
-                            if (popupWeight && popupReps) {
-                              await handleSaveSet(resolvedEx.name, popupWeight, popupReps, popupNotes, popupDifficulty, "session");
+                            if (popupWeight || popupReps || popupDuration) {
+                              await handleSaveSet(resolvedEx.name, popupWeight, popupReps, popupNotes, popupDifficulty, "session", popupDuration);
                               setPopupWeight("");
                               setPopupReps("");
+                              setPopupDuration("");
                               setPopupNotes("");
                               setPopupDifficulty("moderate");
                               setToast({
@@ -16250,7 +16433,7 @@ export default function App() {
                               setTimeout(() => setToast(null), 2500);
                             } else {
                               setToast({
-                                message: "Please input both load weight and training reps.",
+                                message: "Please enter at least one tracking metric (Weight, Reps, or Time) to log.",
                                 type: "error",
                               });
                               setTimeout(() => setToast(null), 3000);
@@ -16374,6 +16557,7 @@ export default function App() {
                           setLoggingEx(null);
                           setPopupWeight("");
                           setPopupReps("");
+                          setPopupDuration("");
                           setPopupNotes("");
                           setPopupDifficulty("moderate");
                         }}
