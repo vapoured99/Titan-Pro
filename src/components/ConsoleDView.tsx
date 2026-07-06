@@ -1136,7 +1136,7 @@ export default function ConsoleDView({
           <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
             <div>
               <h4 className="text-base font-semibold text-white leading-snug">
-                Somatic Performance Carousel
+                Performance Metrics
               </h4>
               <p className="text-[10px] text-white/40 font-mono mt-0.5 uppercase">
                 Active Slide: {chartTypes[activeChartSlide].toUpperCase()} progressions
