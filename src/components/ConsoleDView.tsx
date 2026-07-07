@@ -409,37 +409,161 @@ export default function ConsoleDView({
   };
 
   // 6. Neural Recruitment loading level computations
-  const recruitment = useMemo(() => {
-    const scores: Record<string, number> = {
-      Chest: 25,
-      Back: 20,
-      Legs: 30,
-      Shoulders: 25,
-      Core: 40,
-      Arms: 20,
+  const recruitment: Record<string, any> = useMemo(() => {
+    // Define baseline values for sub-muscle groups
+    const subScores: Record<string, number> = {
+      // Chest
+      "Upper Chest": 25,
+      "Mid Chest": 25,
+      "Lower Chest": 25,
+      // Back
+      "Latissimus Dorsi (Lats)": 20,
+      "Rhomboids & Mid-Back": 20,
+      "Trapezius (Traps)": 20,
+      "Lower Back": 20,
+      // Shoulders
+      "Front Deltoids": 25,
+      "Side Deltoids": 25,
+      "Rear Deltoids": 25,
+      // Arms
+      "Biceps": 20,
+      "Triceps": 20,
+      "Forearms": 20,
+      // Legs
+      "Quadriceps": 30,
+      "Hamstrings": 30,
+      "Gluteals": 30,
+      "Calves": 30,
+      // Core
+      "Rectus Abdominis (Abs)": 40,
+      "Obliques": 40,
+      "Transverse Abdominis": 40,
+      "Deep Core Stabilizers": 40,
     };
-    sessionSets.forEach(set => {
+
+    // Process each logged set to precisely allocate recruitment points to specific sub-muscle groups
+    sessionSets.forEach((set) => {
       const exName = (set.exerciseName || "").toLowerCase();
-      if (exName.includes("leg press") || exName.includes("squat") || exName.includes("leg") || exName.includes("calf") || exName.includes("quad") || exName.includes("glute") || exName.includes("lunge") || exName.includes("hamstring")) {
-        scores.Legs += 15;
-      } else if (exName.includes("shoulder press") || exName.includes("overhead press") || exName.includes("military press") || exName.includes("shoulder") || exName.includes("lateral") || exName.includes("delt") || exName.includes("raise")) {
-        scores.Shoulders += 15;
-      } else if (exName.includes("chest") || exName.includes("bench") || exName.includes("press") || exName.includes("fly") || exName.includes("pushup") || exName.includes("dip")) {
-        scores.Chest += 15;
-      } else if (exName.includes("back") || exName.includes("row") || exName.includes("pull") || exName.includes("chin") || exName.includes("lat") || exName.includes("deadlift")) {
-        scores.Back += 15;
-      } else if (exName.includes("abs") || exName.includes("crunch") || exName.includes("plank") || exName.includes("core") || exName.includes("situp")) {
-        scores.Core += 15;
-      } else if (exName.includes("bicep") || exName.includes("tricep") || exName.includes("curl") || exName.includes("arm") || exName.includes("forearm") || exName.includes("wrist")) {
-        scores.Arms += 15;
-      } else {
-        scores.Arms += 10;
+      
+      // Chest Allocations
+      if (exName.includes("incline") || exName.includes("upper chest") || exName.includes("low-to-high")) {
+        subScores["Upper Chest"] += 15;
+      } else if (exName.includes("decline") || exName.includes("lower chest") || exName.includes("high-to-low")) {
+        subScores["Lower Chest"] += 15;
+      } else if (exName.includes("dip")) {
+        subScores["Lower Chest"] += 10;
+        subScores["Mid Chest"] += 5;
+        subScores["Triceps"] += 5;
+      } else if (exName.includes("chest") || exName.includes("bench") || exName.includes("press") || exName.includes("fly") || exName.includes("pushup") || exName.includes("push-up") || exName.includes("pec deck")) {
+        subScores["Mid Chest"] += 15;
+      }
+
+      // Back Allocations
+      if (exName.includes("pulldown") || exName.includes("pull up") || exName.includes("pull-up") || exName.includes("lat")) {
+        subScores["Latissimus Dorsi (Lats)"] += 15;
+        if (exName.includes("pull up") || exName.includes("pull-up") || exName.includes("chin")) {
+          subScores["Biceps"] += 5;
+        }
+      } else if (exName.includes("chin up") || exName.includes("chin-up")) {
+        subScores["Latissimus Dorsi (Lats)"] += 10;
+        subScores["Biceps"] += 10;
+      } else if (exName.includes("deadlift")) {
+        subScores["Lower Back"] += 10;
+        subScores["Gluteals"] += 5;
+        subScores["Rhomboids & Mid-Back"] += 5;
+      } else if (exName.includes("shrug") || exName.includes("upright row") || exName.includes("trap")) {
+        subScores["Trapezius (Traps)"] += 15;
+      } else if (exName.includes("back extension") || exName.includes("hyperextension") || exName.includes("good morning") || exName.includes("lower back")) {
+        subScores["Lower Back"] += 15;
+      } else if (exName.includes("row") || exName.includes("back")) {
+        subScores["Rhomboids & Mid-Back"] += 15;
+      }
+
+      // Shoulders Allocations
+      if (exName.includes("shoulder press") || exName.includes("overhead press") || exName.includes("military press") || exName.includes("arnold press") || exName.includes("front raise")) {
+        subScores["Front Deltoids"] += 15;
+      } else if (exName.includes("lateral raise") || exName.includes("side raise") || exName.includes("side delt") || exName.includes("cable lateral")) {
+        subScores["Side Deltoids"] += 15;
+      } else if (exName.includes("face pull") || exName.includes("rear delt") || exName.includes("reverse fly") || exName.includes("rear raise")) {
+        subScores["Rear Deltoids"] += 15;
+      } else if (exName.includes("shoulder") || exName.includes("raise") || exName.includes("delt")) {
+        subScores["Side Deltoids"] += 10;
+        subScores["Front Deltoids"] += 5;
+      }
+
+      // Arms Allocations
+      if (exName.includes("bicep") || exName.includes("preacher") || (exName.includes("curl") && !exName.includes("wrist") && !exName.includes("reverse"))) {
+        subScores["Biceps"] += 15;
+      } else if (exName.includes("tricep") || exName.includes("pushdown") || exName.includes("skull") || exName.includes("close grip")) {
+        subScores["Triceps"] += 15;
+      } else if (exName.includes("wrist") || exName.includes("forearm") || exName.includes("reverse curl")) {
+        subScores["Forearms"] += 15;
+      } else if (exName.includes("arm") || exName.includes("curl")) {
+        subScores["Biceps"] += 10;
+        subScores["Triceps"] += 5;
+      }
+
+      // Legs Allocations
+      if (exName.includes("squat") || exName.includes("leg press") || exName.includes("extension") || exName.includes("quad")) {
+        subScores["Quadriceps"] += 10;
+        if (exName.includes("squat")) {
+          subScores["Gluteals"] += 5;
+        }
+      } else if (exName.includes("hamstring") || exName.includes("leg curl") || exName.includes("rdl") || exName.includes("romanian")) {
+        subScores["Hamstrings"] += 15;
+      } else if (exName.includes("hip thrust") || exName.includes("glute") || exName.includes("bridge") || exName.includes("kickback")) {
+        subScores["Gluteals"] += 15;
+      } else if (exName.includes("calf") || exName.includes("calves")) {
+        subScores["Calves"] += 15;
+      } else if (exName.includes("lunge") || exName.includes("step up")) {
+        subScores["Quadriceps"] += 7;
+        subScores["Gluteals"] += 8;
+      } else if (exName.includes("leg")) {
+        subScores["Quadriceps"] += 10;
+        subScores["Hamstrings"] += 5;
+      }
+
+      // Core Allocations
+      if (exName.includes("crunch") || exName.includes("sit up") || exName.includes("situp") || exName.includes("abs") || exName.includes("leg raise") || exName.includes("knee raise")) {
+        subScores["Rectus Abdominis (Abs)"] += 15;
+      } else if (exName.includes("twist") || exName.includes("woodchopper") || exName.includes("oblique") || exName.includes("bicycle")) {
+        subScores["Obliques"] += 15;
+      } else if (exName.includes("vacuum") || exName.includes("bird dog") || exName.includes("dead bug")) {
+        subScores["Transverse Abdominis"] += 15;
+      } else if (exName.includes("plank")) {
+        subScores["Transverse Abdominis"] += 10;
+        subScores["Deep Core Stabilizers"] += 5;
+      } else if (exName.includes("ab wheel") || exName.includes("stabilizer") || exName.includes("farmer")) {
+        subScores["Deep Core Stabilizers"] += 15;
+      } else if (exName.includes("core")) {
+        subScores["Rectus Abdominis (Abs)"] += 5;
+        subScores["Transverse Abdominis"] += 5;
+        subScores["Deep Core Stabilizers"] += 5;
       }
     });
-    Object.keys(scores).forEach(k => {
-      scores[k] = Math.min(100, scores[k]);
+
+    // Clip all subScores to [0, 100]
+    Object.keys(subScores).forEach((k) => {
+      subScores[k] = Math.min(100, subScores[k]);
     });
-    return scores;
+
+    // Compute overall parent scores as the average of their respective sub-muscles
+    const chestAvg = Math.round((subScores["Upper Chest"] + subScores["Mid Chest"] + subScores["Lower Chest"]) / 3);
+    const backAvg = Math.round((subScores["Latissimus Dorsi (Lats)"] + subScores["Rhomboids & Mid-Back"] + subScores["Trapezius (Traps)"] + subScores["Lower Back"]) / 4);
+    const shouldersAvg = Math.round((subScores["Front Deltoids"] + subScores["Side Deltoids"] + subScores["Rear Deltoids"]) / 3);
+    const armsAvg = Math.round((subScores["Biceps"] + subScores["Triceps"] + subScores["Forearms"]) / 3);
+    const legsAvg = Math.round((subScores["Quadriceps"] + subScores["Hamstrings"] + subScores["Gluteals"] + subScores["Calves"]) / 4);
+    const coreAvg = Math.round((subScores["Rectus Abdominis (Abs)"] + subScores["Obliques"] + subScores["Transverse Abdominis"] + subScores["Deep Core Stabilizers"]) / 4);
+
+    return {
+      Chest: chestAvg,
+      Back: backAvg,
+      Shoulders: shouldersAvg,
+      Arms: armsAvg,
+      Legs: legsAvg,
+      Core: coreAvg,
+      subScores,
+    };
   }, [sessionSets]);
 
   // 7. Monthly Days density calculations based on archivedWorkouts
@@ -785,47 +909,48 @@ export default function ConsoleDView({
             {(() => {
               const currentGroup = matrixGroups[activeMatrixSlide];
               const parentScore = recruitment[currentGroup] ?? 50;
+              const subScores = recruitment.subScores || {};
               
-              // Define sub-muscles for current group
+              // Define sub-muscles for current group using exact tracking if available
               let subMuscles: { name: string; pct: number }[] = [];
               if (currentGroup === "Chest") {
                 subMuscles = [
-                  { name: "Upper Chest", pct: Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Mid Chest", pct: Math.min(100, Math.round(parentScore * 0.95)) },
-                  { name: "Lower Chest", pct: Math.min(100, Math.round(parentScore * 0.90)) },
+                  { name: "Upper Chest", pct: subScores["Upper Chest"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
+                  { name: "Mid Chest", pct: subScores["Mid Chest"] ?? Math.min(100, Math.round(parentScore * 0.95)) },
+                  { name: "Lower Chest", pct: subScores["Lower Chest"] ?? Math.min(100, Math.round(parentScore * 0.90)) },
                 ];
               } else if (currentGroup === "Back") {
                 subMuscles = [
-                  { name: "Latissimus Dorsi (Lats)", pct: Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Rhomboids & Mid-Back", pct: Math.min(100, Math.round(parentScore * 0.95)) },
-                  { name: "Trapezius (Traps)", pct: Math.min(100, Math.round(parentScore * 1.00)) },
-                  { name: "Lower Back", pct: Math.min(100, Math.round(parentScore * 0.85)) },
+                  { name: "Latissimus Dorsi (Lats)", pct: subScores["Latissimus Dorsi (Lats)"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
+                  { name: "Rhomboids & Mid-Back", pct: subScores["Rhomboids & Mid-Back"] ?? Math.min(100, Math.round(parentScore * 0.95)) },
+                  { name: "Trapezius (Traps)", pct: subScores["Trapezius (Traps)"] ?? Math.min(100, Math.round(parentScore * 1.00)) },
+                  { name: "Lower Back", pct: subScores["Lower Back"] ?? Math.min(100, Math.round(parentScore * 0.85)) },
                 ];
               } else if (currentGroup === "Shoulders") {
                 subMuscles = [
-                  { name: "Front Deltoids", pct: Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Side Deltoids", pct: Math.min(100, Math.round(parentScore * 1.00)) },
-                  { name: "Rear Deltoids", pct: Math.min(100, Math.round(parentScore * 0.90)) },
+                  { name: "Front Deltoids", pct: subScores["Front Deltoids"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
+                  { name: "Side Deltoids", pct: subScores["Side Deltoids"] ?? Math.min(100, Math.round(parentScore * 1.00)) },
+                  { name: "Rear Deltoids", pct: subScores["Rear Deltoids"] ?? Math.min(100, Math.round(parentScore * 0.90)) },
                 ];
               } else if (currentGroup === "Arms") {
                 subMuscles = [
-                  { name: "Biceps", pct: Math.min(100, Math.round(parentScore * 1.02)) },
-                  { name: "Triceps", pct: Math.min(100, Math.round(parentScore * 0.98)) },
-                  { name: "Forearms", pct: Math.min(100, Math.round(parentScore * 0.85)) },
+                  { name: "Biceps", pct: subScores["Biceps"] ?? Math.min(100, Math.round(parentScore * 1.02)) },
+                  { name: "Triceps", pct: subScores["Triceps"] ?? Math.min(100, Math.round(parentScore * 0.98)) },
+                  { name: "Forearms", pct: subScores["Forearms"] ?? Math.min(100, Math.round(parentScore * 0.85)) },
                 ];
               } else if (currentGroup === "Legs") {
                 subMuscles = [
-                  { name: "Quadriceps", pct: Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Hamstrings", pct: Math.min(100, Math.round(parentScore * 0.95)) },
-                  { name: "Gluteals", pct: Math.min(100, Math.round(parentScore * 1.00)) },
-                  { name: "Calves", pct: Math.min(100, Math.round(parentScore * 0.80)) },
+                  { name: "Quadriceps", pct: subScores["Quadriceps"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
+                  { name: "Hamstrings", pct: subScores["Hamstrings"] ?? Math.min(100, Math.round(parentScore * 0.95)) },
+                  { name: "Gluteals", pct: subScores["Gluteals"] ?? Math.min(100, Math.round(parentScore * 1.00)) },
+                  { name: "Calves", pct: subScores["Calves"] ?? Math.min(100, Math.round(parentScore * 0.80)) },
                 ];
               } else if (currentGroup === "Core") {
                 subMuscles = [
-                  { name: "Rectus Abdominis (Abs)", pct: Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Obliques", pct: Math.min(100, Math.round(parentScore * 0.95)) },
-                  { name: "Transverse Abdominis", pct: Math.min(100, Math.round(parentScore * 0.90)) },
-                  { name: "Deep Core Stabilizers", pct: Math.min(100, Math.round(parentScore * 1.00)) },
+                  { name: "Rectus Abdominis (Abs)", pct: subScores["Rectus Abdominis (Abs)"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
+                  { name: "Obliques", pct: subScores["Obliques"] ?? Math.min(100, Math.round(parentScore * 0.95)) },
+                  { name: "Transverse Abdominis", pct: subScores["Transverse Abdominis"] ?? Math.min(100, Math.round(parentScore * 0.90)) },
+                  { name: "Deep Core Stabilizers", pct: subScores["Deep Core Stabilizers"] ?? Math.min(100, Math.round(parentScore * 1.00)) },
                 ];
               }
 

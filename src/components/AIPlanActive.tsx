@@ -8,6 +8,36 @@ export interface AIPlanExercise {
   targetReps: string;
 }
 
+export function isBodyweightExercise(name: string): boolean {
+  const n = name.toLowerCase();
+  return (
+    n.includes("push up") ||
+    n.includes("pushup") ||
+    n.includes("pull up") ||
+    n.includes("pullup") ||
+    n.includes("chin up") ||
+    n.includes("chinup") ||
+    n.includes("dip") ||
+    n.includes("plank") ||
+    n.includes("crunch") ||
+    n.includes("sit up") ||
+    n.includes("situp") ||
+    n.includes("hanging leg") ||
+    n.includes("hanging knee") ||
+    n.includes("bodyweight") ||
+    n.includes("burpee") ||
+    n.includes("pistol squat") ||
+    n.includes("air squat") ||
+    n.includes("handstand") ||
+    n.includes("mountain climber") ||
+    n.includes("jumping jack") ||
+    n.includes("l-sit") ||
+    n.includes("muscle up") ||
+    n.includes("muscleup") ||
+    n.includes("leg raise")
+  );
+}
+
 import {
   Activity,
   CheckCircle,
@@ -171,8 +201,9 @@ export default function AIPlanActive({
         }
       }
 
+      const isBodyweight = isBodyweightExercise(exName);
       const hasHistory = !!pb || lastSets.length > 0;
-      const defaultWeight = hasHistory ? (pb ? pb.bestWeight.toString() : "60") : "";
+      const defaultWeight = hasHistory ? (pb ? pb.bestWeight.toString() : (isBodyweight ? "0" : "60")) : (isBodyweight ? "0" : "");
       const defaultReps = hasHistory ? (exItem.targetReps || "10") : "";
 
       for (let s = 0; s < exItem.targetSets; s++) {
@@ -222,8 +253,9 @@ export default function AIPlanActive({
           }
         }
 
+        const isBodyweight = isBodyweightExercise(exName);
         const hasHistory = !!pb || lastSets.length > 0;
-        const defaultWeight = hasHistory ? (pb ? pb.bestWeight.toString() : "60") : "";
+        const defaultWeight = hasHistory ? (pb ? pb.bestWeight.toString() : (isBodyweight ? "0" : "60")) : (isBodyweight ? "0" : "");
         const defaultReps = hasHistory ? (exItem.targetReps || "10") : "";
 
         for (let s = 0; s < exItem.targetSets; s++) {
@@ -265,7 +297,8 @@ export default function AIPlanActive({
             } else if (!prev[key].logged) {
               // Overwrite if it's the simple default and we actually have real history to offer
               if (prev[key].weight !== targetW || prev[key].reps !== targetR) {
-                const isGlobalDefault = (prev[key].weight === "60" || prev[key].weight === "") && (prev[key].reps === (exItem.targetReps || "10") || prev[key].reps === "");
+                const isBodyweight = isBodyweightExercise(exName);
+                const isGlobalDefault = (prev[key].weight === "60" || prev[key].weight === "0" || prev[key].weight === "") && (prev[key].reps === (exItem.targetReps || "10") || prev[key].reps === "");
                 if (isGlobalDefault && historicalSet) {
                   next[key] = {
                     ...prev[key],
@@ -762,8 +795,9 @@ export default function AIPlanActive({
                       <div className="space-y-3">
                         {Array.from({ length: exItem.targetSets }).map((_, sIdx) => {
                           const key = `${exName}-${sIdx}`;
+                          const isBodyweight = isBodyweightExercise(exName);
                           const rowState = setInputs[key] || {
-                            weight: "60",
+                            weight: isBodyweight ? "0" : "60",
                             reps: "10",
                             logged: false,
                             difficulty: "moderate"
