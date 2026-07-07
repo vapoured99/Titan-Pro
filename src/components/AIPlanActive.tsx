@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Exercise } from "../data/exercises";
+import { getExerciseProgressionState } from "../lib/progression";
 
 export interface AIPlanExercise {
   exercise: Exercise;
@@ -99,6 +100,19 @@ export default function AIPlanActive({
 }: AIPlanActiveProps) {
   // Copy activeExercises to state for interactive adjustments
   const [activeExercises, setActiveExercises] = useState<AIPlanExercise[]>(initialActiveExercises);
+
+  const allLoggedSets = useMemo(() => {
+    const logged: any[] = [];
+    logged.push(...sessionSets);
+    if (archivedWorkouts) {
+      archivedWorkouts.forEach((w) => {
+        if (w.sets && Array.isArray(w.sets)) {
+          logged.push(...w.sets);
+        }
+      });
+    }
+    return logged;
+  }, [sessionSets, archivedWorkouts]);
 
   // Background active duration tracker (retained for metric logging on complete)
   const [startTime] = useState<number>(() => {
@@ -579,6 +593,7 @@ export default function AIPlanActive({
                 {exercisesInGroup.map((exItem) => {
                   const exName = exItem.exercise.name;
                   const pb = personalBests[exName];
+                  const progState = getExerciseProgressionState(exName, allLoggedSets, setInputs);
 
                   let compSets = 0;
                   for (let s = 0; s < exItem.targetSets; s++) {
@@ -608,11 +623,15 @@ export default function AIPlanActive({
                   let targetWeightStr = "";
                   let recommendedWeightStr = "";
 
-                  for (const [wStr, sets] of Object.entries(weightGroups)) {
+                   for (const [wStr, sets] of Object.entries(weightGroups)) {
                     const easyModSets = sets.filter(
                       (s) => s.difficulty === "easy" || s.difficulty === "moderate"
                     );
-                    if (easyModSets.length >= 3) {
+                    const has10PlusReps = sets.some((s) => {
+                      const r = parseInt(s.reps, 10);
+                      return !isNaN(r) && r >= 10;
+                    });
+                    if (easyModSets.length >= 3 && has10PlusReps) {
                       recommendIncrease = true;
                       targetWeightStr = wStr;
                       const wNum = parseFloat(wStr);
@@ -667,6 +686,11 @@ export default function AIPlanActive({
                                   PB: {pb.bestWeight}kg × {pb.bestReps}
                                 </span>
                               )}
+                              {progState.showTag && (
+                                <span className="bg-emerald-500/15 border border-emerald-500/30 text-[#34d399] text-[8px] font-mono font-black uppercase px-1.5 py-0.5 rounded tracking-wider flex items-center gap-1">
+                                  🚀 Increase Weight
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -704,7 +728,7 @@ export default function AIPlanActive({
                               PROGRESSION TARGET ACQUIRED
                             </span>
                             <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
-                              +{2.5}kg Target
+                              🚀 Increase Weight
                             </span>
                           </div>
                           <p className="text-[10px] text-white/70 leading-relaxed font-sans">
@@ -729,7 +753,7 @@ export default function AIPlanActive({
                             }}
                             className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-semibold rounded-md text-[9px] font-black uppercase tracking-[0.15em] font-mono transition-all cursor-pointer shadow-md shadow-emerald-500/15 text-center"
                           >
-                            Apply {recommendedWeightStr}kg Recommendation to Remaining Sets
+                            🚀 Apply Suggested Weight Increase to Remaining Sets
                           </button>
                         </div>
                       )}

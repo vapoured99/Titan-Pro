@@ -126,6 +126,7 @@ import {
 } from "./lib/firebase";
 import { Exercise, POOLS, getSecondaryMusclesForExercise } from "./data/exercises";
 import AIPlanActive, { AIPlanExercise } from "./components/AIPlanActive";
+import { getExerciseProgressionState } from "./lib/progression";
 
 // --- Background Images ---
 import ironTempleBg from "./assets/images/iron_temple_bg_1779282140548.png";
@@ -1344,6 +1345,17 @@ export default function App() {
   const [bodyFatHistory, setBodyFatHistory] = useState<BodyFatEntry[]>([]);
   const [sessionSets, setSessionSets] = useState<SessionSet[]>([]);
   const [archivedWorkouts, setArchivedWorkouts] = useState<any[]>([]);
+
+  const allLoggedSets = useMemo<SessionSet[]>(() => {
+    const logged: SessionSet[] = [];
+    logged.push(...sessionSets);
+    archivedWorkouts.forEach((w) => {
+      if (w.sets && Array.isArray(w.sets)) {
+        logged.push(...w.sets);
+      }
+    });
+    return logged;
+  }, [sessionSets, archivedWorkouts]);
 
   // Global Rest Tracker state
   const [restAudioEnabled, setRestAudioEnabled] = useState<boolean>(true);
@@ -6724,7 +6736,7 @@ export default function App() {
                         PROGRESSION UPGRADE AVAILABLE
                       </span>
                       <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
-                        +{2.5}kg Target
+                        🚀 Increase Weight
                       </span>
                     </div>
                     <p className="text-[9px] text-white/70 leading-relaxed font-sans">
@@ -6745,7 +6757,7 @@ export default function App() {
                       }}
                       className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold uppercase tracking-[0.15em] font-mono text-[8px] transition-all cursor-pointer shadow-sm rounded-md text-center"
                     >
-                      Apply {recommendWeight}kg Next-Set Target
+                      🚀 Apply Suggested Weight Increase
                     </button>
                   </div>
                 )
@@ -10332,33 +10344,43 @@ export default function App() {
 
                             Object.entries(setsByExercise).forEach(([exName, sets]) => {
                               if (sets.length === 0) return;
-                              let maxWeight = -1;
-                              sets.forEach((s) => {
-                                if (s.weight > maxWeight) {
-                                  maxWeight = s.weight;
-                                }
-                              });
 
-                              const setsAtMaxWeight = sets.filter((s) => s.weight === maxWeight);
-                              const setWith10Reps = setsAtMaxWeight.find((s) => s.reps >= 10);
-                              const setsOf10Plus = setsAtMaxWeight.filter((s) => s.reps >= 10).length;
-                              const completed3SetsOf10 = setsOf10Plus >= 3;
+                              const state = getExerciseProgressionState(exName, allLoggedSets);
 
-                              if (setWith10Reps) {
-                                const dates = setsAtMaxWeight
-                                  .filter((s) => s.reps >= 10 && s.date)
-                                  .map((s) => s.date);
-                                const latestDate = dates.sort().reverse()[0] || "";
-
-                                exercisesRequiringIncrease.push({
-                                  exerciseName: exName,
-                                  highestWeight: maxWeight,
-                                  repsDone: setWith10Reps.reps,
-                                  totalSetsAtMax: setsAtMaxWeight.length,
-                                  setsOf10Plus,
-                                  completed3SetsOf10,
-                                  setDate: latestDate,
+                              if (state.showTag) {
+                                const setsAtTrigger = sets.filter((s) => {
+                                  const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
+                                  return w === state.recommendationWeight;
                                 });
+                                if (setsAtTrigger.length > 0) {
+                                  let maxReps = 0;
+                                  let latestDate = "";
+                                  setsAtTrigger.forEach((s) => {
+                                    const r = typeof s.reps === 'string' ? parseInt(s.reps, 10) : s.reps;
+                                    if (!isNaN(r) && r > maxReps) {
+                                      maxReps = r;
+                                    }
+                                    if (s.date && (!latestDate || s.date > latestDate)) {
+                                      latestDate = s.date;
+                                    }
+                                  });
+
+                                  const setsOf10Plus = setsAtTrigger.filter((s) => {
+                                    const r = typeof s.reps === 'string' ? parseInt(s.reps, 10) : s.reps;
+                                    return !isNaN(r) && r >= 10;
+                                  }).length;
+                                  const completed3SetsOf10 = setsOf10Plus >= 3;
+
+                                  exercisesRequiringIncrease.push({
+                                    exerciseName: exName,
+                                    highestWeight: state.recommendationWeight,
+                                    repsDone: maxReps,
+                                    totalSetsAtMax: setsAtTrigger.length,
+                                    setsOf10Plus,
+                                    completed3SetsOf10,
+                                    setDate: latestDate,
+                                  });
+                                }
                               }
                             });
 
@@ -10619,14 +10641,14 @@ export default function App() {
                                                   <div>
                                                     <strong>🔥 STRONGLY RECOMMENDED PROGRESSION</strong>
                                                     <p className="text-[9px] mt-0.5 text-emerald-400/70">
-                                                      Completed {item.setsOf10Plus} sets of 10+ reps at {item.highestWeight}kg. Muscle adaptation reached. Increase weight by <strong>+2.5 kg</strong> immediately to continue progressive overload.
+                                                      Completed {item.setsOf10Plus} sets of 10+ reps at {item.highestWeight}kg. Muscle adaptation reached. Increase your weight in your next workout to continue progressive overload.
                                                     </p>
                                                   </div>
                                                 ) : (
                                                   <div>
                                                     <strong>🚀 PROGRESSION SUGGESTION</strong>
                                                     <p className="text-[9px] mt-0.5 text-white/45">
-                                                      Successfully completed 10 reps of your absolute heaviest logged load! Try a <strong>+2.5 kg load increase</strong> on your next workout to continue growth.
+                                                      Successfully completed 3 sets at {item.highestWeight}kg with Easy/Moderate intensity! Increasing weight in your next workout is suggested to maintain growth.
                                                     </p>
                                                   </div>
                                                 )}
@@ -10635,10 +10657,10 @@ export default function App() {
 
                                             <div className="flex flex-col text-right shrink-0">
                                               <span className="text-[8px] text-emerald-500/40 font-black tracking-widest uppercase font-mono mb-0.5">
-                                                RECOM. INC.
+                                                RECOM. OVERLOAD
                                               </span>
                                               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded px-2.5 py-1 text-emerald-400 font-mono text-[9px] font-black uppercase tracking-wider inline-flex items-center justify-center gap-1 font-bold">
-                                                <span>+2.5 kg</span>
+                                                <span>🚀 Increase</span>
                                               </div>
                                             </div>
                                           </div>
@@ -13830,14 +13852,24 @@ export default function App() {
                           {aiPlanExercises.length} exercise{aiPlanExercises.length > 1 ? "s" : ""} loaded from your Plan Builder. Launch live neuromuscular tracking.
                         </p>
                         <div className="space-y-2 mb-6 max-h-48 overflow-y-auto text-left border-t border-b border-white/5 py-3 pr-2">
-                          {aiPlanExercises.map((exItem, i) => (
-                            <div key={i} className="flex items-center justify-between text-xs text-white/80 py-2 px-3 font-mono bg-white/[0.02] border border-white/5 border-l-2 border-l-gym-accent rounded-md">
-                              <span className="truncate pr-2">{exItem.exercise.name}</span>
-                              <span className="text-[10px] text-gym-accent uppercase tracking-wider bg-gym-accent/10 border border-gym-accent/20 px-1.5 py-0.5 rounded shrink-0">
-                                {exItem.targetSets}s × {exItem.targetReps}r
-                              </span>
-                            </div>
-                          ))}
+                          {aiPlanExercises.map((exItem, i) => {
+                            const progState = getExerciseProgressionState(exItem.exercise.name, allLoggedSets);
+                            return (
+                              <div key={i} className="flex items-center justify-between text-xs text-white/80 py-2 px-3 font-mono bg-white/[0.02] border border-white/5 border-l-2 border-l-gym-accent rounded-md">
+                                <div className="flex flex-col min-w-0">
+                                  <span className="truncate pr-2">{exItem.exercise.name}</span>
+                                  {progState.showTag && (
+                                    <span className="text-[8px] text-emerald-400 font-black uppercase mt-0.5 tracking-wider flex items-center gap-1">
+                                      🚀 Increase Weight
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-gym-accent uppercase tracking-wider bg-gym-accent/10 border border-gym-accent/20 px-1.5 py-0.5 rounded shrink-0">
+                                  {exItem.targetSets}s × {exItem.targetReps}r
+                                </span>
+                              </div>
+                            );
+                          })}
                         </div>
                         <div className="flex flex-col gap-2">
                           <button
@@ -16381,11 +16413,11 @@ export default function App() {
                                   PROGRESSION TARGET ACQUIRED
                                 </span>
                                 <span className="text-[8px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded-full font-mono font-bold">
-                                  +{2.5}kg Target
+                                  🚀 Increase Weight
                                 </span>
                               </div>
                               <p className="text-[10px] text-white/70 leading-relaxed font-sans">
-                                You completed <strong className="text-white">3 sets of 10+ reps</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span> today! Double-progression triggered. Upgrade your target weight.
+                                You completed <strong className="text-white">3 sets</strong> at <span className="text-emerald-400 font-mono font-bold">{targetWeight}kg</span> today with Easy/Moderate intensity! Double-progression triggered. Upgrade your target weight.
                               </p>
                               <button
                                 type="button"
@@ -16400,7 +16432,7 @@ export default function App() {
                                 }}
                                 className="w-full mt-1 py-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-semibold rounded-md text-[9px] font-black uppercase tracking-[0.15em] font-mono transition-all cursor-pointer shadow-md shadow-emerald-500/15 text-center"
                               >
-                                Apply {recommendWeight}kg Recommendation
+                                🚀 Apply Suggested Weight Increase
                               </button>
                             </div>
                           );
