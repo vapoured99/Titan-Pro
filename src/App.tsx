@@ -1391,6 +1391,10 @@ export default function App() {
   >({});
   const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
   const [editingRoutineName, setEditingRoutineName] = useState<string>("");
+  const [tweakingRoutineId, setTweakingRoutineId] = useState<string | null>(null);
+  const [showSaveRoutineModal, setShowSaveRoutineModal] = useState(false);
+  const [saveRoutineModalStep, setSaveRoutineModalStep] = useState<"choice" | "name">("choice");
+  const [routineModalNameInput, setRoutineModalNameInput] = useState("");
   const [guidanceEx, setGuidanceEx] = useState<Exercise | null>(null);
   const [loggingEx, setLoggingEx] = useState<Exercise | null>(null);
   const [popupWeight, setPopupWeight] = useState("");
@@ -5476,18 +5480,33 @@ export default function App() {
     }
   };
 
-  const handleSaveCustomRoutine = async () => {
+  const handleInitiateSaveRoutine = () => {
     if (!currentUser) return;
-    if (!newRoutineName.trim()) {
-      setToast({ message: "Please enter a routine name.", type: "info" });
-      return;
-    }
     if (newRoutineExercises.length === 0) {
       setToast({ message: "Please add at least one exercise to the routine.", type: "info" });
       return;
     }
 
-    // Flatten exercises and sets to fit db format:
+    if (tweakingRoutineId) {
+      setRoutineModalNameInput(newRoutineName);
+      setSaveRoutineModalStep("choice");
+      setShowSaveRoutineModal(true);
+    } else {
+      setRoutineModalNameInput(newRoutineName || "");
+      setSaveRoutineModalStep("name");
+      setShowSaveRoutineModal(true);
+    }
+  };
+
+  const handleUpdateExistingRoutine = async () => {
+    if (!currentUser || !tweakingRoutineId) return;
+
+    const finalName = newRoutineName.trim();
+    if (!finalName) {
+      setToast({ message: "Please enter a routine name.", type: "info" });
+      return;
+    }
+
     const flatSets: any[] = [];
     newRoutineExercises.forEach((exItem) => {
       exItem.sets.forEach((setItem) => {
@@ -5500,16 +5519,14 @@ export default function App() {
       });
     });
 
+    const path = `users/${currentUser.uid}/routines/${tweakingRoutineId}`;
     try {
       setDataLoading(true);
-      const categoryName = DAY_CONFIG[newRoutineCategory].name;
       const formattedDate = new Date().toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
 
-      const routineRef = doc(
-        collection(db, `users/${currentUser.uid}/routines`),
-      );
+      const routineRef = doc(db, path);
       await setDoc(routineRef, {
-        name: newRoutineName.trim(),
+        name: finalName,
         date: formattedDate,
         categoryIndex: newRoutineCategory,
         sets: flatSets,
@@ -5518,19 +5535,83 @@ export default function App() {
       });
 
       setToast({
-        message: `Custom routine "${newRoutineName.trim()}" saved under ${categoryName}!`,
+        message: `Routine "${finalName}" successfully updated!`,
         type: "success",
       });
       setIsCreatingRoutine(false);
       setNewRoutineName("");
       setNewRoutineCategory(0);
       setNewRoutineExercises([]);
+      setTweakingRoutineId(null);
+      setShowSaveRoutineModal(false);
     } catch (error) {
-      console.error("Error creating custom routine:", error);
-      setToast({ message: "Failed to save custom routine.", type: "info" });
+      console.error("Error updating existing routine:", error);
+      setToast({ message: "Failed to update routine.", type: "info" });
+      handleFirestoreError(error, OperationType.WRITE, path);
     } finally {
       setDataLoading(false);
     }
+  };
+
+  const handleCreateAndSaveRoutine = async (customName: string) => {
+    if (!currentUser) return;
+    const finalName = customName.trim();
+    if (!finalName) {
+      setToast({ message: "Please enter a routine name.", type: "info" });
+      return;
+    }
+
+    const flatSets: any[] = [];
+    newRoutineExercises.forEach((exItem) => {
+      exItem.sets.forEach((setItem) => {
+        flatSets.push({
+          exerciseName: exItem.exerciseName,
+          weight: Number(setItem.weight) || 0,
+          reps: Number(setItem.reps) || 0,
+          notes: setItem.notes || "",
+        });
+      });
+    });
+
+    const path = `users/${currentUser.uid}/routines`;
+    try {
+      setDataLoading(true);
+      const categoryName = DAY_CONFIG[newRoutineCategory].name;
+      const formattedDate = new Date().toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+
+      const routineRef = doc(
+        collection(db, path),
+      );
+      await setDoc(routineRef, {
+        name: finalName,
+        date: formattedDate,
+        categoryIndex: newRoutineCategory,
+        sets: flatSets,
+        periodization: newRoutinePeriodization || "hypertrophy",
+        timestamp: serverTimestamp(),
+      });
+
+      setToast({
+        message: `New custom routine "${finalName}" saved under ${categoryName}!`,
+        type: "success",
+      });
+      setIsCreatingRoutine(false);
+      setNewRoutineName("");
+      setNewRoutineCategory(0);
+      setNewRoutineExercises([]);
+      setTweakingRoutineId(null);
+      setShowSaveRoutineModal(false);
+    } catch (error) {
+      console.error("Error creating custom routine:", error);
+      setToast({ message: "Failed to save custom routine.", type: "info" });
+      handleFirestoreError(error, OperationType.WRITE, path);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleSaveCustomRoutine = async () => {
+    handleInitiateSaveRoutine();
   };
 
   const handleAddExercise = (exerciseName: string) => {
@@ -5657,6 +5738,7 @@ export default function App() {
 
   const handlePreloadToBuilder = (routine: any) => {
     if (!routine) return;
+    setTweakingRoutineId(routine.id || null);
     setNewRoutineName(`${routine.name} Tweak`);
     setNewRoutineCategory(routine.categoryIndex !== undefined ? routine.categoryIndex : 0);
     
@@ -12068,10 +12150,10 @@ export default function App() {
                           Cancel
                         </button>
                         <button
-                          onClick={handleSaveCustomRoutine}
+                          onClick={handleInitiateSaveRoutine}
                           className="px-5 py-2 bg-gym-accent hover:bg-gym-accent/90 text-black text-[10px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer shadow-[0_0_15px_rgba(255,231,101,0.2)] font-semibold"
                         >
-                          Save Routine
+                          {tweakingRoutineId ? "Save Modifications" : "Save Routine"}
                         </button>
                       </div>
                     </div>
@@ -12651,10 +12733,10 @@ export default function App() {
                         Cancel
                       </button>
                       <button
-                        onClick={handleSaveCustomRoutine}
+                        onClick={handleInitiateSaveRoutine}
                         className="px-8 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black text-xs font-black uppercase tracking-widest transition-all rounded-md cursor-pointer shadow-[0_0_20px_rgba(255,231,101,0.25)] font-semibold"
                       >
-                        Create & Save Routine
+                        {tweakingRoutineId ? "Modify Routine Options" : "Create & Save Routine"}
                       </button>
                     </div>
                   </div>
@@ -12674,6 +12756,7 @@ export default function App() {
                           setNewRoutineName("");
                           setNewRoutineCategory(0);
                           setNewRoutineExercises([]);
+                          setTweakingRoutineId(null);
                           setIsCreatingRoutine(true);
                           setBuilderSearch("");
                         }}
@@ -15296,6 +15379,156 @@ export default function App() {
                     </button>
                   </div>
                 </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Modify / Tweak Custom Routine Options Modal */}
+        <AnimatePresence>
+          {showSaveRoutineModal && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-6 font-sans">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowSaveRoutineModal(false)}
+                className="absolute inset-0 bg-black/95 backdrop-blur-md"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-md overflow-hidden flex flex-col shadow-2xl z-50"
+              >
+                {saveRoutineModalStep === "choice" ? (
+                  <>
+                    <div className="p-8 border-b border-white/5 relative">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-3xl" />
+                      <h3 className="text-2xl font-light italic font-serif text-white mb-1">
+                        Modify Routine
+                      </h3>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest font-black">
+                        Choose how you want to save your custom adjustments
+                      </p>
+                    </div>
+
+                    <div className="p-8 space-y-4">
+                      <p className="text-xs text-white/60 leading-relaxed mb-4">
+                        You are modifying an existing preloaded routine. Please choose one of the following save configurations:
+                      </p>
+
+                      <div className="grid grid-cols-1 gap-3">
+                        {/* Option 1: Overwrite Current */}
+                        <button
+                          onClick={handleUpdateExistingRoutine}
+                          className="w-full text-left p-4 rounded-md border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] hover:border-gym-accent/30 transition-all cursor-pointer flex items-start gap-4 group"
+                        >
+                          <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center shrink-0 group-hover:bg-gym-accent group-hover:text-black transition-colors">
+                            <Save className="w-5 h-5 text-gym-accent group-hover:text-black" />
+                          </div>
+                          <div>
+                            <span className="text-sm font-semibold text-white/95 block mb-1">
+                              Update Current Routine
+                            </span>
+                            <span className="text-[10px] text-white/50 leading-normal block">
+                              Overwrite the original preloaded routine in place.
+                            </span>
+                          </div>
+                        </button>
+
+                        {/* Option 2: Save as New */}
+                        <button
+                          onClick={() => {
+                            setSaveRoutineModalStep("name");
+                            setRoutineModalNameInput(newRoutineName || "My Routine");
+                          }}
+                          className="w-full text-left p-4 rounded-md border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] hover:border-gym-accent/30 transition-all cursor-pointer flex items-start gap-4 group"
+                        >
+                          <div className="w-10 h-10 rounded-md bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:bg-emerald-500 group-hover:text-black transition-colors">
+                            <Sparkles className="w-5 h-5 text-emerald-400 group-hover:text-black" />
+                          </div>
+                          <div>
+                            <span className="text-sm font-semibold text-white/95 block mb-1">
+                              Save as New Routine
+                            </span>
+                            <span className="text-[10px] text-white/50 leading-normal block">
+                              Create a new separate routine record. You will be prompted to name it.
+                            </span>
+                          </div>
+                        </button>
+                      </div>
+
+                      <div className="pt-4 flex justify-end gap-2">
+                        <button
+                          onClick={() => setShowSaveRoutineModal(false)}
+                          className="px-5 py-2.5 border border-white/10 hover:border-white/20 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="p-8 border-b border-white/5 relative">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-3xl" />
+                      <h3 className="text-2xl font-light italic font-serif text-white mb-1">
+                        Name Custom Routine
+                      </h3>
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest font-black">
+                        Assign a label for your custom routine record
+                      </p>
+                    </div>
+
+                    <div className="p-8 space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
+                          Routine Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Custom Chest Day, Morning Core Tweak..."
+                          value={routineModalNameInput}
+                          onChange={(e) => setRoutineModalNameInput(e.target.value)}
+                          className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-md px-4 py-3 text-sm font-light focus:outline-none transition-all text-white"
+                          autoFocus
+                        />
+                        <p className="text-[10px] text-white/30 leading-relaxed pt-1">
+                          A high-fidelity routine lets you instantly track sets, target repetitions, and relative intensity scales automatically.
+                        </p>
+                      </div>
+
+                      <div className="pt-4 flex justify-between items-center">
+                        {tweakingRoutineId ? (
+                          <button
+                            onClick={() => setSaveRoutineModalStep("choice")}
+                            className="px-4 py-2 text-xs font-bold text-gym-accent hover:text-gym-accent/80 transition-all cursor-pointer bg-transparent border-0 p-0"
+                          >
+                            ← Back to Choices
+                          </button>
+                        ) : (
+                          <div />
+                        )}
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setShowSaveRoutineModal(false)}
+                            className="px-4 py-2 border border-white/10 hover:border-white/20 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={() => handleCreateAndSaveRoutine(routineModalNameInput)}
+                            disabled={!routineModalNameInput.trim()}
+                            className="px-5 py-2 bg-gym-accent hover:bg-gym-accent/90 disabled:opacity-40 disabled:cursor-not-allowed text-black text-[10px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer shadow-[0_0_15px_rgba(255,231,101,0.2)] font-semibold"
+                          >
+                            Confirm & Save
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </motion.div>
             </div>
           )}
