@@ -4201,6 +4201,13 @@ export default function App() {
 
       // Filter out formatted_program sets for this deleted exercise from sessionSets
       setSessionSets(prev => prev.filter(s => !(s.exerciseName === targetExName && s.source === "formatted_program")));
+
+      // Also remove from active AI Plan
+      setAiPlanExercises((prev) => {
+        const next = prev.filter((item) => item.exercise.name.toLowerCase() !== targetExName.toLowerCase());
+        localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(next));
+        return next;
+      });
     }
   };
 
@@ -4226,6 +4233,15 @@ export default function App() {
       nextDays[dayIndex] = nextDays[dayIndex].filter((ex) => ex.name.toLowerCase() !== targetExName.toLowerCase());
       setCurrentDays(nextDays);
       saveWorkout(nextDays);
+    }
+
+    // Also remove from active AI Plan
+    if (targetExName) {
+      setAiPlanExercises((prev) => {
+        const next = prev.filter((item) => item.exercise.name.toLowerCase() !== targetExName.toLowerCase());
+        localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(next));
+        return next;
+      });
     }
 
     // Filter out formatted_program sets for this deleted exercise from sessionSets
@@ -4409,25 +4425,24 @@ export default function App() {
 
     // Also add to the AI Plan page (aiPlanExercises)
     const planExercisesFlattened = nextCurrentDays.flatMap((dayExs) => dayExs || []);
-    const mergedAIPlanExercises = [...aiPlanExercises];
     let newlyAddedToAICount = 0;
 
-    planExercisesFlattened.forEach((ex) => {
-      const alreadyInAI = mergedAIPlanExercises.some(
+    const nextAIPlanExercises = planExercisesFlattened.map((ex) => {
+      const existing = aiPlanExercises.find(
         (a) => a.exercise.name.toLowerCase() === ex.name.toLowerCase()
       );
-      if (!alreadyInAI) {
-        mergedAIPlanExercises.push({
-          exercise: ex,
-          targetSets: 3,
-          targetReps: "10",
-        });
+      if (!existing) {
         newlyAddedToAICount++;
       }
+      return existing || {
+        exercise: ex,
+        targetSets: 3,
+        targetReps: "10",
+      };
     });
 
-    setAiPlanExercises(mergedAIPlanExercises);
-    localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(mergedAIPlanExercises));
+    setAiPlanExercises(nextAIPlanExercises);
+    localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlanExercises));
 
     setWorkoutInnerTab("ai_program");
 
@@ -5786,21 +5801,18 @@ export default function App() {
 
       // Also add to the AI Plan page (aiPlanExercises)
       const planExercisesFlattened = nextCurrentDays.flatMap((dayExs) => dayExs || []);
-      const mergedAIPlanExercises = [...aiPlanExercises];
-      planExercisesFlattened.forEach((ex) => {
-        const alreadyInAI = mergedAIPlanExercises.some(
+      const nextAIPlanExercises = planExercisesFlattened.map((ex) => {
+        const existing = aiPlanExercises.find(
           (a) => a.exercise.name.toLowerCase() === ex.name.toLowerCase()
         );
-        if (!alreadyInAI) {
-          mergedAIPlanExercises.push({
-            exercise: ex,
-            targetSets: 3,
-            targetReps: "10",
-          });
-        }
+        return existing || {
+          exercise: ex,
+          targetSets: 3,
+          targetReps: "10",
+        };
       });
-      setAiPlanExercises(mergedAIPlanExercises);
-      localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(mergedAIPlanExercises));
+      setAiPlanExercises(nextAIPlanExercises);
+      localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlanExercises));
 
       setWorkoutInnerTab("ai_program");
 
@@ -8131,6 +8143,21 @@ export default function App() {
                                                     }];
                                                     setAiPlanExercises(nextAIPlan);
                                                     localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlan));
+
+                                                    // Keep Plan Builder selection queue in sync
+                                                    const pool = activeExercise.pool || "";
+                                                    const targetDayIdx = DAY_CONFIG.findIndex(day => day.pools.includes(pool));
+                                                    const dayIdx = targetDayIdx !== -1 ? targetDayIdx : 4;
+                                                    const nextCurrentDays = [...currentDays];
+                                                    if (!nextCurrentDays[dayIdx]) {
+                                                      nextCurrentDays[dayIdx] = [];
+                                                    }
+                                                    if (!nextCurrentDays[dayIdx].some(e => e.name.toLowerCase() === activeExercise.name.toLowerCase())) {
+                                                      nextCurrentDays[dayIdx] = [...nextCurrentDays[dayIdx], activeExercise];
+                                                      setCurrentDays(nextCurrentDays);
+                                                      saveWorkout(nextCurrentDays);
+                                                    }
+
                                                     setToast({
                                                       message: `"${activeExercise.name}" has been added straight to your Plan!`,
                                                       type: "success"
@@ -8452,6 +8479,21 @@ export default function App() {
                                             }];
                                             setAiPlanExercises(nextAIPlan);
                                             localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlan));
+
+                                            // Keep Plan Builder selection queue in sync
+                                            const pool = ex.pool || "";
+                                            const targetDayIdx = DAY_CONFIG.findIndex(day => day.pools.includes(pool));
+                                            const dayIdx = targetDayIdx !== -1 ? targetDayIdx : 4;
+                                            const nextCurrentDays = [...currentDays];
+                                            if (!nextCurrentDays[dayIdx]) {
+                                              nextCurrentDays[dayIdx] = [];
+                                            }
+                                            if (!nextCurrentDays[dayIdx].some(e => e.name.toLowerCase() === ex.name.toLowerCase())) {
+                                              nextCurrentDays[dayIdx] = [...nextCurrentDays[dayIdx], ex];
+                                              setCurrentDays(nextCurrentDays);
+                                              saveWorkout(nextCurrentDays);
+                                            }
+
                                             setToast({
                                               message: `"${ex.name}" has been added straight to your Plan!`,
                                               type: "success"
@@ -13861,6 +13903,19 @@ export default function App() {
                         manualRestTarget={manualRestTarget}
                         setManualRestTarget={setManualRestTarget}
                         userProfile={profile}
+                        onDeleteExercise={(exName) => {
+                          setAiPlanExercises((prev) => {
+                            const next = prev.filter((item) => item.exercise.name.toLowerCase() !== exName.toLowerCase());
+                            localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(next));
+                            return next;
+                          });
+                          const nextDays = currentDays.map((day) =>
+                            day.filter((ex) => ex.name.toLowerCase() !== exName.toLowerCase())
+                          );
+                          setCurrentDays(nextDays);
+                          saveWorkout(nextDays);
+                          setToast({ message: `Removed "${exName}" from active plan and builder.`, type: "info" });
+                        }}
                       />
                     ) : (
                       <div className="bg-black/60 border border-white/10 rounded-xl p-8 text-center max-w-md mx-auto my-12 backdrop-blur-md">

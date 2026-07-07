@@ -52,6 +52,7 @@ interface AIPlanActiveProps {
   manualRestTarget: number;
   setManualRestTarget: (val: number) => void;
   userProfile: any;
+  onDeleteExercise?: (exName: string) => void;
 }
 
 const MUSCLE_GROUPS = [
@@ -93,7 +94,8 @@ export default function AIPlanActive({
   setManualRestActive,
   manualRestTarget,
   setManualRestTarget,
-  userProfile
+  userProfile,
+  onDeleteExercise
 }: AIPlanActiveProps) {
   // Copy activeExercises to state for interactive adjustments
   const [activeExercises, setActiveExercises] = useState<AIPlanExercise[]>(initialActiveExercises);
@@ -129,8 +131,6 @@ export default function AIPlanActive({
     initialActiveExercises.forEach((exItem) => {
       const exName = exItem.exercise.name;
       const pb = personalBests[exName];
-      const defaultWeight = pb ? pb.bestWeight.toString() : "60";
-      const defaultReps = exItem.targetReps || "10";
 
       // Find the most recent sets for this exercise from sessionSets (most recent current) or archivedWorkouts
       let lastSets: any[] = [];
@@ -157,6 +157,10 @@ export default function AIPlanActive({
         }
       }
 
+      const hasHistory = !!pb || lastSets.length > 0;
+      const defaultWeight = hasHistory ? (pb ? pb.bestWeight.toString() : "60") : "";
+      const defaultReps = hasHistory ? (exItem.targetReps || "10") : "";
+
       for (let s = 0; s < exItem.targetSets; s++) {
         const historicalSet = lastSets[s] || (lastSets.length > 0 ? lastSets[lastSets.length - 1] : null);
         init[`${exName}-${s}`] = {
@@ -179,8 +183,6 @@ export default function AIPlanActive({
       initialActiveExercises.forEach((exItem) => {
         const exName = exItem.exercise.name;
         const pb = personalBests[exName];
-        const defaultWeight = pb ? pb.bestWeight.toString() : "60";
-        const defaultReps = exItem.targetReps || "10";
 
         let lastSets: any[] = [];
         const currentSessionSets = (sessionSets || [])
@@ -205,6 +207,10 @@ export default function AIPlanActive({
             );
           }
         }
+
+        const hasHistory = !!pb || lastSets.length > 0;
+        const defaultWeight = hasHistory ? (pb ? pb.bestWeight.toString() : "60") : "";
+        const defaultReps = hasHistory ? (exItem.targetReps || "10") : "";
 
         for (let s = 0; s < exItem.targetSets; s++) {
           const key = `${exName}-${s}`;
@@ -245,7 +251,7 @@ export default function AIPlanActive({
             } else if (!prev[key].logged) {
               // Overwrite if it's the simple default and we actually have real history to offer
               if (prev[key].weight !== targetW || prev[key].reps !== targetR) {
-                const isGlobalDefault = prev[key].weight === "60" && prev[key].reps === (exItem.targetReps || "10");
+                const isGlobalDefault = (prev[key].weight === "60" || prev[key].weight === "") && (prev[key].reps === (exItem.targetReps || "10") || prev[key].reps === "");
                 if (isGlobalDefault && historicalSet) {
                   next[key] = {
                     ...prev[key],
@@ -284,7 +290,7 @@ export default function AIPlanActive({
   // Interactive field adjustments
   const handleAdjustWeight = (key: string, delta: number) => {
     setSetInputs((prev) => {
-      const curr = prev[key] || { weight: "60", reps: "10", logged: false, difficulty: "moderate" };
+      const curr = prev[key] || { weight: "", reps: "", logged: false, difficulty: "moderate" };
       if (curr.logged) return prev;
       const wVal = parseFloat(curr.weight) || 0;
       const newVal = Math.max(0, wVal + delta);
@@ -297,7 +303,7 @@ export default function AIPlanActive({
 
   const handleAdjustReps = (key: string, delta: number) => {
     setSetInputs((prev) => {
-      const curr = prev[key] || { weight: "60", reps: "10", logged: false, difficulty: "moderate" };
+      const curr = prev[key] || { weight: "", reps: "", logged: false, difficulty: "moderate" };
       if (curr.logged) return prev;
       const rVal = parseInt(curr.reps) || 0;
       const newVal = Math.max(1, rVal + delta);
@@ -310,7 +316,7 @@ export default function AIPlanActive({
 
   const handleDifficultyToggle = (key: string, diff: "easy" | "moderate" | "hard" | "failure") => {
     setSetInputs((prev) => {
-      const curr = prev[key] || { weight: "60", reps: "10", logged: false, difficulty: "moderate" };
+      const curr = prev[key] || { weight: "", reps: "", logged: false, difficulty: "moderate" };
       if (curr.logged) return prev;
       return {
         ...prev,
@@ -321,7 +327,7 @@ export default function AIPlanActive({
 
   const handleSetFieldChange = (key: string, field: "weight" | "reps", value: string) => {
     setSetInputs((prev) => {
-      const curr = prev[key] || { weight: "60", reps: "10", logged: false, difficulty: "moderate" };
+      const curr = prev[key] || { weight: "", reps: "", logged: false, difficulty: "moderate" };
       if (curr.logged) return prev;
       return {
         ...prev,
@@ -388,8 +394,8 @@ export default function AIPlanActive({
         const newSets = item.targetSets + 1;
         const lastKey = `${exName}-${item.targetSets - 1}`;
         const lastInput = setInputs[lastKey] || {
-          weight: "60",
-          reps: "10",
+          weight: "",
+          reps: "",
           logged: false,
           difficulty: "moderate"
         };
@@ -428,6 +434,9 @@ export default function AIPlanActive({
 
   const handleRemoveExerciseInPlace = (exName: string) => {
     setActiveExercises((prev) => prev.filter((item) => item.exercise.name !== exName));
+    if (onDeleteExercise) {
+      onDeleteExercise(exName);
+    }
   };
 
   // Summary Metrics
@@ -773,7 +782,7 @@ export default function AIPlanActive({
                                     <button
                                       type="button"
                                       disabled={isLogged}
-                                      onClick={() => handleAdjustWeight(key, -2.5)}
+                                      onClick={() => handleAdjustWeight(key, -0.5)}
                                       className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 disabled:opacity-20 text-white/70 flex items-center justify-center font-bold text-xs cursor-pointer shrink-0"
                                     >
                                       -
@@ -790,7 +799,7 @@ export default function AIPlanActive({
                                     <button
                                       type="button"
                                       disabled={isLogged}
-                                      onClick={() => handleAdjustWeight(key, 2.5)}
+                                      onClick={() => handleAdjustWeight(key, 0.5)}
                                       className="w-6 h-6 rounded bg-white/5 hover:bg-white/10 disabled:opacity-20 text-white/70 flex items-center justify-center font-bold text-xs cursor-pointer shrink-0"
                                     >
                                       +
