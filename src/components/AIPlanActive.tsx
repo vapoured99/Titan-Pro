@@ -47,7 +47,8 @@ import {
   RotateCcw,
   Trash2,
   Dumbbell,
-  X
+  X,
+  BookOpen
 } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -84,6 +85,7 @@ interface AIPlanActiveProps {
   setManualRestTarget: (val: number) => void;
   userProfile: any;
   onDeleteExercise?: (exName: string) => void;
+  onShowGuidance?: (ex: Exercise) => void;
 }
 
 const MUSCLE_GROUPS = [
@@ -126,7 +128,8 @@ export default function AIPlanActive({
   manualRestTarget,
   setManualRestTarget,
   userProfile,
-  onDeleteExercise
+  onDeleteExercise,
+  onShowGuidance
 }: AIPlanActiveProps) {
   // Copy activeExercises to state for interactive adjustments
   const [activeExercises, setActiveExercises] = useState<AIPlanExercise[]>(initialActiveExercises);
@@ -730,6 +733,15 @@ export default function AIPlanActive({
 
                         {/* Fast inline set managers */}
                         <div className="flex items-center gap-2 self-start sm:self-auto">
+                          {onShowGuidance && (
+                            <button
+                              onClick={() => onShowGuidance(exItem.exercise)}
+                              className="px-2 py-1 bg-gym-accent/15 border border-gym-accent/30 hover:bg-gym-accent hover:text-black text-[8.5px] font-mono text-gym-accent rounded-md uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 shrink-0"
+                              title="View Guidance"
+                            >
+                              <BookOpen className="w-2.5 h-2.5" /> Guide
+                            </button>
+                          )}
                           <button
                             onClick={() => handleAddSetInPlace(exName)}
                             className="px-2 py-1 bg-white/5 border border-white/10 text-[8.5px] font-mono text-white/60 hover:bg-white/10 rounded-md uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 shrink-0"

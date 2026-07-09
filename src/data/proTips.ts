@@ -406,7 +406,7 @@ const CATEGORIES: Record<string, ProTips> = {
   },
   "forearms": {
     tips: [
-      "Use a complete range of motion: let the bar or dumbbell roll down to your fingertips on wrist curls, then curl up completely.",
+      "Use a complete range of motion: let the bar or dumbbell roll down to your fingertips on dumbbell wrist curls, then curl up completely.",
       "Keep your forearms flat and secured on a bench or your thighs to isolate the wrist flexors and extensors."
     ],
     avoid: [

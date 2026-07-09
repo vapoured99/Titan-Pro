@@ -435,7 +435,7 @@ export default function AnatomyDashboard({
             count: 0,
             exercises: {},
             description: 'Enhances wrist stability, absolute grip hold strength, and aesthetic beefiness of the forearm.',
-            recommends: ['Wrist Curls', 'Reverse Wrist Curls', 'Farmers Walks']
+            recommends: ['Dumbbell Wrist Curls', 'Reverse Dumbbell Wrist Curls', 'Farmers Walks']
           },
           general: {
             label: 'General Arms Volume',

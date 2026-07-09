@@ -1011,6 +1011,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Slowly lower the dumbbells back to the starting position, maintaining control and a full stretch.",
         "Avoid swinging your arms or lifting your elbows forward during the movement."
       ]
+    },
+    {
+      name: "Pull-up Hold",
+      icon: "ArrowUpCircle",
+      pool: "long_biceps",
+      instructions: [
+        "Hang from a pull-up bar with an underhand grip, keeping your hands shoulder-width apart to focus emphasis on the biceps.",
+        "Pull your body up smoothly until your chin is completely above the bar, driving your elbows down toward your ribs.",
+        "Hold this top peak-contraction position static, keeping your core tight and avoiding any swinging or leg assist.",
+        "Squeeze your biceps and latissimus dorsi muscles intensely to hold your physical positioning for the target duration.",
+        "Under deliberate control, slowly lower your body back to a full dead hang position once the target time is reached or failure occurs."
+      ]
     }
   ],
   short_biceps: [
@@ -1048,6 +1060,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Curl the bar toward your chin while keeping your arms on the pad.",
         "Lower the bar slowly until your arms are fully extended.",
         "Focus on isolating the biceps without using momentum."
+      ]
+    },
+    {
+      name: "Dumbbell Preacher Curls",
+      icon: "ArrowUpCircle",
+      pool: "short_biceps",
+      instructions: [
+        "Sit at a preacher bench and adjust the seat height so your armpits rest comfortably over the top of the angled pad.",
+        "Grip a dumbbell in one hand with an underhand grip (palm facing upward).",
+        "Position your upper arm flat against the preacher pad, ensuring full elbow-to-armpit contact to prevent swinging or shoulder involvement.",
+        "With your arm fully extended, curl the dumbbell upward toward your shoulder by flexing exclusively at your elbow, focusing on contracting the short head of the biceps.",
+        "Squeeze your biceps intensely at the peak contraction, then slowly lower the dumbbell back to full extension under steady control."
       ]
     },
     { 
@@ -1097,6 +1121,30 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Keeping your upper arm stationary, curl one dumbbell across your torso towards your opposite shoulder.",
         "Contract your brachioradialis and forearm muscles at the top.",
         "Slowly lower the weight back down with control and alternate sides."
+      ]
+    },
+    {
+      name: "Bayesian Curls",
+      icon: "ArrowUpCircle",
+      pool: "brachialis",
+      instructions: [
+        "Attach a single D-handle to a cable pulley positioned at the lowest setting.",
+        "Grasp the handle, turn your back to the machine, and take a large step forward into a stable, staggered stance.",
+        "Allow the cable tension to pull your arm slightly behind your torso, placing the brachialis and the long head of the biceps under a deep passive stretch.",
+        "Brace your core, keep your elbow completely locked relative to your body, and curl the handle forward and upward toward your shoulder.",
+        "Contract your biceps and brachialis powerfully at the peak contraction, then slowly lower the handle back down under deliberate control."
+      ]
+    },
+    {
+      name: "Hammer Preacher Curls",
+      icon: "ArrowUpCircle",
+      pool: "brachialis",
+      instructions: [
+        "Sit at a preacher bench and adjust the seat height so your armpits rest comfortably over the top of the angled pad.",
+        "Grip a pair of dumbbells (or a single dumbbell for one arm at a time) with a neutral hammer grip (palms facing inward).",
+        "Position your upper arms flat against the preacher pad, maintaining perfect flush contact and keeping your shoulders packed back and down.",
+        "With your arms fully extended, curl the weights upward by flexing exclusively at your elbow joints, keeping your wrists neutral and rigid throughout the ascent.",
+        "Squeeze your brachialis and brachioradialis muscles intensely at the top of the range, then slowly lower the dumbbells back to full extension under steady control."
       ]
     }
   ],
@@ -1458,7 +1506,31 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
   ],
   forearms: [
     {
-      name: "Wrist Curls",
+      name: "Cable Wrist Curls",
+      icon: "Activity",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Position the cable pulley at the highest setting and connect a single handle (D-handle) attachment.",
+        "Stand facing the machine, grasp the handle with a secure underhand grip, and position your elbow close to your side with the forearm parallel to the floor.",
+        "Brace your core and isolate your arm. Using only your wrist joint, pull the handle downward in a curling motion, squeezing your forearm flexors at the peak contraction.",
+        "Slowly allow the cable tension to pull your wrist back upward to the starting position under full control, ensuring your elbow and shoulder remain completely stationary."
+      ]
+    },
+    {
+      name: "Reverse Cable Wrist Curls",
+      icon: "Activity",
+      pool: "forearms",
+      muscleGroup: "forearms",
+      instructions: [
+        "Position the cable pulley at the lowest setting and connect a single handle (D-handle) attachment.",
+        "Stand or kneel facing the machine, grasp the handle with an overhand grip (palm facing down), and rest your forearm comfortably against your thigh or support pad for isolation.",
+        "Using only your wrist joint, extension-curl the handle upward against the resistance of the cable, focusing on contracting the forearm extensor muscles at the top of the movement.",
+        "Slowly lower the handle back down to the starting position, resisting the pull of the cable under steady and deliberate control."
+      ]
+    },
+    {
+      name: "Dumbbell Wrist Curls",
       icon: "Activity",
       pool: "forearms",
       muscleGroup: "forearms",
@@ -1470,7 +1542,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     {
-      name: "Reverse Wrist Curls",
+      name: "Reverse Dumbbell Wrist Curls",
       icon: "Activity",
       pool: "forearms",
       muscleGroup: "forearms",
@@ -2183,7 +2255,10 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Battle Rope Double Waves": "uyaANzMXQHY",
   "Battle Rope Outside Circles": "LcvzYXQZniY",
   "Battle Rope Slams": "FInbOExDeU0",
+  "Bayesian Curls": "_Z8Afknw_Fc",
   "Behind-the-Back Wrist Curls": "Cj9RNAYD7iY",
+  "Cable Wrist Curls": "Avvmae4hIMA",
+  "Reverse Cable Wrist Curls": "https://www.tiktok.com/@ibrku/video/7488062439058115848",
   "Bicycle Crunches": "wnuLak2onoA",
   "Bird Dog": "ZdAHe9_HeEw",
   "Bosu Ball Dome Squats": "zzPWFjL6WZE",
@@ -2210,6 +2285,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Dumbbell Bench Press": "AduT4Eq-iP0",
   "Dumbbell Bent Over Row": "6gvmcqr226U",
   "Dumbbell Bicep Curls": "MtXdEcW3Eog",
+  "Dumbbell Preacher Curls": "oHHNXMLvs1c",
   "Dumbbell Chest Fly": "Nhvz9EzdJ4U",
   "Dumbbell Floor Fly": "oQYjzNukkTY",
   "Dumbbell Lateral Raise": "z-kOn7flIZg",
@@ -2222,6 +2298,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Good Mornings": "7cpldMZjLOs",
   "Hack Squat": "scs5XcsZuc8",
   "Hammer Curls": "B4RznoFvTl4",
+  "Hammer Preacher Curls": "oHbSWPo3swM",
   "Hanging Leg Raises": "Yrtvs-nEnk0",
   "Hex Bar Deadlift": "ZJPZQklCSLs",
   "High to Low Cable Flys": "hhruLxo9yZU",
@@ -2266,13 +2343,14 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Plate Pinch Carry": "jFTV3DQf3HE",
   "Preacher Curls": "Zbs3ko8ycyg",
   "Pull Ups": "PHdHnZcbsB8",
+  "Pull-up Hold": "PtxPHXIcHo0",
   "Push Ups": "Env8gAr_QnE",
   "Rack Pulls": "9vYBWV5OeKg",
   "Rear Delt Flyes": "nlkF7_2O_Lw",
   "Reverse Barbell Curls": "2MnC2_WJKkA",
   "Reverse Crunches": "XY8KzdDcMFg",
   "Reverse Hyperextensions": "NAPMNd9RRxM",
-  "Reverse Wrist Curls": "_tcLwn78rSw",
+  "Reverse Dumbbell Wrist Curls": "_tcLwn78rSw",
   "Romanian Deadlift": "zU-f6DMCdAI",
   "Russian Twists": "99T1EfpMwPA",
   "Seated Cable Fly": "x4JX_T5QAMM",
@@ -2314,16 +2392,20 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Weighted Chest Dips": "ZDOrGNvRdM0",
   "Weighted Sled Pull": "BSJIKV7h5po",
   "Weighted Sled Push": "QwscR2BhdEg",
-  "Wrist Curls": "3VLTzIrnb5g",
+  "Dumbbell Wrist Curls": "3VLTzIrnb5g",
   "Wide Grip Lat Pulldowns": "7JnP8dFbS14"
 };
 
 export const POOLS: Record<string, Exercise[]> = Object.keys(RAW_POOLS).reduce((acc, key) => {
   acc[key] = RAW_POOLS[key].map(ex => {
-    const youtubeId = EXERCISE_YOUTUBE_MAP[ex.name] || "";
-    const youtubeUrl = youtubeId 
-      ? `https://www.youtube.com/watch?v=${youtubeId}` 
-      : `https://www.youtube.com/results?search_query=${encodeURIComponent("PureGym " + ex.name + " how to")}`;
+    const val = EXERCISE_YOUTUBE_MAP[ex.name] || "";
+    const isUrl = val.startsWith("http://") || val.startsWith("https://");
+    const youtubeId = isUrl ? "" : val;
+    const youtubeUrl = isUrl 
+      ? val 
+      : (youtubeId 
+          ? `https://www.youtube.com/watch?v=${youtubeId}` 
+          : `https://www.youtube.com/results?search_query=${encodeURIComponent("PureGym " + ex.name + " how to")}`);
     return {
       ...ex,
       youtubeId,

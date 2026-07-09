@@ -128,6 +128,14 @@ import { Exercise, POOLS, getSecondaryMusclesForExercise } from "./data/exercise
 import AIPlanActive, { AIPlanExercise } from "./components/AIPlanActive";
 import { getExerciseProgressionState } from "./lib/progression";
 
+export function migrateExerciseName(name: string): string {
+  if (!name) return "";
+  const trimmed = name.trim();
+  if (trimmed === "Wrist Curls") return "Dumbbell Wrist Curls";
+  if (trimmed === "Reverse Wrist Curls") return "Reverse Dumbbell Wrist Curls";
+  return trimmed;
+}
+
 // --- Background Images ---
 import ironTempleBg from "./assets/images/iron_temple_bg_1779282140548.png";
 import neonPumpBg from "./assets/images/neon_pump_bg_1779282162002.png";
@@ -1303,7 +1311,18 @@ export default function App() {
   const [aiPlanExercises, setAiPlanExercises] = useState<AIPlanExercise[]>(() => {
     try {
       const saved = localStorage.getItem("gym_ai_plan_exercises");
-      return saved ? JSON.parse(saved) : [];
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.map((item: any) => {
+            if (item && item.exercise && item.exercise.name) {
+              item.exercise.name = migrateExerciseName(item.exercise.name);
+            }
+            return item as AIPlanExercise;
+          });
+        }
+      }
+      return [];
     } catch {
       return [];
     }
@@ -1431,7 +1450,12 @@ export default function App() {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          return parsed;
+          return parsed.filter(
+            (e) =>
+              e.name.trim() !== "Hammer Preacher" &&
+              e.name.trim() !== "Dumbbell Preacher" &&
+              e.name.trim() !== "Pull-up Hold"
+          );
         }
       } catch (e) {
         console.error("Failed to parse local custom exercises:", e);
@@ -3050,7 +3074,16 @@ export default function App() {
       (snapshot) => {
         const routineList: any[] = [];
         snapshot.forEach((d) => {
-          routineList.push({ id: d.id, ...d.data() });
+          const rData = d.data();
+          if (rData && Array.isArray(rData.sets)) {
+            rData.sets = rData.sets.map((s: any) => {
+              if (s && s.exerciseName) {
+                s.exerciseName = migrateExerciseName(s.exerciseName);
+              }
+              return s;
+            });
+          }
+          routineList.push({ id: d.id, ...rData });
         });
         setRoutines(
           routineList.sort(
@@ -3066,7 +3099,15 @@ export default function App() {
       (snapshot) => {
         const list: Exercise[] = [];
         snapshot.forEach((d) => {
-          list.push(d.data() as Exercise);
+          const ex = d.data() as Exercise;
+          const trimmedName = (ex.name || "").trim();
+          if (trimmedName === "Hammer Preacher" || trimmedName === "Dumbbell Preacher" || trimmedName === "Pull-up Hold") {
+            const idSafe = ex.name.replace(/\//g, "-");
+            deleteDoc(doc(db, `users/${currentUser.uid}/custom_exercises`, idSafe))
+              .catch((err) => console.error("Auto delete custom exercise failed:", err));
+          } else {
+            list.push(ex);
+          }
         });
         setCustomExercises(list);
         localStorage.setItem("gym_custom_exercises", JSON.stringify(list));
@@ -5739,7 +5780,7 @@ export default function App() {
   const handlePreloadToBuilder = (routine: any) => {
     if (!routine) return;
     setTweakingRoutineId(routine.id || null);
-    setNewRoutineName(`${routine.name} Tweak`);
+    setNewRoutineName(routine.name || "");
     setNewRoutineCategory(routine.categoryIndex !== undefined ? routine.categoryIndex : 0);
     
     const rawPeriod = routine.periodization;
@@ -5758,7 +5799,7 @@ export default function App() {
 
     const sets = routine.sets || [];
     sets.forEach((s: any) => {
-      const exName = s.exerciseName || "Exercise";
+      const exName = migrateExerciseName(s.exerciseName || "Exercise");
       if (!grouped[exName]) {
         grouped[exName] = {
           id: Math.random().toString(36).substring(2, 9),
@@ -5791,7 +5832,7 @@ export default function App() {
       const sets = routine.sets || [];
       sets.forEach((set: any) => {
         if (set && set.exerciseName) {
-          const trimmedName = set.exerciseName.trim();
+          const trimmedName = migrateExerciseName(set.exerciseName).trim();
           if (
             trimmedName &&
             !uniqueExNames.some(
@@ -8116,7 +8157,7 @@ export default function App() {
                                         const Icon = iconMap[activeExercise.icon] || Dumbbell;
                                         const isCustom = customExercises.some(
                                           (ce) => ce.name.toLowerCase() === activeExercise.name.toLowerCase()
-                                        );
+                                        ) && activeExercise.name.trim() !== "Pull-up Hold";
                                         return (
                                           <div 
                                             key={activeExercise.name}
@@ -8449,7 +8490,7 @@ export default function App() {
                                 const Icon = iconMap[ex.icon] || Dumbbell;
                                 const isCustom = customExercises.some(
                                   (ce) => ce.name.toLowerCase() === ex.name.toLowerCase()
-                                );
+                                ) && ex.name.trim() !== "Pull-up Hold";
                                 return (
                                   <Scroll3DItem key={ex.name}>
                                     <div className="bg-black/60 border border-white/10 rounded-md p-5 hover:border-white/35 transition-all group flex flex-col justify-between h-full">
@@ -14018,6 +14059,7 @@ export default function App() {
                         manualRestTarget={manualRestTarget}
                         setManualRestTarget={setManualRestTarget}
                         userProfile={profile}
+                        onShowGuidance={(ex) => setGuidanceEx(ex)}
                         onDeleteExercise={(exName) => {
                           setAiPlanExercises((prev) => {
                             const next = prev.filter((item) => item.exercise.name.toLowerCase() !== exName.toLowerCase());
@@ -15441,7 +15483,7 @@ export default function App() {
                         <button
                           onClick={() => {
                             setSaveRoutineModalStep("name");
-                            setRoutineModalNameInput(newRoutineName || "My Routine");
+                            setRoutineModalNameInput("");
                           }}
                           className="w-full text-left p-4 rounded-md border border-white/10 bg-white/[0.02] hover:bg-white/[0.05] hover:border-gym-accent/30 transition-all cursor-pointer flex items-start gap-4 group"
                         >
@@ -16268,6 +16310,33 @@ export default function App() {
                               allowFullScreen
                             />
                           </div>
+                        ) : resolvedEx.youtubeUrl?.includes("tiktok.com") ? (
+                          <div className="rounded-md overflow-hidden border border-white/10 bg-black flex justify-center relative shadow-lg p-2 h-[450px]">
+                            {(() => {
+                              const match = resolvedEx.youtubeUrl.match(/\/video\/(\d+)/);
+                              const tiktokId = match ? match[1] : "";
+                              if (tiktokId) {
+                                return (
+                                  <iframe
+                                    className="w-full h-full max-w-sm"
+                                    src={`https://www.tiktok.com/embed/v2/${tiktokId}`}
+                                    allow="encrypted-media"
+                                    allowFullScreen
+                                    title={`PureGym Form Guide: ${resolvedEx.name}`}
+                                  />
+                                );
+                              } else {
+                                return (
+                                  <iframe
+                                    className="w-full h-full"
+                                    src={resolvedEx.youtubeUrl}
+                                    title={`PureGym Form Guide: ${resolvedEx.name}`}
+                                    allowFullScreen
+                                  />
+                                );
+                              }
+                            })()}
+                          </div>
                         ) : (
                           <div className="p-6 rounded-md border border-dashed border-white/10 bg-white/[0.005] flex flex-col items-center justify-center text-center gap-3 py-10">
                             <Youtube className="w-8 h-8 text-white/20" />
@@ -16293,8 +16362,17 @@ export default function App() {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] px-5 py-2.5 border border-white/10 hover:border-gym-accent rounded-md text-white/60 hover:text-white hover:bg-gym-accent/5 transition-all cursor-pointer"
                           >
-                            <Youtube className="w-4 h-4 text-red-500" />
-                            Watch Tutorial on YouTube
+                            {resolvedEx.youtubeUrl.includes("tiktok.com") ? (
+                              <>
+                                <span className="w-4 h-4 font-black text-center text-cyan-400 bg-white/10 rounded flex items-center justify-center text-[8px]">TK</span>
+                                Watch Tutorial on TikTok
+                              </>
+                            ) : (
+                              <>
+                                <Youtube className="w-4 h-4 text-red-500" />
+                                Watch Tutorial on YouTube
+                              </>
+                            )}
                           </a>
                         </div>
                       )}
