@@ -731,6 +731,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Lower the dumbbells back down slowly to your sides.",
         "Focus on leading with your elbows to maximize shoulder engagement."
       ]
+    },
+    {
+      name: "Cable Upright Row",
+      icon: "ArrowLeftRight",
+      pool: "side_delts",
+      instructions: [
+        "Attach a straight bar or EZ-bar to the low pulley of a cable machine.",
+        "Stand facing the machine, holding the bar with an overhand grip (palms facing you) slightly narrower than shoulder-width.",
+        "Keep your back straight and pull the bar vertically up toward your collarbone, leading with your elbows.",
+        "Keep the bar close to your body throughout the upward movement, raising elbows until they are slightly higher than your shoulders.",
+        "Pause for a moment at the peak contraction, then slowly lower the bar back to the starting position with complete control."
+      ]
     }
   ],
   rear_delts: [
@@ -1502,6 +1514,45 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Engage your obliques to reach your right hand to tap your right heel, then left hand to left heel.",
         "Maintain a continuous, controlled lateral twisting rhythm."
       ]
+    },
+    {
+      name: "Wood Chops (Mid)",
+      icon: "Activity",
+      pool: "obliques",
+      muscleGroup: "obliques",
+      instructions: [
+        "Set the cable pulley to shoulder/chest height.",
+        "Stand sideways to the machine with a wide stance, and grasp the handle with both hands.",
+        "With arms extended, pull the cable horizontally across your body while rotating your hips and pivoting your back foot.",
+        "Engage your obliques intensely as you reach the peak horizontal twist.",
+        "Slowly return to the starting position under full control, resisting the weight pull, and repeat before swapping sides."
+      ]
+    },
+    {
+      name: "Wood Chops (H2L)",
+      icon: "Activity",
+      pool: "obliques",
+      muscleGroup: "obliques",
+      instructions: [
+        "Set the cable pulley to a high position (above head height).",
+        "Stand sideways to the cable machine with a wide athletic stance, holding the handle with both hands.",
+        "With straight arms, pull the handle diagonally downward and across your body towards the opposite knee.",
+        "Rotate your torso, hips, and pivot your trailing foot as you pull down, squeezing your obliques at the bottom.",
+        "Slowly and under control, return to the starting high position, maintaining tension on the core."
+      ]
+    },
+    {
+      name: "Wood Chops (L2H)",
+      icon: "Activity",
+      pool: "obliques",
+      muscleGroup: "obliques",
+      instructions: [
+        "Set the cable pulley to a low position (near the ground).",
+        "Stand sideways to the cable machine with feet shoulder-width apart, holding the handle with both hands.",
+        "With arms extended, pull the handle diagonally upward and across your body, ending above your opposite shoulder.",
+        "Pivot your trailing foot and rotate your hips and shoulders dynamically to drive the movement from your obliques.",
+        "Control the weight back down along the same diagonal path to the starting position."
+      ]
     }
   ],
   forearms: [
@@ -2272,6 +2323,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Cable Crunches": "ToJeyhydUxU",
   "Cable Flyes": "QcTcWpkn_bw",
   "Cable Lateral Raise": "Z5FA9aq3L6A",
+  "Cable Upright Row": "WNz7O59GORA",
   "Chest Dips": "2HYAeF6o7Bc",
   "Close Grip Bench Press": "DzA2xZhDGeo",
   "Close Grip Lat Pulldown": "IjoFCmLX7z0",
@@ -2393,7 +2445,10 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Weighted Sled Pull": "BSJIKV7h5po",
   "Weighted Sled Push": "QwscR2BhdEg",
   "Dumbbell Wrist Curls": "3VLTzIrnb5g",
-  "Wide Grip Lat Pulldowns": "7JnP8dFbS14"
+  "Wide Grip Lat Pulldowns": "7JnP8dFbS14",
+  "Wood Chops (Mid)": "iWxTGXIViro",
+  "Wood Chops (H2L)": "gcGNypjIQDo",
+  "Wood Chops (L2H)": "mvvu8imyMFs"
 };
 
 export const POOLS: Record<string, Exercise[]> = Object.keys(RAW_POOLS).reduce((acc, key) => {
