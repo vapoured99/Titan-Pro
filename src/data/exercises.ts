@@ -234,7 +234,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
   ],
   lower_chest: [
     { 
-      name: "Chest Dips", 
+      name: "Assisted Chest Dips", 
       icon: "ArrowDown", 
       pool: "lower_chest",
       instructions: [
@@ -1273,7 +1273,7 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     { 
-      name: "Tricep Dips", 
+      name: "Assisted Tricep Dips", 
       icon: "ArrowDown", 
       pool: "medial_triceps",
       instructions: [
@@ -1282,6 +1282,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Push yourself back up to the starting position.",
         "Keep your torso upright to maximize tricep engagement.",
         "Avoid flaring your elbows; keep them tucked close to your body."
+      ]
+    },
+    { 
+      name: "Weighted Tricep Dips", 
+      icon: "ArrowDown", 
+      pool: "medial_triceps",
+      instructions: [
+        "Load Setup & Positioning: Attach a weight plate to a dip belt secured around your waist, or hold a dumbbell between your feet. Mount the dip bars and lift yourself to the starting position with locked arms.",
+        "Grip & Torso Alignment: Position your hands on the parallel bars with a firm grip. Keep your torso upright and shoulders pulled down (depressed) to maximize triceps recruitment and protect the joints.",
+        "The Descent (Eccentric Phase): Inhale and slowly lower your body by bending your elbows. Keep your elbows tucked close to your body, pointing backwards, until your upper arms are roughly parallel to the floor (about 90 degrees).",
+        "The Drive (Concentric Phase): Exhale and press through your palms, contracting your triceps intensely to push your body back up to the starting position.",
+        "Lockout & Control: Lock out your elbows at the top of the movement and squeeze your triceps. Maintain complete control over the added weight, avoiding any swinging or momentum throughout the set."
       ]
     },
     { 
@@ -2324,7 +2336,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Cable Flyes": "QcTcWpkn_bw",
   "Cable Lateral Raise": "Z5FA9aq3L6A",
   "Cable Upright Row": "WNz7O59GORA",
-  "Chest Dips": "2HYAeF6o7Bc",
+  "Assisted Chest Dips": "2HYAeF6o7Bc",
   "Close Grip Bench Press": "DzA2xZhDGeo",
   "Close Grip Lat Pulldown": "IjoFCmLX7z0",
   "Concentration Curls": "llD6MImgqe8",
@@ -2370,7 +2382,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Lat Pulldowns": "JGeRYIZdojU",
   "Lateral Box Jumps": "bNHwR90FO0I",
   "Leg Extensions": "4ZDm5EbiFI8",
-  "Low to High Cable Flys": "QcTcWpkn_bw",
+  "Low to High Cable Flys": "RjmR5IRNXmI",
   "Low to High Cable Row": "QelgBRgIsjY",
   "Lunges": "mAgbXQdd4LM",
   "Lying Hamstring Curl": "QjNFk4F5dAs",
@@ -2435,13 +2447,15 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "TRX Pistol Squat": "sTtgBOMgAuE",
   "TRX Pushup": "OlUqeytSoxE",
   "TRX Suspension Row": "yCuSGoe1gjY",
-  "Tricep Dips": "9llvBAV4RHI",
+  "Assisted Tricep Dips": "LH9iZNaO7oU",
+  "Tricep Dip Machine": "QYktfOJRyfU",
   "Tricep Push Ups": "kZi0j-7rDe8",
   "Tricep Pushdowns": "LXkCrxn3caQ",
   "Single Arm - Tricep Pulldown": "9qupVR7pKtk",
   "Tricep Pulldown": "8_5YkuU38s4",
   "V Sit-Ups": "cSCyyfBti7U",
   "Weighted Chest Dips": "ZDOrGNvRdM0",
+  "Weighted Tricep Dips": "Gz8NkGoNPkc",
   "Weighted Sled Pull": "BSJIKV7h5po",
   "Weighted Sled Push": "QwscR2BhdEg",
   "Dumbbell Wrist Curls": "3VLTzIrnb5g",

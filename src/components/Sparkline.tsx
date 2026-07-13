@@ -73,7 +73,7 @@ export default function Sparkline({
     return Math.max(...trendData.map(d => d.val));
   }, [trendData]);
 
-  const isAssisted = exName.trim().toLowerCase().includes("assisted pull");
+  const isAssisted = exName.trim().toLowerCase().includes("assisted");
 
   // If we have no data points at all
   if (trendData.length === 0) {

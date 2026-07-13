@@ -32,6 +32,20 @@ export interface ProgressionState {
  *    the recommendation tag/milestone is suppressed/removed, UNTIL they achieve 3 easy/moderate sets at a weight
  *    higher than the previous baseline W_3em_prev.
  */
+function parseSafeDate(dStr: string): number {
+  if (!dStr) return 0;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dStr)) {
+    const t = new Date(dStr).getTime();
+    if (!isNaN(t)) return t;
+  }
+  let t = new Date(dStr).getTime();
+  if (!isNaN(t)) return t;
+  const currentYear = new Date().getFullYear();
+  t = new Date(`${dStr} ${currentYear}`).getTime();
+  if (!isNaN(t)) return t;
+  return 0;
+}
+
 export function getExerciseProgressionState(
   exName: string,
   allLoggedSets: SessionSet[],
@@ -44,45 +58,54 @@ export function getExerciseProgressionState(
     (s) => s && s.exerciseName && s.exerciseName.trim().toLowerCase() === normName
   );
 
-  // 2. Find W_3em_prev: highest weight where the user has logged >= 3 sets of difficulty "easy" or "moderate"
-  const easyModSetsByWeight: Record<number, number> = {};
+  // 2. Group sets by date (session) to find session-level progression achievements.
+  // A weight increase recommendation is triggered when the user achieves >= 3 easy/moderate sets
+  // (and 0 hard sets) at weight W in their MOST RECENT session.
+  const setsByDate: Record<string, SessionSet[]> = {};
   exSets.forEach((s) => {
-    if (s.difficulty === "easy" || s.difficulty === "moderate") {
+    const dKey = s.date || "";
+    if (!setsByDate[dKey]) setsByDate[dKey] = [];
+    setsByDate[dKey].push(s);
+  });
+
+  const dates = Object.keys(setsByDate).filter(Boolean).sort((a, b) => {
+    const timeA = parseSafeDate(a);
+    const timeB = parseSafeDate(b);
+    return timeB - timeA; // Latest first
+  });
+
+  let wTrigger = 0;
+
+  if (dates.length > 0) {
+    const latestDate = dates[0];
+    const sessionSets = setsByDate[latestDate];
+
+    // Group sets in this latest session by weight
+    const setsByWeightForSession: Record<number, SessionSet[]> = {};
+    sessionSets.forEach((s) => {
       const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
       if (!isNaN(w)) {
-        easyModSetsByWeight[w] = (easyModSetsByWeight[w] || 0) + 1;
+        if (!setsByWeightForSession[w]) setsByWeightForSession[w] = [];
+        setsByWeightForSession[w].push(s);
       }
-    }
-  });
+    });
 
-  let w3emPrev = 0;
-  Object.entries(easyModSetsByWeight).forEach(([wStr, count]) => {
-    const w = parseFloat(wStr);
-    if (count >= 3 && w > w3emPrev) {
-      w3emPrev = w;
-    }
-  });
+    Object.entries(setsByWeightForSession).forEach(([wStr, sets]) => {
+      const w = parseFloat(wStr);
+      const easyModCount = sets.filter(s => s.difficulty === "easy" || s.difficulty === "moderate").length;
+      const hardCount = sets.filter(s => s.difficulty === "hard").length;
 
-  // 3. Find W_trigger: highest weight (>= w3emPrev) where they completed >= 10 reps
-  let wTrigger = 0;
-  let triggerReps = 0;
-  let triggerDate = "";
+      // Trigger condition: >= 3 easy/moderate sets, and 0 hard sets in this session.
+      // Failure sets are neutral: they don't block progression, but they also don't count towards the 3 easy/moderate sets.
+      if (easyModCount >= 3 && hardCount === 0) {
+        if (w > wTrigger) {
+          wTrigger = w;
+        }
+      }
+    });
+  }
+
   let setsOf10PlusAtTrigger = 0;
-
-  exSets.forEach((s) => {
-    const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
-    const r = typeof s.reps === 'string' ? parseInt(s.reps, 10) : s.reps;
-    if (isNaN(w) || isNaN(r)) return;
-
-    if (r >= 10 && w >= w3emPrev) {
-      if (w > wTrigger) {
-        wTrigger = w;
-        triggerReps = r;
-        triggerDate = s.date || "";
-      }
-    }
-  });
-
   if (wTrigger > 0) {
     const setsAtTriggerWeight = exSets.filter((s) => {
       const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
@@ -97,38 +120,72 @@ export function getExerciseProgressionState(
   const hasRecommendation = wTrigger > 0;
   const recommendedWeight = hasRecommendation ? wTrigger + 2.5 : 0;
 
-  // 4. Check for Suppression: has the user "entered a higher weight" in logged history or current session?
+  // 3. Check for Suppression: has the user logged or entered a HIGHER weight than the recommendation trigger?
   let isSuppressed = false;
-  let maxWeightEnteredOrLogged = 0;
+  let maxWeightLogged = 0;
 
   // Find max logged weight in history
   exSets.forEach((s) => {
     const w = typeof s.weight === 'string' ? parseFloat(s.weight) : s.weight;
-    if (!isNaN(w) && w > maxWeightEnteredOrLogged) {
-      maxWeightEnteredOrLogged = w;
+    if (!isNaN(w) && w > maxWeightLogged) {
+      maxWeightLogged = w;
     }
   });
 
   // Check currently entered active weights from inputs
+  let maxWeightActive = 0;
   if (activeSetInputs) {
     Object.entries(activeSetInputs).forEach(([key, input]) => {
       if (key.toLowerCase().startsWith(`${normName}-`)) {
         const wVal = parseFloat(input.weight) || 0;
-        if (wVal > maxWeightEnteredOrLogged) {
-          maxWeightEnteredOrLogged = wVal;
+        if (wVal > maxWeightActive) {
+          maxWeightActive = wVal;
         }
       }
     });
   }
+
+  const maxWeightEnteredOrLogged = Math.max(maxWeightLogged, maxWeightActive);
 
   // If they have logged or entered a weight HIGHER than the recommendation trigger, suppress it!
   if (hasRecommendation && maxWeightEnteredOrLogged > wTrigger) {
     isSuppressed = true;
   }
 
-  const showTag = hasRecommendation && !isSuppressed;
+  // Sort exSets by date and time (latest first) to check the last 3 sets
+  const sortedSets = [...exSets].sort((a, b) => {
+    const dateA = parseSafeDate(a.date);
+    const dateB = parseSafeDate(b.date);
+    if (dateA !== dateB) {
+      return dateB - dateA; // Latest date first
+    }
+    const tsA = a.timestamp?.seconds || a.timestamp?._seconds || 0;
+    const tsB = b.timestamp?.seconds || b.timestamp?._seconds || 0;
+    if (tsA !== tsB) {
+      return tsB - tsA; // Latest timestamp first
+    }
+    const idxA = allLoggedSets.indexOf(a);
+    const idxB = allLoggedSets.indexOf(b);
+    return idxB - idxA; // Higher index (newer) first
+  });
 
-  // Build a clean explanation/reason without hardcoded weight addition values
+  const last3Sets = sortedSets.slice(0, 3);
+  let hasHardInLast3 = last3Sets.some((s) => s.difficulty === "hard");
+
+  // Also check currently entered active weights/inputs for any "hard" rating for this exercise
+  if (activeSetInputs) {
+    Object.entries(activeSetInputs).forEach(([key, input]) => {
+      if (key.toLowerCase().startsWith(`${normName}-`)) {
+        if (input.difficulty === "hard") {
+          hasHardInLast3 = true;
+        }
+      }
+    });
+  }
+
+  const showTag = hasRecommendation && !isSuppressed && !hasHardInLast3;
+
+  // Build a clean explanation/reason
   let reason = "";
   if (showTag) {
     if (setsOf10PlusAtTrigger >= 3) {

@@ -140,7 +140,12 @@ export default function AIPlanActive({
     if (archivedWorkouts) {
       archivedWorkouts.forEach((w) => {
         if (w.sets && Array.isArray(w.sets)) {
-          logged.push(...w.sets);
+          w.sets.forEach((s: any) => {
+            logged.push({
+              ...s,
+              date: s.date || w.date || ""
+            });
+          });
         }
       });
     }
@@ -663,11 +668,14 @@ export default function AIPlanActive({
                     const easyModSets = sets.filter(
                       (s) => s.difficulty === "easy" || s.difficulty === "moderate"
                     );
+                    const hasHard = sets.some(
+                      (s) => s.difficulty === "hard"
+                    );
                     const has10PlusReps = sets.some((s) => {
                       const r = parseInt(s.reps, 10);
                       return !isNaN(r) && r >= 10;
                     });
-                    if (easyModSets.length >= 3 && has10PlusReps) {
+                    if (easyModSets.length >= 3 && !hasHard && has10PlusReps) {
                       recommendIncrease = true;
                       targetWeightStr = wStr;
                       const wNum = parseFloat(wStr);

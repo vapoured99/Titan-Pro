@@ -289,7 +289,7 @@ export default function AnatomyDashboard({
             count: 0,
             exercises: {},
             description: 'Crucial for outlining the lower pec line and creating a defined pectoralis lower border.',
-            recommends: ['Chest Dips', 'Decline Dumbbell Press', 'High-to-Low Cable Flyes']
+            recommends: ['Assisted Chest Dips', 'Decline Dumbbell Press', 'High-to-Low Cable Flyes']
           },
           general: {
             label: 'General Pectoralis',

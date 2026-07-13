@@ -938,7 +938,7 @@ const PBBlock = ({
   );
   const completed3SetsOf10 = setsAtMaxWith10PlusReps.length >= 3;
 
-  const isAssisted = exName.trim().toLowerCase().includes("assisted pull");
+  const isAssisted = exName.trim().toLowerCase().includes("assisted");
 
   // Calculate maximum 1 Rep Max (1RM) using Epley Formula
   let max1RM = isAssisted ? 999999 : 0;
@@ -1232,6 +1232,8 @@ const getLibraryCategoryIcon = (key: string) => {
       return <Flame className="w-5 h-5 text-gym-accent" />;
     case "equipment":
       return <Sliders className="w-5 h-5 text-gym-accent" />;
+    case "custom":
+      return <Sparkles className="w-5 h-5 text-gym-accent" />;
     default:
       return <Dumbbell className="w-5 h-5 text-gym-accent" />;
   }
@@ -1284,6 +1286,83 @@ export const Scroll3DItem = ({ children, className }: { children: React.ReactNod
       </motion.div>
     </div>
   );
+};
+
+const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boolean } => {
+  if (!ex || !ex.name) return { migrated: ex, changed: false };
+  const nameLower = ex.name.trim().toLowerCase();
+
+  if (nameLower === "tricep dip machine") {
+    const targetSteps = [
+      "Set Up & Seat Adjustment: Adjust the seat height so that when you sit down, the handles are aligned with your mid-to-lower chest level. Secure your feet flat on the floor to stabilize your lower body.",
+      "Grip & Elbow Alignment: Sit back firmly against the pad with a proud chest. Grasp the handles with a neutral grip (palms facing inward). Keep your elbows tucked close to your sides, pointing directly backwards rather than flaring out.",
+      "Execution (The Descent): Inhale, brace your core, and press the handles down smoothly by extending your elbows. Focus entirely on contracting your triceps. Avoid using momentum or leaning your shoulders forward to press.",
+      "Peak Contraction: Fully extend your arms at the bottom of the movement without locking out your elbows completely. Squeeze your triceps intensely for a brief second to maximize motor unit recruitment.",
+      "Controlled Eccentric: Slowly return to the starting position under complete control (taking 2-3 seconds), feeling a stretch in the triceps before starting the next rep. Maintain continuous tension."
+    ];
+    
+    const targetYoutubeId = "QYktfOJRyfU";
+    const targetYoutubeUrl = "https://www.youtube.com/shorts/QYktfOJRyfU";
+
+    const stepsMatch = ex.instructions && 
+      ex.instructions.length === targetSteps.length && 
+      ex.instructions.every((step, i) => step === targetSteps[i]);
+    
+    const videoMatch = ex.youtubeId === targetYoutubeId && ex.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch) {
+      return {
+        migrated: {
+          ...ex,
+          instructions: targetSteps,
+          youtubeId: targetYoutubeId,
+          youtubeUrl: targetYoutubeUrl
+        },
+        changed: true
+      };
+    }
+  }
+
+  const isCrossBody = (() => {
+    const norm = nameLower.replace(/-/g, " ").replace(/\s+/g, " ").trim();
+    return norm === "cross body tricep extension" || 
+           norm === "cross body tricep extensions" || 
+           norm === "crossbody tricep extension" || 
+           norm === "crossbody tricep extensions";
+  })();
+
+  if (isCrossBody) {
+    const targetSteps = [
+      "Cable Setup & Positioning: Set the pulley to a high position (around head height). Stand sideways or slightly offset to the cable machine so the cable path is aligned across your chest to the opposite side.",
+      "Grip & Support: Grab the cable without a handle (or with a single ball/handle attachment) using the hand furthest from the machine (the working side). Position your non-working hand on the machine or your hip for stability.",
+      "Elbow Fixation: Pull your elbow down and lock it securely in place near your side, so it remains fixed. The forearm should be positioned diagonally across your torso, pointing toward the opposite shoulder.",
+      "The Extension (Execution): Brace your core, exhale, and contract your triceps to extend your arm downwards and outwards across your body. Keep your upper arm completely stationary to isolate the triceps heads.",
+      "Squeeze & Recovery: Lock out the elbow fully at the bottom of the movement, squeezing your triceps intensely. Control the eccentric phase by slowly allowing your forearm to return to the opposite shoulder under complete tension."
+    ];
+    
+    const targetYoutubeId = "uID8NFK1p5Y";
+    const targetYoutubeUrl = "https://www.youtube.com/shorts/uID8NFK1p5Y";
+
+    const stepsMatch = ex.instructions && 
+      ex.instructions.length === targetSteps.length && 
+      ex.instructions.every((step, i) => step === targetSteps[i]);
+    
+    const videoMatch = ex.youtubeId === targetYoutubeId && ex.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch) {
+      return {
+        migrated: {
+          ...ex,
+          instructions: targetSteps,
+          youtubeId: targetYoutubeId,
+          youtubeUrl: targetYoutubeUrl
+        },
+        changed: true
+      };
+    }
+  }
+
+  return { migrated: ex, changed: false };
 };
 
 export default function App() {
@@ -1370,7 +1449,12 @@ export default function App() {
     logged.push(...sessionSets);
     archivedWorkouts.forEach((w) => {
       if (w.sets && Array.isArray(w.sets)) {
-        logged.push(...w.sets);
+        w.sets.forEach((s: any) => {
+          logged.push({
+            ...s,
+            date: s.date || w.date || ""
+          });
+        });
       }
     });
     return logged;
@@ -1450,12 +1534,24 @@ export default function App() {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          return parsed.filter(
+          const filtered = parsed.filter(
             (e) =>
+              e &&
+              typeof e.name === "string" &&
               e.name.trim() !== "Hammer Preacher" &&
               e.name.trim() !== "Dumbbell Preacher" &&
               e.name.trim() !== "Pull-up Hold"
           );
+          let hasAnyChanges = false;
+          const migratedList = filtered.map((ex) => {
+            const { migrated, changed } = migrateCustomExercise(ex);
+            if (changed) hasAnyChanges = true;
+            return migrated;
+          });
+          if (hasAnyChanges) {
+            localStorage.setItem("gym_custom_exercises", JSON.stringify(migratedList));
+          }
+          return migratedList;
         }
       } catch (e) {
         console.error("Failed to parse local custom exercises:", e);
@@ -2682,7 +2778,19 @@ export default function App() {
       const saved = localStorage.getItem("gym_custom_exercises");
       if (saved) {
         try {
-          setCustomExercises(JSON.parse(saved));
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            let hasAnyChanges = false;
+            const migratedList = parsed.map((ex) => {
+              const { migrated, changed } = migrateCustomExercise(ex);
+              if (changed) hasAnyChanges = true;
+              return migrated;
+            });
+            setCustomExercises(migratedList);
+            if (hasAnyChanges) {
+              localStorage.setItem("gym_custom_exercises", JSON.stringify(migratedList));
+            }
+          }
         } catch (e) {
           console.error("Failed to parse local custom exercises:", e);
         }
@@ -3106,7 +3214,13 @@ export default function App() {
             deleteDoc(doc(db, `users/${currentUser.uid}/custom_exercises`, idSafe))
               .catch((err) => console.error("Auto delete custom exercise failed:", err));
           } else {
-            list.push(ex);
+            const { migrated, changed } = migrateCustomExercise(ex);
+            if (changed) {
+              const idSafe = ex.name.replace(/\//g, "-");
+              setDoc(doc(db, `users/${currentUser.uid}/custom_exercises`, idSafe), migrated)
+                .catch((err) => console.error("Auto update custom exercise in cloud failed:", err));
+            }
+            list.push(migrated);
           }
         });
         setCustomExercises(list);
@@ -3207,7 +3321,7 @@ export default function App() {
       const sets = data.allSets;
       if (sets.length === 0) return;
 
-      const isAssisted = exName.toLowerCase().includes("assisted pull");
+      const isAssisted = exName.toLowerCase().includes("assisted");
       const lastSet = sets[sets.length - 1];
       let bestSet = sets[0];
 
@@ -4535,7 +4649,7 @@ export default function App() {
 
     const existing = personalBests[exName];
     let isNewPB = false;
-    const isAssisted = exName.toLowerCase().includes("assisted pull");
+    const isAssisted = exName.toLowerCase().includes("assisted");
 
     if (!existing) {
       isNewPB = true;
@@ -4813,7 +4927,7 @@ export default function App() {
         const sets = data.allSets;
         if (sets.length === 0) return;
 
-        const isAssisted = exName.toLowerCase().includes("assisted pull");
+        const isAssisted = exName.toLowerCase().includes("assisted");
         const lastSet = sets[sets.length - 1];
         let bestSet = sets[0];
 
@@ -6817,14 +6931,24 @@ export default function App() {
           let hasStruggled = false;
           for (const [weightStr, repsList] of Object.entries(weightGroups)) {
             const weight = parseFloat(weightStr);
+            const easyModCount = loggedSetsForThisEx.filter((s) => {
+              const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
+              return sw === weight && (s.difficulty === "easy" || s.difficulty === "moderate");
+            }).length;
+            const hardCount = loggedSetsForThisEx.filter((s) => {
+              const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
+              return sw === weight && s.difficulty === "hard";
+            }).length;
             const successfulSets = repsList.filter((r) => r >= 10).length;
-            if (successfulSets >= 3) {
+            if (easyModCount >= 3 && hardCount === 0) {
               targetWeight = weight;
               recommendWeight = weight + 2.5;
-              hasStruggled = loggedSetsForThisEx.some((s) => {
-                const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
-                return sw === weight && s.difficulty === "hard";
-              });
+              hasStruggled = false;
+              break;
+            } else if (successfulSets >= 3) {
+              targetWeight = weight;
+              recommendWeight = weight + 2.5;
+              hasStruggled = true;
               break;
             }
           }
@@ -7756,6 +7880,7 @@ export default function App() {
                             { key: "core", label: "Core" },
                             { key: "cardio", label: "Cardio" },
                             { key: "equipment", label: "Equipment" },
+                            { key: "custom", label: "Custom" },
                           ];
                           const activeCatIndex = categoriesList.findIndex(c => c.key === selectedLibraryCategory);
                           const safeIndex = activeCatIndex >= 0 ? activeCatIndex : 0;
@@ -7803,6 +7928,8 @@ export default function App() {
                               ...(combinedPools["lower_core"] || []),
                               ...(combinedPools["obliques"] || []),
                             ];
+                          } else if (catKey === "custom") {
+                            list = customExercises;
                           } else {
                             list = combinedPools[catKey] || [];
                           }
@@ -7835,6 +7962,7 @@ export default function App() {
                           { key: "core", label: "Core" },
                           { key: "cardio", label: "Cardio" },
                           { key: "equipment", label: "Equipment" },
+                          { key: "custom", label: "Custom" },
                         ].map((sec) => {
                           const IsSelected = sec.key === selectedLibraryCategory;
                           let listCount = 0;
@@ -7872,6 +8000,8 @@ export default function App() {
                               (combinedPools["upper_core"]?.length || 0) +
                               (combinedPools["lower_core"]?.length || 0) +
                               (combinedPools["obliques"]?.length || 0);
+                          } else if (sec.key === "custom") {
+                            listCount = customExercises.length;
                           } else {
                             listCount = combinedPools[sec.key]?.length || 0;
                           }
@@ -7932,6 +8062,7 @@ export default function App() {
                           { key: "core", label: "Core", desc: "Abs & Rigid Bracing" },
                           { key: "cardio", label: "Cardio", desc: "Heart Rate & Conditioning" },
                           { key: "equipment", label: "Equipment", desc: "Cables, Bands & Setups" },
+                          { key: "custom", label: "Custom", desc: "Your Manually Created Movements" },
                         ];
 
                         const POOL_LABELS: Record<string, string> = {
@@ -8009,6 +8140,8 @@ export default function App() {
                             ...(combinedPools["lower_core"] || []),
                             ...(combinedPools["obliques"] || []),
                           ];
+                        } else if (catKey === "custom") {
+                          list = customExercises;
                         } else {
                           list = combinedPools[catKey] || [];
                         }
@@ -8217,10 +8350,10 @@ export default function App() {
                                                 {isCustom && (
                                                   <button
                                                     onClick={() => handlePermanentlyDeleteCustomExercise(activeExercise.name)}
-                                                    className="px-1.5 py-0.5 rounded-[1px] border border-red-500/20 bg-red-950/10 hover:bg-red-600 hover:text-white text-red-400 text-[7px] font-bold uppercase tracking-widest transition-all cursor-pointer"
-                                                    title="Delete Movement"
+                                                    className="px-1.5 py-0.5 rounded-[1px] border border-purple-500/25 bg-purple-950/10 hover:bg-purple-600 hover:text-white text-purple-400 text-[7px] font-bold uppercase tracking-widest transition-all cursor-pointer"
+                                                    title="Custom Movement (Click to Delete)"
                                                   >
-                                                    Delete
+                                                    Custom
                                                   </button>
                                                 )}
                                               </div>
@@ -8344,6 +8477,7 @@ export default function App() {
                     "core",
                     "cardio",
                     "equipment",
+                    "custom",
                   ];
                   const sectionsList = categoryOrder.map((catKey) => {
                     let list: Exercise[] = [];
@@ -8388,6 +8522,8 @@ export default function App() {
                         ...(combinedPools["lower_core"] || []),
                         ...(combinedPools["obliques"] || []),
                       ];
+                    } else if (catKey === "custom") {
+                      list = customExercises;
                     } else {
                       list = combinedPools[catKey] || [];
                     }
@@ -8529,10 +8665,10 @@ export default function App() {
                                                 ex.name,
                                               )
                                             }
-                                            className="px-2 py-1 rounded-[1px] border border-red-500/35 bg-red-950/15 hover:bg-red-600 hover:text-white text-red-400 text-[8px] font-extrabold uppercase tracking-widest transition-all cursor-pointer shrink-0"
-                                            title="Permanently Delete Movement"
+                                            className="px-2 py-1 rounded-[1px] border border-purple-500/30 bg-purple-950/15 hover:bg-purple-600 hover:text-white text-purple-400 text-[8px] font-extrabold uppercase tracking-widest transition-all cursor-pointer shrink-0"
+                                            title="Permanently Delete Custom Movement"
                                           >
-                                            Delete
+                                            Custom
                                           </button>
                                         )}
                                       </div>
@@ -10440,7 +10576,12 @@ export default function App() {
                             allLoggedSets.push(...sessionSets);
                             archivedWorkouts.forEach((w) => {
                               if (w.sets && Array.isArray(w.sets)) {
-                                allLoggedSets.push(...w.sets);
+                                w.sets.forEach((s: any) => {
+                                  allLoggedSets.push({
+                                    ...s,
+                                    date: s.date || w.date || ""
+                                  });
+                                });
                               }
                             });
 
@@ -16684,14 +16825,24 @@ export default function App() {
                         let hasStruggled = false;
                         for (const [weightStr, repsList] of Object.entries(weightGroups)) {
                           const weight = parseFloat(weightStr);
+                          const easyModCount = exSets.filter((s) => {
+                            const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
+                            return sw === weight && (s.difficulty === "easy" || s.difficulty === "moderate");
+                          }).length;
+                          const hardCount = exSets.filter((s) => {
+                            const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
+                            return sw === weight && s.difficulty === "hard";
+                          }).length;
                           const successfulSets = repsList.filter((r) => r >= 10).length;
-                          if (successfulSets >= 3) {
+                          if (easyModCount >= 3 && hardCount === 0) {
                             targetWeight = weight;
                             recommendWeight = weight + 2.5;
-                            hasStruggled = exSets.some((s) => {
-                              const sw = typeof s.weight === "string" ? parseFloat(s.weight) : s.weight;
-                              return sw === weight && s.difficulty === "hard";
-                            });
+                            hasStruggled = false;
+                            break;
+                          } else if (successfulSets >= 3) {
+                            targetWeight = weight;
+                            recommendWeight = weight + 2.5;
+                            hasStruggled = true;
                             break;
                           }
                         }
