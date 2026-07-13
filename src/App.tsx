@@ -1288,6 +1288,32 @@ export const Scroll3DItem = ({ children, className }: { children: React.ReactNod
   );
 };
 
+const normalizeName = (name: string): string => {
+  return (name || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .replace(/flyes/g, "flys")
+    .replace(/flies/g, "flys")
+    .replace(/triceps/g, "tricep")
+    .replace(/biceps/g, "bicep")
+    .replace(/pulldowns/g, "pulldown")
+    .replace(/extensions/g, "extension")
+    .replace(/raises/g, "raise")
+    .replace(/presses/g, "press")
+    .replace(/curls/g, "curl")
+    .trim();
+};
+
+const findStaticExerciseByName = (name: string): Exercise | null => {
+  if (!name) return null;
+  const normSearch = normalizeName(name);
+  for (const pool of Object.values(POOLS)) {
+    const ex = pool.find((e) => normalizeName(e.name) === normSearch);
+    if (ex) return ex;
+  }
+  return null;
+};
+
 const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boolean } => {
   if (!ex || !ex.name) return { migrated: ex, changed: false };
   const nameLower = ex.name.trim().toLowerCase();
@@ -1362,7 +1388,55 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
     }
   }
 
+  // Generic static library fallback lookup for any custom exercise
+  // that lacks professional guidance/instructions.
+  const hasNoInstructions = !ex.instructions || 
+    ex.instructions.length === 0 || 
+    ex.instructions.some(step => step.toLowerCase().includes("awaiting guidance"));
+
+  if (hasNoInstructions) {
+    const staticEx = findStaticExerciseByName(ex.name);
+    if (staticEx && staticEx.instructions && staticEx.instructions.length > 0) {
+      return {
+        migrated: {
+          ...ex,
+          instructions: staticEx.instructions,
+          youtubeId: ex.youtubeId || staticEx.youtubeId,
+          youtubeUrl: ex.youtubeUrl || staticEx.youtubeUrl,
+          category: ex.category || staticEx.category,
+        },
+        changed: true
+      };
+    }
+  }
+
   return { migrated: ex, changed: false };
+};
+
+export const CUSTOM_GROUP_LABELS: Record<string, string> = {
+  chest: "Chest",
+  triceps: "Triceps",
+  back: "Back",
+  biceps: "Biceps",
+  shoulders: "Shoulders",
+  legs: "Legs",
+  core: "Core",
+  cardio: "Cardio",
+  equipment: "Equipment"
+};
+
+export const getCustomCategoryKey = (pool: string): string => {
+  const p = (pool || "").toLowerCase();
+  if (p.includes("chest")) return "chest";
+  if (p.includes("triceps")) return "triceps";
+  if (p.includes("back") || p.includes("lats") || p.includes("rhomboid") || p.includes("erector")) return "back";
+  if (p.includes("biceps") || p.includes("brachialis") || p.includes("forearm")) return "biceps";
+  if (p.includes("delt") || p.includes("shoulder")) return "shoulders";
+  if (p.includes("quad") || p.includes("hamstring") || p.includes("glute") || p.includes("calve") || p.includes("leg")) return "legs";
+  if (p.includes("core") || p.includes("oblique") || p.includes("abs")) return "core";
+  if (p.includes("cardio")) return "cardio";
+  if (p.includes("equipment")) return "equipment";
+  return "equipment";
 };
 
 export default function App() {
@@ -4228,7 +4302,7 @@ export default function App() {
     }
 
     const videoId = extractYoutubeId(customExVideoUrl);
-    const newEx: Exercise = {
+    const rawEx: Exercise = {
       name,
       pool: customExPool,
       icon: "Dumbbell",
@@ -4242,6 +4316,8 @@ export default function App() {
         ? { youtubeUrl: customExVideoUrl.trim() }
         : {}),
     };
+
+    const { migrated: newEx } = migrateCustomExercise(rawEx);
 
     // Save to local hooks state and localstorage
     const updated = [...customExercises, newEx];
@@ -8177,42 +8253,74 @@ export default function App() {
                         const exercisesByPool: Record<string, Exercise[]> = {};
                         const poolOrder: string[] = [];
 
-                        sortedList.forEach((ex) => {
-                          let p = ex.pool || "other";
-                          if (selectedLibraryCategory === "back") {
-                            const resolved = findExerciseByName(ex.name) || ex;
-                            const mg = resolved.muscleGroup || ex.muscleGroup;
-                            if (mg === "lats") {
-                              p = "lats";
-                            } else if (mg === "rhomboids_traps") {
-                              p = "rhomboids_traps";
-                            } else if (mg === "erector_spinae" || p === "lower_back") {
-                              p = "erector_spinae";
-                            } else {
-                              p = "rhomboids_traps"; // default fallback for back
+                        if (selectedLibraryCategory === "custom") {
+                          sortedList.forEach((ex) => {
+                            const p = getCustomCategoryKey(ex.pool || "other");
+                            if (!exercisesByPool[p]) {
+                              exercisesByPool[p] = [];
                             }
-                          }
-                          if (!exercisesByPool[p]) {
-                            exercisesByPool[p] = [];
-                            poolOrder.push(p);
-                          }
-                          exercisesByPool[p].push(ex);
-                        });
+                            exercisesByPool[p].push(ex);
+                          });
 
-                        if (selectedLibraryCategory === "back") {
-                          const backOrder = ["lats", "rhomboids_traps", "erector_spinae"];
-                          const finalBackOrder: string[] = [];
-                          backOrder.forEach((k) => {
+                          const customOrder = [
+                            "chest",
+                            "triceps",
+                            "back",
+                            "biceps",
+                            "shoulders",
+                            "legs",
+                            "core",
+                            "cardio",
+                            "equipment",
+                          ];
+                          customOrder.forEach((k) => {
                             if (exercisesByPool[k]) {
-                              finalBackOrder.push(k);
+                              poolOrder.push(k);
                             }
                           });
                           Object.keys(exercisesByPool).forEach((k) => {
-                            if (!finalBackOrder.includes(k)) {
-                              finalBackOrder.push(k);
+                            if (!poolOrder.includes(k)) {
+                              poolOrder.push(k);
                             }
                           });
-                          poolOrder.splice(0, poolOrder.length, ...finalBackOrder);
+                        } else {
+                          sortedList.forEach((ex) => {
+                            let p = ex.pool || "other";
+                            if (selectedLibraryCategory === "back") {
+                              const resolved = findExerciseByName(ex.name) || ex;
+                              const mg = resolved.muscleGroup || ex.muscleGroup;
+                              if (mg === "lats") {
+                                p = "lats";
+                              } else if (mg === "rhomboids_traps") {
+                                p = "rhomboids_traps";
+                              } else if (mg === "erector_spinae" || p === "lower_back") {
+                                p = "erector_spinae";
+                              } else {
+                                p = "rhomboids_traps"; // default fallback for back
+                              }
+                            }
+                            if (!exercisesByPool[p]) {
+                              exercisesByPool[p] = [];
+                              poolOrder.push(p);
+                            }
+                            exercisesByPool[p].push(ex);
+                          });
+
+                          if (selectedLibraryCategory === "back") {
+                            const backOrder = ["lats", "rhomboids_traps", "erector_spinae"];
+                            const finalBackOrder: string[] = [];
+                            backOrder.forEach((k) => {
+                              if (exercisesByPool[k]) {
+                                finalBackOrder.push(k);
+                              }
+                            });
+                            Object.keys(exercisesByPool).forEach((k) => {
+                              if (!finalBackOrder.includes(k)) {
+                                finalBackOrder.push(k);
+                              }
+                            });
+                            poolOrder.splice(0, poolOrder.length, ...finalBackOrder);
+                          }
                         }
 
                         return (
@@ -8272,7 +8380,9 @@ export default function App() {
                             <div className="space-y-8 max-h-[550px] overflow-y-auto pr-2 no-scrollbar text-left">
                               {poolOrder.map((poolKey) => {
                                 const exercisesInPool = exercisesByPool[poolKey];
-                                const poolLabel = POOL_LABELS[poolKey] || poolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+                                const poolLabel = selectedLibraryCategory === "custom"
+                                  ? (CUSTOM_GROUP_LABELS[poolKey] || poolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()))
+                                  : (POOL_LABELS[poolKey] || poolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()));
                                 return (
                                   <div key={poolKey} className="space-y-3">
                                     <div className="flex items-center gap-2 border-b border-white/5 pb-2">
@@ -9393,6 +9503,65 @@ export default function App() {
                                           </div>
                                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {catExercises.map(renderCard)}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              }
+
+                              if (section.key === "custom") {
+                                const customGroups: Record<string, Exercise[]> = {};
+                                section.list.forEach((ex) => {
+                                  const p = getCustomCategoryKey(ex.pool || "other");
+                                  if (!customGroups[p]) {
+                                    customGroups[p] = [];
+                                  }
+                                  customGroups[p].push(ex);
+                                });
+
+                                const customOrder = [
+                                  "chest",
+                                  "triceps",
+                                  "back",
+                                  "biceps",
+                                  "shoulders",
+                                  "legs",
+                                  "core",
+                                  "cardio",
+                                  "equipment",
+                                ];
+
+                                const colors = [
+                                  "bg-red-500",
+                                  "bg-blue-500",
+                                  "bg-teal-500",
+                                  "bg-amber-500",
+                                  "bg-emerald-500",
+                                  "bg-pink-500",
+                                  "bg-purple-500",
+                                  "bg-violet-500",
+                                  "bg-sky-500",
+                                ];
+
+                                return (
+                                  <div className="space-y-8 w-full text-left">
+                                    {customOrder.map((key, idx) => {
+                                      const groupExercises = customGroups[key] || [];
+                                      if (groupExercises.length === 0) return null;
+                                      return (
+                                        <div key={key} className="space-y-4">
+                                          <div className="flex items-center gap-3 border-b border-white/5 pb-2 ml-2">
+                                            <div
+                                              className={`w-1.5 h-3 ${colors[idx % colors.length]} rounded-[1px]`}
+                                            />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/50 font-mono">
+                                              {CUSTOM_GROUP_LABELS[key] || key}
+                                            </span>
+                                          </div>
+                                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {groupExercises.map(renderCard)}
                                           </div>
                                         </div>
                                       );
@@ -14139,6 +14308,7 @@ export default function App() {
                         <div className="flex flex-col gap-2">
                           <button
                             onClick={() => {
+                              localStorage.removeItem("gym_ai_set_inputs");
                               setAiWorkoutActive(true);
                               localStorage.setItem("gym_ai_workout_active", "true");
                               localStorage.setItem("gym_ai_workout_start_time", Date.now().toString());
