@@ -48,7 +48,8 @@ import {
   Trash2,
   Dumbbell,
   X,
-  BookOpen
+  BookOpen,
+  RefreshCw
 } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -86,6 +87,7 @@ interface AIPlanActiveProps {
   userProfile: any;
   onDeleteExercise?: (exName: string) => void;
   onShowGuidance?: (ex: Exercise) => void;
+  onSwapExercise?: (ex: Exercise) => void;
 }
 
 const MUSCLE_GROUPS = [
@@ -161,7 +163,8 @@ export default function AIPlanActive({
   setManualRestTarget,
   userProfile,
   onDeleteExercise,
-  onShowGuidance
+  onShowGuidance,
+  onSwapExercise
 }: AIPlanActiveProps) {
   // Copy activeExercises to state for interactive adjustments
   const [activeExercises, setActiveExercises] = useState<AIPlanExercise[]>(initialActiveExercises);
@@ -781,6 +784,15 @@ export default function AIPlanActive({
 
                         {/* Fast inline set managers */}
                         <div className="flex items-center gap-2 self-start sm:self-auto">
+                          {onSwapExercise && (
+                            <button
+                              onClick={() => onSwapExercise(exItem.exercise)}
+                              className="px-2 py-1 bg-white/5 border border-white/10 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-[8.5px] font-mono text-white/60 rounded-md uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 shrink-0"
+                              title="Swap Exercise"
+                            >
+                              <RefreshCw className="w-2.5 h-2.5" /> Swap
+                            </button>
+                          )}
                           {onShowGuidance && (
                             <button
                               onClick={() => onShowGuidance(exItem.exercise)}

@@ -1240,7 +1240,16 @@ const getLibraryCategoryIcon = (key: string) => {
 };
 
 // Reusable 3D Perspective Scroll Item Component with barrel-roll effect
-export const Scroll3DItem = ({ children, className }: { children: React.ReactNode; className?: string; key?: React.Key }) => {
+export const Scroll3DItem = ({ 
+  children, 
+  className,
+  container
+}: { 
+  children: React.ReactNode; 
+  className?: string; 
+  key?: React.Key;
+  container?: React.RefObject<HTMLDivElement | null>;
+}) => {
   const ref = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -1253,6 +1262,7 @@ export const Scroll3DItem = ({ children, className }: { children: React.ReactNod
 
   const { scrollYProgress } = useScroll({
     target: ref,
+    container: container,
     offset: ["start end", "end start"]
   });
 
@@ -1318,6 +1328,18 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
   if (!ex || !ex.name) return { migrated: ex, changed: false };
   const nameLower = ex.name.trim().toLowerCase();
 
+  let currentEx = { ...ex };
+  let changed = false;
+
+  if (currentEx.pool === "back") {
+    currentEx.pool = "upper_back";
+    changed = true;
+  }
+  if (currentEx.muscleGroup === "back") {
+    currentEx.muscleGroup = "upper_back";
+    changed = true;
+  }
+
   if (nameLower === "tricep dip machine") {
     const targetSteps = [
       "Set Up & Seat Adjustment: Adjust the seat height so that when you sit down, the handles are aligned with your mid-to-lower chest level. Secure your feet flat on the floor to stabilize your lower body.",
@@ -1330,22 +1352,20 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
     const targetYoutubeId = "QYktfOJRyfU";
     const targetYoutubeUrl = "https://www.youtube.com/shorts/QYktfOJRyfU";
 
-    const stepsMatch = ex.instructions && 
-      ex.instructions.length === targetSteps.length && 
-      ex.instructions.every((step, i) => step === targetSteps[i]);
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
     
-    const videoMatch = ex.youtubeId === targetYoutubeId && ex.youtubeUrl === targetYoutubeUrl;
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
 
     if (!stepsMatch || !videoMatch) {
-      return {
-        migrated: {
-          ...ex,
-          instructions: targetSteps,
-          youtubeId: targetYoutubeId,
-          youtubeUrl: targetYoutubeUrl
-        },
-        changed: true
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl
       };
+      changed = true;
     }
   }
 
@@ -1369,48 +1389,44 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
     const targetYoutubeId = "uID8NFK1p5Y";
     const targetYoutubeUrl = "https://www.youtube.com/shorts/uID8NFK1p5Y";
 
-    const stepsMatch = ex.instructions && 
-      ex.instructions.length === targetSteps.length && 
-      ex.instructions.every((step, i) => step === targetSteps[i]);
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
     
-    const videoMatch = ex.youtubeId === targetYoutubeId && ex.youtubeUrl === targetYoutubeUrl;
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
 
     if (!stepsMatch || !videoMatch) {
-      return {
-        migrated: {
-          ...ex,
-          instructions: targetSteps,
-          youtubeId: targetYoutubeId,
-          youtubeUrl: targetYoutubeUrl
-        },
-        changed: true
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl
       };
+      changed = true;
     }
   }
 
   // Generic static library fallback lookup for any custom exercise
   // that lacks professional guidance/instructions.
-  const hasNoInstructions = !ex.instructions || 
-    ex.instructions.length === 0 || 
-    ex.instructions.some(step => step.toLowerCase().includes("awaiting guidance"));
+  const hasNoInstructions = !currentEx.instructions || 
+    currentEx.instructions.length === 0 || 
+    currentEx.instructions.some(step => step.toLowerCase().includes("awaiting guidance"));
 
   if (hasNoInstructions) {
-    const staticEx = findStaticExerciseByName(ex.name);
+    const staticEx = findStaticExerciseByName(currentEx.name);
     if (staticEx && staticEx.instructions && staticEx.instructions.length > 0) {
-      return {
-        migrated: {
-          ...ex,
-          instructions: staticEx.instructions,
-          youtubeId: ex.youtubeId || staticEx.youtubeId,
-          youtubeUrl: ex.youtubeUrl || staticEx.youtubeUrl,
-          category: ex.category || staticEx.category,
-        },
-        changed: true
+      currentEx = {
+        ...currentEx,
+        instructions: staticEx.instructions,
+        youtubeId: currentEx.youtubeId || staticEx.youtubeId,
+        youtubeUrl: currentEx.youtubeUrl || staticEx.youtubeUrl,
+        category: currentEx.category || staticEx.category,
       };
+      changed = true;
     }
   }
 
-  return { migrated: ex, changed: false };
+  return { migrated: currentEx, changed };
 };
 
 export const CUSTOM_GROUP_LABELS: Record<string, string> = {
@@ -1470,6 +1486,8 @@ export default function App() {
           return parsed.map((item: any) => {
             if (item && item.exercise && item.exercise.name) {
               item.exercise.name = migrateExerciseName(item.exercise.name);
+              const { migrated } = migrateCustomExercise(item.exercise);
+              item.exercise = migrated;
             }
             return item as AIPlanExercise;
           });
@@ -1585,6 +1603,7 @@ export default function App() {
   } | null>(null);
   const [swapSearch, setSwapSearch] = useState("");
   const hasConsolidatedRef = useRef(false);
+  const swapListContainerRef = useRef<HTMLDivElement>(null);
 
   // --- Custom Routine Builder States ---
   const [isCreatingRoutine, setIsCreatingRoutine] = useState(false);
@@ -2957,10 +2976,22 @@ export default function App() {
           if (data.days) {
             let daysArr: Exercise[][] = [];
             if (!Array.isArray(data.days)) {
-              for (let i = 0; i < 6; i++)
-                daysArr.push(data.days[`d${i}`] || []);
+              for (let i = 0; i < 6; i++) {
+                const exList = (data.days[`d${i}`] || []).map((ex: any) => {
+                  ex.name = migrateExerciseName(ex.name);
+                  const { migrated } = migrateCustomExercise(ex);
+                  return migrated;
+                });
+                daysArr.push(exList);
+              }
             } else {
-              daysArr = data.days as Exercise[][];
+              daysArr = (data.days as Exercise[][]).map((exList) => {
+                return (exList || []).map((ex: any) => {
+                  ex.name = migrateExerciseName(ex.name);
+                  const { migrated } = migrateCustomExercise(ex);
+                  return migrated;
+                });
+              });
             }
             setCurrentDays(daysArr);
           }
@@ -4237,27 +4268,61 @@ export default function App() {
   };
 
   const executeSwap = (dayIndex: number, exIndex: number, newEx: Exercise) => {
-    if (!currentDays[dayIndex]) return;
-    const day = [...currentDays[dayIndex]];
-    day[exIndex] = newEx;
+    const currentEx = swappingExercise?.exercise;
+    if (!currentEx) return;
 
-    const nextCurrentDays = [...currentDays];
-    nextCurrentDays[dayIndex] = day;
-    setCurrentDays(nextCurrentDays);
-    saveWorkout(nextCurrentDays);
+    let targetDayIdx = dayIndex;
+    let targetExIdx = exIndex;
 
-    // Also swap in formattedProgram
-    const nextFormattedProgram = formattedProgram.map(item => {
-      if (item.dayIndex === dayIndex) {
-        const nextExercises = [...item.exercises];
-        if (nextExercises[exIndex]) {
-          nextExercises[exIndex] = newEx;
+    // Resolve day and exercise index if not passed or -1
+    if (targetDayIdx === undefined || targetDayIdx === -1 || targetExIdx === undefined || targetExIdx === -1) {
+      for (let di = 0; di < currentDays.length; di++) {
+        const idx = (currentDays[di] || []).findIndex(
+          (ex) => ex.name.toLowerCase() === currentEx.name.toLowerCase()
+        );
+        if (idx !== -1) {
+          targetDayIdx = di;
+          targetExIdx = idx;
+          break;
         }
-        return { ...item, exercises: nextExercises };
+      }
+    }
+
+    if (targetDayIdx !== undefined && targetDayIdx !== -1 && currentDays[targetDayIdx]) {
+      const day = [...currentDays[targetDayIdx]];
+      day[targetExIdx] = newEx;
+
+      const nextCurrentDays = [...currentDays];
+      nextCurrentDays[targetDayIdx] = day;
+      setCurrentDays(nextCurrentDays);
+      saveWorkout(nextCurrentDays);
+
+      // Also swap in formattedProgram
+      const nextFormattedProgram = formattedProgram.map(item => {
+        if (item.dayIndex === targetDayIdx) {
+          const nextExercises = [...item.exercises];
+          if (nextExercises[targetExIdx]) {
+            nextExercises[targetExIdx] = newEx;
+          }
+          return { ...item, exercises: nextExercises };
+        }
+        return item;
+      });
+      setFormattedProgram(nextFormattedProgram);
+    }
+
+    // Always swap in aiPlanExercises!
+    const nextAIPlanExercises = aiPlanExercises.map((item) => {
+      if (item.exercise.name.toLowerCase() === currentEx.name.toLowerCase()) {
+        return {
+          ...item,
+          exercise: newEx,
+        };
       }
       return item;
     });
-    setFormattedProgram(nextFormattedProgram);
+    setAiPlanExercises(nextAIPlanExercises);
+    localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlanExercises));
 
     // Provide immediate visual feedback
     setFlashMessage((prev) => ({ ...prev, [newEx.name]: "SWAPPED" }));
@@ -14290,8 +14355,17 @@ export default function App() {
                             const progState = getExerciseProgressionState(exItem.exercise.name, allLoggedSets);
                             return (
                               <div key={i} className="flex items-center justify-between text-xs text-white/80 py-2 px-3 font-mono bg-white/[0.02] border border-white/5 border-l-2 border-l-gym-accent rounded-md">
-                                <div className="flex flex-col min-w-0">
-                                  <span className="truncate pr-2">{exItem.exercise.name}</span>
+                                <div className="flex flex-col min-w-0 flex-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="truncate pr-2">{exItem.exercise.name}</span>
+                                    <button
+                                      onClick={() => setSwappingExercise({ dayIndex: -1, exIndex: -1, exercise: exItem.exercise })}
+                                      className="p-1 bg-white/[0.03] hover:bg-gym-accent/15 border border-white/5 hover:border-gym-accent/30 text-white/40 hover:text-gym-accent rounded transition-all cursor-pointer inline-flex items-center justify-center shrink-0"
+                                      title="Swap Exercise"
+                                    >
+                                      <RefreshCw className="w-2.5 h-2.5" />
+                                    </button>
+                                  </div>
                                   {progState.showTag && (
                                     <span className="text-[8px] text-emerald-400 font-black uppercase mt-0.5 tracking-wider flex items-center gap-1">
                                       🚀 Increase Weight
@@ -14338,7 +14412,8 @@ export default function App() {
                         archivedWorkouts={archivedWorkouts}
                         onSaveSet={handleSaveSet}
                         onDeleteSet={handleDeleteSet}
-                        onFinishWorkout={(durationSec, completedSetsCount, totalVolume, calculatedCalories, somaticFeedbackText) => {
+                        onSwapExercise={(ex) => setSwappingExercise({ dayIndex: -1, exIndex: -1, exercise: ex })}
+                        onFinishWorkout={async (durationSec, completedSetsCount, totalVolume, calculatedCalories, somaticFeedbackText) => {
                           setAiWorkoutActive(false);
                           setAICelebrationStats({
                             durationSec,
@@ -14351,6 +14426,36 @@ export default function App() {
                           playRestBeep(880, 0.2);
                           setTimeout(() => playRestBeep(1100, 0.2), 150);
                           setTimeout(() => playRestBeep(1320, 0.4), 300);
+
+                          // Clear the plan section (builder days, program tab, AI exercises)
+                          if (currentUser) {
+                            try {
+                              const batch = writeBatch(db);
+                              const currentWorkoutRef = doc(
+                                db,
+                                `users/${currentUser.uid}/workout/current`
+                              );
+                              const emptyDaysObj: Record<string, Exercise[]> = {};
+                              for (let i = 0; i < 6; i++) {
+                                emptyDaysObj[`d${i}`] = [];
+                              }
+                              batch.set(currentWorkoutRef, {
+                                days: emptyDaysObj,
+                                version: 2,
+                                updatedAt: serverTimestamp(),
+                              });
+                              await batch.commit();
+                            } catch (err) {
+                              console.error("Failed to clear current workout in Firestore:", err);
+                            }
+                          }
+
+                          setCurrentDays([[], [], [], [], [], []]);
+                          setFormattedProgram([]);
+                          setAiPlanExercises([]);
+                          localStorage.removeItem("gym_ai_plan_exercises");
+                          localStorage.removeItem("gym_ai_workout_active");
+                          localStorage.removeItem("gym_ai_workout_start_time");
                         }}
                         onDeactivate={() => {
                           setAiWorkoutActive(false);
@@ -17221,11 +17326,11 @@ export default function App() {
                     </div>
 
                     {/* Alternatives list */}
-                    <div className="p-8 max-h-[350px] overflow-y-auto space-y-3">
+                    <div ref={swapListContainerRef} className="p-8 max-h-[350px] overflow-y-auto space-y-3">
                       {filteredAlternatives.length > 0 ? (
                         filteredAlternatives.map((alt) => {
                           return (
-                            <Scroll3DItem key={alt.name}>
+                            <Scroll3DItem key={alt.name} container={swapListContainerRef}>
                               <div
                                 onClick={() => {
                                   executeSwap(swappingExercise.dayIndex, swappingExercise.exIndex, alt);
