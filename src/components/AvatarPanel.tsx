@@ -85,6 +85,27 @@ import imgCyberBeastFinal from '../assets/images/cyber_beast_final_1779447049772
 import imgGoldenDiscipleFinal from '../assets/images/golden_disciple_final_1779447066274.png';
 import imgOmegaPrimeFinal from '../assets/images/omega_prime_final_1779447085411.png';
 
+// Naruto Imports
+import imgNarutoDefault from '../assets/images/No_Emote_Pose-1.png';
+import imgNarutoFlex from '../assets/images/Flex_Mode-1.png';
+import imgNarutoCharge from '../assets/images/Power_Charge-1.png';
+import imgNarutoRoar from '../assets/images/Savage_Roar-1.png';
+import imgNarutoFinal from '../assets/images/Final_Form-1.png';
+
+// Sasuke Imports
+import imgSasukeDefault from '../assets/images/No_Emote_Pose_S.png';
+import imgSasukeFlex from '../assets/images/Flex_Mode_S.png';
+import imgSasukeCharge from '../assets/images/Power_Charge_S.png';
+import imgSasukeRoar from '../assets/images/Savage_Roar_S.png';
+import imgSasukeFinal from '../assets/images/Final_Form_S.png';
+
+// Jinwoo Imports
+import imgJinwooDefault from '../assets/images/No_Emote_Pose_J.png';
+import imgJinwooFlex from '../assets/images/Flex_Mode_J.png';
+import imgJinwooCharge from '../assets/images/Power_Charge_J.png';
+import imgJinwooRoar from '../assets/images/Savage_Roar_J.png';
+import imgJinwooFinal from '../assets/images/Final_Form_J.png';
+
 // Text-free character class landscape banners
 import imgBannerVanguardCadet from '../assets/images/banner_vanguard_cadet_1779449260585.png';
 import imgBannerNeonStriker from '../assets/images/banner_neon_striker_1779449278463.png';
@@ -263,6 +284,54 @@ export const OUTFITS = [
       savage_roar: imgLumenSentinelRoar,
       final_form: imgLumenSentinelFinal
     }
+  },
+  {
+    id: 'naruto',
+    name: 'Naruto',
+    description: 'The legendary Orange Hokage operative. Master of Nine-Tails power-ups.',
+    price: 15000,
+    image: imgNarutoDefault,
+    accentColor: 'from-amber-500 to-orange-600',
+    glowClass: 'shadow-[0_0_25px_rgba(249,115,22,0.4)]',
+    poseImages: {
+      default: imgNarutoDefault,
+      flex_mode: imgNarutoFlex,
+      power_charge: imgNarutoCharge,
+      savage_roar: imgNarutoRoar,
+      final_form: imgNarutoFinal
+    }
+  },
+  {
+    id: 'sasuke',
+    name: 'Sasuke',
+    description: 'The legendary Avenger of the Uchiha clan. Master of the Sharingan and purple Susanoo shrouds.',
+    price: 15000,
+    image: imgSasukeDefault,
+    accentColor: 'from-violet-500 to-indigo-600',
+    glowClass: 'shadow-[0_0_25px_rgba(168,85,247,0.4)]',
+    poseImages: {
+      default: imgSasukeDefault,
+      flex_mode: imgSasukeFlex,
+      power_charge: imgSasukeCharge,
+      savage_roar: imgSasukeRoar,
+      final_form: imgSasukeFinal
+    }
+  },
+  {
+    id: 'jinwoo',
+    name: 'Jin Woo',
+    description: 'The legendary Shadow Monarch. Master of shadow summoning and abyssal daggers.',
+    price: 15000,
+    image: imgJinwooDefault,
+    accentColor: 'from-indigo-950 via-slate-900 to-indigo-900',
+    glowClass: 'shadow-[0_0_25px_rgba(99,102,241,0.4)] border border-indigo-500/20',
+    poseImages: {
+      default: imgJinwooDefault,
+      flex_mode: imgJinwooFlex,
+      power_charge: imgJinwooCharge,
+      savage_roar: imgJinwooRoar,
+      final_form: imgJinwooFinal
+    }
   }
 ];
 
@@ -275,7 +344,10 @@ export const OUTFIT_TO_BANNER: Record<string, string> = {
   golden_disciple: 'titan_gold',
   omega_prime: 'shadow_smoke',
   shadow_wraith: 'aether_light',
-  lumen_sentinel: 'lumen_sentinel'
+  lumen_sentinel: 'lumen_sentinel',
+  naruto: 'titan_gold',
+  sasuke: 'aether_light',
+  jinwoo: 'shadow_smoke'
 };
 
 // Sphere Grid Nodes configuration for visual and interactive talent mapping
@@ -764,7 +836,10 @@ export const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; pa
   golden_disciple: { color: '#fbbf24', glow: 'shadow-[0_0_120px_rgba(251,191,36,1),_0_0_60px_rgba(251,191,36,0.75)]', particles: '#fbbf24', bannerText: 'DISCIPLE // SOLAR ASCENT', overlayGradient: 'from-amber-400/35 to-transparent' },
   omega_prime: { color: '#ef4444', glow: 'shadow-[0_0_130px_rgba(239,68,68,1),_0_0_65px_rgba(239,68,68,0.85)]', particles: '#ef4444', bannerText: 'PRIME // GALAXY MONARCH', overlayGradient: 'from-red-500/35 to-transparent' },
   shadow_wraith: { color: '#09090b', glow: 'shadow-[0_0_130px_rgba(15,23,42,1),_0_0_65px_rgba(24,24,27,0.95),inset_0_0_30px_rgba(0,0,0,0.8)] border-slate-900', particles: '#18181b', bannerText: 'WRAITH // VOID SHADOW OVERDRIVE', overlayGradient: 'from-zinc-950/50 to-transparent' },
-  lumen_sentinel: { color: '#ffffff', glow: 'shadow-[0_0_130px_rgba(255,255,255,1),_0_0_65px_rgba(244,244,245,0.85),inset_0_0_30px_rgba(255,255,255,0.3)] border-white/80', particles: '#cbd5e1', bannerText: 'SENTINEL // AETHER LIMIT BREAK', overlayGradient: 'from-white/25 to-transparent' }
+  lumen_sentinel: { color: '#ffffff', glow: 'shadow-[0_0_130px_rgba(255,255,255,1),_0_0_65px_rgba(244,244,245,0.85),inset_0_0_30px_rgba(255,255,255,0.3)] border-white/80', particles: '#cbd5e1', bannerText: 'SENTINEL // AETHER LIMIT BREAK', overlayGradient: 'from-white/25 to-transparent' },
+  naruto: { color: '#ea580c', glow: 'shadow-[0_0_120px_rgba(234,88,12,1),_0_0_60px_rgba(234,88,12,0.7)]', particles: '#ea580c', bannerText: 'NARUTO // SAGE OF SIX PATHS LIMIT BREAK', overlayGradient: 'from-orange-500/35 to-transparent' },
+  sasuke: { color: '#a855f7', glow: 'shadow-[0_0_120px_rgba(168,85,247,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#a855f7', bannerText: 'SASUKE // INDRA REINCARNATION SUSANOO OUTBURST', overlayGradient: 'from-purple-500/35 to-transparent' },
+  jinwoo: { color: '#3b82f6', glow: 'shadow-[0_0_120px_rgba(59,130,246,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#3b82f6', bannerText: 'JIN WOO // MONARCH OF SHADOWS DECREE', overlayGradient: 'from-blue-950/40 to-transparent' }
 };
 
 // Unique interactive pets mapped to character outfits
@@ -1159,6 +1234,103 @@ export const PETS_DATA: Record<string, {
               <stop offset="100%" stopColor="#0284c7" stopOpacity="0.25" />
             </linearGradient>
           </defs>
+        </svg>
+      </div>
+    )
+  },
+  naruto: {
+    name: "Mini Kurama",
+    type: "Nine-Tails Spirit",
+    desc: "A small, adorable chibi-size manifestation of the Nine-Tailed Fox. Hovers playfully, radiating warm life-force chakra and boosting stamina and physical recovery.",
+    color: "#f97316",
+    glow: "rgba(249,115,22,0.45)",
+    buff: "+15% Kyuubi Stamina Surge",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '3s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Flame Orbit */}
+          <circle cx="50" cy="50" r="40" stroke="rgba(249,115,22,0.2)" strokeWidth="1" strokeDasharray="4 4" className="animate-spin" style={{ animationDuration: '12s' }} />
+          {/* Chibi Fox Head */}
+          <path d="M50,30 L65,45 L50,60 L35,45 Z" fill="#ea580c" stroke="#f97316" strokeWidth="2" />
+          {/* Ears */}
+          <path d="M38,40 L30,22 L45,35 Z" fill="#ea580c" stroke="#f97316" strokeWidth="1.5" />
+          <path d="M62,40 L70,22 L55,35 Z" fill="#ea580c" stroke="#f97316" strokeWidth="1.5" />
+          {/* Inner ears */}
+          <path d="M36,36 L32,25 L40,33 Z" fill="#1e293b" />
+          <path d="M64,36 L68,25 L60,33 Z" fill="#1e293b" />
+          {/* Eyes */}
+          <circle cx="44" cy="45" r="2.5" fill="#fbbf24" stroke="#000" strokeWidth="0.5" />
+          <circle cx="56" cy="45" r="2.5" fill="#fbbf24" stroke="#000" strokeWidth="0.5" />
+          <path d="M43,43 L46,44" stroke="#000" strokeWidth="1" />
+          <path d="M57,43 L54,44" stroke="#000" strokeWidth="1" />
+          {/* Cheeks */}
+          <line x1="38" y1="48" x2="42" y2="48" stroke="#1e293b" strokeWidth="1" />
+          <line x1="38" y1="51" x2="41" y2="50" stroke="#1e293b" strokeWidth="1" />
+          <line x1="62" y1="48" x2="58" y2="48" stroke="#1e293b" strokeWidth="1" />
+          <line x1="62" y1="51" x2="59" y2="50" stroke="#1e293b" strokeWidth="1" />
+          {/* Nose */}
+          <polygon points="49,50 51,50 50,52" fill="#000" />
+          {/* Glowing Chakra tails behind */}
+          <path d="M25,65 Q15,50 30,45" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" className="opacity-80 animate-pulse" />
+          <path d="M75,65 Q85,50 70,45" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" className="opacity-80 animate-pulse" />
+          <path d="M50,75 Q50,90 40,80" stroke="#ea580c" strokeWidth="2.5" strokeLinecap="round" className="opacity-80" />
+        </svg>
+      </div>
+    )
+  },
+  sasuke: {
+    name: "Mini Susanoo",
+    type: "Spectral Aura Guardian",
+    desc: "A small, mysterious hovering manifestation of Sasuke's purple Susanoo shield. Radiates deep amethyst light and sharpening focus aura to boost mental endurance.",
+    color: "#a855f7",
+    glow: "rgba(168,85,247,0.45)",
+    buff: "+15% Amethyst Focus Shroud",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '3.5s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Orbit rings */}
+          <circle cx="50" cy="50" r="40" stroke="rgba(168,85,247,0.2)" strokeWidth="1" strokeDasharray="3 3" className="animate-spin" style={{ animationDuration: '15s' }} />
+          {/* Chibi Spectral Helmet / Face */}
+          <path d="M50,25 L68,42 L50,65 L32,42 Z" fill="#7e22ce" stroke="#c084fc" strokeWidth="2" />
+          {/* Horns */}
+          <path d="M35,38 L25,18 L42,32 Z" fill="#6b21a8" stroke="#c084fc" strokeWidth="1.5" />
+          <path d="M65,38 L75,18 L58,32 Z" fill="#6b21a8" stroke="#c084fc" strokeWidth="1.5" />
+          {/* Sharingan Eyes */}
+          <circle cx="43" cy="44" r="2.5" fill="#ef4444" stroke="#000" strokeWidth="0.5" />
+          <circle cx="57" cy="44" r="2.5" fill="#ef4444" stroke="#000" strokeWidth="0.5" />
+          {/* Sharingan pupils */}
+          <circle cx="43" cy="44" r="0.7" fill="#000" />
+          <circle cx="57" cy="44" r="0.7" fill="#000" />
+          {/* Spectral shoulders */}
+          <path d="M22,60 Q12,45 28,40" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" className="opacity-80 animate-pulse" />
+          <path d="M78,60 Q88,45 72,40" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" className="opacity-80 animate-pulse" />
+          <path d="M50,70 L50,85" stroke="#7e22ce" strokeWidth="2" strokeLinecap="round" className="opacity-80" />
+        </svg>
+      </div>
+    )
+  },
+  jinwoo: {
+    name: "Mini Kaisel",
+    type: "Shadow Wyvern Companion",
+    desc: "A small, cute shadow wyvern companion born from Jin Woo's shadow army. Shrouds you with shadowy aura to boost maximum lifting focus.",
+    color: "#3b82f6",
+    glow: "rgba(59,130,246,0.45)",
+    buff: "+15% Shadow Essence Surge",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '3.5s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Shadow Orbit */}
+          <circle cx="50" cy="50" r="40" stroke="rgba(59,130,246,0.2)" strokeWidth="1" strokeDasharray="3 3" className="animate-spin" style={{ animationDuration: '15s' }} />
+          {/* Dragon/Wyvern head */}
+          <path d="M50,25 L65,40 L50,60 L35,40 Z" fill="#1e1b4b" stroke="#3b82f6" strokeWidth="2" />
+          {/* Wings */}
+          <path d="M35,38 L15,30 L25,50 Z" fill="#1e1b4b" stroke="#3b82f6" strokeWidth="1.5" />
+          <path d="M65,38 L85,30 L75,50 Z" fill="#1e1b4b" stroke="#3b82f6" strokeWidth="1.5" />
+          {/* Glowing Shadow Eyes */}
+          <circle cx="43" cy="42" r="2.5" fill="#a855f7" className="animate-pulse" />
+          <circle cx="57" cy="42" r="2.5" fill="#a855f7" className="animate-pulse" />
+          {/* Spectral tail */}
+          <path d="M50,60 Q40,80 50,90" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" className="opacity-80 animate-pulse" />
         </svg>
       </div>
     )
@@ -2902,13 +3074,26 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
           </div>
 
-          <div className="flex items-center gap-2 px-1">
+          <div className="flex items-center gap-2 px-1 border-r border-white/10 pr-3">
             <Zap className="w-4 h-4 text-purple-400" />
             <div className="flex flex-col">
               <span className="text-[8px] text-white/30 uppercase tracking-widest font-black leading-none">Level XP</span>
               <span className="text-sm font-black text-purple-400 font-mono tracking-tight">{xp.toLocaleString()} XP</span>
             </div>
           </div>
+
+          <button
+            onClick={async () => {
+              const newCredits = credits + 1000000;
+              setProfile(prev => prev ? { ...prev, avatarCredits: newCredits } : null);
+              await saveSettings({ avatarCredits: newCredits });
+              setToast({ message: "✓ +1,000,000 Sacred Coins granted for testing!", type: "success" });
+            }}
+            className="flex items-center gap-1 px-2.5 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 hover:border-amber-500/40 rounded text-[9px] font-black text-amber-400 tracking-widest uppercase transition-all shrink-0 cursor-pointer"
+            title="Grant 1,000,000 Testing Credits"
+          >
+            +1M Coins
+          </button>
         </div>
       </div>
 
@@ -2954,35 +3139,41 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             {getActiveBorder().cornerElement}
 
             {/* Banner Theme Background */}
-            {getActiveBanner().bgImage ? (
-              <div 
-                className="absolute inset-0 z-0 transition-all duration-700 bg-cover bg-center" 
-                style={{ backgroundImage: `url(${getActiveBanner().bgImage})`, opacity: 0.85 }}
-              />
-            ) : (
-              <div className={`absolute inset-0 z-0 transition-all duration-700 ${getActiveBanner().bgStyle}`} />
-            )}
-            
-            {/* Darker 10% shroud overlay to soften overly bright colors of active banners */}
-            <div className={`absolute inset-0 z-0 pointer-events-none transition-all duration-300 ${
-              getActiveBanner().id === 'aether_light' ? 'bg-black/20' : 'bg-black/10'
-            }`} />
-
-            {/* High-Contrast Interactive Neon Glow Highlights */}
-            {getActiveBanner().glowColor && (
+            {!['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
               <>
-                <div className={`absolute -top-12 -right-12 w-64 h-64 rounded-full filter blur-[70px] opacity-65 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
-                <div className={`absolute -bottom-12 -left-12 w-64 h-64 rounded-full filter blur-[70px] opacity-50 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
-              </>
-            )}
+                {getActiveBanner().bgImage ? (
+                  <div 
+                    className="absolute inset-0 z-0 transition-all duration-700 bg-cover bg-center" 
+                    style={{ backgroundImage: `url(${getActiveBanner().bgImage})`, opacity: 0.85 }}
+                  />
+                ) : (
+                  <div className={`absolute inset-0 z-0 transition-all duration-700 ${getActiveBanner().bgStyle}`} />
+                )}
+                
+                {/* Darker 10% shroud overlay to soften overly bright colors of active banners */}
+                <div className={`absolute inset-0 z-0 pointer-events-none transition-all duration-300 ${
+                  getActiveBanner().id === 'aether_light' ? 'bg-black/20' : 'bg-black/10'
+                }`} />
 
-            {/* Hexagonal Tech matrix line overlay patterns */}
-            <div className="absolute inset-0 opacity-15 pointer-events-none mix-blend-color-dodge z-0 animate-pulse-slow" 
-                 style={{ 
-                   backgroundImage: 'radial-gradient(ellipse at center, rgba(var(--gym-accent-rgb), 0.25) 0%, transparent 80%)',
-                   backgroundSize: 'cover' 
-                 }} 
-            />
+                {/* High-Contrast Interactive Neon Glow Highlights */}
+                {getActiveBanner().glowColor && (
+                  <>
+                    <div className={`absolute -top-12 -right-12 w-64 h-64 rounded-full filter blur-[70px] opacity-65 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
+                    <div className={`absolute -bottom-12 -left-12 w-64 h-64 rounded-full filter blur-[70px] opacity-50 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
+                  </>
+                )}
+
+                {/* Hexagonal Tech matrix line overlay patterns */}
+                <div className="absolute inset-0 opacity-15 pointer-events-none mix-blend-color-dodge z-0 animate-pulse-slow" 
+                     style={{ 
+                       backgroundImage: 'radial-gradient(ellipse at center, rgba(var(--gym-accent-rgb), 0.25) 0%, transparent 80%)',
+                       backgroundSize: 'cover' 
+                     }} 
+                />
+              </>
+            ) : (
+              <div className="absolute inset-0 z-0 transition-all duration-700 bg-zinc-950" />
+            )}
 
             {/* Japanese Anime Style Side Text */}
             <div className="absolute left-5 top-28 z-10 flex flex-col items-center select-none pointer-events-none transition-all duration-300 opacity-40">
@@ -3005,6 +3196,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               </div>
             )}
 
+            {/* Render Back cosmetics (wings, sword, shield) behind reference if not Naruto/Sasuke/Jinwoo emotes */}
             {equippedBackItem === 'void_shield' && (
               <div className="absolute right-2 top-1/2 -translate-y-1/2 z-0 select-none pointer-events-none animate-shield-float" style={{ filter: 'drop-shadow(0 0 18px #8b5cf6)' }}>
                 <svg width="130" height="130" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -3040,21 +3232,37 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
             {/* Highly Scaled Central Avatar Body Image Container */}
             <div className={`relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
-              equippedEmote === 'final_form'
-                ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
-                : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
+              ['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id)
+                ? 'border-white/10 bg-transparent'
+                : equippedEmote === 'final_form'
+                  ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
+                  : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
             }`}>
-              <TransparentCharacter 
-                src={activeCharacterImage} 
-                alt={activeOutfit.name} 
-                className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
-                  equippedEmote === 'final_form'
-                    ? 'animate-super-shudder scale-[1.05]'
-                    : 'scale-100 group-hover:scale-[1.04]'
-                }`}
-                toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
-                fallbackSrc={activeOutfit.image}
-              />
+              {['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
+                <img 
+                  src={activeCharacterImage} 
+                  alt={activeOutfit.name} 
+                  className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
+                    equippedEmote === 'final_form'
+                      ? 'animate-super-shudder scale-[1.05]'
+                      : 'scale-100 group-hover:scale-[1.04]'
+                  }`}
+                  style={{ opacity: 1 }}
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <TransparentCharacter 
+                  src={activeCharacterImage} 
+                  alt={activeOutfit.name} 
+                  className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
+                    equippedEmote === 'final_form'
+                      ? 'animate-super-shudder scale-[1.05]'
+                      : 'scale-100 group-hover:scale-[1.04]'
+                  }`}
+                  toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                  fallbackSrc={activeOutfit.image}
+                />
+              )}
 
               {/* Inner Aura overlay graphics rendered DIRECTLY on top of character image for max intensity */}
               {activeAuraStyling.innerEffects}
@@ -3167,10 +3375,12 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] rounded-full border-2 border-double animate-orbit opacity-40" style={{ borderColor: finalFormTheme.color, animationDuration: '10s', animationDirection: 'reverse' }} />
                   
                   {/* Tech status display overlay at the top */}
-                  <div className="bg-black/85 border-b border-white/10 px-3 py-1.5 flex items-center justify-between w-full relative z-30">
-                    <span className="text-[8px] font-black font-mono tracking-widest text-red-500 animate-pulse">● OVERLOAD</span>
-                    <span className="text-[7.5px] font-extrabold font-mono text-white/50 tracking-widest">{finalFormTheme.bannerText}</span>
-                  </div>
+                  {activeOutfit.id !== 'naruto' && activeOutfit.id !== 'sasuke' && activeOutfit.id !== 'jinwoo' && (
+                    <div className="bg-black/85 border-b border-white/10 px-3 py-1.5 flex items-center justify-between w-full relative z-30">
+                      <span className="text-[8px] font-black font-mono tracking-widest text-red-500 animate-pulse">● OVERLOAD</span>
+                      <span className="text-[7.5px] font-extrabold font-mono text-white/50 tracking-widest">{finalFormTheme.bannerText}</span>
+                    </div>
+                  )}
 
                   {/* Rising stardust energy lines */}
                   <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -3403,13 +3613,23 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 {/* Advanced Micro avatar silhouette halo */}
                 <div className="relative w-16 h-16 rounded-md border border-gym-accent/30 overflow-hidden flex-shrink-0 bg-zinc-950 p-0.5 group-hover:border-gym-accent/60 transition-colors">
                   <div className="absolute inset-0 bg-gradient-to-tr from-gym-accent/10 to-transparent opacity-40" />
-                  <TransparentCharacter 
-                    src={activeCharacterImage} 
-                    alt="Active Micro Outfit" 
-                    className="w-full h-full object-cover rounded-md transition-transform duration-500 group-hover:scale-[1.08]" 
-                    toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
-                    fallbackSrc={activeOutfit.image}
-                  />
+                  {['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
+                    <img 
+                      src={activeCharacterImage} 
+                      alt="Active Micro Outfit" 
+                      className="w-full h-full object-cover rounded-md transition-transform duration-500 group-hover:scale-[1.08]" 
+                      style={{ opacity: 1 }}
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <TransparentCharacter 
+                      src={activeCharacterImage} 
+                      alt="Active Micro Outfit" 
+                      className="w-full h-full object-cover rounded-md transition-transform duration-500 group-hover:scale-[1.08]" 
+                      toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                      fallbackSrc={activeOutfit.image}
+                    />
+                  )}
                   <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
  

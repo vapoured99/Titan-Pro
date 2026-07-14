@@ -181,35 +181,41 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
       {getActiveBorder().cornerElement}
 
       {/* Banner Theme Background */}
-      {getActiveBanner().bgImage ? (
-        <div 
-          className="absolute inset-0 z-0 transition-all duration-700 bg-cover bg-center" 
-          style={{ backgroundImage: `url(${getActiveBanner().bgImage})`, opacity: 0.85 }}
-        />
-      ) : (
-        <div className={`absolute inset-0 z-0 transition-all duration-700 ${getActiveBanner().bgStyle}`} />
-      )}
-      
-      {/* Darker 10% shroud overlay to soften overly bright colors of active banners */}
-      <div className={`absolute inset-0 z-0 pointer-events-none transition-all duration-300 ${
-        getActiveBanner().id === 'aether_light' ? 'bg-black/20' : 'bg-black/10'
-      }`} />
-
-      {/* High-Contrast Interactive Neon Glow Highlights */}
-      {getActiveBanner().glowColor && (
+      {!['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
         <>
-          <div className={`absolute -top-12 -right-12 w-64 h-64 rounded-full filter blur-[70px] opacity-65 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
-          <div className={`absolute -bottom-12 -left-12 w-64 h-64 rounded-full filter blur-[70px] opacity-50 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
-        </>
-      )}
+          {getActiveBanner().bgImage ? (
+            <div 
+              className="absolute inset-0 z-0 transition-all duration-700 bg-cover bg-center" 
+              style={{ backgroundImage: `url(${getActiveBanner().bgImage})`, opacity: 0.85 }}
+            />
+          ) : (
+            <div className={`absolute inset-0 z-0 transition-all duration-700 ${getActiveBanner().bgStyle}`} />
+          )}
+          
+          {/* Darker 10% shroud overlay to soften overly bright colors of active banners */}
+          <div className={`absolute inset-0 z-0 pointer-events-none transition-all duration-300 ${
+            getActiveBanner().id === 'aether_light' ? 'bg-black/20' : 'bg-black/10'
+          }`} />
 
-      {/* Hexagonal Tech matrix line overlay patterns */}
-      <div className="absolute inset-0 opacity-15 pointer-events-none mix-blend-color-dodge z-0 animate-pulse-slow" 
-           style={{ 
-             backgroundImage: 'radial-gradient(ellipse at center, rgba(var(--gym-accent-rgb), 0.25) 0%, transparent 80%)',
-             backgroundSize: 'cover' 
-           }} 
-      />
+          {/* High-Contrast Interactive Neon Glow Highlights */}
+          {getActiveBanner().glowColor && (
+            <>
+              <div className={`absolute -top-12 -right-12 w-64 h-64 rounded-full filter blur-[70px] opacity-65 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
+              <div className={`absolute -bottom-12 -left-12 w-64 h-64 rounded-full filter blur-[70px] opacity-50 mix-blend-screen transition-all duration-700 pointer-events-none ${getActiveBanner().glowColor}`} />
+            </>
+          )}
+
+          {/* Hexagonal Tech matrix line overlay patterns */}
+          <div className="absolute inset-0 opacity-15 pointer-events-none mix-blend-color-dodge z-0 animate-pulse-slow" 
+               style={{ 
+                 backgroundImage: 'radial-gradient(ellipse at center, rgba(var(--gym-accent-rgb), 0.25) 0%, transparent 80%)',
+                 backgroundSize: 'cover' 
+               }} 
+          />
+        </>
+      ) : (
+        <div className="absolute inset-0 z-0 transition-all duration-700 bg-zinc-950" />
+      )}
 
       {/* Japanese Anime Style Side Text */}
       <div className="absolute left-5 top-28 z-10 flex flex-col items-center select-none pointer-events-none transition-all duration-300 opacity-40">
@@ -232,6 +238,7 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
         </div>
       )}
 
+      {/* Render Back cosmetics (wings, sword, shield) behind reference if not Naruto/Sasuke/Jinwoo emotes */}
       {equippedBackItem === 'void_shield' && (
         <div className="absolute right-2 top-1/2 -translate-y-1/2 z-0 select-none pointer-events-none animate-shield-float" style={{ filter: 'drop-shadow(0 0 18px #8b5cf6)' }}>
           <svg width="130" height="130" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -267,21 +274,37 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
 
       {/* Highly Scaled Central Avatar Body Image Container */}
       <div className={`relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
-        equippedEmote === 'final_form'
-          ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
-          : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
+        ['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id)
+          ? 'border-white/10 bg-transparent'
+          : equippedEmote === 'final_form'
+            ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
+            : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
       }`}>
-        <TransparentCharacter 
-          src={activeCharacterImage} 
-          alt={activeOutfit.name} 
-          className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
-            equippedEmote === 'final_form'
-              ? 'animate-super-shudder scale-[1.05]'
-              : 'scale-100 group-hover:scale-[1.04]'
-          }`}
-          toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
-          fallbackSrc={activeOutfit.image}
-        />
+        {['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
+          <img 
+            src={activeCharacterImage} 
+            alt={activeOutfit.name} 
+            className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
+              equippedEmote === 'final_form'
+                ? 'animate-super-shudder scale-[1.05]'
+                : 'scale-100 group-hover:scale-[1.04]'
+            }`}
+            style={{ opacity: 1 }}
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <TransparentCharacter 
+            src={activeCharacterImage} 
+            alt={activeOutfit.name} 
+            className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
+              equippedEmote === 'final_form'
+                ? 'animate-super-shudder scale-[1.05]'
+                : 'scale-100 group-hover:scale-[1.04]'
+            }`}
+            toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+            fallbackSrc={activeOutfit.image}
+          />
+        )}
 
         {/* Inner Aura overlay graphics rendered DIRECTLY on top of character image for max intensity */}
         {activeAuraStyling.innerEffects}
