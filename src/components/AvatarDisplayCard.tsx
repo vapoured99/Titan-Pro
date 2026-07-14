@@ -301,7 +301,7 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
                 ? 'animate-super-shudder scale-[1.05]'
                 : 'scale-100 group-hover:scale-[1.04]'
             }`}
-            toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+            toleranceMultiplier={1.0}
             fallbackSrc={activeOutfit.image}
           />
         )}

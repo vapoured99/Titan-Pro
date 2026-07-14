@@ -144,8 +144,6 @@ import zenLifterBg from "./assets/images/zen_lifter_bg_1779282209692.png";
 import midnightCityBg from "./assets/images/midnight_city_bg_1779282230526.png";
 import voidEclipseBg from "./assets/images/void_eclipse_bg_1779447103424.png";
 import celestialLightBg from "./assets/images/celestial_light_bg_1779447123837.png";
-import lumenSentinelBg from "./assets/images/banner_lumen_sentinel_1779449818555.png";
-import lumenSentinelBgNew from "./assets/images/lumen_sentinel_bg_1779719240506.png";
 import solarAscentBg from "./assets/images/solar_ascent_bg_1779457047851.png";
 import cosmicVortexBg from "./assets/images/cosmic_vortex_bg_new_1779719240506.png";
 import overgrownCyberCityBg from "./assets/images/cyber_city_bg_new_1779719262117.png";
@@ -157,10 +155,6 @@ import imgVanguardDefault from "./assets/images/vanguard_default_1779362283869.p
 import imgNeonStrikerDefault from "./assets/images/neon_striker_1779356868324.png";
 import imgShadowHunterDefault from "./assets/images/shadow_hunter_1779356889743.png";
 import imgCyberBeastDefault from "./assets/images/cyber_beast_1779356910976.png";
-import imgGoldenDiscipleDefault from "./assets/images/golden_disciple_1779356934562.png";
-import imgOmegaPrimeDefault from "./assets/images/omega_prime_1779356957034.png";
-import imgShadowWraithDefault from "./assets/images/shadow_wraith_cyber_1779445357447.png";
-import imgLumenSentinelDefault from "./assets/images/lumen_sentinel_cyber_1779445373875.png";
 
 // --- Types ---
 interface GymTheme {
@@ -311,23 +305,7 @@ const GYM_THEMES: Record<string, GymTheme> = {
     testMuted: "rgba(186, 230, 253, 0.45)",
     testSubtle: "rgba(14, 165, 233, 0.2)",
   },
-  lumen_sentinel: {
-    id: "lumen_sentinel",
-    name: "Lumen Sentinel",
-    description: "Pristine crystalline spires & orbital silver halo.",
-    accent: "#38bdf8",
-    accentRgb: "56, 189, 248",
-    accentLight: "#bae6fd",
-    accentDark: "#0284c7",
-    bg: "#040b17",
-    bgImage: lumenSentinelBgNew,
-    opacity: "opacity-40",
-    textVibe:
-      "Lumen Sentinel. Ascend into the celestial light of flawless execution.",
-    testPrimary: "#f0f9ff",
-    testMuted: "rgba(186, 230, 253, 0.45)",
-    testSubtle: "rgba(56, 189, 248, 0.2)",
-  },
+
   solar_ascent: {
     id: "solar_ascent",
     name: "Solar Ascent",
@@ -17536,10 +17514,6 @@ export default function App() {
                 neon_striker: "Neon Striker",
                 shadow_hunter: "Shadow Hunter",
                 cyber_beast: "Cyber Beast",
-                golden_disciple: "Golden Disciple",
-                omega_prime: "Omega Prime",
-                shadow_wraith: "Phantom Wraith",
-                lumen_sentinel: "Lumen Sentinel",
               };
 
               const AVATAR_IMAGES: Record<string, string> = {
@@ -17547,10 +17521,6 @@ export default function App() {
                 neon_striker: imgNeonStrikerDefault,
                 shadow_hunter: imgShadowHunterDefault,
                 cyber_beast: imgCyberBeastDefault,
-                golden_disciple: imgGoldenDiscipleDefault,
-                omega_prime: imgOmegaPrimeDefault,
-                shadow_wraith: imgShadowWraithDefault,
-                lumen_sentinel: imgLumenSentinelDefault,
               };
 
               const activeOutfitId =

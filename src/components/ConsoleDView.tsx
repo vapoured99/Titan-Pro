@@ -51,6 +51,180 @@ interface CNSFatigueAnalysis {
   hexColor: string;
 }
 
+interface ExerciseMapping {
+  primaryGroup: string;
+  primarySubs: string[];
+  secondaryGroups: string[];
+  secondarySubs: string[];
+}
+
+function parseExercise(name: string): ExerciseMapping {
+  const n = (name || "").toLowerCase();
+  
+  const result: ExerciseMapping = {
+    primaryGroup: "",
+    primarySubs: [],
+    secondaryGroups: [],
+    secondarySubs: []
+  };
+
+  // Chest / Push
+  if (n.includes("bench press") || n.includes("chest press") || n.includes("pushup") || n.includes("push-up") || n.includes("dip")) {
+    result.primaryGroup = "Chest";
+    result.secondaryGroups = ["Arms", "Shoulders"];
+    result.secondarySubs = ["Triceps", "Front Deltoids"];
+    
+    if (n.includes("incline")) {
+      result.primarySubs = ["Upper Chest"];
+    } else if (n.includes("decline")) {
+      result.primarySubs = ["Lower Chest"];
+    } else {
+      result.primarySubs = ["Mid Chest", "Lower Chest"];
+    }
+  } else if (n.includes("fly") || n.includes("pec deck") || n.includes("cable crossover")) {
+    result.primaryGroup = "Chest";
+    result.primarySubs = ["Mid Chest", "Upper Chest"];
+    result.secondaryGroups = [];
+    result.secondarySubs = [];
+  }
+  
+  // Back / Pull
+  else if (n.includes("lat pulldown") || n.includes("pullup") || n.includes("pull-up") || n.includes("chinup") || n.includes("chin-up") || n.includes("lat pull")) {
+    result.primaryGroup = "Back";
+    result.primarySubs = ["Latissimus Dorsi (Lats)"];
+    result.secondaryGroups = ["Arms", "Back"];
+    result.secondarySubs = ["Biceps", "Trapezius (Traps)"];
+  } else if (n.includes("row")) {
+    result.primaryGroup = "Back";
+    result.primarySubs = ["Rhomboids & Mid-Back", "Latissimus Dorsi (Lats)"];
+    result.secondaryGroups = ["Arms", "Back"];
+    result.secondarySubs = ["Biceps", "Trapezius (Traps)"];
+  } else if (n.includes("deadlift")) {
+    result.primaryGroup = "Back";
+    result.primarySubs = ["Lower Back"];
+    result.secondaryGroups = ["Legs", "Back"];
+    result.secondarySubs = ["Hamstrings", "Gluteals", "Trapezius (Traps)", "Rhomboids & Mid-Back"];
+  } else if (n.includes("shrug")) {
+    result.primaryGroup = "Back";
+    result.primarySubs = ["Trapezius (Traps)"];
+    result.secondaryGroups = ["Arms"];
+    result.secondarySubs = ["Forearms"];
+  }
+  
+  // Shoulders
+  else if (n.includes("shoulder press") || n.includes("overhead press") || n.includes("military press") || n.includes("arnold press")) {
+    result.primaryGroup = "Shoulders";
+    result.primarySubs = ["Front Deltoids", "Side Deltoids"];
+    result.secondaryGroups = ["Arms"];
+    result.secondarySubs = ["Triceps"];
+  } else if (n.includes("lateral raise") || n.includes("side raise")) {
+    result.primaryGroup = "Shoulders";
+    result.primarySubs = ["Side Deltoids"];
+    result.secondaryGroups = [];
+    result.secondarySubs = [];
+  } else if (n.includes("rear delt") || n.includes("face pull") || n.includes("reverse fly")) {
+    result.primaryGroup = "Shoulders";
+    result.primarySubs = ["Rear Deltoids"];
+    result.secondaryGroups = ["Back"];
+    result.secondarySubs = ["Rhomboids & Mid-Back"];
+  }
+  
+  // Arms
+  else if (n.includes("bicep curl") || n.includes("hammer curl") || n.includes("preacher curl") || n.includes("spider curl") || n.includes("bicep")) {
+    result.primaryGroup = "Arms";
+    result.primarySubs = ["Biceps"];
+    result.secondaryGroups = ["Arms"];
+    result.secondarySubs = ["Forearms"];
+  } else if (n.includes("tricep pushdown") || n.includes("tricep extension") || n.includes("skull crusher") || n.includes("tricep kickback") || n.includes("tricep")) {
+    result.primaryGroup = "Arms";
+    result.primarySubs = ["Triceps"];
+    result.secondaryGroups = [];
+    result.secondarySubs = [];
+  } else if (n.includes("forearm") || n.includes("wrist curl") || n.includes("grip")) {
+    result.primaryGroup = "Arms";
+    result.primarySubs = ["Forearms"];
+    result.secondaryGroups = [];
+    result.secondarySubs = [];
+  }
+  
+  // Legs
+  else if (n.includes("squat") || n.includes("leg press") || n.includes("hack squat")) {
+    result.primaryGroup = "Legs";
+    result.primarySubs = ["Quadriceps", "Gluteals"];
+    result.secondaryGroups = ["Legs", "Back"];
+    result.secondarySubs = ["Hamstrings", "Lower Back"];
+  } else if (n.includes("leg extension") || n.includes("quad extension")) {
+    result.primaryGroup = "Legs";
+    result.primarySubs = ["Quadriceps"];
+    result.secondaryGroups = [];
+    result.secondarySubs = [];
+  } else if (n.includes("leg curl") || n.includes("hamstring curl") || n.includes("romanian deadlift") || n.includes("rdl")) {
+    result.primaryGroup = "Legs";
+    result.primarySubs = ["Hamstrings", "Gluteals"];
+    result.secondaryGroups = ["Back"];
+    result.secondarySubs = ["Lower Back"];
+  } else if (n.includes("calf raise") || n.includes("calf")) {
+    result.primaryGroup = "Legs";
+    result.primarySubs = ["Calves"];
+    result.secondaryGroups = [];
+    result.secondarySubs = [];
+  } else if (n.includes("lunge") || n.includes("hip thrust") || n.includes("glute kickback")) {
+    result.primaryGroup = "Legs";
+    result.primarySubs = ["Gluteals"];
+    result.secondaryGroups = ["Legs"];
+    result.secondarySubs = ["Hamstrings", "Quadriceps"];
+  }
+  
+  // Core
+  else if (n.includes("crunch") || n.includes("situp") || n.includes("sit-up") || n.includes("abdominal")) {
+    result.primaryGroup = "Core";
+    result.primarySubs = ["Rectus Abdominis (Abs)"];
+    result.secondaryGroups = [];
+    result.secondarySubs = [];
+  } else if (n.includes("twist") || n.includes("oblique") || n.includes("side bend")) {
+    result.primaryGroup = "Core";
+    result.primarySubs = ["Obliques"];
+    result.secondaryGroups = [];
+    result.secondarySubs = [];
+  } else if (n.includes("plank") || n.includes("ab wheel") || n.includes("rollout")) {
+    result.primaryGroup = "Core";
+    result.primarySubs = ["Transverse Abdominis", "Deep Core Stabilizers"];
+    result.secondaryGroups = ["Back", "Shoulders"];
+    result.secondarySubs = ["Lower Back", "Front Deltoids"];
+  } else if (n.includes("hanging leg raise") || n.includes("knee raise") || n.includes("core")) {
+    result.primaryGroup = "Core";
+    result.primarySubs = ["Rectus Abdominis (Abs)", "Deep Core Stabilizers"];
+    result.secondaryGroups = [];
+    result.secondarySubs = [];
+  }
+  
+  // Generic fallback if nothing matches
+  else {
+    if (n.includes("press")) {
+      result.primaryGroup = "Chest";
+      result.primarySubs = ["Mid Chest"];
+      result.secondaryGroups = ["Arms"];
+      result.secondarySubs = ["Triceps"];
+    } else if (n.includes("pull") || n.includes("lift")) {
+      result.primaryGroup = "Back";
+      result.primarySubs = ["Latissimus Dorsi (Lats)"];
+      result.secondaryGroups = ["Arms"];
+      result.secondarySubs = ["Biceps"];
+    } else if (n.includes("raise")) {
+      result.primaryGroup = "Shoulders";
+      result.primarySubs = ["Side Deltoids"];
+    } else if (n.includes("curl")) {
+      result.primaryGroup = "Arms";
+      result.primarySubs = ["Biceps"];
+    } else {
+      result.primaryGroup = "Arms";
+      result.primarySubs = ["Forearms"];
+    }
+  }
+
+  return result;
+}
+
 interface ConsoleDViewProps {
   profile: any;
   syncedProfile: any;
@@ -103,14 +277,63 @@ export default function ConsoleDView({
     }
   });
 
+  // 3. Spinal & Neuromuscular Decompression Checklist items
+  const [drillHanging, setDrillHanging] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("drill_hanging") === "true";
+    } catch {
+      return false;
+    }
+  });
+  const [drillTwist, setDrillTwist] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("drill_twist") === "true";
+    } catch {
+      return false;
+    }
+  });
+  const [drillSquat, setDrillSquat] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("drill_squat") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  const localSpinalUnitsDelta = useMemo(() => {
+    let sum = 0;
+    if (drillHanging) sum += 1.5;
+    if (drillTwist) sum += 1.5;
+    if (drillSquat) sum += 1.5;
+    return sum;
+  }, [drillHanging, drillTwist, drillSquat]);
+
+  const toggleDrillHanging = () => {
+    const next = !drillHanging;
+    setDrillHanging(next);
+    try {
+      localStorage.setItem("drill_hanging", String(next));
+    } catch (e) {}
+  };
+
+  const toggleDrillTwist = () => {
+    const next = !drillTwist;
+    setDrillTwist(next);
+    try {
+      localStorage.setItem("drill_twist", String(next));
+    } catch (e) {}
+  };
+
+  const toggleDrillSquat = () => {
+    const next = !drillSquat;
+    setDrillSquat(next);
+    try {
+      localStorage.setItem("drill_squat", String(next));
+    } catch (e) {}
+  };
+
   const baselineRecovery = useMemo(() => {
-    const defaultPercent: Record<string, number> = {
-      Chest: 100,
-      Back: 100,
-      Legs: 100,
-      Shoulders: 100,
-      Arms: 100,
-    };
+    const todayStr = new Date().toISOString().split("T")[0];
 
     const getDaysDiff = (d1Str: string, d2Str: string) => {
       try {
@@ -124,60 +347,87 @@ export default function ConsoleDView({
       }
     };
 
-    const getMuscleGroupForExercise = (exerciseName: string): string => {
-      const name = (exerciseName || "").toLowerCase();
-      // Match legs first (to prevent "leg press" from matching chest)
-      if (name.includes("leg press") || name.includes("squat") || name.includes("leg") || name.includes("calf") || name.includes("quad") || name.includes("glute") || name.includes("lunge") || name.includes("hamstring")) return "Legs";
-      // Match shoulders next (to prevent "shoulder press" from matching chest)
-      if (name.includes("shoulder press") || name.includes("overhead press") || name.includes("military press") || name.includes("shoulder") || name.includes("lateral") || name.includes("delt") || name.includes("raise")) return "Shoulders";
-      // Match chest
-      if (name.includes("chest") || name.includes("bench") || name.includes("press") || name.includes("fly") || name.includes("pushup") || name.includes("dip")) return "Chest";
-      // Match back
-      if (name.includes("back") || name.includes("row") || name.includes("pull") || name.includes("chin") || name.includes("lat") || name.includes("deadlift")) return "Back";
-      // Match arms
-      if (name.includes("bicep") || name.includes("tricep") || name.includes("curl") || name.includes("arm") || name.includes("forearm") || name.includes("wrist")) return "Arms";
-      return "";
+    // Initialize accumulated fatigue
+    const fatigueByGroup: Record<string, number> = {
+      Chest: 0, Back: 0, Legs: 0, Shoulders: 0, Arms: 0, Core: 0
     };
-
-    const todayStr = new Date().toISOString().split("T")[0];
-
-    // Check today's active session sets
-    sessionSets.forEach((set) => {
-      const g = getMuscleGroupForExercise(set.exerciseName);
-      if (g) {
-        defaultPercent[g] = 25; // trained today -> very sore!
-      }
+    
+    const fatigueBySub: Record<string, number> = {};
+    const allSubMuscles = [
+      "Upper Chest", "Mid Chest", "Lower Chest",
+      "Latissimus Dorsi (Lats)", "Rhomboids & Mid-Back", "Trapezius (Traps)", "Lower Back",
+      "Front Deltoids", "Side Deltoids", "Rear Deltoids",
+      "Biceps", "Triceps", "Forearms",
+      "Quadriceps", "Hamstrings", "Gluteals", "Calves",
+      "Rectus Abdominis (Abs)", "Obliques", "Transverse Abdominis", "Deep Core Stabilizers"
+    ];
+    allSubMuscles.forEach(sub => {
+      fatigueBySub[sub] = 0;
     });
 
-    // Check archived workouts within last 5 days
+    const processSet = (exerciseName: string, decay: number) => {
+      const parsed = parseExercise(exerciseName);
+      if (parsed.primaryGroup) {
+        fatigueByGroup[parsed.primaryGroup] = (fatigueByGroup[parsed.primaryGroup] || 0) + (10 * decay);
+        parsed.primarySubs.forEach(sub => {
+          fatigueBySub[sub] = (fatigueBySub[sub] || 0) + (12 * decay);
+        });
+      }
+      parsed.secondaryGroups.forEach(g => {
+        fatigueByGroup[g] = (fatigueByGroup[g] || 0) + (3 * decay);
+      });
+      parsed.secondarySubs.forEach(sub => {
+        fatigueBySub[sub] = (fatigueBySub[sub] || 0) + (4 * decay);
+      });
+    };
+
+    // 1. Process active session sets (today, diff = 0)
+    sessionSets.forEach((set) => {
+      processSet(set.exerciseName, 1.0);
+    });
+
+    // 2. Process archived sets in the last 5 days
     archivedWorkouts.forEach((w) => {
       const wDate = w.date || todayStr;
       const diff = getDaysDiff(todayStr, wDate);
       if (diff >= 0 && diff <= 4) {
+        let decay = 1.0;
+        if (diff === 0) decay = 1.0;
+        else if (diff === 1) decay = 0.60;
+        else if (diff === 2) decay = 0.35;
+        else if (diff === 3) decay = 0.15;
+        else if (diff === 4) decay = 0.05;
+
         const wSets = w.sets || [];
         wSets.forEach((set: any) => {
-          const g = getMuscleGroupForExercise(set.exerciseName);
-          if (g) {
-            let val = 100;
-            if (diff === 0) val = 25;
-            else if (diff === 1) val = 45;
-            else if (diff === 2) val = 65;
-            else if (diff === 3) val = 85;
-
-            if (val < defaultPercent[g]) {
-              defaultPercent[g] = val;
-            }
-          }
+          processSet(set.exerciseName, decay);
         });
       }
     });
 
-    return defaultPercent;
+    // Compute final recovery percentages with a minimum cap of 15% and maximum 100%
+    const recoveryByGroup: Record<string, number> = {};
+    const recoveryBySub: Record<string, number> = {};
+
+    Object.keys(fatigueByGroup).forEach(g => {
+      const accumulatedFatigue = Math.min(85, fatigueByGroup[g]);
+      recoveryByGroup[g] = Math.round(100 - accumulatedFatigue);
+    });
+
+    allSubMuscles.forEach(sub => {
+      const accumulatedFatigue = Math.min(85, fatigueBySub[sub]);
+      recoveryBySub[sub] = Math.round(100 - accumulatedFatigue);
+    });
+
+    return {
+      groups: recoveryByGroup,
+      subs: recoveryBySub
+    };
   }, [sessionSets, archivedWorkouts]);
 
   const muscleRecovery = useMemo(() => {
     const recovery: Record<string, { percent: number; advice: string }> = {};
-    const muscleGroups = ["Chest", "Back", "Legs", "Shoulders", "Arms"];
+    const muscleGroups = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
 
     const advices: Record<string, Record<string, string>> = {
       Chest: {
@@ -204,11 +454,16 @@ export default function ConsoleDView({
         optimal: "Arm glycogen pools fully charged.",
         sore: "Bicep/tricep tight. Recommended: Light foam rolling.",
         severe: "Highly sore. Focus on grip and forearm release."
+      },
+      Core: {
+        optimal: "Abdominal/transverse wall fully functional.",
+        sore: "Core sore from heavy stabilization. Recommend stretching.",
+        severe: "Deep stabilizer fatigue. Avoid heavy axial loading."
       }
     };
 
     muscleGroups.forEach((m) => {
-      const base = baselineRecovery[m];
+      const base = baselineRecovery.groups[m] ?? 100;
       const stretchBonus = stretchedMuscles[m] || 0;
       const finalPercent = Math.min(100, base + stretchBonus);
 
@@ -224,8 +479,6 @@ export default function ConsoleDView({
 
     return recovery;
   }, [baselineRecovery, stretchedMuscles]);
-
-  const [localSpinalUnitsDelta, setLocalSpinalUnitsDelta] = useState<number>(0);
 
   // Compute synergy values based on interactive decompression
   const synergeticSpinalLoadUnits = useMemo(() => {
@@ -273,17 +526,26 @@ export default function ConsoleDView({
         ...prev,
         [muscle]: Math.min(75, (prev[muscle] || 0) + 15) // max stretch recovery bonus of 75%
       };
-      localStorage.setItem("somatic_stretched_muscles", JSON.stringify(updated));
+      try {
+        localStorage.setItem("somatic_stretched_muscles", JSON.stringify(updated));
+      } catch (e) {}
       return updated;
     });
-    // Relieve spinal load units when muscles are stretched (active decompression)
-    setLocalSpinalUnitsDelta((prev) => Math.min(15, prev + 1.5));
   };
 
   const resetSynergyDecompression = () => {
-    setLocalSpinalUnitsDelta(0);
-    setStretchedMuscles({ Chest: 0, Back: 0, Legs: 0, Shoulders: 0, Arms: 0 });
-    localStorage.removeItem("somatic_stretched_muscles");
+    setDrillHanging(false);
+    setDrillTwist(false);
+    setDrillSquat(false);
+    try {
+      localStorage.removeItem("drill_hanging");
+      localStorage.removeItem("drill_twist");
+      localStorage.removeItem("drill_squat");
+    } catch (e) {}
+    setStretchedMuscles({ Chest: 0, Back: 0, Legs: 0, Shoulders: 0, Arms: 0, Core: 0 });
+    try {
+      localStorage.removeItem("somatic_stretched_muscles");
+    } catch (e) {}
   };
 
   // 4. Weight and Fat local histories & inputs
@@ -860,7 +1122,7 @@ export default function ConsoleDView({
           </div>
         </div>
 
-        {/* Right: Muscle Group Capacity Carousel (replaces Somatic Torque Matrix) */}
+        {/* Right: Muscle Group Recovery Carousel (replaces Capacity Matrix) */}
         <div className="lg:col-span-5 flex flex-col justify-between">
           <div 
             onMouseEnter={() => setHoveredCard("capacity")}
@@ -881,7 +1143,7 @@ export default function ConsoleDView({
                   Muscle Load Breakdown
                 </span>
                 <h3 className="text-base font-semibold text-white">
-                  Muscle Group <span style={{ color: accent }} className="font-serif italic">Capacity</span>
+                  Muscle Recovery <span style={{ color: accent }} className="font-serif italic">Status</span>
                 </h3>
               </div>
               {/* Navigation buttons */}
@@ -908,49 +1170,49 @@ export default function ConsoleDView({
 
             {(() => {
               const currentGroup = matrixGroups[activeMatrixSlide];
-              const parentScore = recruitment[currentGroup] ?? 50;
-              const subScores = recruitment.subScores || {};
+              const parentRecovery = muscleRecovery[currentGroup]?.percent ?? 100;
+              const subRec = baselineRecovery.subs || {};
               
-              // Define sub-muscles for current group using exact tracking if available
+              // Define sub-muscles for current group based on precise sub-muscle calculations
               let subMuscles: { name: string; pct: number }[] = [];
               if (currentGroup === "Chest") {
                 subMuscles = [
-                  { name: "Upper Chest", pct: subScores["Upper Chest"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Mid Chest", pct: subScores["Mid Chest"] ?? Math.min(100, Math.round(parentScore * 0.95)) },
-                  { name: "Lower Chest", pct: subScores["Lower Chest"] ?? Math.min(100, Math.round(parentScore * 0.90)) },
+                  { name: "Upper Chest", pct: subRec["Upper Chest"] ?? 100 },
+                  { name: "Mid Chest", pct: subRec["Mid Chest"] ?? 100 },
+                  { name: "Lower Chest", pct: subRec["Lower Chest"] ?? 100 },
                 ];
               } else if (currentGroup === "Back") {
                 subMuscles = [
-                  { name: "Latissimus Dorsi (Lats)", pct: subScores["Latissimus Dorsi (Lats)"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Rhomboids & Mid-Back", pct: subScores["Rhomboids & Mid-Back"] ?? Math.min(100, Math.round(parentScore * 0.95)) },
-                  { name: "Trapezius (Traps)", pct: subScores["Trapezius (Traps)"] ?? Math.min(100, Math.round(parentScore * 1.00)) },
-                  { name: "Lower Back", pct: subScores["Lower Back"] ?? Math.min(100, Math.round(parentScore * 0.85)) },
+                  { name: "Latissimus Dorsi (Lats)", pct: subRec["Latissimus Dorsi (Lats)"] ?? 100 },
+                  { name: "Rhomboids & Mid-Back", pct: subRec["Rhomboids & Mid-Back"] ?? 100 },
+                  { name: "Trapezius (Traps)", pct: subRec["Trapezius (Traps)"] ?? 100 },
+                  { name: "Lower Back", pct: subRec["Lower Back"] ?? 100 },
                 ];
               } else if (currentGroup === "Shoulders") {
                 subMuscles = [
-                  { name: "Front Deltoids", pct: subScores["Front Deltoids"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Side Deltoids", pct: subScores["Side Deltoids"] ?? Math.min(100, Math.round(parentScore * 1.00)) },
-                  { name: "Rear Deltoids", pct: subScores["Rear Deltoids"] ?? Math.min(100, Math.round(parentScore * 0.90)) },
+                  { name: "Front Deltoids", pct: subRec["Front Deltoids"] ?? 100 },
+                  { name: "Side Deltoids", pct: subRec["Side Deltoids"] ?? 100 },
+                  { name: "Rear Deltoids", pct: subRec["Rear Deltoids"] ?? 100 },
                 ];
               } else if (currentGroup === "Arms") {
                 subMuscles = [
-                  { name: "Biceps", pct: subScores["Biceps"] ?? Math.min(100, Math.round(parentScore * 1.02)) },
-                  { name: "Triceps", pct: subScores["Triceps"] ?? Math.min(100, Math.round(parentScore * 0.98)) },
-                  { name: "Forearms", pct: subScores["Forearms"] ?? Math.min(100, Math.round(parentScore * 0.85)) },
+                  { name: "Biceps", pct: subRec["Biceps"] ?? 100 },
+                  { name: "Triceps", pct: subRec["Triceps"] ?? 100 },
+                  { name: "Forearms", pct: subRec["Forearms"] ?? 100 },
                 ];
               } else if (currentGroup === "Legs") {
                 subMuscles = [
-                  { name: "Quadriceps", pct: subScores["Quadriceps"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Hamstrings", pct: subScores["Hamstrings"] ?? Math.min(100, Math.round(parentScore * 0.95)) },
-                  { name: "Gluteals", pct: subScores["Gluteals"] ?? Math.min(100, Math.round(parentScore * 1.00)) },
-                  { name: "Calves", pct: subScores["Calves"] ?? Math.min(100, Math.round(parentScore * 0.80)) },
+                  { name: "Quadriceps", pct: subRec["Quadriceps"] ?? 100 },
+                  { name: "Hamstrings", pct: subRec["Hamstrings"] ?? 100 },
+                  { name: "Gluteals", pct: subRec["Gluteals"] ?? 100 },
+                  { name: "Calves", pct: subRec["Calves"] ?? 100 },
                 ];
               } else if (currentGroup === "Core") {
                 subMuscles = [
-                  { name: "Rectus Abdominis (Abs)", pct: subScores["Rectus Abdominis (Abs)"] ?? Math.min(100, Math.round(parentScore * 1.05)) },
-                  { name: "Obliques", pct: subScores["Obliques"] ?? Math.min(100, Math.round(parentScore * 0.95)) },
-                  { name: "Transverse Abdominis", pct: subScores["Transverse Abdominis"] ?? Math.min(100, Math.round(parentScore * 0.90)) },
-                  { name: "Deep Core Stabilizers", pct: subScores["Deep Core Stabilizers"] ?? Math.min(100, Math.round(parentScore * 1.00)) },
+                  { name: "Rectus Abdominis (Abs)", pct: subRec["Rectus Abdominis (Abs)"] ?? 100 },
+                  { name: "Obliques", pct: subRec["Obliques"] ?? 100 },
+                  { name: "Transverse Abdominis", pct: subRec["Transverse Abdominis"] ?? 100 },
+                  { name: "Deep Core Stabilizers", pct: subRec["Deep Core Stabilizers"] ?? 100 },
                 ];
               }
 
@@ -958,30 +1220,41 @@ export default function ConsoleDView({
                 <div className="flex-1 flex flex-col justify-between pt-1 h-full min-h-[300px]">
                   {/* Parent Overall Score Badge */}
                   <div className="bg-white/[0.01] border border-white/5 rounded-lg p-3 flex items-center justify-between mb-2">
-                    <span className="text-[11px] text-white/50 font-mono">Overall {currentGroup} Capacity</span>
-                    <span style={{ color: accent }} className="text-sm font-mono font-black">{parentScore}%</span>
+                    <span className="text-[11px] text-white/50 font-mono">Overall {currentGroup} Recovery</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-mono font-black uppercase ${
+                        parentRecovery >= 80 ? "text-emerald-400" : parentRecovery < 60 ? "text-red-400" : "text-amber-400"
+                      }`}>
+                        {parentRecovery >= 80 ? "OPTIMAL" : parentRecovery < 60 ? "FATIGUED" : "RECOVERING"}
+                      </span>
+                      <span style={{ color: parentRecovery >= 80 ? "#34d399" : parentRecovery < 60 ? "#f87171" : "#fbbf24" }} className="text-sm font-mono font-black">
+                        {parentRecovery}%
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex-1 flex flex-col justify-around py-4 space-y-4">
-                    {subMuscles.map((sub) => (
-                      <div key={sub.name} className="space-y-2">
-                        <div className="flex justify-between items-center text-xs md:text-sm font-mono">
-                          <span className="text-white/80 font-medium">{sub.name}</span>
-                          <span style={{ color: sub.pct > 75 ? accent : "rgba(255, 255, 255, 0.4)" }} className={sub.pct > 75 ? "font-bold" : ""}>
-                            {sub.pct}%
-                          </span>
+                  <div className="flex-1 flex flex-col justify-around py-2 space-y-3">
+                    {subMuscles.map((sub) => {
+                      const barColor = sub.pct >= 80 ? "from-emerald-500 to-teal-400" : sub.pct < 60 ? "from-red-500 to-rose-400" : "from-amber-500 to-orange-400";
+                      return (
+                        <div key={sub.name} className="space-y-1.5">
+                          <div className="flex justify-between items-center text-xs font-mono">
+                            <span className="text-white/80 font-medium">{sub.name}</span>
+                            <span style={{ color: sub.pct >= 80 ? "#34d399" : sub.pct < 60 ? "#f87171" : "#fbbf24" }} className="font-bold">
+                              {sub.pct}%
+                            </span>
+                          </div>
+                          <div className="h-2 w-full bg-white/[0.02] border border-white/5 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${sub.pct}%` }}
+                              transition={{ duration: 0.5, ease: "easeOut" }}
+                              className={`h-full rounded-full bg-gradient-to-r ${barColor}`}
+                            />
+                          </div>
                         </div>
-                        <div className="h-2 w-full bg-white/[0.02] border border-white/5 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${sub.pct}%` }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            style={{ background: `linear-gradient(to right, ${accentDark}, ${accent})` }}
-                            className="h-full rounded-full"
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -1128,51 +1401,93 @@ export default function ConsoleDView({
             </div>
           </div>
 
-          {/* Muscle Recovery Gauges */}
-          <div className="lg:col-span-7 space-y-3">
+          {/* Decompression Recommendations & Neuromuscular Insights */}
+          <div className="lg:col-span-7 space-y-4">
             <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest block font-bold">
-              MUSCLE RECOVERY STATUS
+              NEUROMUSCULAR DECOMPRESSION RECOMMENDATIONS
             </span>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              {(Object.entries(muscleRecovery) as [string, { percent: number; advice: string }][]).map(([muscle, data]) => {
-                const isOptimal = data.percent >= 80;
-                const isSevere = data.percent < 60;
-                return (
-                  <div 
-                    key={muscle} 
-                    className="bg-[#0b0b0b] border border-white/5 rounded-xl p-3 flex flex-col justify-between text-left hover:border-orange-500/20 transition-all duration-300"
-                  >
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-white/80 font-bold block">{muscle}</span>
-                      <span className={`text-base font-black font-mono ${isOptimal ? "text-emerald-400" : isSevere ? "text-red-400" : "text-amber-400"}`}>
-                        {data.percent}%
-                      </span>
-                      <p className="text-[8px] text-white/30 leading-normal min-h-[36px]">
-                        {data.advice}
-                      </p>
-                    </div>
-
-                    <div className="mt-3 pt-2 border-t border-white/[0.03] flex items-center justify-between gap-1.5">
-                      <span className="text-[7px] font-mono text-white/30 uppercase">
-                        Status
-                      </span>
-                      <span className={`text-[8px] font-mono font-extrabold uppercase tracking-wider ${isOptimal ? "text-emerald-400" : isSevere ? "text-red-400" : "text-amber-400"}`}>
-                        {isOptimal ? "OPTIMAL" : isSevere ? "FATIGUED" : "RECOVERING"}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            {localSpinalUnitsDelta > 0 && (
-              <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-lg p-3 text-[10px] font-mono text-emerald-400 flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>
-                  STRETCH ACTIVE: Your stretching drills have helped your recovery, subtracting 
-                  <span className="font-bold"> -{localSpinalUnitsDelta.toFixed(1)} Joint Stress Units</span> and improving muscle recovery.
-                </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-[#0b0b0b] border border-white/5 rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-white/70" style={{ color: synergeticCNSInfo.hexColor }} />
+                  <span className="text-xs font-mono font-bold text-white">CNS Stress Protocol</span>
+                </div>
+                <p className="text-[10px] text-white/50 leading-relaxed">
+                  {synergeticSpinalScore >= 75 
+                    ? "High neural strain detected. Recommended to sleep 8.5+ hours and avoid pre-workout stimulants today."
+                    : synergeticSpinalScore >= 45 
+                      ? "Moderate peripheral fatigue. Keep rest intervals at 90-120 seconds between working sets."
+                      : "CNS fully primed. Neural drive is optimal for high velocity or heavy absolute loads."
+                  }
+                </p>
               </div>
-            )}
+
+              <div className="bg-[#0b0b0b] border border-white/5 rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-mono font-bold text-white">Spinal Compression State</span>
+                </div>
+                <p className="text-[10px] text-white/50 leading-relaxed">
+                  {localSpinalUnitsDelta > 0 
+                    ? `Active stretching drills have decreased lumbar compression by ${localSpinalUnitsDelta.toFixed(1)} units.`
+                    : "Zero decompression drills logged today. Recommend performing hanging bar hold or cat-cow stretches."
+                  }
+                </p>
+              </div>
+            </div>
+
+            {/* Active Decompression Drills checklist */}
+            <div className="bg-[#080808]/50 border border-white/[0.03] rounded-xl p-4 space-y-3">
+              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest block font-bold">
+                RECOMMENDED DAILY DECOMPRESSION CHECKLIST
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
+                  onClick={toggleDrillHanging}
+                  className="flex items-center text-left gap-2.5 p-2 bg-black/20 hover:bg-white/[0.04] active:scale-[0.98] border border-white/5 rounded-lg transition-all cursor-pointer w-full"
+                >
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 text-[10px] font-bold ${
+                    drillHanging ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "border-white/10 text-white/20"
+                  }`}>
+                    {drillHanging ? "✓" : "○"}
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono text-white/80 block font-bold">Hanging Hold</span>
+                    <span className="text-[8px] text-white/30 block">2 sets of 45s</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={toggleDrillTwist}
+                  className="flex items-center text-left gap-2.5 p-2 bg-[#0d0d0d] hover:bg-white/[0.04] active:scale-[0.98] border border-white/5 rounded-lg transition-all cursor-pointer w-full"
+                >
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 text-[10px] font-bold ${
+                    drillTwist ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "border-white/10 text-white/20"
+                  }`}>
+                    {drillTwist ? "✓" : "○"}
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono text-white/80 block font-bold">Lumbar Twist</span>
+                    <span className="text-[8px] text-white/30 block">10 slow reps/side</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={toggleDrillSquat}
+                  className="flex items-center text-left gap-2.5 p-2 bg-[#0d0d0d] hover:bg-white/[0.04] active:scale-[0.98] border border-white/5 rounded-lg transition-all cursor-pointer w-full"
+                >
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 text-[10px] font-bold ${
+                    drillSquat ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "border-white/10 text-white/20"
+                  }`}>
+                    {drillSquat ? "✓" : "○"}
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono text-white/80 block font-bold">Deep Squat Hold</span>
+                    <span className="text-[8px] text-white/30 block">1 set of 60s</span>
+                  </div>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

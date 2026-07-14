@@ -52,38 +52,11 @@ import imgCyberBeastFlex from '../assets/images/cyber_beast_flex_1779361174893.p
 import imgCyberBeastCharge from '../assets/images/cyber_beast_charge_1779361191878.png';
 import imgCyberBeastRoar from '../assets/images/cyber_beast_roar_1779361209673.png';
 
-// Golden Disciple Imports
-import imgGoldenDiscipleDefault from '../assets/images/golden_disciple_1779356934562.png';
-import imgGoldenDiscipleFlex from '../assets/images/golden_disciple_flex_1779361226424.png';
-import imgGoldenDiscipleCharge from '../assets/images/gold_disciple_charge_1779361244052.png';
-import imgGoldenDiscipleRoar from '../assets/images/gold_disciple_roar_1779361263799.png';
-
-// Omega Prime Imports
-import imgOmegaPrimeDefault from '../assets/images/omega_prime_1779356957034.png';
-import imgOmegaPrimeFlex from '../assets/images/omega_prime_flex_1779361283032.png';
-import imgOmegaPrimeCharge from '../assets/images/omega_prime_charge_1779361301468.png';
-import imgOmegaPrimeRoar from '../assets/images/omega_prime_roar_1779361316201.png';
-
-// Shadow Wraith and Lumen Sentinel Generated Imports
-import imgShadowWraithDefault from '../assets/images/shadow_wraith_cyber_1779445357447.png';
-import imgShadowWraithFlex from '../assets/images/shadow_wraith_flex_1779446074058.png';
-import imgShadowWraithCharge from '../assets/images/shadow_wraith_charge_1779446090352.png';
-import imgShadowWraithRoar from '../assets/images/shadow_wraith_roar_1779446108786.png';
-import imgShadowWraithFinal from '../assets/images/wraith_supreme_final_v2_1779449842798.png';
-
-import imgLumenSentinelDefault from '../assets/images/lumen_sentinel_cyber_1779445373875.png';
-import imgLumenSentinelFlex from '../assets/images/lumen_sentinel_flex_1779446141435.png';
-import imgLumenSentinelCharge from '../assets/images/lumen_sentinel_charge_1779446157202.png';
-import imgLumenSentinelRoar from '../assets/images/lumen_sentinel_roar_1779446173501.png';
-import imgLumenSentinelFinal from '../assets/images/lumen_sentinel_final_1779446190633.png';
-
 // Newly generated Final Forms
 import imgVanguardFinal from '../assets/images/vanguard_final_1779446997564.png';
 import imgNeonStrikerFinal from '../assets/images/neon_striker_final_1779960441556.png';
 import imgShadowHunterFinal from '../assets/images/shadow_hunter_final_1779447034179.png';
 import imgCyberBeastFinal from '../assets/images/cyber_beast_final_1779447049772.png';
-import imgGoldenDiscipleFinal from '../assets/images/golden_disciple_final_1779447066274.png';
-import imgOmegaPrimeFinal from '../assets/images/omega_prime_final_1779447085411.png';
 
 // Naruto Imports
 import imgNarutoDefault from '../assets/images/No_Emote_Pose-1.png';
@@ -106,15 +79,25 @@ import imgJinwooCharge from '../assets/images/Power_Charge_J.png';
 import imgJinwooRoar from '../assets/images/Savage_Roar_J.png';
 import imgJinwooFinal from '../assets/images/Final_Form_J.png';
 
+// Goku Imports
+import imgGokuDefault from '../assets/images/No_Emote_Pose_G.png';
+import imgGokuFlex from '../assets/images/Flex_Mode_G.png';
+import imgGokuCharge from '../assets/images/Power_Charge_G.png';
+import imgGokuRoar from '../assets/images/Savage_Roar_G.png';
+import imgGokuFinal from '../assets/images/Final_Form_G.png';
+
+// Kaiju No 8 Imports
+import imgKaijuDefault from '../assets/images/No_Emote_Pose_K.png';
+import imgKaijuFlex from '../assets/images/Flex_Mode_K.png';
+import imgKaijuCharge from '../assets/images/Power_Charge_K.png';
+import imgKaijuRoar from '../assets/images/Savage_Roar_K.png';
+import imgKaijuFinal from '../assets/images/Final_Form_K.png';
+
 // Text-free character class landscape banners
 import imgBannerVanguardCadet from '../assets/images/banner_vanguard_cadet_1779449260585.png';
 import imgBannerNeonStriker from '../assets/images/banner_neon_striker_1779449278463.png';
 import imgBannerShadowHunter from '../assets/images/banner_shadow_hunter_1779449294320.png';
 import imgBannerCyberBeast from '../assets/images/banner_cyber_beast_1779449309358.png';
-import imgBannerGoldenDisciple from '../assets/images/banner_golden_disciple_1779449325883.png';
-import imgBannerOmegaPrime from '../assets/images/banner_omega_prime_mech_1779449344526.png';
-import imgBannerPhantomWraith from '../assets/images/banner_phantom_wraith_v3_1779451441624.png';
-import imgBannerLumenSentinel from '../assets/images/banner_lumen_sentinel_1779449818555.png';
 
 
 interface UserProfile {
@@ -221,70 +204,7 @@ export const OUTFITS = [
       final_form: imgCyberBeastFinal
     }
   },
-  {
-    id: 'golden_disciple',
-    name: 'Golden Disciple',
-    description: 'Gleaming physical specimen with solid gold plating.',
-    price: 18000,
-    image: imgGoldenDiscipleDefault,
-    accentColor: 'from-amber-400 to-yellow-600',
-    glowClass: 'shadow-[0_0_20px_rgba(245,158,11,0.3)]',
-    poseImages: {
-      default: imgGoldenDiscipleDefault,
-      flex_mode: imgGoldenDiscipleFlex,
-      power_charge: imgGoldenDiscipleCharge,
-      savage_roar: imgGoldenDiscipleRoar,
-      final_form: imgGoldenDiscipleFinal
-    }
-  },
-  {
-    id: 'omega_prime',
-    name: 'Omega Prime',
-    description: 'Fully heavy armored mecha cyborg athlete.',
-    price: 20000,
-    image: imgOmegaPrimeDefault,
-    accentColor: 'from-red-600 to-indigo-900',
-    glowClass: 'shadow-[0_0_20px_rgba(220,38,38,0.3)]',
-    poseImages: {
-      default: imgOmegaPrimeDefault,
-      flex_mode: imgOmegaPrimeFlex,
-      power_charge: imgOmegaPrimeCharge,
-      savage_roar: imgOmegaPrimeRoar,
-      final_form: imgOmegaPrimeFinal
-    }
-  },
-  {
-    id: 'shadow_wraith',
-    name: 'Phantom Wraith',
-    description: 'Mysterious smoked-out phantom cyborg cloaked in deep shadow arrays and crimson visors.',
-    price: 16000,
-    image: imgShadowWraithDefault,
-    accentColor: 'from-zinc-800 to-black',
-    glowClass: 'shadow-[0_0_25px_rgba(24,24,27,0.7)]',
-    poseImages: {
-      default: imgShadowWraithDefault,
-      flex_mode: imgShadowWraithFlex,
-      power_charge: imgShadowWraithCharge,
-      savage_roar: imgShadowWraithRoar,
-      final_form: imgShadowWraithFinal
-    }
-  },
-  {
-    id: 'lumen_sentinel',
-    name: 'Lumen Sentinel',
-    description: 'Pristine, high-tech white cyber paladin with glowing cyan highlights.',
-    price: 18000,
-    image: imgLumenSentinelDefault,
-    accentColor: 'from-zinc-100 via-white to-sky-100',
-    glowClass: 'shadow-[0_0_25px_rgba(255,255,255,0.6)] border border-white/20',
-    poseImages: {
-      default: imgLumenSentinelDefault,
-      flex_mode: imgLumenSentinelFlex,
-      power_charge: imgLumenSentinelCharge,
-      savage_roar: imgLumenSentinelRoar,
-      final_form: imgLumenSentinelFinal
-    }
-  },
+
   {
     id: 'naruto',
     name: 'Naruto',
@@ -332,6 +252,38 @@ export const OUTFITS = [
       savage_roar: imgJinwooRoar,
       final_form: imgJinwooFinal
     }
+  },
+  {
+    id: 'goku',
+    name: 'Goku',
+    description: 'The legendary Saiyan warrior. Master of the Kaioken, Super Saiyan Blue, and Mastered Ultra Instinct.',
+    price: 15000,
+    image: imgGokuDefault,
+    accentColor: 'from-orange-500 via-red-500 to-yellow-500',
+    glowClass: 'shadow-[0_0_25px_rgba(249,115,22,0.5)] border border-orange-500/20',
+    poseImages: {
+      default: imgGokuDefault,
+      flex_mode: imgGokuFlex,
+      power_charge: imgGokuCharge,
+      savage_roar: imgGokuRoar,
+      final_form: imgGokuFinal
+    }
+  },
+  {
+    id: 'kaiju8',
+    name: 'Kaiju No. 8',
+    description: 'A Defense Force recruit who transforms into a legendary Category 8 Kaiju with electric cyan energy output.',
+    price: 15000,
+    image: imgKaijuDefault,
+    accentColor: 'from-cyan-500 via-zinc-900 to-teal-400',
+    glowClass: 'shadow-[0_0_25px_rgba(6,182,212,0.5)] border border-cyan-500/20',
+    poseImages: {
+      default: imgKaijuDefault,
+      flex_mode: imgKaijuFlex,
+      power_charge: imgKaijuCharge,
+      savage_roar: imgKaijuRoar,
+      final_form: imgKaijuFinal
+    }
   }
 ];
 
@@ -341,13 +293,11 @@ export const OUTFIT_TO_BANNER: Record<string, string> = {
   neon_striker: 'neon_pump',
   shadow_hunter: 'beast_mode',
   cyber_beast: 'zen_lifter',
-  golden_disciple: 'titan_gold',
-  omega_prime: 'shadow_smoke',
-  shadow_wraith: 'aether_light',
-  lumen_sentinel: 'lumen_sentinel',
   naruto: 'titan_gold',
   sasuke: 'aether_light',
-  jinwoo: 'shadow_smoke'
+  jinwoo: 'shadow_smoke',
+  goku: 'titan_gold',
+  kaiju8: 'zen_lifter'
 };
 
 // Sphere Grid Nodes configuration for visual and interactive talent mapping
@@ -833,13 +783,12 @@ export const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; pa
   neon_striker: { color: '#d946ef', glow: 'shadow-[0_0_100px_rgba(217,70,239,1),_0_0_50px_rgba(217,70,239,0.7)]', particles: '#d946ef', bannerText: 'STRIKER // NEON FORCE', overlayGradient: 'from-fuchsia-500/30 to-transparent' },
   shadow_hunter: { color: '#f43f5e', glow: 'shadow-[0_0_100px_rgba(244,63,94,1),_0_0_50px_rgba(244,63,94,0.7)]', particles: '#f43f5e', bannerText: 'HUNTER // DOOMSDAY OVERDRIVE', overlayGradient: 'from-rose-500/30 to-transparent' },
   cyber_beast: { color: '#06b6d4', glow: 'shadow-[0_0_100px_rgba(6,182,212,1),_0_0_50px_rgba(6,182,212,0.7)]', particles: '#06b6d4', bannerText: 'BEAST // RYU_OVERDRIVE', overlayGradient: 'from-cyan-400/30 to-transparent' },
-  golden_disciple: { color: '#fbbf24', glow: 'shadow-[0_0_120px_rgba(251,191,36,1),_0_0_60px_rgba(251,191,36,0.75)]', particles: '#fbbf24', bannerText: 'DISCIPLE // SOLAR ASCENT', overlayGradient: 'from-amber-400/35 to-transparent' },
-  omega_prime: { color: '#ef4444', glow: 'shadow-[0_0_130px_rgba(239,68,68,1),_0_0_65px_rgba(239,68,68,0.85)]', particles: '#ef4444', bannerText: 'PRIME // GALAXY MONARCH', overlayGradient: 'from-red-500/35 to-transparent' },
-  shadow_wraith: { color: '#09090b', glow: 'shadow-[0_0_130px_rgba(15,23,42,1),_0_0_65px_rgba(24,24,27,0.95),inset_0_0_30px_rgba(0,0,0,0.8)] border-slate-900', particles: '#18181b', bannerText: 'WRAITH // VOID SHADOW OVERDRIVE', overlayGradient: 'from-zinc-950/50 to-transparent' },
-  lumen_sentinel: { color: '#ffffff', glow: 'shadow-[0_0_130px_rgba(255,255,255,1),_0_0_65px_rgba(244,244,245,0.85),inset_0_0_30px_rgba(255,255,255,0.3)] border-white/80', particles: '#cbd5e1', bannerText: 'SENTINEL // AETHER LIMIT BREAK', overlayGradient: 'from-white/25 to-transparent' },
+
   naruto: { color: '#ea580c', glow: 'shadow-[0_0_120px_rgba(234,88,12,1),_0_0_60px_rgba(234,88,12,0.7)]', particles: '#ea580c', bannerText: 'NARUTO // SAGE OF SIX PATHS LIMIT BREAK', overlayGradient: 'from-orange-500/35 to-transparent' },
   sasuke: { color: '#a855f7', glow: 'shadow-[0_0_120px_rgba(168,85,247,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#a855f7', bannerText: 'SASUKE // INDRA REINCARNATION SUSANOO OUTBURST', overlayGradient: 'from-purple-500/35 to-transparent' },
-  jinwoo: { color: '#3b82f6', glow: 'shadow-[0_0_120px_rgba(59,130,246,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#3b82f6', bannerText: 'JIN WOO // MONARCH OF SHADOWS DECREE', overlayGradient: 'from-blue-950/40 to-transparent' }
+  jinwoo: { color: '#3b82f6', glow: 'shadow-[0_0_120px_rgba(59,130,246,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#3b82f6', bannerText: 'JIN WOO // MONARCH OF SHADOWS DECREE', overlayGradient: 'from-blue-950/40 to-transparent' },
+  goku: { color: '#f97316', glow: 'shadow-[0_0_120px_rgba(249,115,22,1),_0_0_60px_rgba(253,224,71,0.85)]', particles: '#fbbf24', bannerText: 'GOKU // MASTERED ULTRA INSTINCT LIMIT BREAK', overlayGradient: 'from-orange-500/40 via-yellow-500/20 to-transparent' },
+  kaiju8: { color: '#06b6d4', glow: 'shadow-[0_0_120px_rgba(6,182,212,1),_0_0_60px_rgba(20,184,166,0.75)]', particles: '#22d3ee', bannerText: 'KAIJU NO. 8 // 9.8 FORTITUDE LEVEL OVERLOAD DETECTED', overlayGradient: 'from-cyan-950/40 via-zinc-900/10 to-transparent' }
 };
 
 // Unique interactive pets mapped to character outfits
@@ -1033,211 +982,7 @@ export const PETS_DATA: Record<string, {
       </div>
     )
   },
-  golden_disciple: {
-    name: "Sol-Aethelon",
-    type: "Nebula Solar Phoenix",
-    desc: "A magnificent trans-dimensional avian forged from solid aurum lattice and subgrid solar flares. Channels mental fortitudes, elevates willpower barriers, and emits ultra-high spectrum victory flares.",
-    color: "#fbbf24",
-    glow: "rgba(251,191,36,0.45)",
-    buff: "+16% Dynamic Willpower Threshold",
-    sprite: (
-      <div className="relative animate-float" style={{ animationDuration: '2.7s' }}>
-        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Backing golden halo ring */}
-          <circle cx="50" cy="46" r="38" stroke="rgba(251,191,36,0.25)" strokeWidth="1" strokeDasharray="12 4" className="animate-spin" style={{ animationDuration: '24s' }} />
-          <circle cx="50" cy="46" r="28" stroke="rgba(251,191,36,0.15)" strokeWidth="1.5" />
 
-          {/* Majestic Crystalline Golden Wings (Animated) */}
-          <path d="M50,42 L12,14 C6,24 10,64 50,52 Z" fill="url(#goldWingGrad)" stroke="#fbbf24" strokeWidth="1.5" className="animate-wings-flutter origin-right" />
-          <path d="M50,42 L88,14 C94,24 90,64 50,52 Z" fill="url(#goldWingGrad)" stroke="#fbbf24" strokeWidth="1.5" className="animate-wings-flutter origin-left" />
-          
-          {/* Inner secondary wing feathers */}
-          <path d="M50,42 L24,24 Q20,38 50,48 Z" fill="rgba(245,158,11,0.5)" stroke="#f59e0b" strokeWidth="1" className="animate-wings-flutter origin-right" />
-          <path d="M50,42 L76,24 Q80,38 50,48 Z" fill="rgba(245,158,11,0.5)" stroke="#f59e0b" strokeWidth="1" className="animate-wings-flutter origin-left" />
-
-          {/* Phoenix Crystalline Body & Tail */}
-          <g>
-            {/* Long elegant neck and central sleek gold torso */}
-            <path d="M50,22 L55,42 L52,78 L48,78 L45,42 Z" fill="#fbbf24" stroke="#d97706" strokeWidth="2" strokeLinejoin="round" />
-            
-            {/* Crowned phoenix head profile with glowing solar aura */}
-            <circle cx="50" cy="20" r="6" fill="#fef08a" stroke="#fbbf24" strokeWidth="1.5" />
-            {/* Crown Crest Feathers */}
-            <path d="M48,14 L50,4 L52,14 L49,14" fill="#fbbf24" stroke="#f59e0b" strokeWidth="1" />
-            <path d="M43,16 L41,9 L47,16" fill="#f59e0b" />
-            <path d="M57,16 L59,9 L53,16" fill="#f59e0b" />
-
-            {/* Glowing red divine eye */}
-            <circle cx="50" cy="20" r="1.5" fill="#f43f5e" />
-
-            {/* Glowing Core Sunburst Gem on chest */}
-            <polygon points="50,34 53,40 58,42 53,44 50,50 47,44 42,42 47,40" fill="#fff" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 4px #fff)' }} />
-
-            {/* Central Elegant Tail Ribbon */}
-            <path d="M50,78 Q50,98 50,98" fill="none" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" />
-          </g>
-
-          <defs>
-            <linearGradient id="goldWingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#fef08a" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#78350f" stopOpacity="0.25" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-    )
-  },
-  omega_prime: {
-    name: "Astra-Core X1",
-    type: "Dimensional Singularity",
-    desc: "A self-contained quantum gravitational singularity reactor hovering in a magnetic containment frame. Bends local regional forces, significantly easing athletic exertion levels.",
-    color: "#ef4444",
-    glow: "rgba(239,68,68,0.55)",
-    buff: "-12% Perceived Exertion (RPE)",
-    sprite: (
-      <div className="relative animate-float" style={{ animationDuration: '3.4s' }}>
-        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Gravitational warp fields */}
-          <circle cx="50" cy="50" r="45" stroke="rgba(239,68,68,0.15)" strokeWidth="1" strokeDasharray="3 4" className="animate-spin" style={{ animationDuration: '14s' }} />
-          <circle cx="50" cy="50" r="38" stroke="rgba(239,68,68,0.25)" strokeWidth="1.5" strokeDasharray="12 18" className="animate-spin" style={{ animationDuration: '8s', animationDirection: 'reverse' }} />
-          
-          {/* Hexagonal mechanical containment brackets */}
-          <polygon points="50,26 71,38 71,62 50,74 29,62 29,38" fill="rgba(15,23,42,0.85)" stroke="#ef4444" strokeWidth="2.2" />
-          
-          {/* Magnetic bracket shield arm paths */}
-          <path d="M16,50 C16,31 31,16 50,16" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 4" />
-          <path d="M84,50 C84,69 69,84 50,84" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="2 4" />
-          
-          {/* Outer focus status indicator lights */}
-          <circle cx="16" cy="50" r="2.5" fill="#f43f5e" className="animate-pulse" />
-          <circle cx="84" cy="50" r="2.5" fill="#f43f5e" className="animate-pulse" />
-          <circle cx="50" cy="16" r="2" fill="#fff" />
-          <circle cx="50" cy="84" r="2" fill="#fff" />
-
-          {/* Sub-particle energy orbit sweeps */}
-          <g className="animate-circle-orbit" style={{ animationDuration: '2.5s' }}>
-            <circle cx="50" cy="50" r="3.5" fill="#fff" style={{ filter: 'drop-shadow(0 0 6px #ef4444)' }} />
-          </g>
-          <g className="animate-circle-orbit" style={{ animationDuration: '4s', animationDirection: 'reverse' }}>
-            <circle cx="50" cy="50" r="2" fill="#fb7185" style={{ filter: 'drop-shadow(0 0 4px #e11d48)' }} />
-          </g>
-
-          {/* Central ultra-bright core (The Singularity) */}
-          <circle cx="50" cy="50" r="13" fill="none" stroke="#f43f5e" strokeWidth="1" strokeDasharray="6 3" className="animate-pulse" />
-          <circle cx="50" cy="50" r="8.5" fill="#fff" style={{ filter: 'drop-shadow(0 0 10px #ef4444)' }} className="animate-pulse" />
-          
-          {/* Micro light-emission spikes */}
-          <line x1="50" y1="36" x2="50" y2="64" stroke="#ef4444" strokeWidth="1" className="opacity-75" />
-          <line x1="36" y1="50" x2="64" y2="50" stroke="#ef4444" strokeWidth="1" className="opacity-75" />
-        </svg>
-      </div>
-    )
-  },
-  shadow_wraith: {
-    name: "Nox-Spectre X1",
-    type: "Dark Void Familiar",
-    desc: "An advanced levitating shadow construct forged with dark-matter plating. Radiates shifting obsidian streams and cosmic void energy to maximize endurance limits.",
-    color: "#c084fc",
-    glow: "rgba(168,85,247,0.55)",
-    buff: "+18% Dark-Matter Endurance Buff",
-    sprite: (
-      <div className="relative animate-float" style={{ animationDuration: '3.6s' }}>
-        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Swirling deep violet nebulous rings */}
-          <circle cx="50" cy="50" r="44" stroke="rgba(168,85,247,0.25)" strokeWidth="1" strokeDasharray="3 4" className="animate-spin" style={{ animationDuration: '12s' }} />
-          <circle cx="50" cy="50" r="36" stroke="rgba(192,132,252,0.3)" strokeWidth="1.5" strokeDasharray="8 6" className="animate-spin" style={{ animationDuration: '8s', animationDirection: 'reverse' }} />
-          
-          {/* Shifting background void particle cluster */}
-          <g className="animate-pulse">
-            <circle cx="28" cy="32" r="1.5" fill="#a855f7" />
-            <circle cx="72" cy="68" r="2" fill="#c084fc" />
-            <circle cx="35" cy="74" r="1" fill="#f472b6" />
-          </g>
-
-          {/* Majestic sleek mechanical wings */}
-          <path d="M50,42 L12,24 C18,36 12,62 50,50 Z" fill="url(#noxWingGrad)" stroke="#a855f7" strokeWidth="1.5" className="animate-wings-flutter origin-right" />
-          <path d="M50,42 L88,24 C82,36 88,62 50,50 Z" fill="url(#noxWingGrad)" stroke="#a855f7" strokeWidth="1.5" className="animate-wings-flutter origin-left" />
-
-          {/* Shroud plate shadow armor tail */}
-          <path d="M50,75 L45,95 L50,90 L55,95 Z" fill="#18181b" stroke="#a855f7" strokeWidth="1" className="animate-wiggle origin-top" />
-
-          {/* Primary Core Drone Head (Complex diamond plating) */}
-          <polygon points="50,18 76,40 50,80 24,40" fill="rgba(9,9,11,0.92)" stroke="#a855f7" strokeWidth="2.5" />
-          <polygon points="50,26 68,41 50,70 32,41" fill="#241435" stroke="#c084fc" strokeWidth="1.2" />
-
-          {/* Glowing fuchsia cyber slit optical visors */}
-          <polygon points="40,40 48,42 42,46" fill="#f472b6" className="animate-pulse" />
-          <polygon points="60,40 52,42 58,46" fill="#f472b6" className="animate-pulse" />
-          <circle cx="50" cy="48" r="3.5" fill="#18181b" stroke="#f472b6" strokeWidth="1.5" />
-          <circle cx="50" cy="48" r="1" fill="#fff" className="animate-ping" />
-
-          {/* Swirling interactive micro-spark */}
-          <g className="animate-circle-orbit" style={{ animationDuration: '3s' }}>
-            <circle cx="50" cy="50" r="3" fill="#fb7185" style={{ filter: 'drop-shadow(0 0 5px #f43f5e)' }} />
-          </g>
-
-          <defs>
-            <linearGradient id="noxWingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#3b0764" stopOpacity="0.8" />
-              <stop offset="60%" stopColor="#8108c4" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#090514" stopOpacity="0.2" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-    )
-  },
-  lumen_sentinel: {
-    name: "Lux-Seraph S1",
-    type: "Celestial Prism Construct",
-    desc: "A sacred high-dimensional drone crafted from pristine crystal solar matrices. Emits highly refined cleansing beams that instantly refresh athletic muscles.",
-    color: "#38bdf8",
-    glow: "rgba(255,255,255,0.8)",
-    buff: "+20% Pristine Recovery Booster",
-    sprite: (
-      <div className="relative animate-float" style={{ animationDuration: '2.8s' }}>
-        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Sacred Celestial Geometry Orbits */}
-          <circle cx="50" cy="55" r="42" stroke="rgba(56,189,248,0.25)" strokeWidth="0.75" strokeDasharray="4 8" className="animate-spin" style={{ animationDuration: '18s' }} />
-          <circle cx="50" cy="55" r="34" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="16 12" className="animate-spin" style={{ animationDuration: '10s', animationDirection: 'reverse' }} />
-          
-          {/* High-frequency light rays rising background */}
-          <line x1="50" y1="10" x2="50" y2="90" stroke="rgba(56,189,248,0.15)" strokeWidth="1" strokeDasharray="3 3" />
-          <line x1="10" y1="50" x2="90" y2="50" stroke="rgba(56,189,248,0.15)" strokeWidth="1" strokeDasharray="3 3" />
-
-          {/* Seraphim multi-layer crystalline wings */}
-          <path d="M50,45 L14,18 Q32,24 50,50 Z" fill="url(#luxWingGrad)" stroke="#38bdf8" strokeWidth="1.5" className="animate-wings-flutter origin-right" />
-          <path d="M50,45 L86,18 Q68,24 50,50 Z" fill="url(#luxWingGrad)" stroke="#38bdf8" strokeWidth="1.5" className="animate-wings-flutter origin-left" />
-          
-          {/* Lower auxiliary energy wings */}
-          <path d="M50,55 L24,78 Q36,68 50,55 Z" fill="rgba(56,189,248,0.4)" stroke="#0ea5e9" strokeWidth="1" className="animate-wings-flutter origin-right" />
-          <path d="M50,55 L76,78 Q64,68 50,55 Z" fill="rgba(56,189,248,0.4)" stroke="#0ea5e9" strokeWidth="1" className="animate-wings-flutter origin-left" />
-
-          {/* Elegant double-helix vertical rotation alignment */}
-          <g className="animate-pulse">
-            <ellipse cx="50" cy="52" rx="4" ry="15" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1" />
-          </g>
-
-          {/* Master Celestial Hex-Prism Core Body */}
-          <polygon points="50,22 72,48 50,78 28,48" fill="rgba(255,255,255,0.96)" stroke="#cbd5e1" strokeWidth="2.5" />
-          <polygon points="50,30 64,48 50,68 36,48" fill="#e0f2fe" stroke="#38bdf8" strokeWidth="1.5" />
-
-          {/* Ultimate central pure white singular solar spark */}
-          <polygon points="50,42 54,48 60,50 54,52 50,58 46,52 40,50 46,48" fill="#fff" className="animate-pulse" style={{ filter: 'drop-shadow(0 0 8px #38bdf8)' }} />
-          <circle cx="50" cy="50" r="2.5" fill="#fff" />
-
-          <defs>
-            <linearGradient id="luxWingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.9" />
-              <stop offset="50%" stopColor="#bae6fd" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#0284c7" stopOpacity="0.25" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-    )
-  },
   naruto: {
     name: "Mini Kurama",
     type: "Nine-Tails Spirit",
@@ -1334,6 +1079,49 @@ export const PETS_DATA: Record<string, {
         </svg>
       </div>
     )
+  },
+  goku: {
+    name: "Flying Nimbus",
+    type: "Divine Cloud Companion",
+    desc: "A magical yellow flying cloud companion granted to Goku. Swirls you with pure heart energy to speed up post-workout recovery.",
+    color: "#eab308",
+    glow: "rgba(234,179,8,0.45)",
+    buff: "+15% Golden Nimbus Recovery Pace",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '3.2s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Cloud fluff shape */}
+          <path d="M30,55 Q20,55 25,45 Q20,35 35,35 Q40,25 55,25 Q70,25 75,35 Q85,35 80,45 Q85,55 75,55 Q65,65 50,65 Q35,65 30,55 Z" fill="#fde047" stroke="#eab308" strokeWidth="2.5" className="opacity-90 animate-pulse" />
+          {/* Nimbus trail lines */}
+          <path d="M20,60 L40,60" stroke="#facc15" strokeWidth="2.5" strokeLinecap="round" className="animate-pulse" />
+          {/* Sparkles */}
+          <circle cx="50" cy="45" r="1.5" fill="#ffffff" className="animate-ping" />
+        </svg>
+      </div>
+    )
+  },
+  kaiju8: {
+    name: "Defense Force Drone",
+    type: "Tactical Scout Companion",
+    desc: "A tactical reconnaissance drone designed by the Anti-Kaiju Defense Force. Monitors muscle recovery markers in real-time.",
+    color: "#06b6d4",
+    glow: "rgba(6,182,212,0.45)",
+    buff: "+12% Tactical Muscle Optimization",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '2.8s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Drone metallic body */}
+          <rect x="35" y="40" width="30" height="20" rx="6" fill="#1e293b" stroke="#06b6d4" strokeWidth="2.5" className="animate-pulse" />
+          {/* Rotating wings */}
+          <line x1="20" y1="35" x2="40" y2="45" stroke="#64748b" strokeWidth="2" strokeLinecap="round" />
+          <line x1="60" y1="45" x2="80" y2="35" stroke="#64748b" strokeWidth="2" strokeLinecap="round" />
+          <circle cx="20" cy="35" r="3" fill="#06b6d4" className="animate-ping" />
+          <circle cx="80" cy="35" r="3" fill="#06b6d4" className="animate-ping" />
+          {/* Scanner beam */}
+          <path d="M50,60 L40,85 L60,85 Z" fill="rgba(6,182,212,0.15)" className="animate-pulse" />
+        </svg>
+      </div>
+    )
   }
 };
 
@@ -1363,7 +1151,6 @@ export const BANNERS: ProfileBanner[] = [
     desc: 'Crystalline golden skyline featuring reflective yellow-gold skyscrapers and a hovering pure light octahedron.', 
     price: 1000, 
     bgStyle: 'bg-gradient-to-br from-amber-500/25 via-[#1a1204] to-[#050301]',
-    bgImage: imgBannerGoldenDisciple,
     glowColor: 'bg-amber-500/15'
   },
   { 
@@ -1408,7 +1195,6 @@ export const BANNERS: ProfileBanner[] = [
     desc: 'Apocalyptic battle zone with falling meteors, smoke plumes, and a colossal combat robot mech silhouette.', 
     price: 4500, 
     bgStyle: 'bg-gradient-to-br from-zinc-950/60 via-slate-900/40 to-black',
-    bgImage: imgBannerOmegaPrime,
     glowColor: 'bg-zinc-800/15'
   },
   { 
@@ -1417,17 +1203,7 @@ export const BANNERS: ProfileBanner[] = [
     desc: 'A deep space stardust vortex portal where a massive dark void phantom entity with purple eyes begins to manifest.', 
     price: 4500, 
     bgStyle: 'bg-gradient-to-br from-white/90 via-zinc-100/90 to-slate-200/80',
-    bgImage: imgBannerPhantomWraith,
     glowColor: 'bg-white/75'
-  },
-  { 
-    id: 'lumen_sentinel', 
-    name: 'Lumen Sentinel', 
-    desc: 'Majestic crystalline spires and orbiting silver stardust halo under cloud skies.', 
-    price: 5000, 
-    bgStyle: 'bg-gradient-to-br from-sky-400/20 via-slate-900/40 to-black',
-    bgImage: imgBannerLumenSentinel,
-    glowColor: 'bg-sky-400/35'
   }
 ];
 
@@ -3139,7 +2915,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             {getActiveBorder().cornerElement}
 
             {/* Banner Theme Background */}
-            {!['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
+            {!['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8'].includes(activeOutfit.id) ? (
               <>
                 {getActiveBanner().bgImage ? (
                   <div 
@@ -3232,13 +3008,13 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
             {/* Highly Scaled Central Avatar Body Image Container */}
             <div className={`relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
-              ['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id)
+              ['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8'].includes(activeOutfit.id)
                 ? 'border-white/10 bg-transparent'
                 : equippedEmote === 'final_form'
                   ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
                   : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
             }`}>
-              {['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
+              {['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8'].includes(activeOutfit.id) ? (
                 <img 
                   src={activeCharacterImage} 
                   alt={activeOutfit.name} 
@@ -3259,7 +3035,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                       ? 'animate-super-shudder scale-[1.05]'
                       : 'scale-100 group-hover:scale-[1.04]'
                   }`}
-                  toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                  toleranceMultiplier={1.0}
                   fallbackSrc={activeOutfit.image}
                 />
               )}
@@ -3375,7 +3151,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] rounded-full border-2 border-double animate-orbit opacity-40" style={{ borderColor: finalFormTheme.color, animationDuration: '10s', animationDirection: 'reverse' }} />
                   
                   {/* Tech status display overlay at the top */}
-                  {activeOutfit.id !== 'naruto' && activeOutfit.id !== 'sasuke' && activeOutfit.id !== 'jinwoo' && (
+                  {activeOutfit.id !== 'naruto' && activeOutfit.id !== 'sasuke' && activeOutfit.id !== 'jinwoo' && activeOutfit.id !== 'goku' && activeOutfit.id !== 'kaiju8' && (
                     <div className="bg-black/85 border-b border-white/10 px-3 py-1.5 flex items-center justify-between w-full relative z-30">
                       <span className="text-[8px] font-black font-mono tracking-widest text-red-500 animate-pulse">● OVERLOAD</span>
                       <span className="text-[7.5px] font-extrabold font-mono text-white/50 tracking-widest">{finalFormTheme.bannerText}</span>
@@ -3613,7 +3389,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 {/* Advanced Micro avatar silhouette halo */}
                 <div className="relative w-16 h-16 rounded-md border border-gym-accent/30 overflow-hidden flex-shrink-0 bg-zinc-950 p-0.5 group-hover:border-gym-accent/60 transition-colors">
                   <div className="absolute inset-0 bg-gradient-to-tr from-gym-accent/10 to-transparent opacity-40" />
-                  {['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
+                  {['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8'].includes(activeOutfit.id) ? (
                     <img 
                       src={activeCharacterImage} 
                       alt="Active Micro Outfit" 
@@ -3626,7 +3402,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                       src={activeCharacterImage} 
                       alt="Active Micro Outfit" 
                       className="w-full h-full object-cover rounded-md transition-transform duration-500 group-hover:scale-[1.08]" 
-                      toleranceMultiplier={activeOutfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                      toleranceMultiplier={1.0}
                       fallbackSrc={activeOutfit.image}
                     />
                   )}
@@ -4270,7 +4046,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                               src={outfit.image} 
                               alt={outfit.name} 
                               className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" 
-                              toleranceMultiplier={outfit.id === 'golden_disciple' ? 0.85 : 1.0}
+                              toleranceMultiplier={1.0}
                               fallbackSrc={outfit.image}
                             />
                             {!isUnlocked && (
