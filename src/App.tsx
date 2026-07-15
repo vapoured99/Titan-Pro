@@ -6932,7 +6932,8 @@ export default function App() {
                 .filter((w) =>
                   w.sets?.some(
                     (s: any) =>
-                      s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                      s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase() &&
+                      !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
                   )
                 )
                 .sort((a, b) => b.date.localeCompare(a.date));
@@ -6942,7 +6943,8 @@ export default function App() {
 
               const lastSets = lastWorkout.sets.filter(
                 (s: any) =>
-                  s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase()
+                  s.exerciseName?.trim().toLowerCase() === ex.name.trim().toLowerCase() &&
+                  !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
               );
 
               const ghostSet = lastSets[nextSetIndex];
@@ -16976,7 +16978,8 @@ export default function App() {
                             .filter((w) =>
                               w.sets?.some(
                                 (s: any) =>
-                                  s.exerciseName?.trim().toLowerCase() === resolvedEx.name.trim().toLowerCase()
+                                  s.exerciseName?.trim().toLowerCase() === resolvedEx.name.trim().toLowerCase() &&
+                                  !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
                               )
                             )
                             .sort((a, b) => b.date.localeCompare(a.date));
@@ -16986,7 +16989,8 @@ export default function App() {
 
                           const lastSets = lastWorkout.sets.filter(
                             (s: any) =>
-                              s.exerciseName?.trim().toLowerCase() === resolvedEx.name.trim().toLowerCase()
+                              s.exerciseName?.trim().toLowerCase() === resolvedEx.name.trim().toLowerCase() &&
+                              !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
                           );
 
                           const ghostSet = lastSets[nextSetIndex];
@@ -17514,6 +17518,12 @@ export default function App() {
                 neon_striker: "Neon Striker",
                 shadow_hunter: "Shadow Hunter",
                 cyber_beast: "Cyber Beast",
+                naruto: "Naruto",
+                sasuke: "Sasuke",
+                jinwoo: "Jin Woo",
+                goku: "Goku",
+                kaiju8: "Kaiju No. 8",
+                beerus: "Beerus",
               };
 
               const AVATAR_IMAGES: Record<string, string> = {

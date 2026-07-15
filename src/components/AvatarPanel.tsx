@@ -93,6 +93,13 @@ import imgKaijuCharge from '../assets/images/Power_Charge_K.png';
 import imgKaijuRoar from '../assets/images/Savage_Roar_K.png';
 import imgKaijuFinal from '../assets/images/Final_Form_K.png';
 
+// Beerus Imports
+import imgBeerusDefault from '../assets/images/No_Emote_Pose_B.png';
+import imgBeerusFlex from '../assets/images/Flex_Mode_B.png';
+import imgBeerusCharge from '../assets/images/Power_Charge_B.png';
+import imgBeerusRoar from '../assets/images/Savage_Roar_B.png';
+import imgBeerusFinal from '../assets/images/Final_Form_B.png';
+
 // Text-free character class landscape banners
 import imgBannerVanguardCadet from '../assets/images/banner_vanguard_cadet_1779449260585.png';
 import imgBannerNeonStriker from '../assets/images/banner_neon_striker_1779449278463.png';
@@ -284,6 +291,22 @@ export const OUTFITS = [
       savage_roar: imgKaijuRoar,
       final_form: imgKaijuFinal
     }
+  },
+  {
+    id: 'beerus',
+    name: 'Beerus',
+    description: 'The God of Destruction of Universe 7. Feared yet respected, with terrifying Hakai purple destruction energy.',
+    price: 15000,
+    image: imgBeerusDefault,
+    accentColor: 'from-purple-950 via-fuchsia-900 to-indigo-950',
+    glowClass: 'shadow-[0_0_25px_rgba(168,85,247,0.5)] border border-purple-500/20',
+    poseImages: {
+      default: imgBeerusDefault,
+      flex_mode: imgBeerusFlex,
+      power_charge: imgBeerusCharge,
+      savage_roar: imgBeerusRoar,
+      final_form: imgBeerusFinal
+    }
   }
 ];
 
@@ -297,7 +320,8 @@ export const OUTFIT_TO_BANNER: Record<string, string> = {
   sasuke: 'aether_light',
   jinwoo: 'shadow_smoke',
   goku: 'titan_gold',
-  kaiju8: 'zen_lifter'
+  kaiju8: 'zen_lifter',
+  beerus: 'beast_mode'
 };
 
 // Sphere Grid Nodes configuration for visual and interactive talent mapping
@@ -788,7 +812,8 @@ export const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; pa
   sasuke: { color: '#a855f7', glow: 'shadow-[0_0_120px_rgba(168,85,247,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#a855f7', bannerText: 'SASUKE // INDRA REINCARNATION SUSANOO OUTBURST', overlayGradient: 'from-purple-500/35 to-transparent' },
   jinwoo: { color: '#3b82f6', glow: 'shadow-[0_0_120px_rgba(59,130,246,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#3b82f6', bannerText: 'JIN WOO // MONARCH OF SHADOWS DECREE', overlayGradient: 'from-blue-950/40 to-transparent' },
   goku: { color: '#f97316', glow: 'shadow-[0_0_120px_rgba(249,115,22,1),_0_0_60px_rgba(253,224,71,0.85)]', particles: '#fbbf24', bannerText: 'GOKU // MASTERED ULTRA INSTINCT LIMIT BREAK', overlayGradient: 'from-orange-500/40 via-yellow-500/20 to-transparent' },
-  kaiju8: { color: '#06b6d4', glow: 'shadow-[0_0_120px_rgba(6,182,212,1),_0_0_60px_rgba(20,184,166,0.75)]', particles: '#22d3ee', bannerText: 'KAIJU NO. 8 // 9.8 FORTITUDE LEVEL OVERLOAD DETECTED', overlayGradient: 'from-cyan-950/40 via-zinc-900/10 to-transparent' }
+  kaiju8: { color: '#06b6d4', glow: 'shadow-[0_0_120px_rgba(6,182,212,1),_0_0_60px_rgba(20,184,166,0.75)]', particles: '#22d3ee', bannerText: 'KAIJU NO. 8 // 9.8 FORTITUDE LEVEL OVERLOAD DETECTED', overlayGradient: 'from-cyan-950/40 via-zinc-900/10 to-transparent' },
+  beerus: { color: '#a855f7', glow: 'shadow-[0_0_120px_rgba(168,85,247,1),_0_0_60px_rgba(192,38,211,0.85)]', particles: '#d946ef', bannerText: 'BEERUS // GOD OF DESTRUCTION PURPLE HAKAI DECREE', overlayGradient: 'from-purple-950/40 via-fuchsia-900/10 to-transparent' }
 };
 
 // Unique interactive pets mapped to character outfits
@@ -1119,6 +1144,29 @@ export const PETS_DATA: Record<string, {
           <circle cx="80" cy="35" r="3" fill="#06b6d4" className="animate-ping" />
           {/* Scanner beam */}
           <path d="M50,60 L40,85 L60,85 Z" fill="rgba(6,182,212,0.15)" className="animate-pulse" />
+        </svg>
+      </div>
+    )
+  },
+  beerus: {
+    name: "Whis",
+    type: "Angelic Attendant Companion",
+    desc: "A divine angel attendant to the God of Destruction. Glides around gracefully with his scepter, offering gourmet earth delicacies to speed up physical rejuvenation.",
+    color: "#38bdf8",
+    glow: "rgba(56,189,248,0.45)",
+    buff: "+15% Angelic Temporal Do-Over Recovery",
+    sprite: (
+      <div className="relative animate-float" style={{ animationDuration: '3.6s' }}>
+        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Angel ring halo */}
+          <ellipse cx="50" cy="25" rx="15" ry="5" stroke="#38bdf8" strokeWidth="1.5" className="opacity-80 animate-pulse" />
+          {/* Scepter stick & crystal ball */}
+          <line x1="30" y1="80" x2="60" y2="35" stroke="#ffffff" strokeWidth="2.5" />
+          <circle cx="60" cy="35" r="5" fill="#38bdf8" className="animate-pulse" />
+          <circle cx="60" cy="35" r="8" stroke="#0ea5e9" strokeWidth="1" className="animate-ping" style={{ animationDuration: '2s' }} />
+          {/* Whis simple robe silhouette */}
+          <path d="M42,40 L58,40 L52,70 L48,70 Z" fill="#1e1b4b" stroke="#38bdf8" strokeWidth="1.5" />
+          <path d="M45,45 L55,45 L50,55 Z" fill="#a855f7" />
         </svg>
       </div>
     )
@@ -2915,7 +2963,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             {getActiveBorder().cornerElement}
 
             {/* Banner Theme Background */}
-            {!['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8'].includes(activeOutfit.id) ? (
+            {!['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id) ? (
               <>
                 {getActiveBanner().bgImage ? (
                   <div 
@@ -2950,15 +2998,6 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             ) : (
               <div className="absolute inset-0 z-0 transition-all duration-700 bg-zinc-950" />
             )}
-
-            {/* Japanese Anime Style Side Text */}
-            <div className="absolute left-5 top-28 z-10 flex flex-col items-center select-none pointer-events-none transition-all duration-300 opacity-40">
-              <span className="text-[9px] text-white/25 tracking-widest font-mono">SERIES 01 // OVERDRIVE</span>
-              <div className="w-[1px] h-12 bg-white/15 my-3" />
-              <div className="text-[16px] leading-relaxed font-bold font-serif text-gym-accent tracking-[0.25em] writing-mode-v select-none">
-                限界を超えろ
-              </div>
-            </div>
 
             {/* Render Back cosmetics (wings, sword, shield) behind the central body */}
             {equippedBackItem === 'energy_blade' && (
@@ -3007,14 +3046,16 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
 
             {/* Highly Scaled Central Avatar Body Image Container */}
-            <div className={`relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
-              ['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8'].includes(activeOutfit.id)
-                ? 'border-white/10 bg-transparent'
-                : equippedEmote === 'final_form'
-                  ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
-                  : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
-            }`}>
-              {['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8'].includes(activeOutfit.id) ? (
+            <div className={
+              ['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id)
+                ? 'absolute inset-0 w-full h-full z-0 flex items-center justify-center overflow-hidden rounded-lg transition-all duration-500'
+                : `relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
+                    equippedEmote === 'final_form'
+                      ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
+                      : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
+                  }`
+            }>
+              {['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id) ? (
                 <img 
                   src={activeCharacterImage} 
                   alt={activeOutfit.name} 
@@ -3151,7 +3192,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] rounded-full border-2 border-double animate-orbit opacity-40" style={{ borderColor: finalFormTheme.color, animationDuration: '10s', animationDirection: 'reverse' }} />
                   
                   {/* Tech status display overlay at the top */}
-                  {activeOutfit.id !== 'naruto' && activeOutfit.id !== 'sasuke' && activeOutfit.id !== 'jinwoo' && activeOutfit.id !== 'goku' && activeOutfit.id !== 'kaiju8' && (
+                  {activeOutfit.id !== 'naruto' && activeOutfit.id !== 'sasuke' && activeOutfit.id !== 'jinwoo' && activeOutfit.id !== 'goku' && activeOutfit.id !== 'kaiju8' && activeOutfit.id !== 'beerus' && (
                     <div className="bg-black/85 border-b border-white/10 px-3 py-1.5 flex items-center justify-between w-full relative z-30">
                       <span className="text-[8px] font-black font-mono tracking-widest text-red-500 animate-pulse">● OVERLOAD</span>
                       <span className="text-[7.5px] font-extrabold font-mono text-white/50 tracking-widest">{finalFormTheme.bannerText}</span>
@@ -3389,7 +3430,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 {/* Advanced Micro avatar silhouette halo */}
                 <div className="relative w-16 h-16 rounded-md border border-gym-accent/30 overflow-hidden flex-shrink-0 bg-zinc-950 p-0.5 group-hover:border-gym-accent/60 transition-colors">
                   <div className="absolute inset-0 bg-gradient-to-tr from-gym-accent/10 to-transparent opacity-40" />
-                  {['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8'].includes(activeOutfit.id) ? (
+                  {['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id) ? (
                     <img 
                       src={activeCharacterImage} 
                       alt="Active Micro Outfit" 

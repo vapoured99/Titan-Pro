@@ -181,7 +181,7 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
       {getActiveBorder().cornerElement}
 
       {/* Banner Theme Background */}
-      {!['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
+      {!['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id) ? (
         <>
           {getActiveBanner().bgImage ? (
             <div 
@@ -216,15 +216,6 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
       ) : (
         <div className="absolute inset-0 z-0 transition-all duration-700 bg-zinc-950" />
       )}
-
-      {/* Japanese Anime Style Side Text */}
-      <div className="absolute left-5 top-28 z-10 flex flex-col items-center select-none pointer-events-none transition-all duration-300 opacity-40">
-        <span className="text-[9px] text-white/25 tracking-widest font-mono">SERIES 01 // OVERDRIVE</span>
-        <div className="w-[1px] h-12 bg-white/15 my-3" />
-        <div className="text-[16px] leading-relaxed font-bold font-serif text-gym-accent tracking-[0.25em] writing-mode-v select-none">
-          限界を超えろ
-        </div>
-      </div>
 
       {/* Render Back cosmetics (wings, sword, shield) behind the central body */}
       {equippedBackItem === 'energy_blade' && (
@@ -273,14 +264,16 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
       </div>
 
       {/* Highly Scaled Central Avatar Body Image Container */}
-      <div className={`relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
-        ['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id)
-          ? 'border-white/10 bg-transparent'
-          : equippedEmote === 'final_form'
-            ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
-            : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
-      }`}>
-        {['naruto', 'sasuke', 'jinwoo'].includes(activeOutfit.id) ? (
+      <div className={
+        ['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id)
+          ? 'absolute inset-0 w-full h-full z-0 flex items-center justify-center overflow-hidden rounded-lg transition-all duration-500'
+          : `relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
+              equippedEmote === 'final_form'
+                ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
+                : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
+            }`
+      }>
+        {['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id) ? (
           <img 
             src={activeCharacterImage} 
             alt={activeOutfit.name} 

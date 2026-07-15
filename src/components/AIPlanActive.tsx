@@ -205,9 +205,12 @@ export default function AIPlanActive({
       { weight: string; reps: string; logged: boolean; difficulty: "easy" | "moderate" | "hard" | "failure" }
     >
   >(() => {
+    let savedObj: Record<string, any> = {};
     try {
       const saved = localStorage.getItem("gym_ai_set_inputs");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        savedObj = JSON.parse(saved);
+      }
     } catch {}
 
     const init: Record<
@@ -234,7 +237,8 @@ export default function AIPlanActive({
           .filter((w) =>
             w.sets?.some(
               (s: any) =>
-                normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName)
+                normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName) &&
+                !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
             )
           )
           .sort((a, b) => getWorkoutTime(b) - getWorkoutTime(a));
@@ -242,7 +246,8 @@ export default function AIPlanActive({
         if (previousWorkouts.length > 0) {
           lastSets = previousWorkouts[0].sets.filter(
             (s: any) =>
-              normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName)
+              normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName) &&
+              !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
           );
         }
       }
@@ -250,17 +255,31 @@ export default function AIPlanActive({
       const isBodyweight = isBodyweightExercise(exName);
       const hasHistory = !!pb || lastSets.length > 0;
       const lastSetWeight = lastSets.length > 0 ? lastSets[lastSets.length - 1].weight?.toString() : null;
-      const defaultWeight = lastSetWeight || (pb ? pb.bestWeight.toString() : (isBodyweight ? "0" : "60"));
-      const defaultReps = lastSets.length > 0 ? lastSets[lastSets.length - 1].reps?.toString() : (hasHistory ? (exItem.targetReps || "10") : "");
+      const defaultWeight = hasHistory
+        ? (lastSetWeight || (pb ? pb.bestWeight.toString() : (isBodyweight ? "0" : "60")))
+        : "";
+      const defaultReps = hasHistory
+        ? (lastSets.length > 0 ? lastSets[lastSets.length - 1].reps?.toString() : (exItem.targetReps || "10"))
+        : "";
 
       for (let s = 0; s < exItem.targetSets; s++) {
+        const key = `${exName}-${s}`;
         const historicalSet = lastSets[s] || (lastSets.length > 0 ? lastSets[lastSets.length - 1] : null);
-        init[`${exName}-${s}`] = {
-          weight: historicalSet ? historicalSet.weight.toString() : defaultWeight,
-          reps: historicalSet ? historicalSet.reps.toString() : defaultReps,
-          logged: false,
-          difficulty: historicalSet?.difficulty || "moderate"
-        };
+        
+        const savedVal = savedObj[key];
+        const hasSavedVal = savedVal !== undefined && savedVal !== null;
+        const isSavedTestVal = hasSavedVal && (savedVal.weight === "1" || savedVal.weight === 1) && (savedVal.reps === "1" || savedVal.reps === 1);
+
+        if (hasSavedVal && !isSavedTestVal) {
+          init[key] = savedVal;
+        } else {
+          init[key] = {
+            weight: historicalSet ? historicalSet.weight.toString() : defaultWeight,
+            reps: historicalSet ? historicalSet.reps.toString() : defaultReps,
+            logged: false,
+            difficulty: historicalSet?.difficulty || "moderate"
+          };
+        }
       }
     });
     return init;
@@ -290,7 +309,8 @@ export default function AIPlanActive({
             .filter((w) =>
               w.sets?.some(
                 (s: any) =>
-                  normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName)
+                  normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName) &&
+                  !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
               )
             )
             .sort((a, b) => getWorkoutTime(b) - getWorkoutTime(a));
@@ -298,7 +318,8 @@ export default function AIPlanActive({
           if (previousWorkouts.length > 0) {
             lastSets = previousWorkouts[0].sets.filter(
               (s: any) =>
-                normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName)
+                normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName) &&
+                !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
             );
           }
         }
@@ -306,8 +327,12 @@ export default function AIPlanActive({
         const isBodyweight = isBodyweightExercise(exName);
         const hasHistory = !!pb || lastSets.length > 0;
         const lastSetWeight = lastSets.length > 0 ? lastSets[lastSets.length - 1].weight?.toString() : null;
-        const defaultWeight = lastSetWeight || (pb ? pb.bestWeight.toString() : (isBodyweight ? "0" : "60"));
-        const defaultReps = lastSets.length > 0 ? lastSets[lastSets.length - 1].reps?.toString() : (hasHistory ? (exItem.targetReps || "10") : "");
+        const defaultWeight = hasHistory
+          ? (lastSetWeight || (pb ? pb.bestWeight.toString() : (isBodyweight ? "0" : "60")))
+          : "";
+        const defaultReps = hasHistory
+          ? (lastSets.length > 0 ? lastSets[lastSets.length - 1].reps?.toString() : (exItem.targetReps || "10"))
+          : "";
 
         for (let s = 0; s < exItem.targetSets; s++) {
           const key = `${exName}-${s}`;
@@ -346,18 +371,30 @@ export default function AIPlanActive({
               };
               changed = true;
             } else if (!prev[key].logged) {
-              // Overwrite if it's the simple default and we actually have real history to offer
-              if (prev[key].weight !== targetW || prev[key].reps !== targetR) {
-                const isBodyweight = isBodyweightExercise(exName);
-                const isGlobalDefault = (prev[key].weight === "60" || prev[key].weight === "0" || prev[key].weight === "" || prev[key].weight === "30") && (prev[key].reps === (exItem.targetReps || "10") || prev[key].reps === "");
-                if (isGlobalDefault && historicalSet) {
+              // If there's no history, make sure it is empty (not prefilled with "60" or other defaults)
+              if (!hasHistory) {
+                if (prev[key].weight !== "" || prev[key].reps !== "") {
                   next[key] = {
                     ...prev[key],
-                    weight: targetW,
-                    reps: targetR,
-                    difficulty: targetDiff
+                    weight: "",
+                    reps: "",
                   };
                   changed = true;
+                }
+              } else {
+                // Overwrite if it's the simple default and we actually have real history to offer
+                if (prev[key].weight !== targetW || prev[key].reps !== targetR) {
+                  const isBodyweight = isBodyweightExercise(exName);
+                  const isGlobalDefault = (prev[key].weight === "60" || prev[key].weight === "0" || prev[key].weight === "" || prev[key].weight === "30" || prev[key].weight === "1") && (prev[key].reps === (exItem.targetReps || "10") || prev[key].reps === "" || prev[key].reps === "1");
+                  if (isGlobalDefault && (historicalSet || pb)) {
+                    next[key] = {
+                      ...prev[key],
+                      weight: targetW,
+                      reps: targetR,
+                      difficulty: targetDiff
+                    };
+                    changed = true;
+                  }
                 }
               }
             }
@@ -868,9 +905,42 @@ export default function AIPlanActive({
                         {Array.from({ length: exItem.targetSets }).map((_, sIdx) => {
                           const key = `${exName}-${sIdx}`;
                           const isBodyweight = isBodyweightExercise(exName);
+                          
+                          const pbKey = Object.keys(personalBests || {}).find(
+                            (k) => normalizeExerciseName(k) === normalizeExerciseName(exName)
+                          );
+                          const hasPB = !!pbKey;
+
+                          let lastSets: any[] = [];
+                          const currentSessionSets = (sessionSets || [])
+                            .filter((s) => normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName));
+
+                          if (currentSessionSets.length > 0) {
+                            lastSets = currentSessionSets;
+                          } else {
+                            const previousWorkouts = (archivedWorkouts || [])
+                              .filter((w) =>
+                                w.sets?.some(
+                                  (s: any) =>
+                                    normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName) &&
+                                    !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
+                                )
+                              )
+                              .sort((a, b) => getWorkoutTime(b) - getWorkoutTime(a));
+
+                            if (previousWorkouts.length > 0) {
+                              lastSets = previousWorkouts[0].sets.filter(
+                                (s: any) =>
+                                  normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName) &&
+                                  !(Number(s.weight || 0) <= 1 || Number(s.reps || 0) <= 1)
+                              );
+                            }
+                          }
+                          const hasHistory = hasPB || lastSets.length > 0;
+
                           const rowState = setInputs[key] || {
-                            weight: isBodyweight ? "0" : "60",
-                            reps: "10",
+                            weight: hasHistory ? (isBodyweight ? "0" : "60") : "",
+                            reps: hasHistory ? "10" : "",
                             logged: false,
                             difficulty: "moderate"
                           };
