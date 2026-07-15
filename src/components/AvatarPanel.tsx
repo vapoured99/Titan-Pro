@@ -1317,11 +1317,6 @@ export const BORDERS = [
         <div className="absolute top-0 right-0 w-6 h-6 border-t-[3px] border-r-[3px] border-yellow-300 shadow-[0_0_8px_rgba(251,191,36,0.6)] z-30" />
         <div className="absolute bottom-0 left-0 w-6 h-6 border-b-[3px] border-l-[3px] border-yellow-300 shadow-[0_0_8px_rgba(251,191,36,0.6)] z-30" />
         <div className="absolute bottom-0 right-0 w-6 h-6 border-b-[3px] border-r-[3px] border-yellow-300 shadow-[0_0_8px_rgba(251,191,36,0.6)] z-30" />
-
-        {/* Dynamic Gilded Crown Badge */}
-        <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-yellow-500/10 border border-yellow-400/40 text-[7px] font-mono text-yellow-300 font-extrabold px-3 py-0.5 rounded-full select-none tracking-widest uppercase z-35 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
-          GOLD GILT FRAME
-        </div>
       </>
     )
   },
@@ -1402,8 +1397,6 @@ export const BORDERS = [
         <div className="absolute bottom-0 left-0 w-[4px] h-6 bg-stone-700 z-30" />
         <div className="absolute bottom-0 right-0 w-6 h-[4px] bg-stone-700 z-30" />
         <div className="absolute bottom-0 right-0 w-[4px] h-6 bg-stone-700 z-30" />
-
-        <div className="absolute top-1.5 left-1/2 -translate-x-1/2 text-[8px] font-mono text-orange-500/80 tracking-[0.8em] select-none z-30 font-bold bg-black/60 px-3 py-0.5 rounded border border-orange-600/30">MONOLITH</div>
       </>
     )
   },
@@ -1477,11 +1470,6 @@ export const BORDERS = [
         <div className="absolute bottom-0 inset-x-0 h-1.5 bg-[repeating-linear-gradient(45deg,#b91c1c,#b91c1c_10px,#000_10px,#000_20px)] animate-[hazardSlide_1.5s_linear_infinite_reverse]" style={{ backgroundSize: '32px 100%' }} />
         <div className="absolute left-0 inset-y-0 w-1.5 bg-[repeating-linear-gradient(45deg,#b91c1c,#b91c1c_10px,#000_10px,#000_20px)] animate-[hazardSlide_1.5s_linear_infinite]" style={{ backgroundSize: '100% 32px' }} />
         <div className="absolute right-0 inset-y-0 w-1.5 bg-[repeating-linear-gradient(45deg,#b91c1c,#b91c1c_10px,#000_10px,#000_20px)] animate-[hazardSlide_1.5s_linear_infinite_reverse]" style={{ backgroundSize: '100% 32px' }} />
-
-        {/* WARNING Banner Header */}
-        <div className="absolute top-3.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-red-650 border border-red-500 rounded text-[5px] text-white font-mono font-black tracking-[0.3em] z-30 animate-pulse select-none uppercase">
-          BEAST // OVERLOCK_ACTIVE
-        </div>
 
         {/* Industrial Metal Corner Guards */}
         <div className="absolute top-0 left-0 w-5 h-5 border-t-4 border-l-4 border-red-700 z-30 pointer-events-none" />
@@ -1689,11 +1677,6 @@ export const BORDERS = [
         <div className="absolute top-0 right-0 w-6 h-6 border-t-[4px] border-r-[4px] border-black/80 z-30 pointer-events-none filter drop-shadow-[0_0_6px_rgba(0,0,0,0.85)]" />
         <div className="absolute bottom-0 left-0 w-6 h-6 border-b-[4px] border-l-[4px] border-black/80 z-30 pointer-events-none filter drop-shadow-[0_0_6px_rgba(0,0,0,0.85)]" />
         <div className="absolute bottom-0 right-0 w-6 h-6 border-b-[4px] border-r-[4px] border-black/80 z-30 pointer-events-none filter drop-shadow-[0_0_6px_rgba(0,0,0,0.85)]" />
-
-        {/* SYSTEM STATUS // SHADOW MODE */}
-        <div className="absolute top-1.5 left-1/2 -translate-x-1/2 text-[7px] font-mono text-zinc-300 tracking-[0.4em] select-none z-30 font-black bg-black border border-zinc-900 shadow-[0_0_15px_rgba(0,0,0,0.95)] px-2.5 py-0.5 rounded uppercase">
-          SHADOW WHISPER
-        </div>
       </>
     )
   },
@@ -1762,11 +1745,6 @@ export const BORDERS = [
           <svg className="w-5 h-5 text-white/95 filter drop-shadow-[0_0_5px_rgba(255,255,255,0.9)]" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12,2 L14,10 L22,12 L14,14 L12,22 L10,14 L2,12 L10,10 Z" />
           </svg>
-        </div>
-
-        {/* AETHER STATUS LABEL */}
-        <div className="absolute top-1.5 left-1/2 -translate-x-1/2 text-[7px] font-mono text-zinc-100 tracking-[0.52em] select-none z-30 font-black bg-zinc-950/90 border border-white/40 shadow-[0_0_15px_rgba(255,255,255,0.4)] px-3 py-0.5 rounded-full uppercase">
-          LUMEN ACTIVATED
         </div>
       </>
     )
@@ -2147,6 +2125,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
   // Determine current Active Outfit
   const activeOutfit = OUTFITS.find(o => o.id === equippedOutfit) || OUTFITS[0];
+  const isFullArt = ['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id);
   const finalFormTheme = FINAL_FORM_THEMES[equippedOutfit] || FINAL_FORM_THEMES.vanguard_cadet;
 
   const userId = currentUser?.uid || 'guest';
@@ -3160,28 +3139,6 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
               </AnimatePresence>
 
               {/* Dynamic visual overlay effects triggered by emote type */}
-              {equippedEmote === 'flex_mode' && (
-                <div className="absolute inset-0 pointer-events-none z-20">
-                  <div className="absolute inset-x-0 h-[2.5px] bg-purple-500/50 filter blur-xs animate-pulse-slow" style={{ animation: 'scanline 4s linear infinite' }} />
-                  <div className="absolute inset-0 bg-purple-500/[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(147,51,234,0.18) 1.5px, transparent 1.5px)', backgroundSize: '100% 5px' }} />
-                </div>
-              )}
-
-              {equippedEmote === 'power_charge' && (
-                <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
-                  <div className="absolute w-1 h-10 rounded-full bg-yellow-400 filter blur-[1px]" style={{ animation: 'riseSparks 2s infinite', left: '20%', animationDelay: '0.2s' }} />
-                  <div className="absolute w-1 h-8 rounded-full bg-yellow-300 filter blur-[1px]" style={{ animation: 'riseSparks 1.5s infinite', left: '50%', animationDelay: '0s' }} />
-                  <div className="absolute w-1.5 h-12 rounded-full bg-yellow-400 filter blur-[1px]" style={{ animation: 'riseSparks 2.5s infinite', left: '80%', animationDelay: '0.7s' }} />
-                </div>
-              )}
-
-              {equippedEmote === 'savage_roar' && (
-                <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center overflow-hidden">
-                  <div className="absolute w-44 h-44 rounded-full border-2 border-red-500/50" style={{ animation: 'rippleWave 3s infinite', animationDelay: '0s' }} />
-                  <div className="absolute w-44 h-44 rounded-full border-2 border-orange-500/40" style={{ animation: 'rippleWave 3s infinite', animationDelay: '1.5s' }} />
-                </div>
-              )}
-
               {equippedEmote === 'final_form' && (
                 <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between overflow-hidden">
                   {/* Highly optimized background glow matching theme */}
@@ -3217,7 +3174,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
 
               {/* Floating Pet Companion inside main frame */}
               <div 
-                className="absolute bottom-3 right-3 z-30 flex flex-col items-center group/minipet cursor-pointer"
+                className={`absolute ${isFullArt ? 'bottom-[24%] right-[8%]' : 'bottom-3 right-3'} z-30 flex flex-col items-center group/minipet cursor-pointer`}
                 onClick={() => {
                   handleInteractPet('pet');
                 }}

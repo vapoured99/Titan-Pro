@@ -51,6 +51,7 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
 
   // Find active items
   const activeOutfit = OUTFITS.find(o => o.id === equippedOutfit) || OUTFITS[0];
+  const isFullArt = ['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id);
   const finalFormTheme = FINAL_FORM_THEMES[equippedOutfit] || FINAL_FORM_THEMES.vanguard_cadet;
 
   // Active getters
@@ -303,28 +304,6 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
         {activeAuraStyling.innerEffects}
 
         {/* Dynamic visual overlay effects triggered by emote type */}
-        {equippedEmote === 'flex_mode' && (
-          <div className="absolute inset-0 pointer-events-none z-20">
-            <div className="absolute inset-x-0 h-[2.5px] bg-purple-500/50 filter blur-xs animate-pulse-slow font-sans" style={{ animation: 'scanline 4s linear infinite' }} />
-            <div className="absolute inset-0 bg-purple-500/[0.03]" style={{ backgroundImage: 'linear-gradient(rgba(147,51,234,0.18) 1.5px, transparent 1.5px)', backgroundSize: '100% 5px' }} />
-          </div>
-        )}
-
-        {equippedEmote === 'power_charge' && (
-          <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
-            <div className="absolute w-1 h-10 rounded-full bg-yellow-400 filter blur-[1px]" style={{ animation: 'riseSparks 2s infinite', left: '20%', animationDelay: '0.2s' }} />
-            <div className="absolute w-1 h-8 rounded-full bg-yellow-300 filter blur-[1px]" style={{ animation: 'riseSparks 1.5s infinite', left: '50%', animationDelay: '0s' }} />
-            <div className="absolute w-1.5 h-12 rounded-full bg-yellow-400 filter blur-[1px]" style={{ animation: 'riseSparks 2.5s infinite', left: '80%', animationDelay: '0.7s' }} />
-          </div>
-        )}
-
-        {equippedEmote === 'savage_roar' && (
-          <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center overflow-hidden">
-            <div className="absolute w-44 h-44 rounded-full border-2 border-red-500/50" style={{ animation: 'rippleWave 3s infinite', animationDelay: '0s' }} />
-            <div className="absolute w-44 h-44 rounded-full border-2 border-orange-500/40" style={{ animation: 'rippleWave 3s infinite', animationDelay: '1.5s' }} />
-          </div>
-        )}
-
         {equippedEmote === 'final_form' && (
           <div className="absolute inset-0 pointer-events-none z-20 flex flex-col justify-between overflow-hidden">
             {/* Highly optimized background glow matching theme */}
@@ -358,7 +337,7 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
 
         {/* Floating Pet Companion inside main frame */}
         <div 
-          className="absolute bottom-3 right-3 z-30 flex flex-col items-center select-none pointer-events-none group/petdisplay cursor-pointer"
+          className={`absolute ${isFullArt ? 'bottom-[24%] right-[8%]' : 'bottom-3 right-3'} z-30 flex flex-col items-center select-none pointer-events-none group/petdisplay cursor-pointer`}
           title={`LV.${currentPetLevel} ${currentPetName}: +${currentPetLevel * 2}% DMG & -${currentPetLevel * 2}% DMG Received`}
         >
           <div className="p-1 bg-black/85 rounded-md border border-white/20 shadow-lg">
