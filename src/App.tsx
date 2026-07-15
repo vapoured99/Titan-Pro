@@ -147,6 +147,8 @@ import celestialLightBg from "./assets/images/celestial_light_bg_1779447123837.p
 import solarAscentBg from "./assets/images/solar_ascent_bg_1779457047851.png";
 import cosmicVortexBg from "./assets/images/cosmic_vortex_bg_new_1779719240506.png";
 import overgrownCyberCityBg from "./assets/images/cyber_city_bg_new_1779719262117.png";
+import cloudsBg from "./assets/images/clouds.png";
+import sparBg from "./assets/images/spar.png";
 
 // --- Avatar Images & Screenshot Engine ---
 import html2canvas from "html2canvas";
@@ -357,6 +359,38 @@ const GYM_THEMES: Record<string, GymTheme> = {
     testPrimary: "#ecfdf5",
     testMuted: "rgba(167, 243, 208, 0.45)",
     testSubtle: "rgba(16, 185, 129, 0.2)",
+  },
+  clouds: {
+    id: "clouds",
+    name: "Stormy Clouds",
+    description: "Dark ominous clouds pierced by a striking crimson aura.",
+    accent: "#ef4444",
+    accentRgb: "239, 68, 68",
+    accentLight: "#fca5a5",
+    accentDark: "#991b1b",
+    bg: "#000000",
+    bgImage: cloudsBg,
+    opacity: "opacity-45",
+    textVibe: "Dark clouds. Crimson light. Push beyond your limits.",
+    testPrimary: "#ffffff",
+    testMuted: "rgba(255, 255, 255, 0.45)",
+    testSubtle: "rgba(239, 68, 68, 0.2)",
+  },
+  spar: {
+    id: "spar",
+    name: "Combat Arena",
+    description: "High-energy multi-colored stadium lit by vibrant rose, electric cyan, and neon gold.",
+    accent: "#f43f5e",
+    accentRgb: "244, 63, 94",
+    accentLight: "#06b6d4",
+    accentDark: "#eab308",
+    bg: "#02040a",
+    bgImage: sparBg,
+    opacity: "opacity-80",
+    textVibe: "Combat Arena. Charged with multi-colored high-voltage aura. Focus locked.",
+    testPrimary: "#ffffff",
+    testMuted: "rgba(6, 182, 212, 0.5)",
+    testSubtle: "rgba(244, 63, 94, 0.25)",
   },
   gradient_red: {
     id: "gradient_red",
