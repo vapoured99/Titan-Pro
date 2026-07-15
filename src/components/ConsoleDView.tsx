@@ -1435,59 +1435,6 @@ export default function ConsoleDView({
                 </p>
               </div>
             </div>
-
-            {/* Active Decompression Drills checklist */}
-            <div className="bg-[#080808]/50 border border-white/[0.03] rounded-xl p-4 space-y-3">
-              <span className="text-[9px] font-mono text-white/40 uppercase tracking-widest block font-bold">
-                RECOMMENDED DAILY DECOMPRESSION CHECKLIST
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  onClick={toggleDrillHanging}
-                  className="flex items-center text-left gap-2.5 p-2 bg-black/20 hover:bg-white/[0.04] active:scale-[0.98] border border-white/5 rounded-lg transition-all cursor-pointer w-full"
-                >
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 text-[10px] font-bold ${
-                    drillHanging ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "border-white/10 text-white/20"
-                  }`}>
-                    {drillHanging ? "✓" : "○"}
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-white/80 block font-bold">Hanging Hold</span>
-                    <span className="text-[8px] text-white/30 block">2 sets of 45s</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={toggleDrillTwist}
-                  className="flex items-center text-left gap-2.5 p-2 bg-[#0d0d0d] hover:bg-white/[0.04] active:scale-[0.98] border border-white/5 rounded-lg transition-all cursor-pointer w-full"
-                >
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 text-[10px] font-bold ${
-                    drillTwist ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "border-white/10 text-white/20"
-                  }`}>
-                    {drillTwist ? "✓" : "○"}
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-white/80 block font-bold">Lumbar Twist</span>
-                    <span className="text-[8px] text-white/30 block">10 slow reps/side</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={toggleDrillSquat}
-                  className="flex items-center text-left gap-2.5 p-2 bg-[#0d0d0d] hover:bg-white/[0.04] active:scale-[0.98] border border-white/5 rounded-lg transition-all cursor-pointer w-full"
-                >
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 text-[10px] font-bold ${
-                    drillSquat ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "border-white/10 text-white/20"
-                  }`}>
-                    {drillSquat ? "✓" : "○"}
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-mono text-white/80 block font-bold">Deep Squat Hold</span>
-                    <span className="text-[8px] text-white/30 block">1 set of 60s</span>
-                  </div>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </div>
