@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { TransparentCharacter } from './TransparentCharacter';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Shield, 
@@ -34,29 +33,8 @@ import imgVanguardFlex from '../assets/images/vanguard_flex_1779362302716.png';
 import imgVanguardCharge from '../assets/images/vanguard_charge_1779362323371.png';
 import imgVanguardRoar from '../assets/images/vanguard_roar_1779362341980.png';
 
-// Neon Striker Imports
-import imgNeonStrikerDefault from '../assets/images/neon_striker_1779356868324.png';
-import imgNeonStrikerFlex from '../assets/images/neon_striker_flex_1779361070169.png';
-import imgNeonStrikerCharge from '../assets/images/neon_striker_charge_1779361086721.png';
-import imgNeonStrikerRoar from '../assets/images/neon_striker_roar_1779361103538.png';
-
-// Shadow Hunter Imports
-import imgShadowHunterDefault from '../assets/images/shadow_hunter_1779356889743.png';
-import imgShadowHunterFlex from '../assets/images/shadow_hunter_flex_1779361122192.png';
-import imgShadowHunterCharge from '../assets/images/shadow_hunter_charge_1779361139639.png';
-import imgShadowHunterRoar from '../assets/images/shadow_hunter_roar_1779361158854.png';
-
-// Cyber Beast Imports
-import imgCyberBeastDefault from '../assets/images/cyber_beast_1779356910976.png';
-import imgCyberBeastFlex from '../assets/images/cyber_beast_flex_1779361174893.png';
-import imgCyberBeastCharge from '../assets/images/cyber_beast_charge_1779361191878.png';
-import imgCyberBeastRoar from '../assets/images/cyber_beast_roar_1779361209673.png';
-
 // Newly generated Final Forms
 import imgVanguardFinal from '../assets/images/vanguard_final_1779446997564.png';
-import imgNeonStrikerFinal from '../assets/images/neon_striker_final_1779960441556.png';
-import imgShadowHunterFinal from '../assets/images/shadow_hunter_final_1779447034179.png';
-import imgCyberBeastFinal from '../assets/images/cyber_beast_final_1779447049772.png';
 
 // Naruto Imports
 import imgNarutoDefault from '../assets/images/No_Emote_Pose-1.png';
@@ -102,9 +80,6 @@ import imgBeerusFinal from '../assets/images/Final_Form_B.png';
 
 // Text-free character class landscape banners
 import imgBannerVanguardCadet from '../assets/images/banner_vanguard_cadet_1779449260585.png';
-import imgBannerNeonStriker from '../assets/images/banner_neon_striker_1779449278463.png';
-import imgBannerShadowHunter from '../assets/images/banner_shadow_hunter_1779449294320.png';
-import imgBannerCyberBeast from '../assets/images/banner_cyber_beast_1779449309358.png';
 
 
 interface UserProfile {
@@ -161,54 +136,6 @@ export const OUTFITS = [
       power_charge: imgVanguardCharge,
       savage_roar: imgVanguardRoar,
       final_form: imgVanguardFinal
-    }
-  },
-  {
-    id: 'neon_striker',
-    name: 'Neon Striker',
-    description: 'Neon purple glowing heavy-lifter exosuit.',
-    price: 6000,
-    image: imgNeonStrikerDefault,
-    accentColor: 'from-fuchsia-500 to-purple-600',
-    glowClass: 'shadow-[0_0_20px_rgba(219,39,119,0.3)]',
-    poseImages: {
-      default: imgNeonStrikerDefault,
-      flex_mode: imgNeonStrikerFlex,
-      power_charge: imgNeonStrikerCharge,
-      savage_roar: imgNeonStrikerRoar,
-      final_form: imgNeonStrikerFinal
-    }
-  },
-  {
-    id: 'shadow_hunter',
-    name: 'Shadow Hunter',
-    description: 'Crimson-red tactical active cyborg.',
-    price: 12000,
-    image: imgShadowHunterDefault,
-    accentColor: 'from-rose-500 to-red-700',
-    glowClass: 'shadow-[0_0_20px_rgba(239,68,68,0.3)]',
-    poseImages: {
-      default: imgShadowHunterDefault,
-      flex_mode: imgShadowHunterFlex,
-      power_charge: imgShadowHunterCharge,
-      savage_roar: imgShadowHunterRoar,
-      final_form: imgShadowHunterFinal
-    }
-  },
-  {
-    id: 'cyber_beast',
-    name: 'Cyber Beast',
-    description: 'Cyber-teal & ice blue electronic armor.',
-    price: 15000,
-    image: imgCyberBeastDefault,
-    accentColor: 'from-cyan-400 to-teal-600',
-    glowClass: 'shadow-[0_0_20px_rgba(6,182,212,0.3)]',
-    poseImages: {
-      default: imgCyberBeastDefault,
-      flex_mode: imgCyberBeastFlex,
-      power_charge: imgCyberBeastCharge,
-      savage_roar: imgCyberBeastRoar,
-      final_form: imgCyberBeastFinal
     }
   },
 
@@ -313,15 +240,12 @@ export const OUTFITS = [
 // Map outfits / operatives to their corresponding banners automatically
 export const OUTFIT_TO_BANNER: Record<string, string> = {
   vanguard_cadet: 'default_slate',
-  neon_striker: 'neon_pump',
-  shadow_hunter: 'beast_mode',
-  cyber_beast: 'zen_lifter',
   naruto: 'titan_gold',
   sasuke: 'aether_light',
   jinwoo: 'shadow_smoke',
   goku: 'titan_gold',
-  kaiju8: 'zen_lifter',
-  beerus: 'beast_mode'
+  kaiju8: 'midnight_city',
+  beerus: 'midnight_city'
 };
 
 // Sphere Grid Nodes configuration for visual and interactive talent mapping
@@ -804,9 +728,6 @@ export const TITLES = [
 // Final Form styling configurations matching the character ID
 export const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; particles: string; bannerText: string; overlayGradient: string }> = {
   vanguard_cadet: { color: '#9ca3af', glow: 'shadow-[0_0_90px_rgba(156,163,175,0.9),_0_0_45px_rgba(156,163,175,0.6)]', particles: '#9ca3af', bannerText: 'CADET // LIMIT BREAK', overlayGradient: 'from-zinc-400/20 to-transparent' },
-  neon_striker: { color: '#d946ef', glow: 'shadow-[0_0_100px_rgba(217,70,239,1),_0_0_50px_rgba(217,70,239,0.7)]', particles: '#d946ef', bannerText: 'STRIKER // NEON FORCE', overlayGradient: 'from-fuchsia-500/30 to-transparent' },
-  shadow_hunter: { color: '#f43f5e', glow: 'shadow-[0_0_100px_rgba(244,63,94,1),_0_0_50px_rgba(244,63,94,0.7)]', particles: '#f43f5e', bannerText: 'HUNTER // DOOMSDAY OVERDRIVE', overlayGradient: 'from-rose-500/30 to-transparent' },
-  cyber_beast: { color: '#06b6d4', glow: 'shadow-[0_0_100px_rgba(6,182,212,1),_0_0_50px_rgba(6,182,212,0.7)]', particles: '#06b6d4', bannerText: 'BEAST // RYU_OVERDRIVE', overlayGradient: 'from-cyan-400/30 to-transparent' },
 
   naruto: { color: '#ea580c', glow: 'shadow-[0_0_120px_rgba(234,88,12,1),_0_0_60px_rgba(234,88,12,0.7)]', particles: '#ea580c', bannerText: 'NARUTO // SAGE OF SIX PATHS LIMIT BREAK', overlayGradient: 'from-orange-500/35 to-transparent' },
   sasuke: { color: '#a855f7', glow: 'shadow-[0_0_120px_rgba(168,85,247,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#a855f7', bannerText: 'SASUKE // INDRA REINCARNATION SUSANOO OUTBURST', overlayGradient: 'from-purple-500/35 to-transparent' },
@@ -879,130 +800,6 @@ export const PETS_DATA: Record<string, {
 
           {/* Rhythmic telemetry radar sweep indicator on top */}
           <circle cx="50" cy="50" r="30" fill="none" stroke="#0284c7" strokeWidth="0.75" strokeDasharray="10 90" className="animate-spin" style={{ animationDuration: '2.5s' }} />
-        </svg>
-      </div>
-    )
-  },
-  neon_striker: {
-    name: "Vapor-Moth",
-    type: "Synth Flutterer",
-    desc: "A bioluminescent cyber-lepidopteran designed to generate rhythm-synchronized electric airwaves. Emits soothing vaporwave frequencies that optimize muscle pump cadence.",
-    color: "#d946ef",
-    glow: "rgba(217,70,239,0.45)",
-    buff: "+15% Rhythm Cadence Sync",
-    sprite: (
-      <div className="relative animate-float" style={{ animationDuration: '2.5s' }}>
-        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M50,50 L20,20 C10,30 10,70 50,50 Z" fill="rgba(217,70,239,0.3)" stroke="#d946ef" strokeWidth="2" className="animate-wings-flutter origin-right" />
-          <path d="M50,50 L30,40 C25,45 25,65 50,50 Z" fill="rgba(244,63,94,0.4)" stroke="#f43f5e" strokeWidth="1.5" className="animate-wings-flutter origin-right" />
-          <path d="M50,50 L80,20 C90,30 90,70 50,50 Z" fill="rgba(217,70,239,0.3)" stroke="#d946ef" strokeWidth="2" className="animate-wings-flutter origin-left" />
-          <path d="M50,50 L70,40 C75,45 75,65 50,50 Z" fill="rgba(244,63,94,0.4)" stroke="#f43f5e" strokeWidth="1.5" className="animate-wings-flutter origin-left" />
-          <rect x="47" y="30" width="6" height="40" rx="3" fill="#1e1b4b" stroke="#d946ef" strokeWidth="1.5" />
-          <circle cx="50" cy="25" r="4" fill="#f43f5e" />
-          <line x1="50" y1="25" x2="42" y2="12" stroke="#d946ef" strokeWidth="1.5" />
-          <line x1="50" y1="25" x2="58" y2="12" stroke="#d946ef" strokeWidth="1.5" />
-          <circle cx="42" cy="12" r="2" fill="#d946ef" />
-          <circle cx="58" cy="12" r="2" fill="#d946ef" />
-        </svg>
-      </div>
-    )
-  },
-  shadow_hunter: {
-    name: "Pyrogore-X9",
-    type: "Thermo Plasma Demon",
-    desc: "A high-intensity thermodynamic plasma familiar that hovers with micro-thrusters. Absorbs excess cardiac heat, channels metabolic kinetics, and emits glowing superheated pulses to amplify lifting explosive velocity.",
-    color: "#f43f5e",
-    glow: "rgba(244,63,94,0.45)",
-    buff: "+14% Hot-Zone Blast Off Force",
-    sprite: (
-      <div className="relative animate-float" style={{ animationDuration: '2.9s' }}>
-        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Flame Orbit field */}
-          <circle cx="50" cy="50" r="44" stroke="rgba(244,63,94,0.2)" strokeWidth="1" strokeDasharray="4 8" className="animate-spin" style={{ animationDuration: '10s' }} />
-          <circle cx="50" cy="50" r="32" stroke="rgba(244,63,94,0.15)" strokeWidth="1" />
-          
-          {/* Main Core Body */}
-          <g>
-            {/* Plasma Back Shell */}
-            <path d="M50,15 C68,30 74,54 66,75 C58,88 42,88 34,75 C26,54 32,30 50,15 Z" fill="url(#plasmaGrad)" stroke="#f43f5e" strokeWidth="2.5" />
-            
-            {/* Internal hot reactor core */}
-            <circle cx="50" cy="56" r="14" fill="#0f172a" stroke="#fb923c" strokeWidth="1.5" />
-            <circle cx="50" cy="56" r="8" fill="#fef08a" className="animate-pulse" />
-
-            {/* Sharp Cybernetic Demonic Horns */}
-            <path d="M42,26 L30,12 L38,32 Z" fill="#e11d48" stroke="#f43f5e" strokeWidth="1" />
-            <path d="M58,26 L70,12 L62,32 Z" fill="#e11d48" stroke="#f43f5e" strokeWidth="1" />
-
-            {/* Glowing Cyber visor/eyes */}
-            <polygon points="40,46 48,46 46,50 38,50" fill="#fdba74" className="animate-pulse" />
-            <polygon points="60,46 52,46 54,50 62,50" fill="#fdba74" className="animate-pulse" />
-
-            {/* Floating Kinetic Energy Wings */}
-            <path d="M28,48 L10,38 L22,62 Z" fill="rgba(244,63,94,0.3)" stroke="#f43f5e" strokeWidth="1" className="animate-wings-flutter origin-right" />
-            <path d="M72,48 L90,38 L78,62 Z" fill="rgba(244,63,94,0.3)" stroke="#f43f5e" strokeWidth="1" className="animate-wings-flutter origin-left" />
-
-            {/* Tail */}
-            <path d="M50,80 Q50,95 38,94" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" className="animate-wiggle origin-top" />
-            <polygon points="38,94 44,91 40,88" fill="#f43f5e" />
-          </g>
-
-          <defs>
-            <radialGradient id="plasmaGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity="1" />
-              <stop offset="60%" stopColor="#be123c" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#1e1114" stopOpacity="0.5" />
-            </radialGradient>
-          </defs>
-        </svg>
-      </div>
-    )
-  },
-  cyber_beast: {
-    name: "Scylla-V",
-    type: "Subgrid Leviathan",
-    desc: "A bio-integrated synthetic deep-sea predator that breathes oxygenated subgrid data. Keeps high-density system components cool, filters core noise, and accelerates thermic output safety.",
-    color: "#06b6d4",
-    glow: "rgba(6,182,212,0.45)",
-    buff: "+18% Thermic Regulation Efficiency",
-    sprite: (
-      <div className="relative animate-float" style={{ animationDuration: '3.8s' }}>
-        <svg className="w-14 h-14" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          {/* Glowing bio-luminescent subgrid water rings */}
-          <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(6,182,212,0.15)" strokeWidth="3" />
-          <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(6,182,212,0.3)" strokeWidth="1" strokeDasharray="6 12" className="animate-spin" style={{ animationDuration: '8s' }} />
-          
-          {/* Futuristic mechanical shark/serpent body */}
-          <g>
-            {/* Upper body / Jaw flow */}
-            <path d="M15,44 Q35,28 65,34 L85,46 L65,58 Q35,64 15,48 Z" fill="#0c4a6e" stroke="#06b6d4" strokeWidth="2.2" strokeLinejoin="round" />
-            <path d="M45,39 L60,42 L52,48 Z" fill="#082f49" />
-
-            {/* Glowing cyber gills */}
-            <line x1="42" y1="44" x2="42" y2="52" stroke="#22d3ee" strokeWidth="2.5" className="animate-pulse" />
-            <line x1="48" y1="43" x2="48" y2="53" stroke="#22d3ee" strokeWidth="2.5" className="animate-pulse" />
-            <line x1="54" y1="44" x2="54" y2="52" stroke="#22d3ee" strokeWidth="2.5" className="animate-pulse" />
-
-            {/* Hydrodynamic dorsal fin */}
-            <polygon points="52,34 72,12 66,34" fill="#082f49" stroke="#06b6d4" strokeWidth="1.5" />
-            
-            {/* Glowing neon stabilizers (Pectoral fins) */}
-            <polygon points="34,54 20,72 26,56" fill="#0284c7" stroke="#06b6d4" strokeWidth="1.5" />
-            <polygon points="46,54 36,76 38,55" fill="#22d3ee" stroke="#22d3ee" strokeWidth="1" />
-
-            {/* Glowing digital slit optical eye */}
-            <circle cx="74" cy="42" r="3" fill="#22d3ee" className="animate-pulse" />
-            <line x1="74" y1="42" x2="88" y2="44" stroke="#e0f2fe" strokeWidth="1" />
-
-            {/* Interactive electric particle spark orbiting body */}
-            <g className="animate-circle-orbit" style={{ animationDuration: '2.5s' }}>
-              <circle cx="50" cy="50" r="4" fill="#22d3ee" style={{ filter: 'drop-shadow(0 0 6px #22d3ee)' }} />
-            </g>
-          </g>
-
-          {/* Bio-metric pressure bubble generators */}
-          <circle cx="28" cy="22" r="2" fill="#22d3ee" className="animate-ping" style={{ animationDelay: '0.4s' }} />
-          <circle cx="78" cy="74" r="1.5" fill="#06b6d4" className="animate-ping" style={{ animationDelay: '1.2s' }} />
         </svg>
       </div>
     )
@@ -1200,33 +997,6 @@ export const BANNERS: ProfileBanner[] = [
     price: 1000, 
     bgStyle: 'bg-gradient-to-br from-amber-500/25 via-[#1a1204] to-[#050301]',
     glowColor: 'bg-amber-500/15'
-  },
-  { 
-    id: 'neon_pump', 
-    name: 'Neon Striker', 
-    desc: 'Luminous vaporwave skyscraper avenue glowing in deep synth purple and neon pink flares.', 
-    price: 2500, 
-    bgStyle: 'bg-gradient-to-br from-fuchsia-500/40 via-purple-950/90 to-[#06010d]',
-    bgImage: imgBannerNeonStriker,
-    glowColor: 'bg-fuchsia-500/25'
-  },
-  { 
-    id: 'beast_mode', 
-    name: 'Shadow Hunter', 
-    desc: 'Eerie volcanic canyon with tall obsidian structures rising toward an eclipse in a blood-red sky.', 
-    price: 3000, 
-    bgStyle: 'bg-gradient-to-br from-red-600/40 via-red-950/95 to-black',
-    bgImage: imgBannerShadowHunter,
-    glowColor: 'bg-red-500/30'
-  },
-  { 
-    id: 'zen_lifter', 
-    name: 'Cyber Beast', 
-    desc: 'Fierce cyan and teal electric lightning storm framing monolithic high-dimensional weather spires.', 
-    price: 2500, 
-    bgStyle: 'bg-gradient-to-br from-emerald-500/35 via-emerald-950/95 to-[#010603]',
-    bgImage: imgBannerCyberBeast,
-    glowColor: 'bg-emerald-500/25'
   },
   { 
     id: 'midnight_city', 
@@ -3025,40 +2795,18 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
             </div>
 
             {/* Highly Scaled Central Avatar Body Image Container */}
-            <div className={
-              ['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id)
-                ? 'absolute inset-0 w-full h-full z-0 flex items-center justify-center overflow-hidden rounded-lg transition-all duration-500'
-                : `relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
-                    equippedEmote === 'final_form'
-                      ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
-                      : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
-                  }`
-            }>
-              {['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id) ? (
-                <img 
-                  src={activeCharacterImage} 
-                  alt={activeOutfit.name} 
-                  className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
-                    equippedEmote === 'final_form'
-                      ? 'animate-super-shudder scale-[1.05]'
-                      : 'scale-100 group-hover:scale-[1.04]'
-                  }`}
-                  style={{ opacity: 1 }}
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <TransparentCharacter 
-                  src={activeCharacterImage} 
-                  alt={activeOutfit.name} 
-                  className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
-                    equippedEmote === 'final_form'
-                      ? 'animate-super-shudder scale-[1.05]'
-                      : 'scale-100 group-hover:scale-[1.04]'
-                  }`}
-                  toleranceMultiplier={1.0}
-                  fallbackSrc={activeOutfit.image}
-                />
-              )}
+            <div className="absolute inset-0 w-full h-full z-0 flex items-center justify-center overflow-hidden rounded-lg transition-all duration-500">
+              <img 
+                src={activeCharacterImage} 
+                alt={activeOutfit.name} 
+                className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
+                  equippedEmote === 'final_form'
+                    ? 'animate-super-shudder scale-[1.05]'
+                    : 'scale-100 group-hover:scale-[1.04]'
+                }`}
+                style={{ opacity: 1 }}
+                referrerPolicy="no-referrer"
+              />
 
               {/* Inner Aura overlay graphics rendered DIRECTLY on top of character image for max intensity */}
               {activeAuraStyling.innerEffects}
@@ -3387,23 +3135,13 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 {/* Advanced Micro avatar silhouette halo */}
                 <div className="relative w-16 h-16 rounded-md border border-gym-accent/30 overflow-hidden flex-shrink-0 bg-zinc-950 p-0.5 group-hover:border-gym-accent/60 transition-colors">
                   <div className="absolute inset-0 bg-gradient-to-tr from-gym-accent/10 to-transparent opacity-40" />
-                  {['naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id) ? (
-                    <img 
-                      src={activeCharacterImage} 
-                      alt="Active Micro Outfit" 
-                      className="w-full h-full object-cover rounded-md transition-transform duration-500 group-hover:scale-[1.08]" 
-                      style={{ opacity: 1 }}
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <TransparentCharacter 
-                      src={activeCharacterImage} 
-                      alt="Active Micro Outfit" 
-                      className="w-full h-full object-cover rounded-md transition-transform duration-500 group-hover:scale-[1.08]" 
-                      toleranceMultiplier={1.0}
-                      fallbackSrc={activeOutfit.image}
-                    />
-                  )}
+                  <img 
+                    src={activeCharacterImage} 
+                    alt="Active Micro Outfit" 
+                    className="w-full h-full object-cover rounded-md transition-transform duration-500 group-hover:scale-[1.08]" 
+                    style={{ opacity: 1 }}
+                    referrerPolicy="no-referrer"
+                  />
                   <span className="absolute top-1 left-1 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
  
@@ -4040,12 +3778,11 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                         <div className="flex gap-3.5 items-start relative z-10 min-w-0">
                           {/* Char body thumbnail */}
                           <div className="w-16 h-20 rounded border border-white/5 overflow-hidden flex-shrink-0 bg-black/45 relative shadow-inner">
-                            <TransparentCharacter 
+                            <img 
                               src={outfit.image} 
                               alt={outfit.name} 
                               className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500" 
-                              toleranceMultiplier={1.0}
-                              fallbackSrc={outfit.image}
+                              referrerPolicy="no-referrer"
                             />
                             {!isUnlocked && (
                               <div className="absolute inset-0 bg-black/70 flex items-center justify-center">

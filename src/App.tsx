@@ -91,7 +91,6 @@ import RadarChart from "./components/RadarChart";
 import D3RadarChart from "./components/D3RadarChart";
 import AvatarPanel, { OUTFITS, TITLES } from "./components/AvatarPanel";
 import { AvatarDisplayCard } from "./components/AvatarDisplayCard";
-import { TransparentCharacter } from "./components/TransparentCharacter";
 
 import WorkoutCalendarHeatmap from "./components/WorkoutCalendarHeatmap";
 import { SpinalDepletionWidget } from "./components/SpinalDepletionWidget";
@@ -154,9 +153,6 @@ import sparBg from "./assets/images/spar.png";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import imgVanguardDefault from "./assets/images/vanguard_default_1779362283869.png";
-import imgNeonStrikerDefault from "./assets/images/neon_striker_1779356868324.png";
-import imgShadowHunterDefault from "./assets/images/shadow_hunter_1779356889743.png";
-import imgCyberBeastDefault from "./assets/images/cyber_beast_1779356910976.png";
 
 // --- Types ---
 interface GymTheme {
@@ -17543,9 +17539,6 @@ export default function App() {
 
               const OUTFITS_MAP: Record<string, string> = {
                 vanguard_cadet: "Vanguard Cadet",
-                neon_striker: "Neon Striker",
-                shadow_hunter: "Shadow Hunter",
-                cyber_beast: "Cyber Beast",
                 naruto: "Naruto",
                 sasuke: "Sasuke",
                 jinwoo: "Jin Woo",
@@ -17556,9 +17549,6 @@ export default function App() {
 
               const AVATAR_IMAGES: Record<string, string> = {
                 vanguard_cadet: imgVanguardDefault,
-                neon_striker: imgNeonStrikerDefault,
-                shadow_hunter: imgShadowHunterDefault,
-                cyber_beast: imgCyberBeastDefault,
               };
 
               const activeOutfitId =

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Crown } from 'lucide-react';
-import { TransparentCharacter } from './TransparentCharacter';
 import {
   OUTFITS,
   OUTFIT_TO_BANNER,
@@ -265,40 +264,18 @@ export function AvatarDisplayCard({ profile, currentUser, customClass = '' }: Av
       </div>
 
       {/* Highly Scaled Central Avatar Body Image Container */}
-      <div className={
-        ['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id)
-          ? 'absolute inset-0 w-full h-full z-0 flex items-center justify-center overflow-hidden rounded-lg transition-all duration-500'
-          : `relative w-[92%] aspect-[3/3.8] mx-auto z-10 flex items-center justify-center my-4 overflow-hidden rounded-md border transition-all duration-500 ${
-              equippedEmote === 'final_form'
-                ? `border-[rgba(var(--gym-accent-rgb,212,175,55),0.6)] bg-black/75 scale-[1.02] ${finalFormTheme.glow}`
-                : 'border-white/5 bg-transparent group-hover:border-gym-accent/40'
-            }`
-      }>
-        {['vanguard_cadet', 'naruto', 'sasuke', 'jinwoo', 'goku', 'kaiju8', 'beerus'].includes(activeOutfit.id) ? (
-          <img 
-            src={activeCharacterImage} 
-            alt={activeOutfit.name} 
-            className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
-              equippedEmote === 'final_form'
-                ? 'animate-super-shudder scale-[1.05]'
-                : 'scale-100 group-hover:scale-[1.04]'
-            }`}
-            style={{ opacity: 1 }}
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <TransparentCharacter 
-            src={activeCharacterImage} 
-            alt={activeOutfit.name} 
-            className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
-              equippedEmote === 'final_form'
-                ? 'animate-super-shudder scale-[1.05]'
-                : 'scale-100 group-hover:scale-[1.04]'
-            }`}
-            toleranceMultiplier={1.0}
-            fallbackSrc={activeOutfit.image}
-          />
-        )}
+      <div className="absolute inset-0 w-full h-full z-0 flex items-center justify-center overflow-hidden rounded-lg transition-all duration-500">
+        <img 
+          src={activeCharacterImage} 
+          alt={activeOutfit.name} 
+          className={`w-full h-full object-cover transform select-none pointer-events-none transition-all duration-700 ${
+            equippedEmote === 'final_form'
+              ? 'animate-super-shudder scale-[1.05]'
+              : 'scale-100 group-hover:scale-[1.04]'
+          }`}
+          style={{ opacity: 1 }}
+          referrerPolicy="no-referrer"
+        />
 
         {/* Inner Aura overlay graphics rendered DIRECTLY on top of character image for max intensity */}
         {activeAuraStyling.innerEffects}
