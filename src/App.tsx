@@ -1598,6 +1598,9 @@ export default function App() {
   const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
   const [editingRoutineName, setEditingRoutineName] = useState<string>("");
   const [showCompactList, setShowCompactList] = useState<boolean>(false);
+  const [isExportingRoutines, setIsExportingRoutines] = useState<boolean>(false);
+  const [routinesImagePreviewUrl, setRoutinesImagePreviewUrl] = useState<string | null>(null);
+  const [showRoutinesPreviewModal, setShowRoutinesPreviewModal] = useState<boolean>(false);
   const [tweakingRoutineId, setTweakingRoutineId] = useState<string | null>(null);
   const [showSaveRoutineModal, setShowSaveRoutineModal] = useState(false);
   const [saveRoutineModalStep, setSaveRoutineModalStep] = useState<"choice" | "name">("choice");
@@ -2718,6 +2721,163 @@ export default function App() {
       setToast({ message: "Failed to generate PDF. Please try again.", type: "info" });
     } finally {
       setIsExportingReport(false);
+    }
+  };
+
+  const handleExportRoutinesAsImage = async () => {
+    if (isExportingRoutines) return;
+    setIsExportingRoutines(true);
+    try {
+      const card = document.getElementById("compact-routine-list-capture");
+      if (!card) {
+        setToast({ message: "Routines list element not found.", type: "info" });
+        setIsExportingRoutines(false);
+        return;
+      }
+
+      // Helper function to safely replace oklch, oklab, color-mix and light-dark with valid simple rgb/hex colors to avoid crashing html2canvas parser
+      const replaceColorFunctionsLocal = (cssText: string): string => {
+        let result = cssText;
+        result = result
+          .replace(/var\(--gym-accent\)/g, activeTheme.accent)
+          .replace(/var\(--gym-accent-light\)/g, activeTheme.accentLight)
+          .replace(/var\(--gym-accent-dark\)/g, activeTheme.accentDark)
+          .replace(/var\(--gym-accent-rgb\)/g, activeTheme.accentRgb)
+          .replace(/var\(--theme-text\)/g, activeTheme.testPrimary)
+          .replace(/var\(--theme-text-muted\)/g, activeTheme.testMuted)
+          .replace(/var\(--theme-text-subtle\)/g, activeTheme.testSubtle)
+          .replace(/var\(--color-gym-accent\)/g, activeTheme.accent)
+          .replace(/var\(--color-gym-accent-light\)/g, activeTheme.accentLight)
+          .replace(/var\(--color-gym-accent-dark\)/g, activeTheme.accentDark)
+          .replace(/var\(--color-theme-text\)/g, activeTheme.testPrimary)
+          .replace(/var\(--color-theme-text-muted\)/g, activeTheme.testMuted)
+          .replace(/var\(--color-theme-text-subtle\)/g, activeTheme.testSubtle);
+
+        const keywords = ["oklch(", "oklab(", "color-mix(", "light-dark("];
+        for (const keyword of keywords) {
+          let index = result.toLowerCase().indexOf(keyword);
+          while (index !== -1) {
+            let parenCount = 1;
+            let j = index + keyword.length;
+            while (j < result.length && parenCount > 0) {
+              if (result[j] === '(') {
+                parenCount++;
+              } else if (result[j] === ')') {
+                parenCount--;
+              }
+              j++;
+            }
+            
+            if (parenCount === 0) {
+              const before = result.substring(0, index);
+              const after = result.substring(j);
+              
+              let fallbackColor = activeTheme.accent;
+              const snip = result.substring(Math.max(0, index - 40), index).toLowerCase();
+              if (snip.includes("border") || snip.includes("stroke")) {
+                fallbackColor = activeTheme.accent;
+              } else if (snip.includes("background") || snip.includes("fill")) {
+                fallbackColor = activeTheme.bg;
+              } else if (snip.includes("color") || snip.includes("text")) {
+                fallbackColor = activeTheme.testPrimary;
+              }
+              
+              result = before + fallbackColor + after;
+              index = result.toLowerCase().indexOf(keyword, index);
+            } else {
+              index = result.toLowerCase().indexOf(keyword, index + 1);
+            }
+          }
+        }
+        return result;
+      };
+
+      // Store original transform and scaling to make it look stunningly clean on export
+      const origTransform = card.style.transform;
+      card.style.transform = "none";
+
+      const canvas = await html2canvas(card, {
+        scale: 2.5, // Crisp high-definition text for mobile screens
+        useCORS: true,
+        backgroundColor: "#050505", // Deep slate aesthetic background matches dark theme
+        logging: false,
+        onclone: (clonedDoc) => {
+          // Process styles
+          const styles = clonedDoc.getElementsByTagName("style");
+          for (let i = 0; i < styles.length; i++) {
+            const style = styles[i];
+            if (style.textContent) {
+              style.textContent = replaceColorFunctionsLocal(style.textContent);
+            }
+          }
+
+          // Fetch link stylesheets
+          const links = Array.from(clonedDoc.getElementsByTagName("link"));
+          for (const link of links) {
+            if (link.getAttribute("rel") === "stylesheet") {
+              const href = link.getAttribute("href");
+              if (href) {
+                try {
+                  const xhr = new XMLHttpRequest();
+                  xhr.open("GET", href, false);
+                  xhr.send();
+                  if (xhr.status === 200) {
+                    const cssContent = replaceColorFunctionsLocal(xhr.responseText);
+                    const styleEl = clonedDoc.createElement("style");
+                    styleEl.textContent = cssContent;
+                    clonedDoc.head.appendChild(styleEl);
+                    link.remove();
+                  }
+                } catch (e) {
+                  console.error("Failed to replace link style:", href, e);
+                }
+              }
+            }
+          }
+
+          // Scrub oklch
+          const allElements = clonedDoc.getElementsByTagName("*");
+          for (let i = 0; i < allElements.length; i++) {
+            const el = allElements[i];
+            const styleAttr = el.getAttribute("style");
+            if (styleAttr && (styleAttr.toLowerCase().includes("oklch") || styleAttr.toLowerCase().includes("oklab") || styleAttr.toLowerCase().includes("color-mix") || styleAttr.toLowerCase().includes("light-dark"))) {
+              el.setAttribute("style", replaceColorFunctionsLocal(styleAttr));
+            }
+
+            const fillAttr = el.getAttribute("fill");
+            if (fillAttr && (fillAttr.toLowerCase().includes("oklch") || fillAttr.toLowerCase().includes("oklab") || fillAttr.toLowerCase().includes("color-mix") || fillAttr.toLowerCase().includes("light-dark"))) {
+              el.setAttribute("fill", replaceColorFunctionsLocal(fillAttr));
+            }
+
+            const strokeAttr = el.getAttribute("stroke");
+            if (strokeAttr && (strokeAttr.toLowerCase().includes("oklch") || strokeAttr.toLowerCase().includes("oklab") || strokeAttr.toLowerCase().includes("color-mix") || strokeAttr.toLowerCase().includes("light-dark"))) {
+              el.setAttribute("stroke", replaceColorFunctionsLocal(strokeAttr));
+            }
+
+            // Hide glow effect backgrounds or gradients that look blurry inside canvas renderers
+            const cl = el.className;
+            if (typeof cl === "string" && cl.includes("bg-gradient-") && cl.includes("pointer-events-none")) {
+              const domEl = el as any;
+              if (domEl.style) {
+                domEl.style.display = "none";
+              }
+            }
+          }
+        }
+      });
+
+      card.style.transform = origTransform;
+
+      // Generate PNG format for lossless sharp text
+      const imgData = canvas.toDataURL("image/png");
+      setRoutinesImagePreviewUrl(imgData);
+      setShowRoutinesPreviewModal(true);
+      setToast({ message: "✨ Shareable Preview Generated! Tap/hold the image below to save.", type: "success" });
+    } catch (err) {
+      console.error("Error generating routines share card:", err);
+      setToast({ message: "Failed to generate preview image.", type: "info" });
+    } finally {
+      setIsExportingRoutines(false);
     }
   };
 
@@ -13246,122 +13406,158 @@ export default function App() {
                     </div>
 
                     {showCompactList ? (
-                      <div className="space-y-6">
-                        {/* Compact share header with customizable athlete branding */}
-                        <div className="p-6 rounded-md bg-gradient-to-r from-stone-900 to-[#080808] border border-white/10 relative overflow-hidden">
-                          <div className="absolute top-0 right-0 w-64 h-64 bg-gym-accent/5 rounded-full blur-3xl pointer-events-none" />
-                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2">
-                                <span className="text-[9px] bg-gym-accent/15 border border-gym-accent/30 text-gym-accent font-black uppercase tracking-widest px-2 py-0.5 rounded-sm">
-                                  SUNG JIN WOO // ACTIVE SYSTEM
-                                </span>
-                                <span className="text-[9px] text-white/30 uppercase tracking-widest font-mono">
-                                  LEVEL 100 MONARCH
-                                </span>
-                              </div>
-                              <h4 className="text-xl font-light italic font-serif text-white">
-                                Sung Jin Woo's <span className="text-gym-accent non-italic font-sans font-bold">Personal Workouts Catalog</span>
-                              </h4>
-                              <p className="text-xs text-white/40 max-w-2xl leading-relaxed">
-                                A curated list of my specialized workout splits and compound/isolation exercises. Frame this view and take a snapshot to share with friends!
-                              </p>
-                            </div>
-                            <div className="flex flex-col items-start md:items-end text-xs font-mono text-white/30 space-y-1 bg-black/40 border border-white/5 p-3 rounded-md">
-                              <div className="flex items-center gap-1">
-                                <Camera className="w-3 h-3 text-gym-accent" />
-                                <span className="text-[9px] text-gym-accent font-bold uppercase tracking-wider">Screenshot Ready</span>
-                              </div>
-                              <span className="text-[9px] uppercase tracking-widest">Total splits: {routines.length} saved</span>
-                            </div>
+                      <div className="space-y-6 animate-fadeIn">
+                        {/* Interactive share controller header */}
+                        <div className="p-4 sm:p-5 rounded-md bg-[#0a0a0a] border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+                          <div className="space-y-1">
+                            <span className="text-[9px] text-gym-accent font-black uppercase tracking-widest flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-ping" />
+                              System Share Panel
+                            </span>
+                            <h4 className="text-sm font-semibold text-white">
+                              Export Workout Catalog Image
+                            </h4>
+                            <p className="text-[10px] text-white/40 max-w-md leading-normal">
+                              Create a professional, high-definition image of your custom splits. Ideal for sharing directly on social media or messaging with friends.
+                            </p>
                           </div>
+                          <button
+                            disabled={isExportingRoutines}
+                            onClick={handleExportRoutinesAsImage}
+                            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 border border-gym-accent/30 bg-gym-accent/10 hover:bg-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                          >
+                            {isExportingRoutines ? (
+                              <>
+                                <span className="w-3.5 h-3.5 border-2 border-gym-accent/20 border-t-gym-accent rounded-full animate-spin" />
+                                Rendering Sheet...
+                              </>
+                            ) : (
+                              <>
+                                <Camera className="w-3.5 h-3.5" />
+                                Generate Image Preview
+                              </>
+                            )}
+                          </button>
                         </div>
 
-                        {routines.length === 0 ? (
-                          <div className="text-center py-12 bg-black/40 border border-white/5 rounded-md">
-                            <Repeat className="w-10 h-10 text-white/5 mx-auto mb-4 animate-pulse" />
-                            <p className="text-sm font-bold text-white/50 uppercase tracking-wide">
-                              No Saved Workout Routines Found
-                            </p>
-                            <p className="text-xs text-white/20 uppercase tracking-widest mt-1">
-                              Build a custom routine or save a workout session first to preview this board.
-                            </p>
+                        {/* Capture Element containing both the monarch header branding and splits grid */}
+                        <div id="compact-routine-list-capture" className="space-y-6 p-6 bg-[#050505] rounded-lg border border-white/5 relative overflow-hidden">
+                          {/* Compact share header with customizable athlete branding */}
+                          <div className="p-6 rounded-md bg-gradient-to-r from-stone-900 to-[#080808] border border-white/10 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-gym-accent/5 rounded-full blur-3xl pointer-events-none" />
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[9px] bg-gym-accent/15 border border-gym-accent/30 text-gym-accent font-black uppercase tracking-widest px-2 py-0.5 rounded-sm">
+                                    SUNG JIN WOO // ACTIVE SYSTEM
+                                  </span>
+                                  <span className="text-[9px] text-white/30 uppercase tracking-widest font-mono">
+                                    LEVEL 100 MONARCH
+                                  </span>
+                                </div>
+                                <h4 className="text-xl font-light italic font-serif text-white">
+                                  Sung Jin Woo's <span className="text-gym-accent non-italic font-sans font-bold">Personal Workouts Catalog</span>
+                                </h4>
+                                <p className="text-xs text-white/40 max-w-2xl leading-relaxed">
+                                  A curated list of my specialized workout splits and compound/isolation exercises. Frame this view and take a snapshot to share with friends!
+                                </p>
+                              </div>
+                              <div className="flex flex-col items-start md:items-end text-xs font-mono text-white/30 space-y-1 bg-black/40 border border-white/5 p-3 rounded-md">
+                                <div className="flex items-center gap-1">
+                                  <Camera className="w-3 h-3 text-gym-accent" />
+                                  <span className="text-[9px] text-gym-accent font-bold uppercase tracking-wider">Screenshot Ready</span>
+                                </div>
+                                <span className="text-[9px] uppercase tracking-widest">Total splits: {routines.length} saved</span>
+                              </div>
+                            </div>
                           </div>
-                        ) : (
-                          /* Grid display of all routines with name of exercises only and very minimal */
-                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                            {[...routines]
-                              .sort((a, b) => {
-                                const aIndex = a.categoryIndex !== undefined && a.categoryIndex !== null ? Number(a.categoryIndex) : 999;
-                                const bIndex = b.categoryIndex !== undefined && b.categoryIndex !== null ? Number(b.categoryIndex) : 999;
-                                if (aIndex !== bIndex) {
-                                  return aIndex - bIndex;
-                                }
-                                const aSec = a.timestamp?.seconds || 0;
-                                const bSec = b.timestamp?.seconds || 0;
-                                return bSec - aSec;
-                              })
-                              .map((routine, ri) => {
-                                const uniqueExNames = Array.from(
-                                  new Set(routine.sets?.map((s: any) => s.exerciseName) || [])
-                                ) as string[];
-                                const catName = DAY_CONFIG[routine.categoryIndex]?.name || "Custom Split";
-                                const catIcon = DAY_CONFIG[routine.categoryIndex]?.icon || <Dumbbell className="w-3.5 h-3.5 text-gym-accent" />;
 
-                                return (
-                                  <div
-                                    key={routine.id || ri}
-                                    className="bg-stone-900/40 hover:bg-stone-900/60 border border-white/5 rounded-md p-4 flex flex-col justify-between transition-all duration-300 relative group"
-                                  >
-                                    {/* Top accent border bar */}
-                                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gym-accent/30 to-transparent opacity-50 group-hover:via-gym-accent/60 transition-all" />
+                          {routines.length === 0 ? (
+                            <div className="text-center py-12 bg-black/40 border border-white/5 rounded-md">
+                              <Repeat className="w-10 h-10 text-white/5 mx-auto mb-4 animate-pulse" />
+                              <p className="text-sm font-bold text-white/50 uppercase tracking-wide">
+                                No Saved Workout Routines Found
+                              </p>
+                              <p className="text-xs text-white/20 uppercase tracking-widest mt-1">
+                                Build a custom routine or save a workout session first to preview this board.
+                              </p>
+                            </div>
+                          ) : (
+                            /* Grid display of all routines with name of exercises only and very minimal */
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                              {[...routines]
+                                .sort((a, b) => {
+                                  const aIndex = a.categoryIndex !== undefined && a.categoryIndex !== null ? Number(a.categoryIndex) : 999;
+                                  const bIndex = b.categoryIndex !== undefined && b.categoryIndex !== null ? Number(b.categoryIndex) : 999;
+                                  if (aIndex !== bIndex) {
+                                    return aIndex - bIndex;
+                                  }
+                                  const aSec = a.timestamp?.seconds || 0;
+                                  const bSec = b.timestamp?.seconds || 0;
+                                  return bSec - aSec;
+                                })
+                                .map((routine, ri) => {
+                                  const uniqueExNames = Array.from(
+                                    new Set(routine.sets?.map((s: any) => s.exerciseName) || [])
+                                  ) as string[];
+                                  const catName = DAY_CONFIG[routine.categoryIndex]?.name || "Custom Split";
+                                  const catIcon = DAY_CONFIG[routine.categoryIndex]?.icon || <Dumbbell className="w-3.5 h-3.5 text-gym-accent" />;
 
-                                    <div className="space-y-4">
-                                      {/* Routine Info Header */}
-                                      <div className="border-b border-white/5 pb-2">
-                                        <div className="flex items-center gap-1 text-[9px] text-white/40 uppercase tracking-widest font-mono">
-                                          <span className="shrink-0">{catIcon}</span>
-                                          <span className="truncate">{catName}</span>
+                                  return (
+                                    <div
+                                      key={routine.id || ri}
+                                      className="bg-stone-900/40 hover:bg-stone-900/60 border border-white/5 rounded-md p-4 flex flex-col justify-between transition-all duration-300 relative group"
+                                    >
+                                      {/* Top accent border bar */}
+                                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gym-accent/30 to-transparent opacity-50 group-hover:via-gym-accent/60 transition-all" />
+
+                                      <div className="space-y-4">
+                                        {/* Routine Info Header */}
+                                        <div className="border-b border-white/5 pb-2">
+                                          <div className="flex items-center gap-1 text-[9px] text-white/40 uppercase tracking-widest font-mono">
+                                            <span className="shrink-0">{catIcon}</span>
+                                            <span className="truncate">{catName}</span>
+                                          </div>
+                                          <h5 className="text-sm font-bold text-white tracking-tight leading-snug mt-1 truncate">
+                                            {routine.name}
+                                          </h5>
+                                          <span className="text-[9px] text-gym-accent font-semibold font-mono uppercase tracking-wider block mt-0.5">
+                                            {uniqueExNames.length} {uniqueExNames.length === 1 ? "Exercise" : "Exercises"}
+                                          </span>
                                         </div>
-                                        <h5 className="text-sm font-bold text-white tracking-tight leading-snug mt-1 truncate">
-                                          {routine.name}
-                                        </h5>
-                                        <span className="text-[9px] text-gym-accent font-semibold font-mono uppercase tracking-wider block mt-0.5">
-                                          {uniqueExNames.length} {uniqueExNames.length === 1 ? "Exercise" : "Exercises"}
-                                        </span>
+
+                                        {/* Minimalist Exercises List */}
+                                        {uniqueExNames.length === 0 ? (
+                                          <div className="text-white/20 italic text-[10px] py-2">
+                                            No exercises found
+                                          </div>
+                                        ) : (
+                                          <div className="space-y-2">
+                                            {uniqueExNames.map((exName, idx) => (
+                                              <div key={idx} className="flex items-start gap-2.5 text-[11px] leading-tight">
+                                                <span className="font-mono text-gym-accent font-black text-[9px] bg-gym-accent/10 w-4 h-4 rounded flex items-center justify-center shrink-0">
+                                                  {(idx + 1).toString().padStart(2, '0')}
+                                                </span>
+                                                <span className="text-white/80 group-hover:text-white transition-colors font-medium break-words">
+                                                  {exName}
+                                                </span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
                                       </div>
 
-                                      {/* Minimalist Exercises List */}
-                                      {uniqueExNames.length === 0 ? (
-                                        <div className="text-white/20 italic text-[10px] py-2">
-                                          No exercises found
-                                        </div>
-                                      ) : (
-                                        <div className="space-y-2">
-                                          {uniqueExNames.map((exName, idx) => (
-                                            <div key={idx} className="flex items-start gap-2.5 text-[11px] leading-tight">
-                                              <span className="font-mono text-gym-accent font-black text-[9px] bg-gym-accent/10 w-4 h-4 rounded flex items-center justify-center shrink-0">
-                                                {(idx + 1).toString().padStart(2, '0')}
-                                              </span>
-                                              <span className="text-white/80 group-hover:text-white transition-colors font-medium break-words">
-                                                {exName}
-                                              </span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      )}
+                                      {/* Clean, subtle footer stamp */}
+                                      <div className="mt-4 pt-2 border-t border-white/[0.03] flex items-center justify-between text-[8px] font-mono text-white/20">
+                                        <span>SYSTEM INTEGRATED</span>
+                                        <span>{routine.date || "Active Split"}</span>
+                                      </div>
                                     </div>
-
-                                    {/* Clean, subtle footer stamp */}
-                                    <div className="mt-4 pt-2 border-t border-white/[0.03] flex items-center justify-between text-[8px] font-mono text-white/20">
-                                      <span>SYSTEM INTEGRATED</span>
-                                      <span>{routine.date || "Active Split"}</span>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                          </div>
-                        )}
+                                  );
+                                })}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     ) : (
                       <>
@@ -16068,6 +16264,93 @@ export default function App() {
                     >
                       Cancel
                     </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Routines Share Preview Modal */}
+        <AnimatePresence>
+          {showRoutinesPreviewModal && routinesImagePreviewUrl && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 font-sans">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowRoutinesPreviewModal(false)}
+                className="absolute inset-0 bg-black/95 backdrop-blur-md"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-lg overflow-hidden flex flex-col shadow-2xl z-50 max-h-[90vh]"
+              >
+                {/* Modal Header */}
+                <div className="p-5 border-b border-white/5 relative flex items-center justify-between shrink-0">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-3xl" />
+                  <div>
+                    <h3 className="text-lg font-light italic font-serif text-white">
+                      Your Shareable <span className="text-gym-accent non-italic font-sans font-bold">Workout Catalog Card</span>
+                    </h3>
+                    <p className="text-[9px] text-white/40 uppercase tracking-widest font-mono">
+                      Screenshot ready // optimized for mobile & iOS
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowRoutinesPreviewModal(false)}
+                    className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Mobile Instructions banner */}
+                <div className="bg-gym-accent/10 border-b border-gym-accent/20 px-5 py-3 flex items-start gap-3 text-[11px] leading-relaxed text-white/80 shrink-0">
+                  <span className="text-base shrink-0">📱</span>
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-gym-accent uppercase tracking-wide">iPhone / Mobile Instructions:</p>
+                    <p>
+                      <strong>Tap and hold (long-press)</strong> the preview image below, then choose <strong>"Save to Photos"</strong> or <strong>"Share"</strong>. This works natively on any Apple or Android device!
+                    </p>
+                  </div>
+                </div>
+
+                {/* Preview Image Scroll Container */}
+                <div className="p-5 overflow-y-auto flex-1 bg-black/40 flex flex-col items-center justify-start min-h-0">
+                  <div className="border border-white/10 rounded-md overflow-hidden bg-[#050505] shadow-inner max-w-full">
+                    <img
+                      src={routinesImagePreviewUrl}
+                      alt="My Workout Routines"
+                      referrerPolicy="no-referrer"
+                      className="max-w-full h-auto object-contain block mx-auto rounded-sm select-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Footer */}
+                <div className="p-5 border-t border-white/5 bg-white/[0.01] flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 font-mono text-[9px] text-white/40">
+                  <div className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>2.5X ULTRA-CRISP RETINA RENDERING</span>
+                  </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <button
+                      onClick={() => setShowRoutinesPreviewModal(false)}
+                      className="flex-1 sm:flex-none px-4 py-2 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold whitespace-nowrap"
+                    >
+                      Close
+                    </button>
+                    <a
+                      href={routinesImagePreviewUrl}
+                      download="Somatic_Workout_Routines.png"
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gym-accent/30 bg-gym-accent/15 hover:bg-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold whitespace-nowrap"
+                    >
+                      <Download className="w-3.5 h-3.5 animate-bounce" />
+                      Save File (Desktop)
+                    </a>
                   </div>
                 </div>
               </motion.div>
