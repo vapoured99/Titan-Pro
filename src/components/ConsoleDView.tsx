@@ -607,69 +607,6 @@ export default function ConsoleDView({
     setInputFat("");
   };
 
-  // 5. Reflex Tester state
-  const [reflexState, setReflexState] = useState<"idle" | "preparing" | "waiting" | "active" | "result" | "early">("idle");
-  const [reflexTime, setReflexTime] = useState<number | null>(null);
-  const [reflexHistory, setReflexHistory] = useState<number[]>(() => {
-    try {
-      const stored = localStorage.getItem("somatic_reflex_history");
-      return stored ? JSON.parse(stored) : [218, 245, 189];
-    } catch {
-      return [218, 245, 189];
-    }
-  });
-
-  const reflexTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const reflexStartRef = useRef<number>(0);
-
-  const bestReflex = useMemo(() => {
-    if (reflexHistory.length === 0) return null;
-    return Math.min(...reflexHistory);
-  }, [reflexHistory]);
-
-  const startReflexTest = () => {
-    if (reflexTimerRef.current) clearTimeout(reflexTimerRef.current);
-    setReflexState("waiting");
-    setReflexTime(null);
-
-    const randomDelay = 1500 + Math.random() * 3000; // 1.5s to 4.5s
-    reflexTimerRef.current = setTimeout(() => {
-      setReflexState("active");
-      reflexStartRef.current = performance.now();
-    }, randomDelay);
-  };
-
-  const triggerReflexClick = () => {
-    if (reflexState === "waiting") {
-      // Early click (Misfire)
-      if (reflexTimerRef.current) clearTimeout(reflexTimerRef.current);
-      setReflexState("early");
-    } else if (reflexState === "active") {
-      // Valid reflex click
-      const end = performance.now();
-      const delay = Math.round(end - reflexStartRef.current);
-      setReflexTime(delay);
-      setReflexState("result");
-      const updated = [delay, ...reflexHistory].slice(0, 10);
-      setReflexHistory(updated);
-      localStorage.setItem("somatic_reflex_history", JSON.stringify(updated));
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      if (reflexTimerRef.current) clearTimeout(reflexTimerRef.current);
-    };
-  }, []);
-
-  const getReflexRating = (time: number) => {
-    if (time < 160) return { label: "EXCELLENT // ELITE SPEED", color: "text-emerald-400" };
-    if (time < 200) return { label: "FAST // HIGH RECOVERY", color: "text-green-400" };
-    if (time < 250) return { label: "GOOD // DECENT RECOVERY", color: "text-amber-400" };
-    if (time < 350) return { label: "AVERAGE // MILD FATIGUE", color: "text-white/60" };
-    return { label: "SLOW // NERVOUS SYSTEM FATIGUE", color: "text-rose-500 animate-pulse" };
-  };
-
   // 6. Neural Recruitment loading level computations
   const recruitment: Record<string, any> = useMemo(() => {
     // Define baseline values for sub-muscle groups
@@ -1278,12 +1215,12 @@ export default function ConsoleDView({
         </div>
       </div>
 
-      {/* SECTION 3: UNIFIED RECOVERY & MUSCULAR RECOVERY GAUGE */}
+      {/* SECTION 3: PERFORMANCE PROGRESSION CHART CARD (FULL WIDTH) */}
       <div 
-        onMouseEnter={() => setHoveredCard("recovery")}
+        onMouseEnter={() => setHoveredCard("performance")}
         onMouseLeave={() => setHoveredCard(null)}
         style={{ 
-          borderColor: hoveredCard === "recovery" ? `rgba(${accentRgb}, 0.15)` : "rgba(255, 255, 255, 0.04)"
+          borderColor: hoveredCard === "performance" ? `rgba(${accentRgb}, 0.15)` : "rgba(255, 255, 255, 0.04)"
         }}
         className="bg-gradient-to-b from-[#080808] to-[#040404] border rounded-2xl p-5 md:p-6 transition-all duration-300 relative overflow-hidden"
       >
@@ -1294,152 +1231,49 @@ export default function ConsoleDView({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
           <div className="space-y-1">
             <span style={{ color: accent }} className="text-[9px] font-mono uppercase tracking-widest font-black block">
-              Spine & Joint Stress Reliever
+              Performance Trackers
             </span>
             <h3 className="text-xl font-light text-white font-sans">
-              Nervous System & <span style={{ color: accent }} className="font-serif italic">Spine Load</span>
+              Performance <span style={{ color: accent }} className="font-serif italic">Metrics</span>
             </h3>
             <p className="text-xs text-white/40 leading-relaxed max-w-2xl">
-              Recent heavy workouts can compress your spine and stress your joints. Rest and stretching help keep your nervous system healthy.
+              Track your lifting volume, energy output, body weight, and adiposity progressions over time.
             </p>
           </div>
-          {localSpinalUnitsDelta > 0 && (
-            <button
-              onClick={resetSynergyDecompression}
-              onMouseEnter={() => setHoveredCard("reset-stress-btn")}
-              onMouseLeave={() => setHoveredCard("recovery")}
-              style={{
-                borderColor: hoveredCard === "reset-stress-btn" ? `rgba(${accentRgb}, 0.4)` : "rgba(255, 255, 255, 0.1)",
-                color: hoveredCard === "reset-stress-btn" ? accent : "rgba(255, 255, 255, 0.5)"
-              }}
-              className="px-2.5 py-1.5 border rounded text-[9px] font-mono font-bold uppercase transition-all cursor-pointer"
+          {/* Slide Navigation Buttons */}
+          <div className="flex items-center gap-2 bg-black/60 border border-white/10 rounded-md p-1 self-start sm:self-auto">
+            <button 
+              onClick={() => setActiveChartSlide(prev => (prev === 0 ? chartTypes.length - 1 : prev - 1))}
+              className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
+              title="Previous Metric"
             >
-              Reset Stress Level
+              <ChevronLeft className="w-4 h-4" />
             </button>
-          )}
+            <div className="flex items-center gap-1 px-1">
+              {chartTypes.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  style={{ backgroundColor: idx === activeChartSlide ? accent : "rgba(255, 255, 255, 0.2)" }}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${idx === activeChartSlide ? "w-2.5" : ""}`}
+                />
+              ))}
+            </div>
+            <button 
+              onClick={() => setActiveChartSlide(prev => (prev === chartTypes.length - 1 ? 0 : prev + 1))}
+              className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
+              title="Next Metric"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-          {/* Semicircular Spinal Depletion Gauge */}
-          <div className="lg:col-span-5 flex flex-col items-center justify-center p-4 bg-black/30 border border-white/[0.02] rounded-2xl relative">
-            <div className="absolute top-3 left-3 flex items-center gap-1 font-mono text-[8px] text-white/20">
-              <Brain style={{ color: accent }} className="w-3 h-3" />
-              SPINAL COMPRESSION LEVEL
-            </div>
-            <div className="relative w-full max-w-[210px] flex flex-col items-center justify-center pt-6">
-              <svg className="w-full h-full" viewBox="0 0 200 120" id="spinal-depletion-radial-gauge">
-                <defs>
-                  <filter id="spinal-gauge-glow-d" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                  <radialGradient id="spinal-interior-glow-d" cx="50%" cy="100%" r="65%">
-                    <stop offset="0%" stopColor={synergeticCNSInfo.hexColor} stopOpacity="0.15" />
-                    <stop offset="100%" stopColor={synergeticCNSInfo.hexColor} stopOpacity="0" />
-                  </radialGradient>
-                </defs>
-
-                <path d="M 30 100 A 70 70 0 0 1 170 100 Z" fill="url(#spinal-interior-glow-d)" />
-                <path
-                  d="M 30 100 A 70 70 0 0 1 170 100"
-                  fill="none"
-                  stroke="rgba(255, 255, 255, 0.04)"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                />
-
-                <motion.path
-                  d="M 30 100 A 70 70 0 0 1 170 100"
-                  fill="none"
-                  strokeWidth="8.5"
-                  strokeLinecap="round"
-                  filter="url(#spinal-gauge-glow-d)"
-                  initial={{ pathLength: 0 }}
-                  animate={{ 
-                    pathLength: synergeticSpinalScore / 100,
-                    stroke: synergeticCNSInfo.hexColor
-                  }}
-                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                />
-
-                {[0.25, 0.55, 0.85].map((pct, idx) => {
-                  const angle = Math.PI - pct * Math.PI;
-                  const r1 = 64;
-                  const r2 = 76;
-                  const x1 = 100 + r1 * Math.cos(angle);
-                  const y1 = 100 - r1 * Math.sin(angle);
-                  const x2 = 100 + r2 * Math.cos(angle);
-                  const y2 = 100 - r2 * Math.sin(angle);
-                  return (
-                    <line key={idx} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-                  );
-                })}
-              </svg>
-
-              {/* Indicator Values Overlay */}
-              <div className="absolute bottom-2 text-center">
-                <span className="text-[28px] font-black font-mono text-white leading-none">
-                  {synergeticSpinalScore}
-                  <span className="text-[12px] text-white/40 font-normal">%</span>
-                </span>
-                <span className="text-[8px] font-mono text-white/30 block tracking-widest uppercase mt-0.5">
-                  Stress Index
-                </span>
-              </div>
-            </div>
-
-            <div className="text-center mt-3 space-y-1 font-mono">
-              <span className={`px-2.5 py-0.5 rounded text-[9px] font-bold uppercase inline-block border ${synergeticCNSInfo.levelColor}`}>
-                {synergeticCNSInfo.label}
-              </span>
-              <p className="text-[10px] text-white/50 leading-snug px-3">
-                {synergeticSpinalLoadUnits.toFixed(1)} Joint Stress Units • {synergeticCNSInfo.sublabel}
-              </p>
-            </div>
-          </div>
-
-          {/* Decompression Recommendations & Neuromuscular Insights */}
-          <div className="lg:col-span-7 space-y-4">
-            <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest block font-bold">
-              NEUROMUSCULAR DECOMPRESSION RECOMMENDATIONS
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-[#0b0b0b] border border-white/5 rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Brain className="w-4 h-4 text-white/70" style={{ color: synergeticCNSInfo.hexColor }} />
-                  <span className="text-xs font-mono font-bold text-white">CNS Stress Protocol</span>
-                </div>
-                <p className="text-[10px] text-white/50 leading-relaxed">
-                  {synergeticSpinalScore >= 75 
-                    ? "High neural strain detected. Recommended to sleep 8.5+ hours and avoid pre-workout stimulants today."
-                    : synergeticSpinalScore >= 45 
-                      ? "Moderate peripheral fatigue. Keep rest intervals at 90-120 seconds between working sets."
-                      : "CNS fully primed. Neural drive is optimal for high velocity or heavy absolute loads."
-                  }
-                </p>
-              </div>
-
-              <div className="bg-[#0b0b0b] border border-white/5 rounded-xl p-4 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs font-mono font-bold text-white">Spinal Compression State</span>
-                </div>
-                <p className="text-[10px] text-white/50 leading-relaxed">
-                  {localSpinalUnitsDelta > 0 
-                    ? `Active stretching drills have decreased lumbar compression by ${localSpinalUnitsDelta.toFixed(1)} units.`
-                    : "Zero decompression drills logged today. Recommend performing hanging bar hold or cat-cow stretches."
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
+        <div className="flex-1 min-h-[220px] md:min-h-[280px] flex flex-col justify-center">
+          {activeSlideChartComponent()}
         </div>
       </div>
 
-      {/* SECTION 4: CAROUSELS SECTION (MONTHLY CALENDAR CAROUSEL & PERFORMANCE CHART CAROUSEL) */}
+      {/* SECTION 4: CAROUSELS SECTION (MONTHLY CALENDAR CAROUSEL & NERVOUS SYSTEM GAUGE CAROUSEL) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* CAROUSEL 1: MONTHLY TRAINING DENSITY CALENDAR CAROUSEL */}
@@ -1518,268 +1352,115 @@ export default function ConsoleDView({
           </div>
         </div>
 
-        {/* CAROUSEL 2: METRIC PROGRESSION CHART CAROUSEL */}
+        {/* CAROUSEL 2: SIMPLIFIED NERVOUS SYSTEM & SPINE LOAD GAUGE */}
         <div className="bg-[#090909] border border-white/[0.03] rounded-2xl p-5 md:p-6 flex flex-col justify-between">
           <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
             <div>
               <h4 className="text-base font-semibold text-white leading-snug">
-                Performance Metrics
+                Nervous System & Spine Load
               </h4>
               <p className="text-[10px] text-white/40 font-mono mt-0.5 uppercase">
-                Active Slide: {chartTypes[activeChartSlide].toUpperCase()} progressions
+                Spinal Compression Level
               </p>
             </div>
-            {/* Slide Navigation Buttons */}
-            <div className="flex items-center gap-2 bg-black/60 border border-white/10 rounded-md p-1">
-              <button 
-                onClick={() => setActiveChartSlide(prev => (prev === 0 ? chartTypes.length - 1 : prev - 1))}
-                className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
-                title="Previous Metric"
+            {localSpinalUnitsDelta > 0 && (
+              <button
+                onClick={resetSynergyDecompression}
+                onMouseEnter={() => setHoveredCard("reset-stress-btn")}
+                onMouseLeave={() => setHoveredCard(null)}
+                style={{
+                  borderColor: hoveredCard === "reset-stress-btn" ? `rgba(${accentRgb}, 0.4)` : "rgba(255, 255, 255, 0.1)",
+                  color: hoveredCard === "reset-stress-btn" ? accent : "rgba(255, 255, 255, 0.5)"
+                }}
+                className="px-2 py-1 border rounded text-[8px] font-mono font-bold uppercase transition-all cursor-pointer"
               >
-                <ChevronLeft className="w-4 h-4" />
+                Reset
               </button>
-              <div className="flex items-center gap-1 px-1">
-                {chartTypes.map((_, idx) => (
-                  <div 
-                    key={idx} 
-                    style={{ backgroundColor: idx === activeChartSlide ? accent : "rgba(255, 255, 255, 0.2)" }}
-                    className={`w-1.5 h-1.5 rounded-full transition-all ${idx === activeChartSlide ? "w-2.5" : ""}`}
-                  />
-                ))}
+            )}
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center py-2 relative">
+            <div className="relative w-full max-w-[210px] flex flex-col items-center justify-center pt-2">
+              <svg className="w-full h-full" viewBox="0 0 200 120" id="spinal-depletion-radial-gauge">
+                <defs>
+                  <filter id="spinal-gauge-glow-d" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                  <radialGradient id="spinal-interior-glow-d" cx="50%" cy="100%" r="65%">
+                    <stop offset="0%" stopColor={synergeticCNSInfo.hexColor} stopOpacity="0.15" />
+                    <stop offset="100%" stopColor={synergeticCNSInfo.hexColor} stopOpacity="0" />
+                  </radialGradient>
+                </defs>
+
+                <path d="M 30 100 A 70 70 0 0 1 170 100 Z" fill="url(#spinal-interior-glow-d)" />
+                <path
+                  d="M 30 100 A 70 70 0 0 1 170 100"
+                  fill="none"
+                  stroke="rgba(255, 255, 255, 0.04)"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                />
+
+                <motion.path
+                  d="M 30 100 A 70 70 0 0 1 170 100"
+                  fill="none"
+                  strokeWidth="8.5"
+                  strokeLinecap="round"
+                  filter="url(#spinal-gauge-glow-d)"
+                  initial={{ pathLength: 0 }}
+                  animate={{ 
+                    pathLength: synergeticSpinalScore / 100,
+                    stroke: synergeticCNSInfo.hexColor
+                  }}
+                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                />
+
+                {[0.25, 0.55, 0.85].map((pct, idx) => {
+                  const angle = Math.PI - pct * Math.PI;
+                  const r1 = 64;
+                  const r2 = 76;
+                  const x1 = 100 + r1 * Math.cos(angle);
+                  const y1 = 100 - r1 * Math.sin(angle);
+                  const x2 = 100 + r2 * Math.cos(angle);
+                  const y2 = 100 - r2 * Math.sin(angle);
+                  return (
+                    <line key={idx} x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                  );
+                })}
+              </svg>
+
+              {/* Indicator Values Overlay */}
+              <div className="absolute bottom-2 text-center">
+                <span className="text-[28px] font-black font-mono text-white leading-none">
+                  {synergeticSpinalScore}
+                  <span className="text-[12px] text-white/40 font-normal">%</span>
+                </span>
+                <span className="text-[8px] font-mono text-white/30 block tracking-widest uppercase mt-0.5">
+                  Stress Index
+                </span>
               </div>
-              <button 
-                onClick={() => setActiveChartSlide(prev => (prev === chartTypes.length - 1 ? 0 : prev + 1))}
-                className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
-                title="Next Metric"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+            </div>
+
+            <div className="text-center mt-3 space-y-1 font-mono">
+              <span className={`px-2.5 py-0.5 rounded text-[9px] font-bold uppercase inline-block border ${synergeticCNSInfo.levelColor}`}>
+                {synergeticCNSInfo.label}
+              </span>
+              <p className="text-[10px] text-white/50 leading-snug px-3">
+                {synergeticSpinalLoadUnits.toFixed(1)} Joint Stress Units • {synergeticCNSInfo.sublabel}
+              </p>
             </div>
           </div>
 
-          <div className="flex-1 min-h-[200px] flex flex-col justify-center">
-            {activeSlideChartComponent()}
-          </div>
-        </div>
-      </div>
-
-      {/* SECTION 5: REFLEX TESTER */}
-      <div className="bg-[#060606] border border-white/[0.04] rounded-2xl p-5 md:p-6 transition-all duration-300">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-4 mb-5">
-          <div className="space-y-0.5">
-            <span style={{ color: accent }} className="text-[9px] font-mono uppercase tracking-widest font-black block">
-              Nerve Connection Speed
+          <div className="flex items-center justify-between text-[9px] font-mono text-white/30 mt-4 pt-3 border-t border-white/[0.03]">
+            <span className="uppercase">CNS Status Monitoring</span>
+            <span style={{ color: accent }} className="opacity-80 font-bold uppercase">
+              Active Telemetry
             </span>
-            <h3 className="text-lg font-light text-white font-sans flex items-center gap-2">
-              <Timer style={{ color: accent }} className="w-5 h-5" />
-              Neural Reflex <span style={{ color: accent }} className="font-serif italic">Tester</span>
-            </h3>
-            <p className="text-xs text-white/40">
-              Test your reaction speed. A fast reaction time indicates a rested and healthy nervous system.
-            </p>
           </div>
-          <div className="flex items-center gap-4 text-xs font-mono">
-            <div className="text-right">
-              <span className="text-[8px] text-white/30 block uppercase font-bold">Best Time</span>
-              <span className="text-emerald-400 font-extrabold">{bestReflex ? `${bestReflex} ms` : "No logs"}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
-          {/* Reaction Game Interface (Left 7 cols) */}
-          <div className="md:col-span-7 flex flex-col">
-            <div 
-              onClick={triggerReflexClick}
-              onMouseEnter={() => setHoveredCard("reflex-area")}
-              onMouseLeave={() => setHoveredCard(null)}
-              style={{
-                borderColor: 
-                  reflexState === "idle" && hoveredCard === "reflex-area"
-                    ? `rgba(${accentRgb}, 0.3)`
-                    : reflexState === "waiting"
-                    ? "rgba(245, 158, 11, 0.2)"
-                    : reflexState === "active"
-                    ? "rgba(52, 211, 153, 0.4)"
-                    : reflexState === "early"
-                    ? "rgba(239, 68, 68, 0.2)"
-                    : reflexState === "result"
-                    ? `rgba(${accentRgb}, 0.2)`
-                    : "rgba(255, 255, 255, 0.05)"
-              }}
-              className={`flex-1 min-h-[180px] rounded-2xl border flex flex-col items-center justify-center text-center p-6 transition-all duration-200 select-none cursor-pointer relative overflow-hidden ${
-                reflexState === "idle" 
-                  ? "bg-stone-900/30 hover:bg-stone-900/50" 
-                  : reflexState === "waiting"
-                  ? "bg-amber-950/20 shadow-[inset_0_0_20px_rgba(245,158,11,0.05)] cursor-not-allowed"
-                  : reflexState === "active"
-                  ? "bg-emerald-950/40 shadow-[0_0_25px_rgba(52,211,153,0.15)] scale-[0.99] hover:bg-emerald-900/50"
-                  : reflexState === "early"
-                  ? "bg-rose-950/30 border-rose-500/20"
-                  : "bg-orange-950/10"
-              }`}
-            >
-              {reflexState === "idle" && (
-                <div className="space-y-3">
-                  <Activity style={{ color: accent }} className="w-10 h-10 mx-auto animate-pulse opacity-50" />
-                  <div>
-                    <h5 className="text-white font-bold font-mono text-sm uppercase">Ready</h5>
-                    <p className="text-xs text-white/40 max-w-sm mx-auto mt-1">
-                      Tap below to start. Click as fast as you can when the screen flashes green.
-                    </p>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startReflexTest();
-                    }}
-                    onMouseEnter={() => setHoveredCard("start-test-btn")}
-                    onMouseLeave={() => setHoveredCard("reflex-area")}
-                    style={{ backgroundColor: hoveredCard === "start-test-btn" ? accentLight : accent }}
-                    className="px-4 py-2 text-black text-[10px] font-black uppercase tracking-wider rounded-md transition-colors font-mono cursor-pointer"
-                  >
-                    Start Test
-                  </button>
-                </div>
-              )}
-
-              {reflexState === "waiting" && (
-                <div className="space-y-2 text-center">
-                  <div className="relative w-8 h-8 mx-auto">
-                    <span className="absolute inset-0 rounded-full border-2 border-amber-400/20 border-t-amber-400 animate-spin" />
-                  </div>
-                  <h5 className="text-amber-400 font-bold font-mono text-xs uppercase tracking-widest animate-pulse">
-                    Wait for Green...
-                  </h5>
-                  <p className="text-[10px] text-white/30 max-w-xs mx-auto">
-                    Concentrate and be ready to click!
-                  </p>
-                </div>
-              )}
-
-              {reflexState === "active" && (
-                <div className="space-y-2 text-center pointer-events-none">
-                  <Zap className="w-10 h-10 text-emerald-400 mx-auto animate-bounce" />
-                  <h5 className="text-emerald-400 font-black font-mono text-xl uppercase tracking-widest animate-pulse">
-                    CLICK NOW!
-                  </h5>
-                  <p className="text-xs text-emerald-300/60 font-semibold font-mono">
-                    TAP AS FAST AS YOU CAN!
-                  </p>
-                </div>
-              )}
-
-              {reflexState === "early" && (
-                <div className="space-y-3">
-                  <span className="text-2xl">⚠️</span>
-                  <div>
-                    <h5 className="text-rose-500 font-bold font-mono text-xs uppercase tracking-widest">
-                      TOO EARLY!
-                    </h5>
-                    <p className="text-[10px] text-white/40 max-w-xs mx-auto mt-1">
-                      You clicked before the green light. Try again!
-                    </p>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startReflexTest();
-                    }}
-                    className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-rose-400 text-[9px] font-mono font-bold uppercase rounded transition-colors cursor-pointer"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              )}
-
-              {reflexState === "result" && reflexTime !== null && (
-                <div className="space-y-3">
-                  <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1 border border-emerald-500/20 rounded-full text-emerald-400 font-mono text-xs">
-                    <Trophy className="w-3.5 h-3.5" />
-                    TEST COMPLETED
-                  </div>
-                  <div>
-                    <h4 className="text-4xl font-mono font-black text-white">
-                      {reflexTime} <span className="text-lg font-light text-white/40">ms</span>
-                    </h4>
-                    <p className={`text-xs font-mono uppercase font-bold mt-1 ${getReflexRating(reflexTime).color}`}>
-                      {getReflexRating(reflexTime).label}
-                    </p>
-                  </div>
-                  <div className="text-[10px] text-white/40 max-w-md mx-auto leading-normal px-4">
-                    {reflexTime < 200 
-                      ? "Excellent! Your reaction time is fast. Your nervous system is fully rested and ready to train."
-                      : reflexTime < 250 
-                      ? "Good reaction time. You are recovered enough for a solid workout."
-                      : "Slight reaction delay. Consider taking a lighter training day or focusing on stretching."
-                    }
-                  </div>
-                  <div className="flex gap-2 justify-center pt-1">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        startReflexTest();
-                      }}
-                      onMouseEnter={() => setHoveredCard("test-again-btn")}
-                      onMouseLeave={() => setHoveredCard(null)}
-                      style={{ backgroundColor: hoveredCard === "test-again-btn" ? accentLight : accent }}
-                      className="px-3 py-1.5 text-black text-[9px] font-mono font-black uppercase tracking-widest rounded transition-colors cursor-pointer"
-                    >
-                      Test Again
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setReflexState("idle");
-                      }}
-                      className="px-3 py-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-white/60 text-[9px] font-mono font-black uppercase tracking-widest rounded transition-all cursor-pointer"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* History Panel (Right 5 cols) */}
-          <div className="md:col-span-5 bg-[#0b0b0b] border border-white/5 rounded-2xl p-4 flex flex-col justify-between text-left font-mono text-xs">
-            <div className="space-y-3 flex-1">
-              <span className="text-[8px] text-white/30 uppercase tracking-widest font-black block pb-1 border-b border-white/5">
-                PAST TEST RESULTS
-              </span>
-              <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
-                {reflexHistory.length === 0 ? (
-                  <div className="text-center py-6 text-white/20 text-[10px]">
-                    No test results yet.
-                  </div>
-                ) : (
-                  reflexHistory.map((time, idx) => {
-                    const rating = getReflexRating(time);
-                    return (
-                      <div key={idx} className="flex items-center justify-between py-1 border-b border-white/[0.02] text-[10px]">
-                        <div className="flex items-center gap-2">
-                          <span className="text-white/20">#{reflexHistory.length - idx}</span>
-                          <span className={rating.color}>{time} ms</span>
-                        </div>
-                        <span className="text-white/30 text-[9px] uppercase tracking-wider">
-                          {time < 200 ? "Elite" : time < 250 ? "Athletic" : "Lag"}
-                        </span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-
-            <div className="bg-amber-500/5 border border-amber-500/10 p-3 rounded-xl text-[10px] text-amber-300 leading-normal mt-4">
-              <span className="font-extrabold uppercase text-[8px] tracking-widest text-amber-400 block mb-1">
-                REACTION TIME FACTOR
-              </span>
-              Heavy lifting fatigues the nervous system, which temporarily slows your reaction time.
-            </div>
-          </div>
-
         </div>
       </div>
 
