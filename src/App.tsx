@@ -17659,7 +17659,7 @@ export default function App() {
                 vanguard_cadet: "Vanguard Cadet",
                 naruto: "Naruto",
                 sasuke: "Sasuke",
-                jinwoo: "Jin Woo",
+                jinwoo: "Sung Jin Woo",
                 goku: "Goku",
                 kaiju8: "Kaiju No. 8",
                 beerus: "Beerus",

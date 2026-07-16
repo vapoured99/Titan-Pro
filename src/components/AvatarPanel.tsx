@@ -173,7 +173,7 @@ export const OUTFITS = [
   },
   {
     id: 'jinwoo',
-    name: 'Jin Woo',
+    name: 'Sung Jin Woo',
     description: 'The legendary Shadow Monarch. Master of shadow summoning and abyssal daggers.',
     price: 15000,
     image: imgJinwooDefault,
@@ -731,7 +731,7 @@ export const FINAL_FORM_THEMES: Record<string, { color: string; glow: string; pa
 
   naruto: { color: '#ea580c', glow: 'shadow-[0_0_120px_rgba(234,88,12,1),_0_0_60px_rgba(234,88,12,0.7)]', particles: '#ea580c', bannerText: 'NARUTO // SAGE OF SIX PATHS LIMIT BREAK', overlayGradient: 'from-orange-500/35 to-transparent' },
   sasuke: { color: '#a855f7', glow: 'shadow-[0_0_120px_rgba(168,85,247,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#a855f7', bannerText: 'SASUKE // INDRA REINCARNATION SUSANOO OUTBURST', overlayGradient: 'from-purple-500/35 to-transparent' },
-  jinwoo: { color: '#3b82f6', glow: 'shadow-[0_0_120px_rgba(59,130,246,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#3b82f6', bannerText: 'JIN WOO // MONARCH OF SHADOWS DECREE', overlayGradient: 'from-blue-950/40 to-transparent' },
+  jinwoo: { color: '#3b82f6', glow: 'shadow-[0_0_120px_rgba(59,130,246,1),_0_0_60px_rgba(168,85,247,0.7)]', particles: '#3b82f6', bannerText: 'SUNG JIN WOO // MONARCH OF SHADOWS DECREE', overlayGradient: 'from-blue-950/40 to-transparent' },
   goku: { color: '#f97316', glow: 'shadow-[0_0_120px_rgba(249,115,22,1),_0_0_60px_rgba(253,224,71,0.85)]', particles: '#fbbf24', bannerText: 'GOKU // MASTERED ULTRA INSTINCT LIMIT BREAK', overlayGradient: 'from-orange-500/40 via-yellow-500/20 to-transparent' },
   kaiju8: { color: '#06b6d4', glow: 'shadow-[0_0_120px_rgba(6,182,212,1),_0_0_60px_rgba(20,184,166,0.75)]', particles: '#22d3ee', bannerText: 'KAIJU NO. 8 // 9.8 FORTITUDE LEVEL OVERLOAD DETECTED', overlayGradient: 'from-cyan-950/40 via-zinc-900/10 to-transparent' },
   beerus: { color: '#a855f7', glow: 'shadow-[0_0_120px_rgba(168,85,247,1),_0_0_60px_rgba(192,38,211,0.85)]', particles: '#d946ef', bannerText: 'BEERUS // GOD OF DESTRUCTION PURPLE HAKAI DECREE', overlayGradient: 'from-purple-950/40 via-fuchsia-900/10 to-transparent' }
@@ -879,7 +879,7 @@ export const PETS_DATA: Record<string, {
   jinwoo: {
     name: "Mini Kaisel",
     type: "Shadow Wyvern Companion",
-    desc: "A small, cute shadow wyvern companion born from Jin Woo's shadow army. Shrouds you with shadowy aura to boost maximum lifting focus.",
+    desc: "A small, cute shadow wyvern companion born from Sung Jin Woo's shadow army. Shrouds you with shadowy aura to boost maximum lifting focus.",
     color: "#3b82f6",
     glow: "rgba(59,130,246,0.45)",
     buff: "+15% Shadow Essence Surge",
