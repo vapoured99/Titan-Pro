@@ -106,7 +106,7 @@ const getMuscleGroup = (ex: Exercise): string => {
   if (pool.includes("back")) return "Back";
   if (pool.includes("delt") || pool.includes("shoulder")) return "Shoulders";
   if (pool.includes("bicep") || pool.includes("tricep") || pool.includes("arm") || pool.includes("brachialis")) return "Arms";
-  if (pool.includes("quad") || pool.includes("hamstring") || pool.includes("calf") || pool.includes("leg")) return "Legs";
+  if (pool.includes("quad") || pool.includes("hamstring") || pool.includes("calf") || pool.includes("calves") || pool.includes("leg")) return "Legs";
   if (pool.includes("abs") || pool.includes("oblique") || pool.includes("core") || pool.includes("cardio")) return "Core & Cardio";
   return "Other";
 };
@@ -637,6 +637,18 @@ export default function AIPlanActive({
       }
       groups[g].push(item);
     });
+
+    // Sort each muscle group's exercises so compounds are first
+    Object.keys(groups).forEach((key) => {
+      groups[key].sort((a, b) => {
+        const catA = a.exercise.category || "isolation";
+        const catB = b.exercise.category || "isolation";
+        if (catA === "compound" && catB !== "compound") return -1;
+        if (catA !== "compound" && catB === "compound") return 1;
+        return 0;
+      });
+    });
+
     return groups;
   }, [activeExercises]);
 

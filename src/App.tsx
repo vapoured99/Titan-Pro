@@ -1589,6 +1589,7 @@ export default function App() {
   const [savingRoutineWorkout, setSavingRoutineWorkout] = useState<any | null>(
     null,
   );
+  const [savingRoutineName, setSavingRoutineName] = useState<string>("");
   const [expandedRoutinesDays, setExpandedRoutinesDays] = useState<
     Record<number, boolean>
   >({});
@@ -4573,8 +4574,9 @@ export default function App() {
   const handleOrganizeMovementOrder = () => {
     const totalBuilder = currentDays.reduce((acc, val) => acc + val.length, 0);
     const totalFormatted = formattedProgram.reduce((acc, item) => acc + item.exercises.length, 0);
+    const totalAIPlan = aiPlanExercises.length;
 
-    if (totalBuilder === 0 && totalFormatted === 0) {
+    if (totalBuilder === 0 && totalFormatted === 0 && totalAIPlan === 0) {
       setToast({ message: "No exercises selected to organize.", type: "info" });
       return;
     }
@@ -4612,6 +4614,39 @@ export default function App() {
       return sorted;
     };
 
+    const sortAIPlanExercisesMuscleGroupWise = (items: AIPlanExercise[]) => {
+      const muscleGroupsOrder: string[] = [];
+      const exercisesByGroup: Record<string, AIPlanExercise[]> = {};
+
+      items.forEach((item) => {
+        const ex = item.exercise;
+        const resolved = findExerciseByName(ex.name) || ex;
+        const group = (resolved.muscleGroup || resolved.pool || "other").toLowerCase();
+        if (!exercisesByGroup[group]) {
+          exercisesByGroup[group] = [];
+          muscleGroupsOrder.push(group);
+        }
+        exercisesByGroup[group].push(item);
+      });
+
+      const sorted: AIPlanExercise[] = [];
+      muscleGroupsOrder.forEach((group) => {
+        const groupExs = exercisesByGroup[group];
+        groupExs.sort((a, b) => {
+          const resA = findExerciseByName(a.exercise.name) || a.exercise;
+          const resB = findExerciseByName(b.exercise.name) || b.exercise;
+          const catA = resA.category || a.exercise.category || "isolation";
+          const catB = resB.category || b.exercise.category || "isolation";
+          if (catA === "compound" && catB !== "compound") return -1;
+          if (catA !== "compound" && catB === "compound") return 1;
+          return 0;
+        });
+        sorted.push(...groupExs);
+      });
+
+      return sorted;
+    };
+
     if (totalBuilder > 0) {
       const nextDays = currentDays.map((day) => {
         return sortExercisesMuscleGroupWise(day);
@@ -4628,6 +4663,12 @@ export default function App() {
         };
       });
       setFormattedProgram(nextFormatted);
+    }
+
+    if (totalAIPlan > 0) {
+      const nextAIPlan = sortAIPlanExercisesMuscleGroupWise(aiPlanExercises);
+      setAiPlanExercises(nextAIPlan);
+      localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlan));
     }
 
     setToast({
@@ -5707,7 +5748,7 @@ export default function App() {
     }
   };
 
-  const handleSaveRoutine = async (workout: any, categoryIndex: number) => {
+  const handleSaveRoutine = async (workout: any, categoryIndex: number, customName?: string) => {
     if (!currentUser || !workout) return;
     try {
       setDataLoading(true);
@@ -5717,7 +5758,7 @@ export default function App() {
           ? workout.timestamp.seconds * 1000
           : Date.now(),
       ).toLocaleDateString([], { day: "numeric", month: "short" });
-      const defaultName = `${categoryName} Routine (${formattedDate})`;
+      const defaultName = customName?.trim() || `${categoryName} Routine (${formattedDate})`;
 
       const routineRef = doc(
         collection(db, `users/${currentUser.uid}/routines`),
@@ -5735,6 +5776,7 @@ export default function App() {
         type: "success",
       });
       setSavingRoutineWorkout(null);
+      setSavingRoutineName("");
     } catch (error) {
       console.error("Error saving routine:", error);
       setToast({ message: "Failed to save routine.", type: "info" });
@@ -14800,7 +14842,7 @@ export default function App() {
 
                 {/* Selected Exercises Selection Deck Widget */}
                 {(() => {
-                  const allSelectedExercises = currentDays.flatMap((dayExs, dayIdx) => 
+                  const rawSelected = currentDays.flatMap((dayExs, dayIdx) => 
                     dayExs.map((ex, exIdx) => ({
                       exercise: ex,
                       dayIdx,
@@ -14808,6 +14850,43 @@ export default function App() {
                       categoryName: DAY_CONFIG[dayIdx]?.name || `Day ${dayIdx + 1}`
                     }))
                   );
+
+                  const getMuscleGroupRank = (ex: any) => {
+                    const resolved = findExerciseByName(ex.name) || ex;
+                    const pool = (resolved.pool || "").toLowerCase();
+                    let group = "Other";
+                    if (pool.includes("chest")) group = "Chest";
+                    else if (pool.includes("back")) group = "Back";
+                    else if (pool.includes("delt") || pool.includes("shoulder")) group = "Shoulders";
+                    else if (pool.includes("bicep") || pool.includes("tricep") || pool.includes("arm") || pool.includes("brachialis")) group = "Arms";
+                    else if (pool.includes("quad") || pool.includes("hamstring") || pool.includes("calf") || pool.includes("calves") || pool.includes("leg")) group = "Legs";
+                    else if (pool.includes("abs") || pool.includes("oblique") || pool.includes("core") || pool.includes("cardio")) group = "Core & Cardio";
+
+                    const order = ["Chest", "Back", "Shoulders", "Arms", "Legs", "Core & Cardio", "Other"];
+                    const idx = order.indexOf(group);
+                    return idx === -1 ? 999 : idx;
+                  };
+
+                  const getExerciseCategoryRank = (ex: any) => {
+                    const resolved = findExerciseByName(ex.name) || ex;
+                    const cat = resolved.category || ex.category || "isolation";
+                    return cat === "compound" ? 0 : 1;
+                  };
+
+                  const allSelectedExercises = rawSelected.map((item, idx) => ({
+                    ...item,
+                    originalIdx: idx
+                  })).sort((a, b) => {
+                    const groupA = getMuscleGroupRank(a.exercise);
+                    const groupB = getMuscleGroupRank(b.exercise);
+                    if (groupA !== groupB) return groupA - groupB;
+
+                    const catA = getExerciseCategoryRank(a.exercise);
+                    const catB = getExerciseCategoryRank(b.exercise);
+                    if (catA !== catB) return catA - catB;
+
+                    return a.originalIdx - b.originalIdx;
+                  });
 
                   if (allSelectedExercises.length === 0) return null;
 
@@ -15804,10 +15883,21 @@ export default function App() {
                 </div>
 
                 <div className="p-8 space-y-4">
-                  <p className="text-xs text-white/60 leading-relaxed">
-                    Select 1 of the 4 exercise day categories to categorize this
-                    routine. It will be saved under the corresponding section in
-                    your Routines tab:
+                  <div className="space-y-2">
+                    <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
+                      Routine Name (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Leave empty for auto-generated name..."
+                      value={savingRoutineName}
+                      onChange={(e) => setSavingRoutineName(e.target.value)}
+                      className="w-full bg-black/60 border border-white/15 hover:border-white/25 focus:border-gym-accent rounded-md px-4 py-3 text-sm font-light focus:outline-none transition-all text-white"
+                    />
+                  </div>
+
+                  <p className="text-xs text-white/60 leading-relaxed pt-2">
+                    Select 1 of the exercise day categories to categorize and save this routine:
                   </p>
 
                   <div className="grid grid-cols-1 gap-2.5">
@@ -15815,7 +15905,7 @@ export default function App() {
                       <button
                         key={idx}
                         onClick={() =>
-                          handleSaveRoutine(savingRoutineWorkout, idx)
+                          handleSaveRoutine(savingRoutineWorkout, idx, savingRoutineName)
                         }
                         className="w-full text-left p-4 rounded-md border border-white/10 bg-white/[0.02] hover:bg-gym-accent hover:border-gym-accent hover:text-black transition-all cursor-pointer flex items-center justify-between group"
                       >
@@ -15959,6 +16049,34 @@ export default function App() {
                         <p className="text-[10px] text-white/30 leading-relaxed pt-1">
                           A high-fidelity routine lets you instantly track sets, target repetitions, and relative intensity scales automatically.
                         </p>
+                      </div>
+
+                      {/* Explicit Category / Section selector */}
+                      <div className="space-y-3">
+                        <label className="text-[10px] text-white/40 uppercase tracking-widest font-bold block">
+                          Store in Section
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          {DAY_CONFIG.map((day, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => setNewRoutineCategory(idx)}
+                              className={`p-3 rounded-md border text-left transition-all cursor-pointer flex items-center gap-2 ${
+                                newRoutineCategory === idx
+                                  ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_10px_rgba(255,231,101,0.15)]"
+                                  : "bg-black/40 border-white/10 text-white/60 hover:bg-white/[0.02] hover:text-white"
+                              }`}
+                            >
+                              <div className="opacity-85 shrink-0 text-xs">
+                                {day.icon}
+                              </div>
+                              <span className="text-[10px] font-bold uppercase tracking-wider truncate">
+                                {day.name}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
                       </div>
 
                       <div className="pt-4 flex justify-between items-center">
