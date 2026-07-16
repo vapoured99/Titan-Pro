@@ -66,6 +66,8 @@ import {
   ClipboardList,
   Star,
   Cpu,
+  Camera,
+  Share2,
 } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import {
@@ -1595,6 +1597,7 @@ export default function App() {
   >({});
   const [editingRoutineId, setEditingRoutineId] = useState<string | null>(null);
   const [editingRoutineName, setEditingRoutineName] = useState<string>("");
+  const [showCompactList, setShowCompactList] = useState<boolean>(false);
   const [tweakingRoutineId, setTweakingRoutineId] = useState<string | null>(null);
   const [showSaveRoutineModal, setShowSaveRoutineModal] = useState(false);
   const [saveRoutineModalStep, setSaveRoutineModalStep] = useState<"choice" | "name">("choice");
@@ -13213,21 +13216,155 @@ export default function App() {
                           Instantly reload and execute your favorite workflows
                         </p>
                       </div>
-                      <button
-                        onClick={() => {
-                          setNewRoutineName("");
-                          setNewRoutineCategory(0);
-                          setNewRoutineExercises([]);
-                          setTweakingRoutineId(null);
-                          setIsCreatingRoutine(true);
-                          setBuilderSearch("");
-                        }}
-                        className="flex items-center gap-2 px-4 py-2 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:border-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold"
-                      >
-                        <Plus className="w-3.5 h-3.5 animate-none" />
-                        Create Custom Routine
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => setShowCompactList(!showCompactList)}
+                          className={`flex items-center gap-2 px-4 py-2 border transition-all rounded-md cursor-pointer font-semibold text-[10px] uppercase tracking-widest ${
+                            showCompactList
+                              ? "border-gym-accent bg-gym-accent text-black shadow-[0_0_15px_rgba(255,231,101,0.25)]"
+                              : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                          }`}
+                        >
+                          <Share2 className="w-3.5 h-3.5" />
+                          {showCompactList ? "Standard List" : "One-Page Share View"}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setNewRoutineName("");
+                            setNewRoutineCategory(0);
+                            setNewRoutineExercises([]);
+                            setTweakingRoutineId(null);
+                            setIsCreatingRoutine(true);
+                            setBuilderSearch("");
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:border-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold"
+                        >
+                          <Plus className="w-3.5 h-3.5 animate-none" />
+                          Create Custom Routine
+                        </button>
+                      </div>
                     </div>
+
+                    {showCompactList ? (
+                      <div className="space-y-6">
+                        {/* Compact share header with customizable athlete branding */}
+                        <div className="p-6 rounded-md bg-gradient-to-r from-stone-900 to-[#080808] border border-white/10 relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-64 h-64 bg-gym-accent/5 rounded-full blur-3xl pointer-events-none" />
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[9px] bg-gym-accent/15 border border-gym-accent/30 text-gym-accent font-black uppercase tracking-widest px-2 py-0.5 rounded-sm">
+                                  SUNG JIN WOO // ACTIVE SYSTEM
+                                </span>
+                                <span className="text-[9px] text-white/30 uppercase tracking-widest font-mono">
+                                  LEVEL 100 MONARCH
+                                </span>
+                              </div>
+                              <h4 className="text-xl font-light italic font-serif text-white">
+                                Sung Jin Woo's <span className="text-gym-accent non-italic font-sans font-bold">Personal Workouts Catalog</span>
+                              </h4>
+                              <p className="text-xs text-white/40 max-w-2xl leading-relaxed">
+                                A curated list of my specialized workout splits and compound/isolation exercises. Frame this view and take a snapshot to share with friends!
+                              </p>
+                            </div>
+                            <div className="flex flex-col items-start md:items-end text-xs font-mono text-white/30 space-y-1 bg-black/40 border border-white/5 p-3 rounded-md">
+                              <div className="flex items-center gap-1">
+                                <Camera className="w-3 h-3 text-gym-accent" />
+                                <span className="text-[9px] text-gym-accent font-bold uppercase tracking-wider">Screenshot Ready</span>
+                              </div>
+                              <span className="text-[9px] uppercase tracking-widest">Total splits: {routines.length} saved</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {routines.length === 0 ? (
+                          <div className="text-center py-12 bg-black/40 border border-white/5 rounded-md">
+                            <Repeat className="w-10 h-10 text-white/5 mx-auto mb-4 animate-pulse" />
+                            <p className="text-sm font-bold text-white/50 uppercase tracking-wide">
+                              No Saved Workout Routines Found
+                            </p>
+                            <p className="text-xs text-white/20 uppercase tracking-widest mt-1">
+                              Build a custom routine or save a workout session first to preview this board.
+                            </p>
+                          </div>
+                        ) : (
+                          /* Grid display of all routines with name of exercises only and very minimal */
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            {[...routines]
+                              .sort((a, b) => {
+                                const aIndex = a.categoryIndex !== undefined && a.categoryIndex !== null ? Number(a.categoryIndex) : 999;
+                                const bIndex = b.categoryIndex !== undefined && b.categoryIndex !== null ? Number(b.categoryIndex) : 999;
+                                if (aIndex !== bIndex) {
+                                  return aIndex - bIndex;
+                                }
+                                const aSec = a.timestamp?.seconds || 0;
+                                const bSec = b.timestamp?.seconds || 0;
+                                return bSec - aSec;
+                              })
+                              .map((routine, ri) => {
+                                const uniqueExNames = Array.from(
+                                  new Set(routine.sets?.map((s: any) => s.exerciseName) || [])
+                                ) as string[];
+                                const catName = DAY_CONFIG[routine.categoryIndex]?.name || "Custom Split";
+                                const catIcon = DAY_CONFIG[routine.categoryIndex]?.icon || <Dumbbell className="w-3.5 h-3.5 text-gym-accent" />;
+
+                                return (
+                                  <div
+                                    key={routine.id || ri}
+                                    className="bg-stone-900/40 hover:bg-stone-900/60 border border-white/5 rounded-md p-4 flex flex-col justify-between transition-all duration-300 relative group"
+                                  >
+                                    {/* Top accent border bar */}
+                                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gym-accent/30 to-transparent opacity-50 group-hover:via-gym-accent/60 transition-all" />
+
+                                    <div className="space-y-4">
+                                      {/* Routine Info Header */}
+                                      <div className="border-b border-white/5 pb-2">
+                                        <div className="flex items-center gap-1 text-[9px] text-white/40 uppercase tracking-widest font-mono">
+                                          <span className="shrink-0">{catIcon}</span>
+                                          <span className="truncate">{catName}</span>
+                                        </div>
+                                        <h5 className="text-sm font-bold text-white tracking-tight leading-snug mt-1 truncate">
+                                          {routine.name}
+                                        </h5>
+                                        <span className="text-[9px] text-gym-accent font-semibold font-mono uppercase tracking-wider block mt-0.5">
+                                          {uniqueExNames.length} {uniqueExNames.length === 1 ? "Exercise" : "Exercises"}
+                                        </span>
+                                      </div>
+
+                                      {/* Minimalist Exercises List */}
+                                      {uniqueExNames.length === 0 ? (
+                                        <div className="text-white/20 italic text-[10px] py-2">
+                                          No exercises found
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-2">
+                                          {uniqueExNames.map((exName, idx) => (
+                                            <div key={idx} className="flex items-start gap-2.5 text-[11px] leading-tight">
+                                              <span className="font-mono text-gym-accent font-black text-[9px] bg-gym-accent/10 w-4 h-4 rounded flex items-center justify-center shrink-0">
+                                                {(idx + 1).toString().padStart(2, '0')}
+                                              </span>
+                                              <span className="text-white/80 group-hover:text-white transition-colors font-medium break-words">
+                                                {exName}
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Clean, subtle footer stamp */}
+                                    <div className="mt-4 pt-2 border-t border-white/[0.03] flex items-center justify-between text-[8px] font-mono text-white/20">
+                                      <span>SYSTEM INTEGRATED</span>
+                                      <span>{routine.date || "Active Split"}</span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <>
 
                     {/* Routine Analytics Summary View */}
                     {routines.length > 0 && selectedRoutine && (
@@ -13633,6 +13770,8 @@ export default function App() {
                     <span>Back to the Top</span>
                   </button>
                 </div>
+                      </>
+                    )}
                   </>
                 )}
 
