@@ -169,6 +169,28 @@ export default function AIPlanActive({
   // Copy activeExercises to state for interactive adjustments
   const [activeExercises, setActiveExercises] = useState<AIPlanExercise[]>(initialActiveExercises);
 
+  // Synchronize local activeExercises when initialActiveExercises prop changes (e.g. on swap)
+  useEffect(() => {
+    setActiveExercises((prev) => {
+      return initialActiveExercises.map((item, idx) => {
+        const existing = prev.find(
+          (p) => p.exercise.name.toLowerCase() === item.exercise.name.toLowerCase()
+        );
+        if (existing) {
+          return existing;
+        }
+        const atIndex = prev[idx];
+        if (atIndex && atIndex.exercise.name !== item.exercise.name) {
+          return {
+            ...item,
+            targetSets: atIndex.targetSets
+          };
+        }
+        return item;
+      });
+    });
+  }, [initialActiveExercises]);
+
   const allLoggedSets = useMemo(() => {
     const logged: any[] = [];
     logged.push(...sessionSets);

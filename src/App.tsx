@@ -4283,47 +4283,41 @@ export default function App() {
     const currentEx = swappingExercise?.exercise;
     if (!currentEx) return;
 
-    let targetDayIdx = dayIndex;
-    let targetExIdx = exIndex;
-
-    // Resolve day and exercise index if not passed or -1
-    if (targetDayIdx === undefined || targetDayIdx === -1 || targetExIdx === undefined || targetExIdx === -1) {
-      for (let di = 0; di < currentDays.length; di++) {
-        const idx = (currentDays[di] || []).findIndex(
-          (ex) => ex.name.toLowerCase() === currentEx.name.toLowerCase()
-        );
-        if (idx !== -1) {
-          targetDayIdx = di;
-          targetExIdx = idx;
-          break;
-        }
+    // 1. Swap in currentDays (by matching exercise name)
+    let hasUpdatedCurrentDays = false;
+    const nextCurrentDays = currentDays.map((dayExs) => {
+      const idx = (dayExs || []).findIndex(
+        (ex) => ex.name.toLowerCase() === currentEx.name.toLowerCase()
+      );
+      if (idx !== -1) {
+        const nextDay = [...dayExs];
+        nextDay[idx] = newEx;
+        hasUpdatedCurrentDays = true;
+        return nextDay;
       }
-    }
+      return dayExs;
+    });
 
-    if (targetDayIdx !== undefined && targetDayIdx !== -1 && currentDays[targetDayIdx]) {
-      const day = [...currentDays[targetDayIdx]];
-      day[targetExIdx] = newEx;
-
-      const nextCurrentDays = [...currentDays];
-      nextCurrentDays[targetDayIdx] = day;
+    if (hasUpdatedCurrentDays) {
       setCurrentDays(nextCurrentDays);
       saveWorkout(nextCurrentDays);
-
-      // Also swap in formattedProgram
-      const nextFormattedProgram = formattedProgram.map(item => {
-        if (item.dayIndex === targetDayIdx) {
-          const nextExercises = [...item.exercises];
-          if (nextExercises[targetExIdx]) {
-            nextExercises[targetExIdx] = newEx;
-          }
-          return { ...item, exercises: nextExercises };
-        }
-        return item;
-      });
-      setFormattedProgram(nextFormattedProgram);
     }
 
-    // Always swap in aiPlanExercises!
+    // 2. Swap in formattedProgram (by matching exercise name)
+    const nextFormattedProgram = formattedProgram.map(item => {
+      const idx = (item.exercises || []).findIndex(
+        (ex) => ex.name.toLowerCase() === currentEx.name.toLowerCase()
+      );
+      if (idx !== -1) {
+        const nextExercises = [...item.exercises];
+        nextExercises[idx] = newEx;
+        return { ...item, exercises: nextExercises };
+      }
+      return item;
+    });
+    setFormattedProgram(nextFormattedProgram);
+
+    // 3. Swap in aiPlanExercises (by matching exercise name)
     const nextAIPlanExercises = aiPlanExercises.map((item) => {
       if (item.exercise.name.toLowerCase() === currentEx.name.toLowerCase()) {
         return {
