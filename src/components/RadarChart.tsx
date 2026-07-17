@@ -97,24 +97,25 @@ export default function RadarChart({
       const rawGroup = findMuscleGroup(exName);
       if (!rawGroup) return;
 
+      const rg = rawGroup.toLowerCase();
       const target = isCurrent ? currentCats : histCats;
 
-      if (['chest', 'upper_chest', 'middle_chest', 'lower_chest'].includes(rawGroup)) {
+      if (['chest', 'upper_chest', 'middle_chest', 'lower_chest'].includes(rg)) {
         target.chest.count += 1;
         target.chest.exercises.add(exName);
-      } else if (['back', 'upper_back', 'lower_back', 'lats', 'rhomboids_traps', 'erector_spinae'].includes(rawGroup)) {
+      } else if (['back', 'upper_back', 'lower_back', 'lats', 'rhomboids_traps', 'erector_spinae'].includes(rg)) {
         target.back.count += 1;
         target.back.exercises.add(exName);
-      } else if (['shoulders', 'front_delts', 'side_delts', 'rear_delts'].includes(rawGroup)) {
+      } else if (['shoulders', 'front_delts', 'side_delts', 'rear_delts'].includes(rg)) {
         target.shoulders.count += 1;
         target.shoulders.exercises.add(exName);
-      } else if (['quads', 'hamstrings', 'glutes', 'calves', 'legs'].includes(rawGroup)) {
+      } else if (['quads', 'hamstrings', 'glutes', 'calves', 'legs'].includes(rg)) {
         target.legs.count += 1;
         target.legs.exercises.add(exName);
-      } else if (['biceps', 'triceps', 'forearms', 'arms', 'long_biceps', 'short_biceps', 'brachialis', 'long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rawGroup)) {
+      } else if (['biceps', 'triceps', 'forearms', 'arms', 'long_biceps', 'short_biceps', 'brachialis', 'long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rg)) {
         target.arms.count += 1;
         target.arms.exercises.add(exName);
-      } else if (['core', 'upper_core', 'lower_core', 'obliques'].includes(rawGroup)) {
+      } else if (['core', 'upper_core', 'lower_core', 'obliques'].includes(rg)) {
         target.core.count += 1;
         target.core.exercises.add(exName);
       }

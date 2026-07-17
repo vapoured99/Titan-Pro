@@ -202,22 +202,24 @@ export default function AnatomyDashboard({
       const rawGroup = findMuscleGroup(exName);
       if (!rawGroup) return;
 
-      if (['chest', 'upper_chest', 'middle_chest', 'lower_chest'].includes(rawGroup)) {
+      const rg = rawGroup.toLowerCase();
+
+      if (['chest', 'upper_chest', 'middle_chest', 'lower_chest'].includes(rg)) {
         categories.chest.count += 1;
         categories.chest.exercises.add(exName);
-      } else if (rawGroup === 'back' || rawGroup === 'upper_back' || rawGroup === 'lower_back') {
+      } else if (['back', 'upper_back', 'lower_back', 'lats', 'rhomboids_traps', 'erector_spinae'].includes(rg)) {
         categories.back.count += 1;
         categories.back.exercises.add(exName);
-      } else if (['shoulders', 'front_delts', 'side_delts', 'rear_delts'].includes(rawGroup)) {
+      } else if (['shoulders', 'front_delts', 'side_delts', 'rear_delts'].includes(rg)) {
         categories.shoulders.count += 1;
         categories.shoulders.exercises.add(exName);
-      } else if (['quads', 'hamstrings', 'glutes', 'calves', 'legs'].includes(rawGroup)) {
+      } else if (['quads', 'hamstrings', 'glutes', 'calves', 'legs'].includes(rg)) {
         categories.legs.count += 1;
         categories.legs.exercises.add(exName);
-      } else if (['biceps', 'triceps', 'forearms', 'arms', 'long_biceps', 'short_biceps', 'brachialis', 'long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rawGroup)) {
+      } else if (['biceps', 'triceps', 'forearms', 'arms', 'long_biceps', 'short_biceps', 'brachialis', 'long_triceps', 'lateral_triceps', 'medial_triceps'].includes(rg)) {
         categories.arms.count += 1;
         categories.arms.exercises.add(exName);
-      } else if (['core', 'upper_core', 'lower_core', 'obliques'].includes(rawGroup)) {
+      } else if (['core', 'upper_core', 'lower_core', 'obliques'].includes(rg)) {
         categories.core.count += 1;
         categories.core.exercises.add(exName);
       }

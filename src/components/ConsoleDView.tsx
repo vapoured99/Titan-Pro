@@ -267,16 +267,6 @@ export default function ConsoleDView({
   const [activeMatrixSlide, setActiveMatrixSlide] = useState<number>(0);
   const matrixGroups = ["Chest", "Back", "Shoulders", "Arms", "Legs", "Core"];
 
-  // 3. Muscle Recovery & Spinal Synergy overrides (Dynamically driven by logged workouts!)
-  const [stretchedMuscles, setStretchedMuscles] = useState<Record<string, number>>(() => {
-    try {
-      const stored = localStorage.getItem("somatic_stretched_muscles");
-      return stored ? JSON.parse(stored) : { Chest: 0, Back: 0, Legs: 0, Shoulders: 0, Arms: 0, Core: 0 };
-    } catch {
-      return { Chest: 0, Back: 0, Legs: 0, Shoulders: 0, Arms: 0, Core: 0 };
-    }
-  });
-
   // 3. Spinal & Neuromuscular Decompression Checklist items
   const [drillHanging, setDrillHanging] = useState<boolean>(() => {
     try {
@@ -409,14 +399,25 @@ export default function ConsoleDView({
     const recoveryByGroup: Record<string, number> = {};
     const recoveryBySub: Record<string, number> = {};
 
-    Object.keys(fatigueByGroup).forEach(g => {
-      const accumulatedFatigue = Math.min(85, fatigueByGroup[g]);
-      recoveryByGroup[g] = Math.round(100 - accumulatedFatigue);
-    });
-
     allSubMuscles.forEach(sub => {
       const accumulatedFatigue = Math.min(85, fatigueBySub[sub]);
       recoveryBySub[sub] = Math.round(100 - accumulatedFatigue);
+    });
+
+    // Map parent muscle groups to their respective sub-muscle groups for accurate mathematical average
+    const groupToSubs: Record<string, string[]> = {
+      Chest: ["Upper Chest", "Mid Chest", "Lower Chest"],
+      Back: ["Latissimus Dorsi (Lats)", "Rhomboids & Mid-Back", "Trapezius (Traps)", "Lower Back"],
+      Shoulders: ["Front Deltoids", "Side Deltoids", "Rear Deltoids"],
+      Arms: ["Biceps", "Triceps", "Forearms"],
+      Legs: ["Quadriceps", "Hamstrings", "Gluteals", "Calves"],
+      Core: ["Rectus Abdominis (Abs)", "Obliques", "Transverse Abdominis", "Deep Core Stabilizers"]
+    };
+
+    Object.keys(groupToSubs).forEach(g => {
+      const subs = groupToSubs[g];
+      const sum = subs.reduce((acc, sub) => acc + (recoveryBySub[sub] ?? 100), 0);
+      recoveryByGroup[g] = Math.round(sum / subs.length);
     });
 
     return {
@@ -464,8 +465,7 @@ export default function ConsoleDView({
 
     muscleGroups.forEach((m) => {
       const base = baselineRecovery.groups[m] ?? 100;
-      const stretchBonus = stretchedMuscles[m] || 0;
-      const finalPercent = Math.min(100, base + stretchBonus);
+      const finalPercent = base; // Discard stretch/target-relief overrides completely
 
       let advice = advices[m].optimal;
       if (finalPercent < 60) advice = advices[m].severe;
@@ -478,7 +478,7 @@ export default function ConsoleDView({
     });
 
     return recovery;
-  }, [baselineRecovery, stretchedMuscles]);
+  }, [baselineRecovery]);
 
   // Compute synergy values based on interactive decompression
   const synergeticSpinalLoadUnits = useMemo(() => {
@@ -520,19 +520,6 @@ export default function ConsoleDView({
     return { label, sublabel, levelColor, barColor, hexColor };
   }, [synergeticSpinalScore]);
 
-  const performActiveRecovery = (muscle: string) => {
-    setStretchedMuscles((prev) => {
-      const updated = {
-        ...prev,
-        [muscle]: Math.min(75, (prev[muscle] || 0) + 15) // max stretch recovery bonus of 75%
-      };
-      try {
-        localStorage.setItem("somatic_stretched_muscles", JSON.stringify(updated));
-      } catch (e) {}
-      return updated;
-    });
-  };
-
   const resetSynergyDecompression = () => {
     setDrillHanging(false);
     setDrillTwist(false);
@@ -542,7 +529,6 @@ export default function ConsoleDView({
       localStorage.removeItem("drill_twist");
       localStorage.removeItem("drill_squat");
     } catch (e) {}
-    setStretchedMuscles({ Chest: 0, Back: 0, Legs: 0, Shoulders: 0, Arms: 0, Core: 0 });
     try {
       localStorage.removeItem("somatic_stretched_muscles");
     } catch (e) {}
