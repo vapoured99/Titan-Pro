@@ -2866,16 +2866,13 @@ export default function App() {
               title.style.height = "auto";
             });
 
-            // Target category headers to avoid icon/title top vertical clipping
-            const catHeaders = clonedElement.querySelectorAll(".font-mono");
-            catHeaders.forEach((cat: any) => {
-              cat.style.lineHeight = "1.6";
-              cat.style.overflow = "visible";
-              cat.style.whiteSpace = "normal";
-              cat.style.paddingTop = "2px";
-              cat.style.paddingBottom = "2px";
-              cat.style.display = "flex";
-              cat.style.alignItems = "center";
+            // Prevent any fade-in or transition opacity from hiding/ghosting elements in the captured image
+            const allSubElements = clonedElement.querySelectorAll("*");
+            allSubElements.forEach((el: any) => {
+              el.style.animation = "none";
+              el.style.transition = "none";
+              el.style.opacity = "1";
+              el.style.visibility = "visible";
             });
           }
 
@@ -16317,12 +16314,6 @@ export default function App() {
                       Screenshot ready // optimized for mobile & iOS
                     </p>
                   </div>
-                  <button
-                    onClick={() => setShowRoutinesPreviewModal(false)}
-                    className="p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition-all cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
                 </div>
 
                 {/* Mobile Instructions banner */}
@@ -16363,19 +16354,13 @@ export default function App() {
                 </div>
 
                 {/* Action Footer */}
-                <div className="p-5 border-t border-white/5 bg-white/[0.01] flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 font-mono text-[9px] text-white/40">
-                  <div className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span>2.5X ULTRA-CRISP RETINA RENDERING</span>
-                  </div>
-                  <div className="flex items-center justify-end w-full sm:w-auto">
-                    <button
-                      onClick={() => setShowRoutinesPreviewModal(false)}
-                      className="w-full sm:w-auto px-6 py-2.5 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold whitespace-nowrap"
-                    >
-                      Close Preview
-                    </button>
-                  </div>
+                <div className="p-5 border-t border-white/5 bg-white/[0.01] flex items-center justify-center shrink-0">
+                  <button
+                    onClick={() => setShowRoutinesPreviewModal(false)}
+                    className="w-full sm:w-auto px-10 py-2.5 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold whitespace-nowrap"
+                  >
+                    Close Preview
+                  </button>
                 </div>
               </motion.div>
             </div>
