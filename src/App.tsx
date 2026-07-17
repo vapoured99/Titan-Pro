@@ -2853,6 +2853,30 @@ export default function App() {
               gridContainer.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
               gridContainer.style.gap = "20px";
             }
+
+            // Target all card h5 header titles inside the clone to prevent any bottom line/descender vertical clipping
+            const titles = clonedElement.querySelectorAll("h5");
+            titles.forEach((title: any) => {
+              title.style.lineHeight = "1.5";
+              title.style.paddingTop = "4px";
+              title.style.paddingBottom = "4px";
+              title.style.overflow = "visible";
+              title.style.whiteSpace = "normal";
+              title.style.display = "block";
+              title.style.height = "auto";
+            });
+
+            // Target category headers to avoid icon/title top vertical clipping
+            const catHeaders = clonedElement.querySelectorAll(".font-mono");
+            catHeaders.forEach((cat: any) => {
+              cat.style.lineHeight = "1.6";
+              cat.style.overflow = "visible";
+              cat.style.whiteSpace = "normal";
+              cat.style.paddingTop = "2px";
+              cat.style.paddingBottom = "2px";
+              cat.style.display = "flex";
+              cat.style.alignItems = "center";
+            });
           }
 
           // Remove any unblurred ambient glow circles that turn into solid black/accent shapes inside canvas renderers
@@ -13538,14 +13562,14 @@ export default function App() {
                                       <div className="space-y-4">
                                         {/* Routine Info Header */}
                                         <div className="border-b border-white/5 pb-2">
-                                          <div className="flex items-center gap-1 text-[9px] text-white/40 uppercase tracking-widest font-mono">
-                                            <span className="shrink-0">{catIcon}</span>
+                                          <div className="flex items-center gap-1.5 text-[10px] text-white/40 uppercase tracking-widest font-mono py-0.5 leading-normal">
+                                            <span className="shrink-0 flex items-center justify-center">{catIcon}</span>
                                             <span className="truncate">{catName}</span>
                                           </div>
-                                          <h5 className="text-sm font-bold text-white tracking-tight leading-snug mt-1 truncate">
+                                          <h5 className="text-sm font-bold text-white tracking-tight leading-normal py-0.5 mt-0.5 break-words">
                                             {routine.name}
                                           </h5>
-                                          <span className="text-[9px] text-gym-accent font-semibold font-mono uppercase tracking-wider block mt-0.5">
+                                          <span className="text-[9px] text-gym-accent font-semibold font-mono uppercase tracking-wider block mt-1">
                                             {uniqueExNames.length} {uniqueExNames.length === 1 ? "Exercise" : "Exercises"}
                                           </span>
                                         </div>
