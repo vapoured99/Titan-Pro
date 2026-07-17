@@ -13488,38 +13488,8 @@ export default function App() {
                           </button>
                         </div>
 
-                        {/* Capture Element containing both the monarch header branding and splits grid */}
+                        {/* Capture Element containing the splits grid */}
                         <div id="compact-routine-list-capture" className="space-y-6 p-6 bg-[#050505] rounded-lg border border-white/5 relative overflow-hidden">
-                          {/* Compact share header with customizable athlete branding */}
-                          <div className="p-6 rounded-md bg-gradient-to-r from-stone-900 to-[#080808] border border-white/10 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-gym-accent/5 rounded-full blur-3xl pointer-events-none" />
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[9px] bg-gym-accent/15 border border-gym-accent/30 text-gym-accent font-black uppercase tracking-widest px-2 py-0.5 rounded-sm">
-                                    SUNG JIN WOO // ACTIVE SYSTEM
-                                  </span>
-                                  <span className="text-[9px] text-white/30 uppercase tracking-widest font-mono">
-                                    LEVEL 100 MONARCH
-                                  </span>
-                                </div>
-                                <h4 className="text-xl font-light italic font-serif text-white">
-                                  Sung Jin Woo's <span className="text-gym-accent non-italic font-sans font-bold">Personal Workouts Catalog</span>
-                                </h4>
-                                <p className="text-xs text-white/40 max-w-2xl leading-relaxed">
-                                  A curated list of my specialized workout splits and compound/isolation exercises. Frame this view and take a snapshot to share with friends!
-                                </p>
-                              </div>
-                              <div className="flex flex-col items-start md:items-end text-xs font-mono text-white/30 space-y-1 bg-black/40 border border-white/5 p-3 rounded-md">
-                                <div className="flex items-center gap-1">
-                                  <Camera className="w-3 h-3 text-gym-accent" />
-                                  <span className="text-[9px] text-gym-accent font-bold uppercase tracking-wider">Screenshot Ready</span>
-                                </div>
-                                <span className="text-[9px] uppercase tracking-widest">Total splits: {routines.length} saved</span>
-                              </div>
-                            </div>
-                          </div>
-
                           {routines.length === 0 ? (
                             <div className="text-center py-12 bg-black/40 border border-white/5 rounded-md">
                               <Repeat className="w-10 h-10 text-white/5 mx-auto mb-4 animate-pulse" />
@@ -16398,21 +16368,13 @@ export default function App() {
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     <span>2.5X ULTRA-CRISP RETINA RENDERING</span>
                   </div>
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <div className="flex items-center justify-end w-full sm:w-auto">
                     <button
                       onClick={() => setShowRoutinesPreviewModal(false)}
-                      className="flex-1 sm:flex-none px-4 py-2 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold whitespace-nowrap"
+                      className="w-full sm:w-auto px-6 py-2.5 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold whitespace-nowrap"
                     >
-                      Close
+                      Close Preview
                     </button>
-                    <a
-                      href={routinesImagePreviewUrl}
-                      download="Somatic_Workout_Routines.png"
-                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gym-accent/30 bg-gym-accent/15 hover:bg-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold whitespace-nowrap"
-                    >
-                      <Download className="w-3.5 h-3.5 animate-bounce" />
-                      Save File (Desktop)
-                    </a>
                   </div>
                 </div>
               </motion.div>
