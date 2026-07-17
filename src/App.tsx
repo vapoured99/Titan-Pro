@@ -2797,10 +2797,11 @@ export default function App() {
       card.style.transform = "none";
 
       const canvas = await html2canvas(card, {
-        scale: 2.5, // Crisp high-definition text for mobile screens
+        scale: 2.0, // Crisp high-definition text for mobile screens
         useCORS: true,
         backgroundColor: "#050505", // Deep slate aesthetic background matches dark theme
         logging: false,
+        windowWidth: 1200, // Evaluates layout as if screen is 1200px wide for wide desktop splits grid
         onclone: (clonedDoc) => {
           // Process styles
           const styles = clonedDoc.getElementsByTagName("style");
@@ -2834,6 +2835,29 @@ export default function App() {
               }
             }
           }
+
+          // Force clean desktop width on the captured container in the clone
+          const clonedElement = clonedDoc.getElementById("compact-routine-list-capture");
+          if (clonedElement) {
+            clonedElement.style.width = "1080px";
+            clonedElement.style.maxWidth = "none";
+            clonedElement.style.boxSizing = "border-box";
+            clonedElement.style.padding = "32px";
+            clonedElement.style.background = "#050505";
+
+            // Also force the grid inside it to render as a beautiful multi-column layout
+            const gridContainer = clonedElement.querySelector(".grid") as HTMLElement;
+            if (gridContainer) {
+              gridContainer.classList.remove("grid-cols-1", "md:grid-cols-2", "lg:grid-cols-3", "xl:grid-cols-4");
+              gridContainer.style.display = "grid";
+              gridContainer.style.gridTemplateColumns = "repeat(3, minmax(0, 1fr))";
+              gridContainer.style.gap = "20px";
+            }
+          }
+
+          // Remove any unblurred ambient glow circles that turn into solid black/accent shapes inside canvas renderers
+          const blurElements = clonedDoc.querySelectorAll('[class*="blur-"], [class*="rounded-full"][class*="bg-gym-accent/"]');
+          blurElements.forEach(el => el.remove());
 
           // Scrub oklch
           const allElements = clonedDoc.getElementsByTagName("*");
@@ -16318,15 +16342,29 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Preview Image Scroll Container */}
-                <div className="p-5 overflow-y-auto flex-1 bg-black/40 flex flex-col items-center justify-start min-h-0">
-                  <div className="border border-white/10 rounded-md overflow-hidden bg-[#050505] shadow-inner max-w-full">
-                    <img
-                      src={routinesImagePreviewUrl}
-                      alt="My Workout Routines"
-                      referrerPolicy="no-referrer"
-                      className="max-w-full h-auto object-contain block mx-auto rounded-sm select-all"
-                    />
+                 {/* Preview Image Scroll Container */}
+                <div 
+                  className="overflow-y-auto flex-1 bg-black/40 p-4 scrollbar-thin scrollbar-thumb-white/10"
+                  style={{ 
+                    WebkitOverflowScrolling: "touch",
+                    touchAction: "pan-y"
+                  }}
+                >
+                  <p className="text-[10px] text-white/50 text-center mb-3 font-mono uppercase tracking-widest animate-pulse flex items-center justify-center gap-1">
+                    <span>↓</span>
+                    <span>Scroll down to view all splits</span>
+                    <span>↓</span>
+                  </p>
+                  <div className="flex flex-col items-center justify-start min-h-0 py-1">
+                    <div className="border border-white/10 rounded-md overflow-hidden bg-[#050505] shadow-2xl max-w-full">
+                      <img
+                        src={routinesImagePreviewUrl}
+                        alt="My Workout Routines"
+                        referrerPolicy="no-referrer"
+                        className="w-full h-auto block mx-auto rounded-sm select-all"
+                        style={{ display: "block", maxHeight: "none" }}
+                      />
+                    </div>
                   </div>
                 </div>
 
