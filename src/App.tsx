@@ -8254,7 +8254,7 @@ export default function App() {
                         setCustomExCategory("compound");
                         setShowAddCustomModal(true);
                       }}
-                      className="flex items-center justify-center gap-2 px-5 py-3 border border-gym-accent/50 bg-gym-accent/20 hover:bg-gym-accent/35 hover:border-gym-accent/75 text-gym-accent rounded-md text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
+                      className="flex items-center justify-center gap-2 px-5 py-3 border border-white/10 bg-black/60 backdrop-blur-sm text-white hover:bg-black/85 hover:border-white/20 rounded-md text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Add Custom
@@ -10008,9 +10008,18 @@ export default function App() {
                                 onClick={() => setActiveProgressSlide(slide.id)}
                                 className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full border text-[10px] font-mono uppercase tracking-[0.1em] transition-all duration-300 cursor-pointer shrink-0 ${
                                   IsSelected
-                                    ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_15px_rgba(212,255,0,0.06)]"
-                                    : "bg-[#090909]/40 border-white/5 text-white/40 hover:text-white/70 hover:border-white/10"
+                                    ? "bg-black/60 backdrop-blur-sm text-gym-accent shadow-[0_0_15px_rgba(var(--gym-accent-rgb),0.1)]"
+                                    : "bg-black/60 backdrop-blur-sm border-white/10 text-theme-text-muted hover:text-theme-text hover:bg-black/85 hover:border-white/20"
                                 }`}
+                                style={
+                                  IsSelected
+                                    ? {
+                                        borderColor: `rgba(${activeTheme.accentRgb}, 0.35)`,
+                                        color: activeTheme.accent,
+                                        boxShadow: `0 0 15px rgba(${activeTheme.accentRgb}, 0.1)`,
+                                      }
+                                    : undefined
+                                }
                               >
                                 <IconComp className={`w-3.5 h-3.5 ${IsSelected ? "animate-pulse" : ""}`} />
                                 <span className="font-bold">{slide.label}</span>
@@ -13464,7 +13473,7 @@ export default function App() {
                           className={`flex items-center gap-2 px-4 py-2 border transition-all rounded-md cursor-pointer font-semibold text-[10px] uppercase tracking-widest ${
                             showCompactList
                               ? "border-gym-accent bg-gym-accent text-black shadow-[0_0_15px_rgba(255,231,101,0.25)]"
-                              : "border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                              : "border-white/10 bg-black/60 backdrop-blur-sm text-white hover:bg-black/85 hover:border-white/20"
                           }`}
                         >
                           <Share2 className="w-3.5 h-3.5" />
@@ -13479,7 +13488,7 @@ export default function App() {
                             setIsCreatingRoutine(true);
                             setBuilderSearch("");
                           }}
-                          className="flex items-center gap-2 px-4 py-2 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:border-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold"
+                          className="flex items-center gap-2 px-4 py-2 border border-white/10 bg-black/60 backdrop-blur-sm text-white hover:bg-black/85 hover:border-white/20 text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold"
                         >
                           <Plus className="w-3.5 h-3.5 animate-none" />
                           Create Custom Routine
