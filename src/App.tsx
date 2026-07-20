@@ -394,18 +394,18 @@ const GYM_THEMES: Record<string, GymTheme> = {
   arise: {
     id: "arise",
     name: "ARISE",
-    description: "Monarch's shadow army aura with electric neon cyan glow and dark steel shadow canvas.",
-    accent: "#00d8ff",
-    accentRgb: "0, 216, 255",
-    accentLight: "#b3f0ff",
-    accentDark: "#007a99",
-    bg: "#03050a",
+    description: "Monarch's shadow army aura with electric neon purple glow and dark amethyst shadow canvas.",
+    accent: "#b624ff",
+    accentRgb: "182, 36, 255",
+    accentLight: "#e9d5ff",
+    accentDark: "#6b21a8",
+    bg: "#050209",
     bgImage: ariseBg,
     opacity: "opacity-[0.85]",
     textVibe: "Awaken your inner Monarch. Rule the gym with absolute shadow power.",
-    testPrimary: "#f0fdff",
-    testMuted: "rgba(179, 240, 255, 0.45)",
-    testSubtle: "rgba(0, 216, 255, 0.2)",
+    testPrimary: "#fdf4ff",
+    testMuted: "rgba(233, 213, 255, 0.45)",
+    testSubtle: "rgba(182, 36, 255, 0.2)",
   },
   gradient_red: {
     id: "gradient_red",
@@ -8220,24 +8220,24 @@ export default function App() {
                     <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
                       Exercise Archive
                     </h3>
-                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold font-mono">
+                    <p className="text-[10px] text-white uppercase tracking-widest font-bold font-mono">
                       Tactical Fitness & Drill Hub
                     </p>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 self-stretch xl:self-auto">
                     {/* View Mode Switcher */}
-                    <div className="flex bg-black/60 border border-white/10 rounded-md p-1 inline-flex self-start sm:self-auto">
+                    <div className="flex bg-black/60 border border-white/10 rounded-md p-1 w-full sm:w-auto">
                       <button
                         onClick={() => setLibraryViewMode("deck")}
-                        className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer ${libraryViewMode === "deck" ? "bg-gym-accent text-black font-black" : "text-white/40 hover:text-white hover:bg-white/5"}`}
+                        className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer ${libraryViewMode === "deck" ? "bg-gym-accent text-black font-black" : "text-white/40 hover:text-white hover:bg-white/5"}`}
                       >
                         <LayoutGrid className="w-3.5 h-3.5" />
                         Carousel
                       </button>
                       <button
                         onClick={() => setLibraryViewMode("list")}
-                        className={`flex items-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer ${libraryViewMode === "list" ? "bg-gym-accent text-black font-black" : "text-white/40 hover:text-white hover:bg-white/5"}`}
+                        className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all rounded-md cursor-pointer ${libraryViewMode === "list" ? "bg-gym-accent text-black font-black" : "text-white/40 hover:text-white hover:bg-white/5"}`}
                       >
                         <List className="w-3.5 h-3.5" />
                         Classic List
@@ -8254,7 +8254,7 @@ export default function App() {
                         setCustomExCategory("compound");
                         setShowAddCustomModal(true);
                       }}
-                      className="flex items-center justify-center gap-2 px-5 py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black text-gym-accent rounded-[1px] text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
+                      className="flex items-center justify-center gap-2 px-5 py-3 border border-gym-accent/50 bg-gym-accent/20 hover:bg-gym-accent/35 hover:border-gym-accent/75 text-gym-accent rounded-md text-xs font-bold uppercase tracking-widest transition-all cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       Add Custom
@@ -8369,7 +8369,7 @@ export default function App() {
                           );
 
                           return (
-                            <span className="text-[9px] text-white/30 font-mono font-bold uppercase tracking-wider">
+                            <span className="text-[9px] text-white font-mono font-bold uppercase tracking-wider">
                               CATEGORY {safeIndex + 1} OF {categoriesList.length} ({filteredList.length} MOVEMENTS)
                             </span>
                           );
@@ -8444,15 +8444,14 @@ export default function App() {
                               }}
                               className={`flex items-center gap-2.5 px-4 py-2.5 rounded-full border text-[10px] font-mono uppercase tracking-[0.1em] transition-all duration-300 cursor-pointer shrink-0 ${
                                 IsSelected
-                                  ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_15px_rgba(212,255,0,0.06)]"
-                                  : "bg-[#090909]/40 border-white/5 text-white/40 hover:text-white/70 hover:border-white/10"
+                                  ? "bg-black/60 backdrop-blur-sm text-gym-accent shadow-[0_0_15px_rgba(var(--gym-accent-rgb),0.1)]"
+                                  : "bg-black/60 backdrop-blur-sm border-white/10 text-theme-text-muted hover:text-theme-text hover:bg-black/85 hover:border-white/20"
                               }`}
                               style={
                                 IsSelected
                                   ? {
-                                      borderColor: `rgba(${activeTheme.accentRgb}, 0.5)`,
+                                      borderColor: `rgba(${activeTheme.accentRgb}, 0.35)`,
                                       color: activeTheme.accent,
-                                      backgroundColor: `rgba(${activeTheme.accentRgb}, 0.08)`,
                                       boxShadow: `0 0 15px rgba(${activeTheme.accentRgb}, 0.1)`,
                                     }
                                   : undefined
@@ -14701,7 +14700,7 @@ export default function App() {
                     <h3 className="text-xl font-light italic font-serif">
                       Training Programming
                     </h3>
-                    <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">
+                    <p className="text-[10px] text-white uppercase tracking-[0.2em] font-bold">
                       Curate your physical evolution
                     </p>
                   </div>
@@ -14716,7 +14715,7 @@ export default function App() {
                     </button>
                     <button
                       onClick={handleOrganizeMovementOrder}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-gym-accent/10 border border-gym-accent/25 hover:border-gym-accent/50 hover:bg-gym-accent/20 text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-gym-accent/5"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-gym-accent/20 border border-gym-accent/50 hover:border-gym-accent/75 hover:bg-gym-accent/35 text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-gym-accent/5"
                       title="Prioritise compound exercises and move isolation movements to the end"
                     >
                       <ArrowUpDown className="w-3.5 h-3.5" />
@@ -14724,7 +14723,7 @@ export default function App() {
                     </button>
                     <button
                       onClick={handleClearAllExercises}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-red-500/10 border border-red-500/25 hover:border-red-500/50 hover:bg-red-500/20 text-red-400 rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-red-500/5"
+                      className="flex items-center gap-2 px-4 py-2.5 bg-red-500/20 border border-red-500/50 hover:border-red-500/75 hover:bg-red-500/35 text-red-400 rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-red-500/5"
                       title="Clear and de-select all exercises from weekly programming"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -14740,7 +14739,7 @@ export default function App() {
                     className={`flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer ${
                       workoutInnerTab === "builder"
                         ? "border-gym-accent text-gym-accent"
-                        : "border-transparent text-white/45 hover:text-white/75"
+                        : "border-transparent text-white hover:text-white/80"
                     }`}
                   >
                     <Dumbbell className="w-3.5 h-3.5" />
@@ -14751,7 +14750,7 @@ export default function App() {
                     className={`flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 transition-all cursor-pointer ${
                       workoutInnerTab === "ai_program"
                         ? "border-gym-accent text-gym-accent"
-                        : "border-transparent text-white/45 hover:text-white/75"
+                        : "border-transparent text-white hover:text-white/80"
                     }`}
                   >
                     <Activity className="w-3.5 h-3.5 text-cyan-400" />
@@ -14762,7 +14761,7 @@ export default function App() {
                       setActiveView("session");
                       saveSettings({ activeView: "session" });
                     }}
-                    className="flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 border-transparent text-white/45 hover:text-white/75 transition-all cursor-pointer"
+                    className="flex items-center gap-2 px-3 py-2 text-[10px] font-black uppercase tracking-[0.15em] border-b-2 border-transparent text-white hover:text-white/80 transition-all cursor-pointer"
                   >
                     <History className="w-3.5 h-3.5 text-gym-accent/70" />
                     3. Session
