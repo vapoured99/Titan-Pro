@@ -150,6 +150,7 @@ import cosmicVortexBg from "./assets/images/cosmic_vortex_bg_new_1779719240506.p
 import overgrownCyberCityBg from "./assets/images/cyber_city_bg_new_1779719262117.png";
 import cloudsBg from "./assets/images/clouds.png";
 import sparBg from "./assets/images/spar.png";
+import ariseBg from "./assets/images/SL.jpeg";
 
 // --- Avatar Images & Screenshot Engine ---
 import html2canvas from "html2canvas";
@@ -390,6 +391,22 @@ const GYM_THEMES: Record<string, GymTheme> = {
     testMuted: "rgba(6, 182, 212, 0.5)",
     testSubtle: "rgba(244, 63, 94, 0.25)",
   },
+  arise: {
+    id: "arise",
+    name: "ARISE",
+    description: "Monarch's shadow army aura with electric neon cyan glow and dark steel shadow canvas.",
+    accent: "#00d8ff",
+    accentRgb: "0, 216, 255",
+    accentLight: "#b3f0ff",
+    accentDark: "#007a99",
+    bg: "#03050a",
+    bgImage: ariseBg,
+    opacity: "opacity-[0.85]",
+    textVibe: "Awaken your inner Monarch. Rule the gym with absolute shadow power.",
+    testPrimary: "#f0fdff",
+    testMuted: "rgba(179, 240, 255, 0.45)",
+    testSubtle: "rgba(0, 216, 255, 0.2)",
+  },
   gradient_red: {
     id: "gradient_red",
     name: "Crimson Eclipse",
@@ -537,7 +554,7 @@ const GYM_THEMES: Record<string, GymTheme> = {
 };
 
 const getThemeBrightnessClass = (themeId: string): string => {
-  if (["neon", "beast"].includes(themeId)) {
+  if (["neon", "beast", "arise"].includes(themeId)) {
     return "brightness-[130%]";
   }
   if (["iron", "void_eclipse"].includes(themeId)) {
