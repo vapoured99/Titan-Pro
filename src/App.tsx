@@ -626,7 +626,7 @@ export const DAY_CONFIG = [
   {
     label: "4",
     name: "Legs & Core",
-    pools: ["quads", "hamstrings", "calves", "upper_core", "lower_core", "obliques"],
+    pools: ["quads", "hamstrings", "calves", "glutes", "upper_core", "lower_core", "obliques"],
     icon: <ArrowDown className="w-5 h-5 text-gym-accent" />,
     bg: "bg-white/[0.03]",
     border: "border-gym-accent/10",
@@ -1350,6 +1350,13 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
     changed = true;
   }
 
+  if (["quads", "hamstrings", "calves", "glutes"].includes(currentEx.pool)) {
+    if (currentEx.muscleGroup !== currentEx.pool) {
+      currentEx.muscleGroup = currentEx.pool as any;
+      changed = true;
+    }
+  }
+
   if (nameLower === "tricep dip machine") {
     const targetSteps = [
       "Set Up & Seat Adjustment: Adjust the seat height so that when you sit down, the handles are aligned with your mid-to-lower chest level. Secure your feet flat on the floor to stabilize your lower body.",
@@ -1717,6 +1724,10 @@ export default function App() {
     | "long_triceps"
     | "lateral_triceps"
     | "medial_triceps"
+    | "quads"
+    | "hamstrings"
+    | "calves"
+    | "glutes"
   >("middle_chest");
   const [customExCategory, setCustomExCategory] = useState<
     "compound" | "isolation"
@@ -2037,6 +2048,8 @@ export default function App() {
           ...(combinedPools["quads"] || []),
           ...(combinedPools["hamstrings"] || []),
           ...(combinedPools["calves"] || []),
+          ...(combinedPools["glutes"] || []),
+          ...(combinedPools["legs"] || []),
         ];
       } else if (catKey === "core") {
         list = [
@@ -7732,8 +7745,8 @@ export default function App() {
                 }}
                 className={`relative px-4 py-2 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
                   activeView === nav.id
-                    ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent font-bold"
-                    : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
+                    ? "border-gym-accent/35 bg-black/60 backdrop-blur-sm text-gym-accent font-bold"
+                    : "border-white/10 bg-black/60 backdrop-blur-sm text-theme-text-muted hover:text-theme-text hover:bg-black/85 hover:border-white/20"
                 }`}
                 title={nav.label}
               >
@@ -7758,8 +7771,8 @@ export default function App() {
               }}
               className={`relative px-4 py-2 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
                 activeView === "avatar"
-                  ? "border-gym-accent/30 bg-gym-accent/10 text-gym-accent font-bold"
-                  : "border-white/5 bg-white/[0.02] text-theme-text-muted hover:text-theme-text hover:bg-white/5 hover:border-white/10"
+                  ? "border-gym-accent/35 bg-black/60 backdrop-blur-sm text-gym-accent font-bold"
+                  : "border-white/10 bg-black/60 backdrop-blur-sm text-theme-text-muted hover:text-theme-text hover:bg-black/85 hover:border-white/20"
               }`}
               title="Avatar"
             >
@@ -8316,6 +8329,8 @@ export default function App() {
                               ...(combinedPools["quads"] || []),
                               ...(combinedPools["hamstrings"] || []),
                               ...(combinedPools["calves"] || []),
+                              ...(combinedPools["glutes"] || []),
+                              ...(combinedPools["legs"] || []),
                             ];
                           } else if (catKey === "core") {
                             list = [
@@ -8389,7 +8404,9 @@ export default function App() {
                             listCount =
                               (combinedPools["quads"]?.length || 0) +
                               (combinedPools["hamstrings"]?.length || 0) +
-                              (combinedPools["calves"]?.length || 0);
+                              (combinedPools["calves"]?.length || 0) +
+                              (combinedPools["glutes"]?.length || 0) +
+                              (combinedPools["legs"]?.length || 0);
                           } else if (sec.key === "core") {
                             listCount =
                               (combinedPools["upper_core"]?.length || 0) +
@@ -8528,6 +8545,8 @@ export default function App() {
                             ...(combinedPools["quads"] || []),
                             ...(combinedPools["hamstrings"] || []),
                             ...(combinedPools["calves"] || []),
+                            ...(combinedPools["glutes"] || []),
+                            ...(combinedPools["legs"] || []),
                           ];
                         } else if (catKey === "core") {
                           list = [
@@ -8944,6 +8963,8 @@ export default function App() {
                         ...(combinedPools["quads"] || []),
                         ...(combinedPools["hamstrings"] || []),
                         ...(combinedPools["calves"] || []),
+                        ...(combinedPools["glutes"] || []),
+                        ...(combinedPools["legs"] || []),
                       ];
                     } else if (catKey === "core") {
                       list = [
@@ -16962,7 +16983,10 @@ export default function App() {
                           <option value="front_delts">Front Delts</option>
                           <option value="side_delts">Side Delts</option>
                           <option value="rear_delts">Rear Delts</option>
-                          <option value="legs">Legs</option>
+                          <option value="quads">Quads</option>
+                          <option value="hamstrings">Hamstrings</option>
+                          <option value="calves">Calves</option>
+                          <option value="glutes">Glutes</option>
                           <option value="long_biceps">Long Head Biceps</option>
                           <option value="short_biceps">
                             Short Head Biceps
