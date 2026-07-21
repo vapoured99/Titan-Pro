@@ -97,7 +97,7 @@ import { AvatarDisplayCard } from "./components/AvatarDisplayCard";
 import WorkoutCalendarHeatmap from "./components/WorkoutCalendarHeatmap";
 import { SpinalDepletionWidget } from "./components/SpinalDepletionWidget";
 import ConsoleIntelligencePanel from "./components/ConsoleIntelligencePanel";
-import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, CheckSquare, CheckCircle } from "lucide-react";
 import {
   auth,
   db,
@@ -132,8 +132,10 @@ import { getExerciseProgressionState } from "./lib/progression";
 export function migrateExerciseName(name: string): string {
   if (!name) return "";
   const trimmed = name.trim();
-  if (trimmed === "Wrist Curls") return "Dumbbell Wrist Curls";
-  if (trimmed === "Reverse Wrist Curls") return "Reverse Dumbbell Wrist Curls";
+  const lower = trimmed.toLowerCase();
+  if (lower === "wrist curls") return "Dumbbell Wrist Curls";
+  if (lower === "reverse wrist curls") return "Reverse Dumbbell Wrist Curls";
+  if (lower === "incline seated row") return "Plate Loaded Row";
   return trimmed;
 }
 
@@ -1674,7 +1676,8 @@ export default function App() {
               typeof e.name === "string" &&
               e.name.trim() !== "Hammer Preacher" &&
               e.name.trim() !== "Dumbbell Preacher" &&
-              e.name.trim() !== "Pull-up Hold"
+              e.name.trim() !== "Pull-up Hold" &&
+              e.name.trim().toLowerCase() !== "incline seated row"
           );
           let hasAnyChanges = false;
           const migratedList = filtered.map((ex) => {
@@ -1975,17 +1978,19 @@ export default function App() {
   const combinedPools: Record<string, Exercise[]> = useMemo(() => {
     const merged: Record<string, Exercise[]> = { ...POOLS };
     customExercises.forEach((ex) => {
-      const poolKey = ex.pool;
-      if (merged[poolKey]) {
-        if (
-          !merged[poolKey].some(
-            (e) => e.name.trim().toLowerCase() === ex.name.trim().toLowerCase(),
-          )
-        ) {
-          merged[poolKey] = [...merged[poolKey], ex];
+      if (ex.integrated) {
+        const poolKey = ex.pool;
+        if (merged[poolKey]) {
+          if (
+            !merged[poolKey].some(
+              (e) => e.name.trim().toLowerCase() === ex.name.trim().toLowerCase(),
+            )
+          ) {
+            merged[poolKey] = [...merged[poolKey], ex];
+          }
+        } else {
+          merged[poolKey] = [ex];
         }
-      } else {
-        merged[poolKey] = [ex];
       }
     });
     return merged;
@@ -3075,6 +3080,81 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // One-time database migration to rename "Incline Seated Row" -> "Plate Loaded Row"
+  useEffect(() => {
+    if (!currentUser || !db) return;
+    const migratedKey = `migrated_incline_seated_row_v6_${currentUser.uid}`;
+    if (localStorage.getItem(migratedKey)) return;
+
+    const runMigration = async () => {
+      try {
+        console.log("Starting database migration for 'Incline Seated Row' -> 'Plate Loaded Row'...");
+        
+        // 1. Migrate active/unarchived sets
+        const setsPath = `users/${currentUser.uid}/sets`;
+        const setsSnap = await getDocs(collection(db, setsPath));
+        const batch = writeBatch(db);
+        let countSets = 0;
+        
+        setsSnap.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (data && data.exerciseName && data.exerciseName.trim().toLowerCase() === "incline seated row") {
+            batch.update(docSnap.ref, { exerciseName: "Plate Loaded Row" });
+            countSets++;
+          }
+        });
+
+        // 2. Migrate archived workouts (captured sessions)
+        const workoutsPath = `users/${currentUser.uid}/workouts`;
+        const workoutsSnap = await getDocs(collection(db, workoutsPath));
+        let countWorkouts = 0;
+
+        workoutsSnap.forEach((docSnap) => {
+          const data = docSnap.data();
+          if (data && Array.isArray(data.sets)) {
+            let changed = false;
+            const updatedSets = data.sets.map((s: any) => {
+              if (s && s.exerciseName && s.exerciseName.trim().toLowerCase() === "incline seated row") {
+                changed = true;
+                return { ...s, exerciseName: "Plate Loaded Row" };
+              }
+              return s;
+            });
+            if (changed) {
+              batch.update(docSnap.ref, {
+                sets: updatedSets,
+                exercisesCount: new Set(updatedSets.map((s: any) => s.exerciseName || "")).size,
+              });
+              countWorkouts++;
+            }
+          }
+        });
+
+        // 3. Delete custom exercise "Incline Seated Row" from cloud in all possible casings
+        const casingVariants = ["Incline Seated Row", "INCLINE SEATED ROW", "Incline seated row", "incline seated row"];
+        casingVariants.forEach((variant) => {
+          const customExRef = doc(db, `users/${currentUser.uid}/custom_exercises`, variant);
+          batch.delete(customExRef);
+        });
+
+        if (countSets > 0 || countWorkouts > 0) {
+          await batch.commit();
+          console.log(`Migration completed successfully! Updated ${countSets} sets and ${countWorkouts} workouts.`);
+        } else {
+          // If no sets/workouts, we still commit the deletes of custom exercises if any existed
+          await batch.commit();
+          console.log("Committed deletions for custom exercise variants.");
+        }
+
+        localStorage.setItem(migratedKey, "true");
+      } catch (err) {
+        console.error("Failed to run 'Incline Seated Row' migration:", err);
+      }
+    };
+
+    runMigration();
+  }, [currentUser]);
+
   // Reset user-specific states when user accounts shift or log out
   useEffect(() => {
     setCurrentDays([[], [], [], [], [], []]);
@@ -3094,8 +3174,17 @@ export default function App() {
         try {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed)) {
+            const filtered = parsed.filter(
+              (e) =>
+                e &&
+                typeof e.name === "string" &&
+                e.name.trim() !== "Hammer Preacher" &&
+                e.name.trim() !== "Dumbbell Preacher" &&
+                e.name.trim() !== "Pull-up Hold" &&
+                e.name.trim().toLowerCase() !== "incline seated row"
+            );
             let hasAnyChanges = false;
-            const migratedList = parsed.map((ex) => {
+            const migratedList = filtered.map((ex) => {
               const { migrated, changed } = migrateCustomExercise(ex);
               if (changed) hasAnyChanges = true;
               return migrated;
@@ -3293,9 +3382,13 @@ export default function App() {
       collection(db, setsPath),
       (snapshot) => {
         const sets: SessionSet[] = [];
-        snapshot.forEach((d) =>
-          sets.push({ id: d.id, ...d.data() } as SessionSet),
-        );
+        snapshot.forEach((d) => {
+          const s = { id: d.id, ...d.data() } as SessionSet;
+          if (s && s.exerciseName) {
+            s.exerciseName = migrateExerciseName(s.exerciseName);
+          }
+          sets.push(s);
+        });
         setSessionSets(
           sets.sort(
             (a, b) => (a.timestamp?.seconds || 0) - (b.timestamp?.seconds || 0),
@@ -3312,7 +3405,18 @@ export default function App() {
       ),
       (snapshot) => {
         const rawWorkouts: any[] = [];
-        snapshot.forEach((d) => rawWorkouts.push({ id: d.id, ...d.data() }));
+        snapshot.forEach((d) => {
+          const w = { id: d.id, ...d.data() } as any;
+          if (w && Array.isArray(w.sets)) {
+            w.sets = w.sets.map((s: any) => {
+              if (s && s.exerciseName) {
+                s.exerciseName = migrateExerciseName(s.exerciseName);
+              }
+              return s;
+            });
+          }
+          rawWorkouts.push(w);
+        });
 
         const workoutsByDate: Record<string, any[]> = {};
         rawWorkouts.forEach((w) => {
@@ -3534,8 +3638,8 @@ export default function App() {
         const list: Exercise[] = [];
         snapshot.forEach((d) => {
           const ex = d.data() as Exercise;
-          const trimmedName = (ex.name || "").trim();
-          if (trimmedName === "Hammer Preacher" || trimmedName === "Dumbbell Preacher" || trimmedName === "Pull-up Hold") {
+          const trimmedLower = (ex.name || "").trim().toLowerCase();
+          if (trimmedLower === "hammer preacher" || trimmedLower === "dumbbell preacher" || trimmedLower === "pull-up hold" || trimmedLower === "incline seated row") {
             const idSafe = ex.name.replace(/\//g, "-");
             deleteDoc(doc(db, `users/${currentUser.uid}/custom_exercises`, idSafe))
               .catch((err) => console.error("Auto delete custom exercise failed:", err));
@@ -4595,6 +4699,7 @@ export default function App() {
       ...(customExVideoUrl.trim()
         ? { youtubeUrl: customExVideoUrl.trim() }
         : {}),
+      integrated: false,
     };
 
     const { migrated: newEx } = migrateCustomExercise(rawEx);
@@ -4699,6 +4804,78 @@ export default function App() {
       console.error("Failed to delete exercise:", err);
       setToast({
         message: "Error deleting exercise from cloud database",
+        type: "error",
+      });
+    }
+  };
+
+  const handleIntegrateExercise = async (exName: string) => {
+    try {
+      const updated = customExercises.map((ex) => {
+        if (ex.name.toLowerCase() === exName.toLowerCase()) {
+          return { ...ex, integrated: true };
+        }
+        return ex;
+      });
+
+      setCustomExercises(updated);
+      localStorage.setItem("gym_custom_exercises", JSON.stringify(updated));
+
+      if (currentUser) {
+        const idSafe = exName.replace(/\//g, "-");
+        const docRef = doc(db, `users/${currentUser.uid}/custom_exercises`, idSafe);
+        const exToUpdate = updated.find(ex => ex.name.toLowerCase() === exName.toLowerCase());
+        if (exToUpdate) {
+          await setDoc(docRef, exToUpdate);
+        }
+      }
+
+      setToast({
+        message: `"${exName}" integrated into its muscle category successfully!`,
+        type: "success",
+      });
+    } catch (err) {
+      console.error("Failed to integrate exercise:", err);
+      setToast({
+        message: "Failed to integrate exercise.",
+        type: "error",
+      });
+    }
+  };
+
+  const handleIntegrateAllExercises = async () => {
+    try {
+      const toIntegrate = customExercises.filter(ex => !ex.integrated);
+      if (toIntegrate.length === 0) return;
+
+      const updated = customExercises.map((ex) => {
+        if (!ex.integrated) {
+          return { ...ex, integrated: true };
+        }
+        return ex;
+      });
+
+      setCustomExercises(updated);
+      localStorage.setItem("gym_custom_exercises", JSON.stringify(updated));
+
+      if (currentUser) {
+        const batch = writeBatch(db);
+        toIntegrate.forEach((ex) => {
+          const idSafe = ex.name.replace(/\//g, "-");
+          const docRef = doc(db, `users/${currentUser.uid}/custom_exercises`, idSafe);
+          batch.set(docRef, { ...ex, integrated: true });
+        });
+        await batch.commit();
+      }
+
+      setToast({
+        message: `Successfully integrated ${toIntegrate.length} exercise(s)!`,
+        type: "success",
+      });
+    } catch (err) {
+      console.error("Failed to integrate all exercises:", err);
+      setToast({
+        message: "Failed to integrate all exercises.",
         type: "error",
       });
     }
@@ -8330,7 +8507,7 @@ export default function App() {
                               ...(combinedPools["obliques"] || []),
                             ];
                           } else if (catKey === "custom") {
-                            list = customExercises;
+                            list = customExercises.filter((ex) => !ex.integrated);
                           } else {
                             list = combinedPools[catKey] || [];
                           }
@@ -8404,7 +8581,7 @@ export default function App() {
                               (combinedPools["lower_core"]?.length || 0) +
                               (combinedPools["obliques"]?.length || 0);
                           } else if (sec.key === "custom") {
-                            listCount = customExercises.length;
+                            listCount = customExercises.filter((ex) => !ex.integrated).length;
                           } else {
                             listCount = combinedPools[sec.key]?.length || 0;
                           }
@@ -8545,7 +8722,7 @@ export default function App() {
                             ...(combinedPools["obliques"] || []),
                           ];
                         } else if (catKey === "custom") {
-                          list = customExercises;
+                          list = customExercises.filter((ex) => !ex.integrated);
                         } else {
                           list = combinedPools[catKey] || [];
                         }
@@ -8672,6 +8849,16 @@ export default function App() {
                                     <h3 className="text-lg md:text-xl font-light italic font-serif text-white break-words uppercase tracking-wider">
                                       {activeCat.label} MOVEMENTS
                                     </h3>
+                                    {activeCat.key === "custom" && sortedList.length > 0 && (
+                                      <button
+                                        onClick={handleIntegrateAllExercises}
+                                        className="ml-2 px-3 py-1 bg-emerald-500/15 hover:bg-emerald-500 hover:text-black border border-emerald-500/30 text-emerald-400 text-[9px] font-mono font-bold uppercase tracking-widest rounded transition-all cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.1)] hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                                        title="Integrate all custom exercises into their respective muscle categories"
+                                      >
+                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        <span>Integrate All</span>
+                                      </button>
+                                    )}
                                   </div>
                                   <p className="text-[10px] font-mono text-white/40 tracking-wider font-light mt-0.5">
                                     {activeCat.desc} • {sortedList.length} EXERCISES
@@ -8785,6 +8972,15 @@ export default function App() {
                                                     }`}
                                                   />
                                                 </button>
+                                                {isCustom && !activeExercise.integrated && (
+                                                  <button
+                                                    onClick={() => handleIntegrateExercise(activeExercise.name)}
+                                                    className="px-1.5 py-0.5 rounded-[1px] border border-emerald-500/25 bg-emerald-950/10 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[7px] font-bold uppercase tracking-widest transition-all cursor-pointer mr-1"
+                                                    title="Integrate into its respective Muscle Category"
+                                                  >
+                                                    Integrate
+                                                  </button>
+                                                )}
                                                 {isCustom && (
                                                   <button
                                                     onClick={() => handlePermanentlyDeleteCustomExercise(activeExercise.name)}
@@ -8963,7 +9159,7 @@ export default function App() {
                         ...(combinedPools["obliques"] || []),
                       ];
                     } else if (catKey === "custom") {
-                      list = customExercises;
+                      list = customExercises.filter((ex) => !ex.integrated);
                     } else {
                       list = combinedPools[catKey] || [];
                     }
@@ -9098,6 +9294,15 @@ export default function App() {
                                             </div>
                                           </div>
                                         </div>
+                                        {isCustom && !ex.integrated && (
+                                          <button
+                                            onClick={() => handleIntegrateExercise(ex.name)}
+                                            className="px-2 py-1 rounded-[1px] border border-emerald-500/30 bg-emerald-950/15 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[8px] font-extrabold uppercase tracking-widest transition-all cursor-pointer shrink-0 mr-1"
+                                            title="Integrate custom exercise into muscle category"
+                                          >
+                                            Integrate
+                                          </button>
+                                        )}
                                         {isCustom && (
                                           <button
                                             onClick={() =>

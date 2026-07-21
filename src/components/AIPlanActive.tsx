@@ -38,6 +38,19 @@ export function isBodyweightExercise(name: string): boolean {
   );
 }
 
+export function extractCleanNote(notesStr: string | undefined | null): string {
+  if (!notesStr) return "";
+  const clean = notesStr.trim();
+  if (/^(?:Plan Set \d+|AI Plan Set \d+)$/i.test(clean)) {
+    return "";
+  }
+  const match = clean.match(/^(?:Plan Set \d+|AI Plan Set \d+):\s*(.*)$/i);
+  if (match) {
+    return match[1].trim();
+  }
+  return clean;
+}
+
 import {
   Activity,
   CheckCircle,
@@ -292,15 +305,20 @@ export default function AIPlanActive({
         const hasSavedVal = savedVal !== undefined && savedVal !== null;
         const isSavedTestVal = hasSavedVal && (savedVal.weight === "1" || savedVal.weight === 1) && (savedVal.reps === "1" || savedVal.reps === 1);
 
+        const prevCleanNote = historicalSet ? extractCleanNote(historicalSet.notes) : "";
+
         if (hasSavedVal && !isSavedTestVal) {
-          init[key] = savedVal;
+          init[key] = {
+            ...savedVal,
+            notes: (savedVal.notes !== undefined) ? savedVal.notes : prevCleanNote
+          };
         } else {
           init[key] = {
             weight: historicalSet ? historicalSet.weight.toString() : defaultWeight,
             reps: historicalSet ? historicalSet.reps.toString() : defaultReps,
             logged: false,
             difficulty: historicalSet?.difficulty || "moderate",
-            notes: savedVal?.notes || ""
+            notes: prevCleanNote
           };
         }
       }
@@ -371,13 +389,15 @@ export default function AIPlanActive({
               (set.notes && set.notes.startsWith(`AI Plan Set ${s + 1}`))
           );
 
+          const prevCleanNote = historicalSet ? extractCleanNote(historicalSet.notes) : "";
+
           if (!prev[key]) {
             next[key] = {
               weight: targetW,
               reps: targetR,
               logged: sessionHasThisSet,
               difficulty: targetDiff,
-              notes: ""
+              notes: prevCleanNote
             };
             changed = true;
           } else {
@@ -395,6 +415,13 @@ export default function AIPlanActive({
               };
               changed = true;
             } else if (!prev[key].logged) {
+              if (prev[key].notes === undefined) {
+                next[key] = {
+                  ...prev[key],
+                  notes: prevCleanNote
+                };
+                changed = true;
+              }
               // If there's no history, make sure it is empty (not prefilled with "60" or other defaults)
               if (!hasHistory) {
                 if (prev[key].weight !== "" || prev[key].reps !== "") {

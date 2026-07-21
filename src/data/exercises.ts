@@ -10,6 +10,7 @@ export interface Exercise {
   youtubeId?: string;
   youtubeUrl?: string;
   secondaryMuscles?: string[];
+  integrated?: boolean;
 }
 
 const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
