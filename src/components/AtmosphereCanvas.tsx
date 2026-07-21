@@ -81,7 +81,13 @@ export const AtmosphereCanvas: React.FC<AtmosphereCanvasProps> = ({
   const mouseRef = useRef({ x: -1000, y: -1000, radius: 150 });
 
   useEffect(() => {
-    if (effectType === "disabled" || effectType === "eternal_fire" || effectType === "liquid_ink") {
+    if (
+      effectType === "disabled" ||
+      effectType === "custom_video" ||
+      effectType === "car_video" ||
+      effectType.includes("video") ||
+      effectType.includes("medium")
+    ) {
       return;
     }
 
@@ -600,7 +606,13 @@ export const AtmosphereCanvas: React.FC<AtmosphereCanvasProps> = ({
     };
   }, [activeTheme.id, effectType]);
 
-  if (effectType === "disabled") {
+  if (
+    effectType === "disabled" ||
+    effectType === "custom_video" ||
+    effectType === "car_video" ||
+    effectType.includes("video") ||
+    effectType.includes("medium")
+  ) {
     return null;
   }
 

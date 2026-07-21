@@ -2354,7 +2354,7 @@ export default function App() {
     return localStorage.getItem("gym-theme-id") || "default";
   });
   const [atmosphereEffect, setAtmosphereEffect] = useState<string>(() => {
-    return localStorage.getItem("gym-atmosphere-effect") || "hybrid";
+    return localStorage.getItem("gym-atmosphere-effect") || "video_theme3";
   });
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({});
   const [lastLoadedDayIndex, setLastLoadedDayIndex] = useState<number | null>(null);
@@ -7809,11 +7809,9 @@ export default function App() {
                 loop
                 muted
                 playsInline
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none mix-blend-screen opacity-[0.35] z-[1]"
-              >
-                <source src="/custom_atmosphere.mp4" type="video/mp4" />
-                <source src="/custom_atmosphere.webm" type="video/webm" />
-              </video>
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-[0.35] z-[1]"
+                src="/custom_atmosphere.mp4"
+              />
             )}
             {atmosphereEffect === "car_video" && (
               <video
@@ -7822,10 +7820,42 @@ export default function App() {
                 loop
                 muted
                 playsInline
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none mix-blend-screen opacity-[0.35] z-[1]"
-              >
-                <source src="/car.mp4" type="video/mp4" />
-              </video>
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-[0.35] z-[1]"
+                src="/car.mp4"
+              />
+            )}
+            {atmosphereEffect === "video_theme3" && (
+              <video
+                key="video_theme3"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-[0.35] z-[1]"
+                src="/theme3.mp4"
+              />
+            )}
+            {atmosphereEffect === "video_theme4" && (
+              <video
+                key="video_theme4"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-[0.35] z-[1]"
+                src="/theme4.mp4"
+              />
+            )}
+            {atmosphereEffect === "video_theme6" && (
+              <video
+                key="video_theme6"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-[0.35] z-[1]"
+                src="/theme6.mp4"
+              />
             )}
             <AtmosphereCanvas activeTheme={activeTheme} effectType={atmosphereEffect} />
           </>
@@ -14910,11 +14940,10 @@ export default function App() {
                             {[
                               { id: "custom_video", name: "Illusion", desc: "📹 Interactive custom_atmosphere.mp4 loop" },
                               { id: "car_video", name: "Car", desc: "🚗 Cinematic car.mp4 loop theme" },
-                              { id: "hybrid", name: "Hybrid Space", desc: "✨ Starry sky + Bioluminescent jellyfish" },
-                              { id: "particles", name: "Stardust Only", desc: "🌌 Cosmic floating stellar dust" },
-                              { id: "meteors", name: "Meteor Shower", desc: "☄️ Fast beautiful diagonal streaks" },
+                              { id: "video_theme3", name: "FIRE", desc: "📹 Video Loop (theme3)" },
+                              { id: "video_theme4", name: "WAVE", desc: "📹 Video Loop (theme4)" },
+                              { id: "video_theme6", name: "GEOMETRIC", desc: "📹 Video Loop (theme6)" },
                               { id: "techgrid", name: "Electric Grid", desc: "⚡ 3D perspective synthwave grid" },
-                              { id: "raindrops", name: "Cozy Raindrops", desc: "🌧️ Vertical rain falling in background" },
                               { id: "matrix", name: "Cyber Rain", desc: "📟 Cascading digital code lines" },
                               { id: "aurora", name: "Aurora Waves", desc: "💚 Majestic cosmic solar ribbons" },
                               { id: "disabled", name: "Static Canvas", desc: "🌑 Turn off all dynamic features" },
