@@ -8746,13 +8746,7 @@ export default function App() {
                           setSelectedLibraryCategory(categoriesList[nextIndex].key);
                         };
 
-                        if (sortedList.length === 0) {
-                          return (
-                            <div className="text-center py-12">
-                              <p className="text-sm text-white/40 font-mono">No movements identified in this category matching search query.</p>
-                            </div>
-                          );
-                        }
+
 
                         // Group sortedList by pool or back scientific categories
                         const exercisesByPool: Record<string, Exercise[]> = {};
@@ -8893,7 +8887,16 @@ export default function App() {
 
                             {/* Beautiful Grid displaying the list of exercises grouped by sub-muscle category */}
                             <div className="space-y-8 max-h-[550px] overflow-y-auto pr-2 no-scrollbar text-left">
-                              {poolOrder.map((poolKey) => {
+                              {sortedList.length === 0 ? (
+                                <div className="text-center py-12 bg-[#090909]/40 border border-white/[0.04] rounded-xl p-6">
+                                  <p className="text-sm text-white/40 font-mono">
+                                    {selectedLibraryCategory === "custom"
+                                      ? "No custom movements left inside this temporary sandbox. Create or add custom exercises above, then integrate them when ready."
+                                      : "No movements identified in this category matching search query."}
+                                  </p>
+                                </div>
+                              ) : (
+                                poolOrder.map((poolKey) => {
                                 const exercisesInPool = exercisesByPool[poolKey];
                                 const poolLabel = selectedLibraryCategory === "custom"
                                   ? (CUSTOM_GROUP_LABELS[poolKey] || poolKey.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()))
@@ -9088,7 +9091,8 @@ export default function App() {
                                     </div>
                                   </div>
                                 );
-                              })}
+                              })
+                            )}
                             </div>
                           </div>
                         );
