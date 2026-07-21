@@ -128,6 +128,7 @@ import {
 import { Exercise, POOLS, getSecondaryMusclesForExercise } from "./data/exercises";
 import AIPlanActive, { AIPlanExercise } from "./components/AIPlanActive";
 import { getExerciseProgressionState } from "./lib/progression";
+import { AtmosphereCanvas } from "./components/AtmosphereCanvas";
 
 export function migrateExerciseName(name: string): string {
   if (!name) return "";
@@ -1087,6 +1088,7 @@ interface UserProfile {
   timerActive?: boolean;
   timerManualDuration?: number;
   timerAccumulatedMs?: number;
+  atmosphereEffect?: string;
 }
 
 interface ProfileDisplayNameEditorProps {
@@ -2351,6 +2353,9 @@ export default function App() {
   const [currentThemeId, setCurrentThemeId] = useState<string>(() => {
     return localStorage.getItem("gym-theme-id") || "default";
   });
+  const [atmosphereEffect, setAtmosphereEffect] = useState<string>(() => {
+    return localStorage.getItem("gym-atmosphere-effect") || "hybrid";
+  });
   const [expandedDays, setExpandedDays] = useState<Record<number, boolean>>({});
   const [lastLoadedDayIndex, setLastLoadedDayIndex] = useState<number | null>(null);
   const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(null);
@@ -3319,6 +3324,10 @@ export default function App() {
           if (data.themeId) {
             setCurrentThemeId(data.themeId);
             localStorage.setItem("gym-theme-id", data.themeId);
+          }
+          if (data.atmosphereEffect) {
+            setAtmosphereEffect(data.atmosphereEffect);
+            localStorage.setItem("gym-atmosphere-effect", data.atmosphereEffect);
           }
           setProfile(data);
         }
@@ -7789,6 +7798,36 @@ export default function App() {
                 background: `linear-gradient(to bottom, ${activeTheme.bg}a0, ${activeTheme.bg}40, ${activeTheme.bg}ff)`,
               }}
             />
+          </>
+        )}
+        {!isCarbonBlack && (
+          <>
+            {atmosphereEffect === "custom_video" && (
+              <video
+                key="custom_video"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none mix-blend-screen opacity-[0.35] z-[1]"
+              >
+                <source src="/custom_atmosphere.mp4" type="video/mp4" />
+                <source src="/custom_atmosphere.webm" type="video/webm" />
+              </video>
+            )}
+            {atmosphereEffect === "car_video" && (
+              <video
+                key="car_video"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none mix-blend-screen opacity-[0.35] z-[1]"
+              >
+                <source src="/car.mp4" type="video/mp4" />
+              </video>
+            )}
+            <AtmosphereCanvas activeTheme={activeTheme} effectType={atmosphereEffect} />
           </>
         )}
       </div>
@@ -14853,6 +14892,62 @@ export default function App() {
                                   </div>
                                 );
                               })}
+                          </div>
+                        </div>
+
+                        {/* Dynamic Atmosphere Effects Selector */}
+                        <div className="mt-8 pt-8 border-t border-white/5">
+                          <h5 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.3em] mb-3 flex items-center justify-between">
+                            <span>Dynamic Atmosphere Elements</span>
+                            <span className="text-[8px] bg-gym-accent/15 text-gym-accent px-1.5 py-0.5 rounded font-bold uppercase tracking-widest">
+                              Hyper-Atmospheres
+                            </span>
+                          </h5>
+                          <p className="text-xs text-white/40 mb-6 font-light leading-relaxed">
+                            Control the ambient visual physics of your application background. Choose between high-definition realistic looping videos, complex visual physics canvas layers, or a quiet static canvas.
+                          </p>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {[
+                              { id: "custom_video", name: "Illusion", desc: "📹 Interactive custom_atmosphere.mp4 loop" },
+                              { id: "car_video", name: "Car", desc: "🚗 Cinematic car.mp4 loop theme" },
+                              { id: "hybrid", name: "Hybrid Space", desc: "✨ Starry sky + Bioluminescent jellyfish" },
+                              { id: "particles", name: "Stardust Only", desc: "🌌 Cosmic floating stellar dust" },
+                              { id: "meteors", name: "Meteor Shower", desc: "☄️ Fast beautiful diagonal streaks" },
+                              { id: "techgrid", name: "Electric Grid", desc: "⚡ 3D perspective synthwave grid" },
+                              { id: "raindrops", name: "Cozy Raindrops", desc: "🌧️ Vertical rain falling in background" },
+                              { id: "matrix", name: "Cyber Rain", desc: "📟 Cascading digital code lines" },
+                              { id: "aurora", name: "Aurora Waves", desc: "💚 Majestic cosmic solar ribbons" },
+                              { id: "disabled", name: "Static Canvas", desc: "🌑 Turn off all dynamic features" },
+                            ].map((eff) => {
+                              const isActive = atmosphereEffect === eff.id;
+                              return (
+                                <button
+                                  key={eff.id}
+                                  type="button"
+                                  onClick={async () => {
+                                    setAtmosphereEffect(eff.id);
+                                    localStorage.setItem("gym-atmosphere-effect", eff.id);
+                                    saveSettings({ atmosphereEffect: eff.id });
+                                    setToast({
+                                      message: `✨ Equipped Atmosphere: ${eff.name}!`,
+                                      type: "success",
+                                    });
+                                  }}
+                                  className={`p-3 rounded-lg border text-left cursor-pointer transition-all duration-300 flex flex-col justify-between min-h-20 ${
+                                    isActive
+                                      ? "border-gym-accent bg-gym-accent/[0.08] shadow-[0_0_15px_rgba(var(--gym-accent-rgb),0.1)]"
+                                      : "border-white/10 bg-black/60 hover:border-white/20 hover:bg-white/[0.04]"
+                                  }`}
+                                >
+                                  <span className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? "text-gym-accent" : "text-white/85"}`}>
+                                    {eff.name}
+                                  </span>
+                                  <span className="text-[8px] font-mono text-white/40 mt-1 leading-tight">
+                                    {eff.desc}
+                                  </span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
