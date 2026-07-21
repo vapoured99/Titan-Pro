@@ -7469,7 +7469,7 @@ export default function App() {
                             {set.notes && (
                               <span
                                 onClick={() => setViewingNote(set.notes)}
-                                className="ml-1 px-1.5 py-0.5 bg-gym-accent/11 border border-gym-accent/20 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
+                                className="ml-1 px-1.5 py-0.5 bg-gym-accent/11 border border-gym-accent/20 text-white text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
                                 title="Click to view full note"
                               >
                                 {set.notes}
@@ -12277,7 +12277,7 @@ export default function App() {
                                                 {s.notes && (
                                                   <span
                                                     onClick={() => setViewingNote(s.notes)}
-                                                    className="px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/35 text-gym-accent text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
+                                                    className="px-1.5 py-0.5 bg-gym-accent/15 border border-gym-accent/35 text-white text-[8px] font-bold rounded-md uppercase tracking-wide truncate max-w-[120px] cursor-pointer hover:bg-gym-accent/30 hover:border-gym-accent/50 transition-all active:scale-95"
                                                     title="Click to view full note"
                                                   >
                                                     {s.notes}
@@ -12795,7 +12795,7 @@ export default function App() {
                                               <div className="mt-1 pt-1 border-t border-white/5 text-left">
                                                 <span
                                                   onClick={() => setViewingNote(s.notes)}
-                                                  className="text-[8px] text-gym-accent font-semibold tracking-wider uppercase block truncate cursor-pointer hover:text-gym-accent/80 transition-all hover:translate-x-0.5 active:scale-95"
+                                                  className="text-[8px] text-white font-semibold tracking-wider uppercase block truncate cursor-pointer hover:text-white/80 transition-all hover:translate-x-0.5 active:scale-95"
                                                   title="Click to view full note"
                                                 >
                                                   ✎ {s.notes}

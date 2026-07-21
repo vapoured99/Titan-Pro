@@ -224,7 +224,7 @@ export default function AIPlanActive({
   const [setInputs, setSetInputs] = useState<
     Record<
       string,
-      { weight: string; reps: string; logged: boolean; difficulty: "easy" | "moderate" | "hard" | "failure" }
+      { weight: string; reps: string; logged: boolean; difficulty: "easy" | "moderate" | "hard" | "failure"; notes?: string }
     >
   >(() => {
     let savedObj: Record<string, any> = {};
@@ -237,7 +237,7 @@ export default function AIPlanActive({
 
     const init: Record<
       string,
-      { weight: string; reps: string; logged: boolean; difficulty: "easy" | "moderate" | "hard" | "failure" }
+      { weight: string; reps: string; logged: boolean; difficulty: "easy" | "moderate" | "hard" | "failure"; notes?: string }
     > = {};
 
     initialActiveExercises.forEach((exItem) => {
@@ -299,7 +299,8 @@ export default function AIPlanActive({
             weight: historicalSet ? historicalSet.weight.toString() : defaultWeight,
             reps: historicalSet ? historicalSet.reps.toString() : defaultReps,
             logged: false,
-            difficulty: historicalSet?.difficulty || "moderate"
+            difficulty: historicalSet?.difficulty || "moderate",
+            notes: savedVal?.notes || ""
           };
         }
       }
@@ -366,8 +367,8 @@ export default function AIPlanActive({
           // Match matching sets in sessionSets
           const sessionHasThisSet = currentSessionSets.some(
             (set) =>
-              set.notes === `Plan Set ${s + 1}` ||
-              set.notes === `AI Plan Set ${s + 1}`
+              (set.notes && set.notes.startsWith(`Plan Set ${s + 1}`)) ||
+              (set.notes && set.notes.startsWith(`AI Plan Set ${s + 1}`))
           );
 
           if (!prev[key]) {
@@ -375,7 +376,8 @@ export default function AIPlanActive({
               weight: targetW,
               reps: targetR,
               logged: sessionHasThisSet,
-              difficulty: targetDiff
+              difficulty: targetDiff,
+              notes: ""
             };
             changed = true;
           } else {
@@ -482,9 +484,9 @@ export default function AIPlanActive({
     });
   };
 
-  const handleSetFieldChange = (key: string, field: "weight" | "reps", value: string) => {
+  const handleSetFieldChange = (key: string, field: "weight" | "reps" | "notes", value: string) => {
     setSetInputs((prev) => {
-      const curr = prev[key] || { weight: "", reps: "", logged: false, difficulty: "moderate" };
+      const curr = prev[key] || { weight: "", reps: "", logged: false, difficulty: "moderate", notes: "" };
       if (curr.logged) return prev;
       return {
         ...prev,
@@ -507,11 +509,15 @@ export default function AIPlanActive({
       playRestBeep(1000, 0.05);
     }
 
+    const setNoteText = curr.notes?.trim()
+      ? `Plan Set ${setIdx + 1}: ${curr.notes.trim()}`
+      : `Plan Set ${setIdx + 1}`;
+
     await onSaveSet(
       exName,
       curr.weight,
       curr.reps,
-      `Plan Set ${setIdx + 1}`,
+      setNoteText,
       curr.difficulty,
       "ai_plan"
     );
@@ -529,7 +535,7 @@ export default function AIPlanActive({
     const targetSet = (sessionSets || []).find(
       (s) =>
         normalizeExerciseName(s.exerciseName) === normalizeExerciseName(exName) &&
-        (s.notes === `Plan Set ${setIdx + 1}` || s.notes === `AI Plan Set ${setIdx + 1}`)
+        (s.notes?.startsWith(`Plan Set ${setIdx + 1}`) || s.notes?.startsWith(`AI Plan Set ${setIdx + 1}`))
     );
 
     if (targetSet && targetSet.id && onDeleteSet) {
@@ -554,7 +560,8 @@ export default function AIPlanActive({
           weight: "",
           reps: "",
           logged: false,
-          difficulty: "moderate"
+          difficulty: "moderate",
+          notes: ""
         };
 
         setSetInputs((p) => ({
@@ -563,7 +570,8 @@ export default function AIPlanActive({
             weight: lastInput.weight,
             reps: lastInput.reps,
             logged: false,
-            difficulty: "moderate"
+            difficulty: "moderate",
+            notes: ""
           }
         }));
 
@@ -983,27 +991,28 @@ export default function AIPlanActive({
                           return (
                             <div
                               key={sIdx}
-                              className={`p-3 rounded-xl border transition-all flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${
+                              className={`p-3 rounded-xl border transition-all flex flex-col gap-3 ${
                                 isLogged
                                   ? "bg-white/[0.01] border-white/5 opacity-50"
                                   : "bg-black/20 border-white/5 hover:border-white/10"
                               }`}
                             >
-                              {/* Set Badge & Best Target */}
-                              <div className="flex items-center justify-between md:justify-start gap-4 shrink-0">
-                                <span className="font-mono font-black text-xs text-white/80">
-                                  Set {sIdx + 1}
-                                </span>
-                                {pb ? (
-                                  <span className="text-[10.5px] font-mono text-white/35">
-                                    Target: {pb.bestWeight}kg × {pb.bestReps}
+                              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                                {/* Set Badge & Best Target */}
+                                <div className="flex items-center justify-between md:justify-start gap-4 shrink-0">
+                                  <span className="font-mono font-black text-xs text-white/80">
+                                    Set {sIdx + 1}
                                   </span>
-                                ) : (
-                                  <span className="text-[10px] font-mono text-white/20">
-                                    No PB
-                                  </span>
-                                )}
-                              </div>
+                                  {pb ? (
+                                    <span className="text-[10.5px] font-mono text-white/35">
+                                      Target: {pb.bestWeight}kg × {pb.bestReps}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] font-mono text-white/20">
+                                      No PB
+                                    </span>
+                                  )}
+                                </div>
 
                               {/* Interactive Increment Controllers */}
                               <div className="grid grid-cols-2 md:flex md:items-center gap-4 flex-1 md:justify-end">
@@ -1142,6 +1151,24 @@ export default function AIPlanActive({
                                     </button>
                                   )}
                                 </div>
+                              </div>
+                            </div>
+
+                            {/* Notes Section */}
+                              <div className="border-t border-white/5 pt-2 flex items-center gap-2">
+                                <span className="text-[9px] font-mono font-bold uppercase text-white/35 shrink-0">
+                                  Notes:
+                                </span>
+                                <input
+                                  type="text"
+                                  disabled={isLogged}
+                                  placeholder="e.g. used neutral handle, focused on slow negatives..."
+                                  value={rowState.notes || ""}
+                                  onChange={(e) =>
+                                    handleSetFieldChange(key, "notes", e.target.value)
+                                  }
+                                  className="bg-transparent text-[11px] text-white/80 placeholder:text-white/20 w-full outline-none border-b border-white/5 hover:border-white/10 focus:border-gym-accent/40 pb-0.5 transition-colors"
+                                />
                               </div>
 
                             </div>
