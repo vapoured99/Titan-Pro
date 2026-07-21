@@ -527,6 +527,32 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Pull yourself up by driving your elbows down, keeping your chest tall and core engaged.",
         "Slowly lower yourself back down to the starting position under control."
       ]
+    },
+    {
+      name: "Plate Loaded Row",
+      icon: "ArrowLeftRight",
+      pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
+      instructions: [
+        "Sit facing the machine with your chest firmly against the support pad.",
+        "Adjust the seat height so that the handles align with your lower chest or upper abdomen.",
+        "Grip the handles with an overhand or neutral grip and extend your arms fully.",
+        "Pull the handles toward you by driving your elbows back and squeezing your shoulder blades together.",
+        "Slowly return to the starting position under control, fully extending your arms to stretch the lats."
+      ]
+    },
+    {
+      name: "Single Arm Cable Row",
+      icon: "ArrowLeftRight",
+      pool: "upper_back",
+      muscleGroup: "lats",
+      instructions: [
+        "Attach a single handle to a low cable pulley and select the appropriate weight.",
+        "Step back from the pulley, hinge at the hips slightly, and keep your knees unlocked for stability.",
+        "Hold the handle with your arm fully extended, palm facing inward (neutral grip).",
+        "Pull the handle toward your hip/waist by driving your elbow back, keeping it close to your side.",
+        "Squeeze your lat at the peak of the contraction, then slowly return to the starting position."
+      ]
     }
   ],
   lower_back: [
@@ -2403,6 +2429,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Plate Front Raise": "HN8HYJTOl8c",
   "Plate Ground to Overhead": "wkexXjIhnzQ",
   "Plate Halo": "jkc_qGAc5fE",
+  "Plate Loaded Row": "XHcqJ4mNkh8",
   "Plate Overhead Lunge": "nZYZKQBEdm8",
   "Plate Pinch Carry": "jFTV3DQf3HE",
   "Preacher Curls": "Zbs3ko8ycyg",
@@ -2425,6 +2452,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Shoulder Press Machine": "TnhIyp4kmO8",
   "Side Plank": "Oe9Tp9SvTCE",
   "Single Arm Bent Over Row": "ZRSGpBUVcNw",
+  "Single Arm Cable Row": "YQlEqGP-7kc",
   "Single Arm Chest Fly": "E_mT1JWOp90",
   "Single Arm Chest Press": "u3dhC-FcRXc",
   "Single Arm Lat Pulldowns": "LPahgWM7eUU",

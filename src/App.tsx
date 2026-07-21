@@ -154,7 +154,6 @@ import ariseBg from "./assets/images/SL.jpeg";
 
 // --- Avatar Images & Screenshot Engine ---
 import html2canvas from "html2canvas";
-import { jsPDF } from "jspdf";
 import imgVanguardDefault from "./assets/images/vanguard_default_1779362283869.png";
 
 // --- Types ---
@@ -1625,6 +1624,9 @@ export default function App() {
   const [isExportingRoutines, setIsExportingRoutines] = useState<boolean>(false);
   const [routinesImagePreviewUrl, setRoutinesImagePreviewUrl] = useState<string | null>(null);
   const [showRoutinesPreviewModal, setShowRoutinesPreviewModal] = useState<boolean>(false);
+  const [isExportingStatsImage, setIsExportingStatsImage] = useState<boolean>(false);
+  const [statsImagePreviewUrl, setStatsImagePreviewUrl] = useState<string | null>(null);
+  const [showStatsPreviewModal, setShowStatsPreviewModal] = useState<boolean>(false);
   const [tweakingRoutineId, setTweakingRoutineId] = useState<string | null>(null);
   const [showSaveRoutineModal, setShowSaveRoutineModal] = useState(false);
   const [saveRoutineModalStep, setSaveRoutineModalStep] = useState<"choice" | "name">("choice");
@@ -2414,11 +2416,6 @@ export default function App() {
   const [selectedLibraryCategory, setSelectedLibraryCategory] =
     useState<string>("chest");
   const [activeLibraryCarouselIndex, setActiveLibraryCarouselIndex] = useState(0);
-  const [showProgressReport, setShowProgressReport] = useState(false);
-  const [isExportingReport, setIsExportingReport] = useState(false);
-  const [reportCardScale, setReportCardScale] = useState(1);
-  const [reportCardHeight, setReportCardHeight] = useState<number | null>(null);
-  const [avatarImgBase64, setAvatarImgBase64] = useState<string | null>(null);
   const [setDifficulties, setSetDifficulties] = useState<Record<string, "easy" | "moderate" | "hard" | "failure">>({});
   const [scrollY, setScrollY] = useState(0);
   const equipmentRef = useRef<HTMLDivElement>(null);
@@ -2467,78 +2464,6 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!showProgressReport) {
-      setAvatarImgBase64(null);
-      return;
-    }
-
-    const activeOutfitId = profile?.equippedOutfit || "vanguard_cadet";
-    const equippedEmote = (profile as any)?.[`equippedEmote_${activeOutfitId}`] ?? "none";
-    const activeOutfit = OUTFITS.find((o) => o.id === activeOutfitId) || OUTFITS[0];
-    const imgUrl = activeOutfit.poseImages?.[equippedEmote as any] || activeOutfit.image;
-
-    if (!imgUrl) return;
-
-    let isMounted = true;
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = img.naturalWidth;
-        canvas.height = img.naturalHeight;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0);
-          const dataUrl = canvas.toDataURL("image/png");
-          if (isMounted) {
-            setAvatarImgBase64(dataUrl);
-          }
-        }
-      } catch (err) {
-        console.error("Error converting avatar to base64:", err);
-      }
-    };
-    img.onerror = (err) => {
-      console.error("Failed to load avatar image for base64 conversion:", err);
-    };
-    img.src = imgUrl;
-
-    return () => {
-      isMounted = false;
-    };
-  }, [showProgressReport, profile]);
-
-  useEffect(() => {
-    if (!showProgressReport) return;
-    const updateScale = () => {
-      const container = document.getElementById("progress-report-container");
-      const card = document.getElementById("progress-report-card");
-      if (container && card) {
-        const containerWidth = container.clientWidth;
-        const cardWidth = 780; // fixed width of progress-report-card
-        const scale =
-          containerWidth < cardWidth ? containerWidth / cardWidth : 1;
-        setReportCardScale(scale);
-
-        // Measure natural, unscaled height
-        const origTransform = card.style.transform;
-        card.style.transform = "none";
-        const height = card.offsetHeight;
-        card.style.transform = origTransform;
-        setReportCardHeight(height);
-      }
-    };
-
-    const timer = setTimeout(updateScale, 150);
-    window.addEventListener("resize", updateScale);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("resize", updateScale);
-    };
-  }, [showProgressReport]);
-
   // Collapse all dropdowns and accordion lists when switching between tabs
   useEffect(() => {
     setShowHistoryMenu(false);
@@ -2570,188 +2495,6 @@ export default function App() {
       if (ex) return ex;
     }
     return null;
-  };
-
-  const handleExportPdf = async () => {
-    if (isExportingReport) return;
-    setIsExportingReport(true);
-    try {
-      const card = document.getElementById("progress-report-card");
-      if (!card) {
-        setToast({ message: "Progress report card element not found.", type: "info" });
-        setIsExportingReport(false);
-        return;
-      }
-
-      // Helper function to safely replace oklch, oklab, color-mix and light-dark with valid simple rgb/hex colors to avoid crashing html2canvas parser
-      const replaceColorFunctions = (cssText: string): string => {
-        let result = cssText;
-
-        // Replace all CSS color variables with standard physical hex/rgb values from the active color theme
-        result = result
-          .replace(/var\(--gym-accent\)/g, activeTheme.accent)
-          .replace(/var\(--gym-accent-light\)/g, activeTheme.accentLight)
-          .replace(/var\(--gym-accent-dark\)/g, activeTheme.accentDark)
-          .replace(/var\(--gym-accent-rgb\)/g, activeTheme.accentRgb)
-          .replace(/var\(--theme-text\)/g, activeTheme.testPrimary)
-          .replace(/var\(--theme-text-muted\)/g, activeTheme.testMuted)
-          .replace(/var\(--theme-text-subtle\)/g, activeTheme.testSubtle)
-          .replace(/var\(--color-gym-accent\)/g, activeTheme.accent)
-          .replace(/var\(--color-gym-accent-light\)/g, activeTheme.accentLight)
-          .replace(/var\(--color-gym-accent-dark\)/g, activeTheme.accentDark)
-          .replace(/var\(--color-theme-text\)/g, activeTheme.testPrimary)
-          .replace(/var\(--color-theme-text-muted\)/g, activeTheme.testMuted)
-          .replace(/var\(--color-theme-text-subtle\)/g, activeTheme.testSubtle);
-
-        // Fallback for remaining unsupported raw modern color functions to dynamic active theme accents/texts
-        const keywords = ["oklch(", "oklab(", "color-mix(", "light-dark("];
-        for (const keyword of keywords) {
-          let index = result.toLowerCase().indexOf(keyword);
-          while (index !== -1) {
-            let parenCount = 1;
-            let j = index + keyword.length;
-            while (j < result.length && parenCount > 0) {
-              if (result[j] === '(') {
-                parenCount++;
-              } else if (result[j] === ')') {
-                parenCount--;
-              }
-              j++;
-            }
-            
-            if (parenCount === 0) {
-              const before = result.substring(0, index);
-              const after = result.substring(j);
-              
-              // Smart fallbacks based on context: if the keyword is near something, or default to general accent / primary
-              let fallbackColor = activeTheme.accent;
-              const snip = result.substring(Math.max(0, index - 40), index).toLowerCase();
-              if (snip.includes("border") || snip.includes("stroke")) {
-                fallbackColor = activeTheme.accent;
-              } else if (snip.includes("background") || snip.includes("fill")) {
-                fallbackColor = activeTheme.bg;
-              } else if (snip.includes("color") || snip.includes("text")) {
-                fallbackColor = activeTheme.testPrimary;
-              }
-              
-              result = before + fallbackColor + after;
-              index = result.toLowerCase().indexOf(keyword, index);
-            } else {
-              index = result.toLowerCase().indexOf(keyword, index + 1);
-            }
-          }
-        }
-        return result;
-      };
-
-      // Store original transform and scale
-      const origTransform = card.style.transform;
-      // Unset transform temporarily for crisp extraction
-      card.style.transform = "none";
-
-      const canvas = await html2canvas(card, {
-        scale: 2, // 2x resolution for retina-sharp text and charts
-        useCORS: true,
-        backgroundColor: activeTheme.bg || "#050505", // Matches selected theme background perfectly
-        logging: false,
-        onclone: (clonedDoc) => {
-          // Remove/replace unsupported modern CSS oklch, oklab, color-mix and light-dark colors from stylesheet content
-          const styles = clonedDoc.getElementsByTagName("style");
-          for (let i = 0; i < styles.length; i++) {
-            const style = styles[i];
-            if (style.textContent) {
-              style.textContent = replaceColorFunctions(style.textContent);
-            }
-          }
-
-          // Fetch external link stylesheets, replace color functions, and turn them into styled inline blocks
-          const links = Array.from(clonedDoc.getElementsByTagName("link"));
-          for (const link of links) {
-            if (link.getAttribute("rel") === "stylesheet") {
-              const href = link.getAttribute("href");
-              if (href) {
-                try {
-                  const xhr = new XMLHttpRequest();
-                  xhr.open("GET", href, false); // synchronous call to block safely inside onclone worker context
-                  xhr.send();
-                  if (xhr.status === 200) {
-                    const cssContent = replaceColorFunctions(xhr.responseText);
-                    const styleEl = clonedDoc.createElement("style");
-                    styleEl.textContent = cssContent;
-                    clonedDoc.head.appendChild(styleEl);
-                    link.remove();
-                  }
-                } catch (e) {
-                  console.error("Failed to replace link stylesheet color functions inside onclone:", href, e);
-                }
-              }
-            }
-          }
-
-          // Scrub oklch/oklab from elements' inline style, fill, and stroke attributes
-          const allElements = clonedDoc.getElementsByTagName("*");
-          for (let i = 0; i < allElements.length; i++) {
-            const el = allElements[i];
-            const styleAttr = el.getAttribute("style");
-            if (styleAttr && (styleAttr.toLowerCase().includes("oklch") || styleAttr.toLowerCase().includes("oklab") || styleAttr.toLowerCase().includes("color-mix") || styleAttr.toLowerCase().includes("light-dark"))) {
-              el.setAttribute("style", replaceColorFunctions(styleAttr));
-            }
-
-            const fillAttr = el.getAttribute("fill");
-            if (fillAttr && (fillAttr.toLowerCase().includes("oklch") || fillAttr.toLowerCase().includes("oklab") || fillAttr.toLowerCase().includes("color-mix") || fillAttr.toLowerCase().includes("light-dark"))) {
-              el.setAttribute("fill", replaceColorFunctions(fillAttr));
-            }
-
-            const strokeAttr = el.getAttribute("stroke");
-            if (strokeAttr && (strokeAttr.toLowerCase().includes("oklch") || strokeAttr.toLowerCase().includes("oklab") || strokeAttr.toLowerCase().includes("color-mix") || strokeAttr.toLowerCase().includes("light-dark"))) {
-              el.setAttribute("stroke", replaceColorFunctions(strokeAttr));
-            }
-
-            // Hide gradient overlays and decorative scans that break html2canvas/PDF output
-            const cl = el.className;
-            if (typeof cl === "string" && cl.includes("bg-gradient-") && cl.includes("pointer-events-none")) {
-              const domEl = el as any;
-              if (domEl.style) {
-                domEl.style.display = "none";
-              }
-            }
-          }
-        },
-      });
-
-      // Restore original transform
-      card.style.transform = origTransform;
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-
-      // Create PDF in A4 size or dynamically scaled size to match layout aspect ratio perfectly
-      const pdfWidth = 595; // base A4 width in pt
-      const pdfHeight = (imgHeight / imgWidth) * pdfWidth;
-
-      const doc = new jsPDF({
-        orientation: pdfHeight > pdfWidth ? "portrait" : "landscape",
-        unit: "pt",
-        format: [pdfWidth, pdfHeight],
-      });
-
-      doc.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-      
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
-      const formattedDate = `${year}-${month}-${day}`;
-      doc.save(`Gym_${formattedDate}.pdf`);
-      
-      setToast({ message: "🏆 PDF Report exported successfully!", type: "success" });
-    } catch (error) {
-      console.error("PDF generation failed:", error);
-      setToast({ message: "Failed to generate PDF. Please try again.", type: "info" });
-    } finally {
-      setIsExportingReport(false);
-    }
   };
 
   const handleExportRoutinesAsImage = async () => {
@@ -2953,6 +2696,237 @@ export default function App() {
       setToast({ message: "Failed to generate preview image.", type: "info" });
     } finally {
       setIsExportingRoutines(false);
+    }
+  };
+
+  const totalVolume = useMemo(() => {
+    let volume = 0;
+    archivedWorkouts.forEach((w) => {
+      if (w.sets && Array.isArray(w.sets)) {
+        w.sets.forEach((s: any) => {
+          const weight = Number(s.weight) || 0;
+          const reps = Number(s.reps) || 0;
+          volume += weight * reps;
+        });
+      }
+    });
+    return volume;
+  }, [archivedWorkouts]);
+
+  const totalReps = useMemo(() => {
+    let reps = 0;
+    archivedWorkouts.forEach((w) => {
+      if (w.sets && Array.isArray(w.sets)) {
+        w.sets.forEach((s: any) => {
+          reps += Number(s.reps) || 0;
+        });
+      }
+    });
+    return reps;
+  }, [archivedWorkouts]);
+
+  const totalCaloriesBurnedAllTime = useMemo(() => {
+    let cals = 0;
+    archivedWorkouts.forEach((w) => {
+      if (w.calories) {
+        cals += Number(w.calories);
+      } else if (w.sets && Array.isArray(w.sets)) {
+        cals += calculateCaloriesBurned(w.sets, profile);
+      }
+    });
+    return Math.round(cals);
+  }, [archivedWorkouts, profile]);
+
+  const weightDiffCalc = useMemo(() => {
+    const startWeight = weightHistory.length > 0 ? weightHistory[0].weight : (profile?.bodyweight || 75);
+    const currentWeight = profile?.bodyweight || (weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : 75);
+    const diff = currentWeight - startWeight;
+    const diffStr = diff > 0 ? `+${diff.toFixed(1)}` : diff < 0 ? `${diff.toFixed(1)}` : "±0.0";
+    return { startWeight, currentWeight, diff, diffStr };
+  }, [weightHistory, profile]);
+
+  const bodyFatDiffCalc = useMemo(() => {
+    const startFat = bodyFatHistory.length > 0 ? bodyFatHistory[0].bodyFatPercent : (profile?.bodyFatPercent || 15);
+    const currentFat = profile?.bodyFatPercent || (bodyFatHistory.length > 0 ? bodyFatHistory[bodyFatHistory.length - 1].bodyFatPercent : 15);
+    const diff = currentFat - startFat;
+    const diffStr = diff > 0 ? `+${diff.toFixed(1)}` : diff < 0 ? `${diff.toFixed(1)}` : "±0.0";
+    return { startFat, currentFat, diff, diffStr };
+  }, [bodyFatHistory, profile]);
+
+  const handleExportStatsImage = async () => {
+    if (isExportingStatsImage) return;
+    setIsExportingStatsImage(true);
+    try {
+      const card = document.getElementById("progress-statistics-capture");
+      if (!card) {
+        setToast({ message: "Progress statistics element not found.", type: "info" });
+        setIsExportingStatsImage(false);
+        return;
+      }
+
+      // Store original transform and scaling to make it look stunningly clean on export
+      const origTransform = card.style.transform;
+      card.style.transform = "none";
+
+      const canvas = await html2canvas(card, {
+        scale: 2.0, // Crisp high-definition text for mobile screens
+        useCORS: true,
+        backgroundColor: "#050505", // Deep slate aesthetic background matches dark theme
+        logging: false,
+        windowWidth: 1080,
+        windowHeight: 1080,
+        onclone: (clonedDoc) => {
+          // Helper function inside to replace oklch, oklab, color-mix and light-dark with valid simple rgb/hex colors
+          const replaceColorFunctionsLocal = (cssText: string): string => {
+            let result = cssText;
+            result = result
+              .replace(/var\(--gym-accent\)/g, activeTheme.accent)
+              .replace(/var\(--gym-accent-light\)/g, activeTheme.accentLight)
+              .replace(/var\(--gym-accent-dark\)/g, activeTheme.accentDark)
+              .replace(/var\(--gym-accent-rgb\)/g, activeTheme.accentRgb)
+              .replace(/var\(--theme-text\)/g, activeTheme.testPrimary)
+              .replace(/var\(--theme-text-muted\)/g, activeTheme.testMuted)
+              .replace(/var\(--theme-text-subtle\)/g, activeTheme.testSubtle)
+              .replace(/var\(--color-gym-accent\)/g, activeTheme.accent)
+              .replace(/var\(--color-gym-accent-light\)/g, activeTheme.accentLight)
+              .replace(/var\(--color-gym-accent-dark\)/g, activeTheme.accentDark)
+              .replace(/var\(--color-theme-text\)/g, activeTheme.testPrimary)
+              .replace(/var\(--color-theme-text-muted\)/g, activeTheme.testMuted)
+              .replace(/var\(--color-theme-text-subtle\)/g, activeTheme.testSubtle);
+
+            const keywords = ["oklch(", "oklab(", "color-mix(", "light-dark("];
+            for (const keyword of keywords) {
+              let index = result.toLowerCase().indexOf(keyword);
+              while (index !== -1) {
+                let parenCount = 1;
+                let j = index + keyword.length;
+                while (j < result.length && parenCount > 0) {
+                  if (result[j] === '(') {
+                    parenCount++;
+                  } else if (result[j] === ')') {
+                    parenCount--;
+                  }
+                  j++;
+                }
+                
+                if (parenCount === 0) {
+                  const before = result.substring(0, index);
+                  const after = result.substring(j);
+                  
+                  let fallbackColor = activeTheme.accent;
+                  const snip = result.substring(Math.max(0, index - 40), index).toLowerCase();
+                  if (snip.includes("border") || snip.includes("stroke")) {
+                    fallbackColor = activeTheme.accent;
+                  } else if (snip.includes("background") || snip.includes("fill")) {
+                    fallbackColor = activeTheme.bg;
+                  } else if (snip.includes("color") || snip.includes("text")) {
+                    fallbackColor = activeTheme.testPrimary;
+                  }
+                  
+                  result = before + fallbackColor + after;
+                  index = result.toLowerCase().indexOf(keyword, index);
+                } else {
+                  index = result.toLowerCase().indexOf(keyword, index + 1);
+                }
+              }
+            }
+            return result;
+          };
+
+          const styles = clonedDoc.getElementsByTagName("style");
+          for (let i = 0; i < styles.length; i++) {
+            const style = styles[i];
+            if (style.textContent) {
+              style.textContent = replaceColorFunctionsLocal(style.textContent);
+            }
+          }
+
+          // Fetch link stylesheets
+          const links = Array.from(clonedDoc.getElementsByTagName("link"));
+          for (const link of links) {
+            if (link.getAttribute("rel") === "stylesheet") {
+              const href = link.getAttribute("href");
+              if (href) {
+                try {
+                  const xhr = new XMLHttpRequest();
+                  xhr.open("GET", href, false);
+                  xhr.send();
+                  if (xhr.status === 200) {
+                    const cssContent = replaceColorFunctionsLocal(xhr.responseText);
+                    const styleEl = clonedDoc.createElement("style");
+                    styleEl.textContent = cssContent;
+                    clonedDoc.head.appendChild(styleEl);
+                    link.remove();
+                  }
+                } catch (e) {
+                  console.error("Failed to replace link style:", href, e);
+                }
+              }
+            }
+          }
+
+          // Force clean dimensions and background on the captured container in the clone
+          const clonedElement = clonedDoc.getElementById("progress-statistics-capture");
+          if (clonedElement) {
+            clonedElement.style.position = "static";
+            clonedElement.style.left = "0";
+            clonedElement.style.top = "0";
+            clonedElement.style.width = "1080px";
+            clonedElement.style.height = "1080px";
+            clonedElement.style.boxSizing = "border-box";
+            clonedElement.style.padding = "60px";
+            clonedElement.style.background = "#050505";
+            clonedElement.style.display = "flex";
+            clonedElement.style.flexDirection = "column";
+
+            // Prevent any fade-in or transition opacity from hiding/ghosting elements in the captured image
+            const allSubElements = clonedElement.querySelectorAll("*");
+            allSubElements.forEach((el: any) => {
+              el.style.animation = "none";
+              el.style.transition = "none";
+              el.style.opacity = "1";
+              el.style.visibility = "visible";
+            });
+          }
+
+          // Remove any unblurred ambient glow circles that turn into solid black/accent shapes inside canvas renderers
+          const blurElements = clonedDoc.querySelectorAll('[class*="blur-"], [class*="rounded-full"][class*="bg-gym-accent/"]');
+          blurElements.forEach(el => el.remove());
+
+          // Scrub oklch
+          const allElements = clonedDoc.getElementsByTagName("*");
+          for (let i = 0; i < allElements.length; i++) {
+            const el = allElements[i];
+            const styleAttr = el.getAttribute("style");
+            if (styleAttr && (styleAttr.toLowerCase().includes("oklch") || styleAttr.toLowerCase().includes("oklab") || styleAttr.toLowerCase().includes("color-mix") || styleAttr.toLowerCase().includes("light-dark"))) {
+              el.setAttribute("style", replaceColorFunctionsLocal(styleAttr));
+            }
+
+            const fillAttr = el.getAttribute("fill");
+            if (fillAttr && (fillAttr.toLowerCase().includes("oklch") || fillAttr.toLowerCase().includes("oklab") || fillAttr.toLowerCase().includes("color-mix") || fillAttr.toLowerCase().includes("light-dark"))) {
+              el.setAttribute("fill", replaceColorFunctionsLocal(fillAttr));
+            }
+
+            const strokeAttr = el.getAttribute("stroke");
+            if (strokeAttr && (strokeAttr.toLowerCase().includes("oklch") || strokeAttr.toLowerCase().includes("oklab") || strokeAttr.toLowerCase().includes("color-mix") || strokeAttr.toLowerCase().includes("light-dark"))) {
+              el.setAttribute("stroke", replaceColorFunctionsLocal(strokeAttr));
+            }
+          }
+        }
+      });
+
+      card.style.transform = origTransform;
+
+      // Generate PNG format for lossless sharp text
+      const imgData = canvas.toDataURL("image/png");
+      setStatsImagePreviewUrl(imgData);
+      setShowStatsPreviewModal(true);
+      setToast({ message: "✨ Shareable Stats Card Generated! Save or share it below.", type: "success" });
+    } catch (err) {
+      console.error("Error generating statistics share card:", err);
+      setToast({ message: "Failed to generate preview image.", type: "info" });
+    } finally {
+      setIsExportingStatsImage(false);
     }
   };
 
@@ -12098,16 +12072,29 @@ export default function App() {
                   );
                 })()}
 
-                {/* Progress Report Trigger Button */}
-                <div className="flex justify-center pt-8 pb-4">
+                {/* Stats Image Button */}
+                <div className="flex flex-col items-center gap-4 pt-8 pb-4">
                   <button
                     type="button"
-                    onClick={() => setShowProgressReport(true)}
-                    className="px-8 py-4 bg-gradient-to-r from-gym-accent to-gym-accent-light text-black hover:brightness-110 transition-all font-black uppercase tracking-widest text-xs rounded-md cursor-pointer accent-shadow-btn flex items-center gap-2.5 active:scale-[0.98]"
+                    onClick={handleExportStatsImage}
+                    disabled={isExportingStatsImage}
+                    className="px-8 py-4 bg-transparent border border-gym-accent/35 text-gym-accent hover:bg-gym-accent/10 hover:border-gym-accent/60 transition-all font-black uppercase tracking-widest text-xs rounded-md cursor-pointer flex items-center gap-2.5 active:scale-[0.98] disabled:opacity-50"
                   >
-                    <Trophy className="w-4 h-4 text-black animate-pulse" />
-                    Generate Progress Report
+                    {isExportingStatsImage ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-gym-accent/30 border-t-gym-accent rounded-full animate-spin" />
+                        Generating Infographic...
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="w-4 h-4 text-gym-accent" />
+                        Generate Shareable Stats Card
+                      </>
+                    )}
                   </button>
+                  <p className="text-[10px] text-white/30 uppercase tracking-widest font-mono text-center max-w-md mt-1 leading-relaxed">
+                    Capture your lifetime stats & strength balance as an aesthetic high-definition shareable matrix.
+                  </p>
                 </div>
               </motion.div>
             ) : activeView === "anatomy" ? (
@@ -16413,6 +16400,314 @@ export default function App() {
           )}
         </AnimatePresence>
 
+        {/* Progress Statistics Capture Element (Off-screen) */}
+        <div
+          id="progress-statistics-capture"
+          style={{
+            position: "fixed",
+            left: "-9999px",
+            top: "-9999px",
+            width: "1080px",
+            height: "1080px",
+            display: "flex",
+            flexDirection: "column",
+            boxSizing: "border-box",
+            padding: "60px",
+            background: "#050505",
+            color: "#ffffff",
+            fontFamily: "Inter, sans-serif",
+            zIndex: -100,
+          }}
+          className="relative border-4 border-gym-accent/20 overflow-hidden"
+        >
+          {/* Cyberpunk ambient lines */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-gym-accent via-gym-accent-light to-gym-accent" />
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-gym-accent via-gym-accent-light to-gym-accent" />
+          
+          {/* Diagonal corner scans */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/[0.03] rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-44 h-44 bg-gym-accent/[0.03] rounded-full blur-3xl pointer-events-none" />
+
+          {/* Header Section */}
+          <div className="flex justify-between items-start border-b-2 border-white/10 pb-6 mb-8">
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gym-accent/10 border border-gym-accent/30 rounded-lg flex items-center justify-center text-gym-accent">
+                  <Trophy className="w-6 h-6 animate-pulse" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-black tracking-widest uppercase text-white font-sans flex items-center gap-2">
+                    TITAN EVOLUTION <span className="text-gym-accent">MATRIX</span>
+                  </h1>
+                  <p className="text-[10px] text-white/40 tracking-[0.3em] font-mono font-bold uppercase mt-0.5">
+                    ATHLETIC TELEMETRY PROTOCOL
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="text-right font-mono">
+              <div className="text-xs text-white/40 uppercase tracking-widest">RECORD SECURED</div>
+              <div className="text-sm font-bold text-gym-accent mt-0.5 tracking-wider">
+                {new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
+              </div>
+            </div>
+          </div>
+
+          {/* Top Section: Biometric Evolution comparison */}
+          <div className="bg-white/[0.02] border border-white/5 rounded-xl p-6 mb-8 relative overflow-hidden">
+            <span className="text-[9px] text-white/30 tracking-[0.25em] font-bold uppercase block mb-4">
+              BIOMETRIC EVOLUTION READOUT // BASELINE COMPARISON
+            </span>
+            <div className="grid grid-cols-2 gap-8">
+              {/* Weight Block */}
+              <div className="flex justify-between items-center bg-black/45 border border-white/5 p-4 rounded-lg relative overflow-hidden">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-white/40 font-mono uppercase block tracking-wider">WEIGHT TRACKING</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[9px] text-white/30 font-mono uppercase">START:</span>
+                    <span className="text-sm font-mono text-white/60">{weightDiffCalc.startWeight.toFixed(1)} <span className="text-[10px] text-white/40">kg</span></span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[9px] text-gym-accent font-mono uppercase">CURRENT:</span>
+                    <span className="text-2xl font-mono text-white font-black">{weightDiffCalc.currentWeight.toFixed(1)} <span className="text-xs font-light text-white/40">kg</span></span>
+                  </div>
+                </div>
+                <div className="text-right flex flex-col items-end justify-center">
+                  <span className="text-[9px] text-white/30 font-mono uppercase tracking-widest block mb-1">TOTAL CHANGE</span>
+                  <span className={`text-2xl font-mono font-black ${weightDiffCalc.diff < 0 ? 'text-emerald-400' : weightDiffCalc.diff > 0 ? 'text-rose-400' : 'text-white/60'}`}>
+                    {weightDiffCalc.diffStr} <span className="text-xs font-light">kg</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Body Fat Block */}
+              <div className="flex justify-between items-center bg-black/45 border border-white/5 p-4 rounded-lg relative overflow-hidden">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-white/40 font-mono uppercase block tracking-wider">BODY FAT PROGRESS</span>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[9px] text-white/30 font-mono uppercase">START:</span>
+                    <span className="text-sm font-mono text-white/60">{bodyFatDiffCalc.startFat.toFixed(1)}<span className="text-[10px] text-white/40">%</span></span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[9px] text-gym-accent font-mono uppercase">CURRENT:</span>
+                    <span className="text-2xl font-mono text-gym-accent font-black">{bodyFatDiffCalc.currentFat.toFixed(1)}<span className="text-xs font-light text-gym-accent/40">%</span></span>
+                  </div>
+                </div>
+                <div className="text-right flex flex-col items-end justify-center">
+                  <span className="text-[9px] text-white/30 font-mono uppercase tracking-widest block mb-1">TOTAL CHANGE</span>
+                  <span className={`text-2xl font-mono font-black ${bodyFatDiffCalc.diff < 0 ? 'text-emerald-400' : bodyFatDiffCalc.diff > 0 ? 'text-rose-400' : 'text-white/60'}`}>
+                    {bodyFatDiffCalc.diffStr}<span className="text-xs font-light">%</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/[0.01] rounded-full blur-2xl pointer-events-none" />
+          </div>
+
+          {/* Middle Section: Bento Stats Grid */}
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            {/* Total Workouts */}
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex justify-between items-start">
+                <span className="text-[9px] text-white/30 tracking-[0.25em] font-bold uppercase">CONSISTENCY</span>
+                <Calendar className="w-4 h-4 text-gym-accent" />
+              </div>
+              <div className="mt-4">
+                <span className="text-3xl font-mono text-white font-bold tracking-tight">
+                  {archivedWorkouts.length}
+                </span>
+                <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest block mt-0.5">COMPLETED SESSIONS</span>
+              </div>
+            </div>
+
+            {/* Total Volume */}
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex justify-between items-start">
+                <span className="text-[9px] text-white/30 tracking-[0.25em] font-bold uppercase">VOLUME LOADED</span>
+                <Dumbbell className="w-4 h-4 text-gym-accent" />
+              </div>
+              <div className="mt-4">
+                <span className="text-3xl font-mono text-white font-bold tracking-tight">
+                  {totalVolume.toLocaleString()}
+                </span>
+                <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest block mt-0.5 font-sans">TOTAL KG LIFTED</span>
+              </div>
+            </div>
+
+            {/* Total Reps */}
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex justify-between items-start">
+                <span className="text-[9px] text-white/30 tracking-[0.25em] font-bold uppercase">TOTAL REPETITIONS</span>
+                <Activity className="w-4 h-4 text-gym-accent" />
+              </div>
+              <div className="mt-4">
+                <span className="text-3xl font-mono text-white font-bold tracking-tight">
+                  {totalReps.toLocaleString()}
+                </span>
+                <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest block mt-0.5 font-sans">REPS COMPLETED</span>
+              </div>
+            </div>
+
+            {/* Calories Burned */}
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex justify-between items-start">
+                <span className="text-[9px] text-white/30 tracking-[0.25em] font-bold uppercase">METABOLIC BURN</span>
+                <Flame className="w-4 h-4 text-gym-accent" />
+              </div>
+              <div className="mt-4">
+                <span className="text-3xl font-mono text-white font-bold tracking-tight">
+                  {totalCaloriesBurnedAllTime.toLocaleString()}
+                </span>
+                <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest block mt-0.5 font-sans">TOTAL KCAL SPENT</span>
+              </div>
+            </div>
+
+            {/* Personal Records */}
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex justify-between items-start">
+                <span className="text-[9px] text-white/30 tracking-[0.25em] font-bold uppercase">RECORDS CLAIMED</span>
+                <Medal className="w-4 h-4 text-gym-accent" />
+              </div>
+              <div className="mt-4">
+                <span className="text-3xl font-mono text-white font-bold tracking-tight">
+                  {Object.keys(personalBests).length}
+                </span>
+                <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest block mt-0.5 font-sans">PERSONAL RECORD BESTS</span>
+              </div>
+            </div>
+
+            {/* Streak */}
+            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-5 flex flex-col justify-between relative overflow-hidden group">
+              <div className="flex justify-between items-start">
+                <span className="text-[9px] text-white/30 tracking-[0.25em] font-bold uppercase">CURRENT MOTIVATION</span>
+                <Zap className="w-4 h-4 text-gym-accent" />
+              </div>
+              <div className="mt-4">
+                <span className="text-3xl font-mono text-white font-bold tracking-tight">
+                  {profile?.streakCount || 0}
+                </span>
+                <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest block mt-0.5 font-sans">CURRENT DAY STREAK</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Section: Muscle Group Strength Growth Balance */}
+          <div className="bg-white/[0.02] border border-white/5 rounded-xl p-6 flex-1 flex flex-col justify-between relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/[0.01] rounded-full blur-2xl" />
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-[10px] text-white/40 font-mono tracking-widest uppercase font-bold">BIOMECHANICAL POWER STANDARDS // GROWTH STRENGTH PROFILE</span>
+              <span className="text-[9px] text-gym-accent bg-gym-accent/10 border border-gym-accent/20 px-2 py-0.5 font-mono uppercase">1RM Baseline vs Peak</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+              {muscleGroupStrengthData.map((data, index) => {
+                const growthValue = Math.max(0, data.value - 100);
+                const percentFilled = Math.min(100, Math.max(5, (data.value / 150) * 100)); // normalized so 150% fills the bar
+                return (
+                  <div key={data.axis} className="flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center text-xs font-mono">
+                      <span className="text-white/70 font-bold uppercase tracking-wider">{data.axis}</span>
+                      <span className="text-gym-accent font-bold flex items-center gap-1">
+                        <span>{data.value.toFixed(1)}%</span>
+                        {growthValue > 0 && <span className="text-[9px] text-emerald-400 font-light">(+{growthValue.toFixed(1)}%)</span>}
+                      </span>
+                    </div>
+                    <div className="w-full h-3 bg-black/60 rounded-sm overflow-hidden relative border border-white/[0.05]">
+                      <div 
+                        className="h-full bg-gradient-to-r from-gym-accent/60 to-gym-accent" 
+                        style={{ width: `${percentFilled}%` }}
+                      />
+                      <div className="absolute top-0 bottom-0 left-[66.6%] w-[1px] bg-white/20" title="Baseline 100%" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Platform Stamp Footer */}
+            <div className="flex justify-between items-center mt-6 pt-4 border-t border-white/5 text-[9px] text-white/20 font-mono tracking-widest">
+              <span>SYSTEM ENERGETICS // ENGINE v2.4</span>
+              <span>CRAFTED IN THE IRON TEMPLE</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Share Preview Modal */}
+        <AnimatePresence>
+          {showStatsPreviewModal && statsImagePreviewUrl && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 font-sans">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowStatsPreviewModal(false)}
+                className="absolute inset-0 bg-black/95 backdrop-blur-md"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-lg overflow-hidden flex flex-col shadow-2xl z-50 max-h-[90vh]"
+              >
+                {/* Modal Header */}
+                <div className="p-5 border-b border-white/5 relative flex items-center justify-between shrink-0">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-3xl" />
+                  <div>
+                    <h3 className="text-lg font-light italic font-serif text-white">
+                      Your Shareable <span className="text-gym-accent non-italic font-sans font-bold font-mono">Titan Statistics Card</span>
+                    </h3>
+                    <p className="text-[9px] text-white/40 uppercase tracking-widest font-mono">
+                      High-definition evolution matrix // optimized for sharing
+                    </p>
+                  </div>
+                </div>
+
+                {/* Mobile Instructions banner */}
+                <div className="bg-gym-accent/10 border-b border-gym-accent/20 px-5 py-3 flex items-start gap-3 text-[11px] leading-relaxed text-white/80 shrink-0">
+                  <span className="text-base shrink-0">📱</span>
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-gym-accent uppercase tracking-wide">Instructions:</p>
+                    <p>
+                      <strong>Tap and hold (long-press)</strong> on mobile or <strong>right-click</strong> on desktop to save or share your statistics card.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Preview Image Container */}
+                <div 
+                  className="overflow-y-auto flex-1 bg-black/40 p-4 scrollbar-thin scrollbar-thumb-white/10"
+                  style={{ 
+                    WebkitOverflowScrolling: "touch",
+                    touchAction: "pan-y"
+                  }}
+                >
+                  <div className="flex flex-col items-center justify-start min-h-0 py-1">
+                    <div className="border border-white/10 rounded-md overflow-hidden bg-[#050505] shadow-2xl max-w-full aspect-square w-full max-w-lg">
+                      <img
+                        src={statsImagePreviewUrl}
+                        alt="My Titan Statistics"
+                        referrerPolicy="no-referrer"
+                        className="w-full h-auto block mx-auto rounded-sm select-all"
+                        style={{ display: "block", maxHeight: "none" }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Footer */}
+                <div className="p-5 border-t border-white/5 bg-white/[0.01] flex items-center justify-end gap-4 shrink-0">
+                  <button
+                    onClick={() => setShowStatsPreviewModal(false)}
+                    className="w-full sm:w-auto px-8 py-2.5 border border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-white text-[10px] font-mono font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer whitespace-nowrap"
+                  >
+                    Close Preview
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
         {/* Modify / Tweak Custom Routine Options Modal */}
         <AnimatePresence>
           {showSaveRoutineModal && (
@@ -18107,828 +18402,6 @@ export default function App() {
               </motion.div>
             </div>
           )}
-        </AnimatePresence>
-
-        {/* Progress Report Modal Overlay */}
-        <AnimatePresence>
-          {showProgressReport &&
-            (() => {
-              const totalLifetimeVolume = archivedWorkouts.reduce(
-                (sum, w) => sum + (w.totalVolume || 0),
-                0,
-              );
-              const milestones = [
-                { target: 10000, label: "Novice" },
-                { target: 100000, label: "Warrior" },
-                { target: 500000, label: "Titan" },
-                { target: 1000000, label: "Immortal" },
-              ];
-              const currentMilestoneIndex = milestones.findIndex(
-                (m) => totalLifetimeVolume < m.target,
-              );
-              const isMaxed = currentMilestoneIndex === -1;
-              const currentRankName = isMaxed
-                ? "Immortal Legend"
-                : milestones[
-                    currentMilestoneIndex === -1
-                      ? 3
-                      : Math.max(0, currentMilestoneIndex - 1)
-                  ].label;
-
-              const OUTFITS_MAP: Record<string, string> = {
-                vanguard_cadet: "Vanguard Cadet",
-                naruto: "Naruto",
-                sasuke: "Sasuke",
-                jinwoo: "Sung Jin Woo",
-                goku: "Goku",
-                kaiju8: "Kaiju No. 8",
-                beerus: "Beerus",
-              };
-
-              const AVATAR_IMAGES: Record<string, string> = {
-                vanguard_cadet: imgVanguardDefault,
-              };
-
-              const activeOutfitId =
-                profile?.equippedOutfit || "vanguard_cadet";
-              const avatarImg =
-                avatarImgBase64 || AVATAR_IMAGES[activeOutfitId] || imgVanguardDefault;
-
-              return (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 sm:p-6 bg-black/95 backdrop-blur-md overflow-hidden">
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setShowProgressReport(false)}
-                    className="absolute inset-0 z-0 cursor-pointer"
-                  />
-
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: 40 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: 40 }}
-                    className="relative z-10 w-full max-w-4xl max-h-[92vh] flex flex-col bg-[#050505] border border-white/10 rounded-md shadow-2xl overflow-hidden"
-                  >
-                    {/* Modal Top Ribbon Controls */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/50 backdrop-blur-md">
-                      <div className="flex items-center gap-3">
-                        <Trophy className="w-4 h-4 text-gym-accent animate-pulse" />
-                        <div>
-                          <h3 className="text-xs font-black uppercase tracking-widest text-white">
-                            Progress Report Card
-                          </h3>
-                          <p className="text-[9px] text-white/30 uppercase tracking-widest font-mono">
-                            Archive Identity Sheet
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setShowProgressReport(false)}
-                          className="px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-black uppercase tracking-widest text-[10px] rounded-md transition-all hover:brightness-110 active:scale-95 flex items-center gap-2 cursor-pointer shadow-lg shadow-white/5"
-                        >
-                          Close
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Report Card Viewer */}
-                    <div className="p-4 sm:p-6 flex-1 overflow-y-auto no-scrollbar bg-black/40 flex justify-center items-[normal]">
-                      {/* Outer scaling wrapper for clean representation of the fixed widescreen poster */}
-                      <div
-                        id="progress-report-container"
-                        className="w-full overflow-hidden flex justify-center items-start py-4"
-                        style={
-                          reportCardHeight
-                            ? {
-                                height: `${reportCardHeight * reportCardScale}px`,
-                              }
-                            : {}
-                        }
-                      >
-                        {/* The snapshot report card container */}
-                        <div
-                          id="progress-report-card"
-                          style={{
-                            transform: `scale(${reportCardScale})`,
-                            transformOrigin: "top center",
-                            width: "780px",
-                            backgroundColor: activeTheme.bg || "#050505",
-                          }}
-                          className="p-8 border border-gym-accent/25 rounded-md flex flex-col gap-6 font-sans shrink-0 text-white relative select-none"
-                        >
-                          {/* Corner Tech Anchors */}
-                          <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-gym-accent/40" />
-                          <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-gym-accent/40" />
-                          <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-gym-accent/40" />
-                          <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-gym-accent/40" />
-
-                          {/* Poster Header */}
-                          <div className="flex items-center justify-between border-b border-white/5 pb-5 relative">
-                            <div className="absolute top-0 left-12 w-32 h-[1px] bg-gradient-to-r from-gym-accent/30 to-transparent" />
-                            <div>
-                              <span className="text-xs font-mono font-bold tracking-[0.4em] text-gym-accent uppercase block">
-                                TEMPLE INTELLIGENCE RECORD
-                              </span>
-                              <h2 className="text-2xl font-light italic font-serif tracking-tight text-white uppercase mt-0.5">
-                                THE IRON ARCHIVE
-                              </h2>
-                            </div>
-                            <div className="text-right font-mono text-[11px] text-white leading-relaxed font-medium">
-                              <div>
-                                TIMESTAMP:{" "}
-                                {new Date()
-                                  .toLocaleDateString("en-GB", {
-                                    day: "2-digit",
-                                    month: "short",
-                                    year: "numeric",
-                                  })
-                                  .toUpperCase()}
-                              </div>
-                              <div className="text-gym-accent font-bold">
-                                ARCHIVE SEC : #
-                                {Math.floor(Math.random() * 90000) + 10000}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Metrics Card Row */}
-                          <div className="grid grid-cols-12 gap-5 items-stretch">
-                            {/* Avatar Column */}
-                            <div className="col-span-4 bg-white/[0.015] border border-white/10 rounded-md p-4 flex flex-col items-center justify-between text-center relative overflow-hidden">
-                              <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase block">
-                                AVATAR SPECIMEN
-                              </span>
-
-                              {/* Image Box - Converted to elegant rectangular dossier avatar display card */}
-                              <div className="w-[136px] h-[170px] rounded-md bg-black/50 border border-gym-accent/30 overflow-hidden flex items-center justify-center my-4 relative shadow-inner">
-                                {avatarImg ? (
-                                  <img
-                                    src={avatarImg}
-                                    alt="Avatar spec"
-                                    className="w-full h-full object-cover"
-                                    referrerPolicy="no-referrer"
-                                    crossOrigin="anonymous"
-                                  />
-                                ) : (
-                                  <UserIcon className="w-12 h-12 text-white/10" />
-                                )}
-                                {/* Technical scan lines overlay effect */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent pointer-events-none" />
-                                <div className="absolute top-0 inset-x-0 h-[1px] bg-gym-accent/20" />
-                                <div className="absolute bottom-0 inset-x-0 h-[1px] bg-gym-accent/20" />
-                                
-                                {/* Corner indicators inside the rectangle card */}
-                                <div className="absolute top-1 left-1 w-1.5 h-1.5 border-t border-l border-gym-accent/40" />
-                                <div className="absolute top-1 right-1 w-1.5 h-1.5 border-t border-r border-gym-accent/40" />
-                                <div className="absolute bottom-1 left-1 w-1.5 h-1.5 border-b border-l border-gym-accent/40" />
-                                <div className="absolute bottom-1 right-1 w-1.5 h-1.5 border-b border-r border-gym-accent/40" />
-
-                                {/* Floating Level */}
-                                <div className="absolute bottom-2 font-mono font-bold text-[11px] text-gym-accent tracking-widest uppercase">
-                                  LVL {profile?.avatarLevel ?? 1}
-                                </div>
-                              </div>
-
-                              <div className="space-y-0.5">
-                                <h4 className="text-base font-light italic font-serif text-white">
-                                  {profile?.displayName ||
-                                    currentUser?.displayName ||
-                                    "Athlete Specimen"}
-                                </h4>
-                                <span className="text-[11px] font-mono tracking-widest text-gym-accent uppercase block">
-                                  {OUTFITS_MAP[activeOutfitId] ||
-                                    "Vanguard Cadet"}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Numeric Profile Matrix */}
-                            <div className="col-span-8 bg-white/[0.015] border border-white/10 rounded-md p-5 flex flex-col justify-between relative overflow-hidden">
-                              <div>
-                                <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase block">
-                                  METRIC CONSOLE
-                                </span>
-
-                                <div className="grid grid-cols-2 gap-x-6 gap-y-4 mt-4">
-                                  <div className="space-y-0.5 pb-2 border-b border-white/5">
-                                    <span className="text-[11px] font-mono font-bold tracking-widest text-white uppercase block">
-                                      Captured Sessions
-                                    </span>
-                                    <span className="text-xl font-bold text-gym-accent font-sans">
-                                      {archivedWorkouts.length} SECURED
-                                    </span>
-                                  </div>
-                                  <div className="space-y-0.5 pb-2 border-b border-white/10">
-                                    <span className="text-[11px] font-mono font-bold tracking-widest text-white uppercase block">
-                                      Volume Lifted
-                                    </span>
-                                    <span className="text-xl font-bold text-gym-accent font-sans">
-                                      {(
-                                        totalLifetimeVolume || 0
-                                      ).toLocaleString()}{" "}
-                                      <span className="text-[11px] text-white font-semibold">
-                                        kg
-                                      </span>
-                                    </span>
-                                  </div>
-                                  <div className="space-y-0.5">
-                                    <span className="text-[11px] font-mono font-bold tracking-widest text-white uppercase block">
-                                      Active Training Days
-                                    </span>
-                                    <span className="text-xl font-bold text-gym-accent font-sans">
-                                      {profile?.streakCount || 0} Streak
-                                    </span>
-                                  </div>
-                                  <div className="space-y-0.5">
-                                    <span className="text-[11px] font-mono font-bold tracking-widest text-white uppercase block">
-                                      Energy Reserves
-                                    </span>
-                                    <span className="text-xl font-bold text-gym-accent font-sans">
-                                      {(
-                                        profile?.avatarCredits || 0
-                                      ).toLocaleString()}{" "}
-                                      CR
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="border-t border-white/5 pt-4 mt-5 flex items-center justify-between">
-                                <div>
-                                  <span className="text-[10px] font-mono font-bold tracking-widest text-white uppercase block">
-                                    RANKING CLASSIFICATION
-                                  </span>
-                                  <span className="text-lg font-serif italic text-gym-accent block leading-none mt-1">
-                                    {currentRankName}
-                                  </span>
-                                </div>
-                                <div className="w-10 h-10 rounded-full border border-gym-accent/20 bg-gym-accent/5 flex items-center justify-center">
-                                  <Trophy className="w-5 h-5 text-gym-accent" />
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Chart Section 1: Physical Progress Area Chart */}
-                          <div className="bg-white/[0.015] border border-white/10 rounded-md p-5 relative overflow-hidden">
-                            <div className="flex items-center justify-between mb-4 relative z-10">
-                              <div>
-                                <span className="text-[10px] font-mono font-bold tracking-widest text-gym-accent uppercase block">
-                                  TIMELINE DATA _01
-                                </span>
-                                <span className="text-xs font-mono font-black text-white uppercase tracking-widest">
-                                  Weight Log Analysis (kg)
-                                </span>
-                              </div>
-                              <span className="text-[10px] font-mono font-bold text-gym-accent uppercase tracking-widest pt-1">
-                                HISTORICAL ENTRIES: {weightHistory.length}
-                              </span>
-                            </div>
-                            <div className="h-32 w-full">
-                              {weightHistory.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-md bg-black/40">
-                                  <TrendingUp className="w-6 h-6 text-white/10 mb-1" />
-                                  <span className="text-[10px] text-white/55 uppercase tracking-widest">
-                                    No physical logs archived
-                                  </span>
-                                </div>
-                              ) : (
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart
-                                    data={(() => {
-                                      const grouped = weightHistory.reduce(
-                                        (acc, entry) => {
-                                          acc[entry.date] = entry;
-                                          return acc;
-                                        },
-                                        {} as Record<string, WeightEntry>,
-                                      );
-                                      return (
-                                        Object.values(grouped) as WeightEntry[]
-                                      ).sort(
-                                        (a, b) =>
-                                          new Date(a.date).getTime() -
-                                          new Date(b.date).getTime(),
-                                      );
-                                    })()}
-                                    margin={{
-                                      top: 10,
-                                      right: 10,
-                                      left: -25,
-                                      bottom: 0,
-                                    }}
-                                  >
-                                    <defs>
-                                      <linearGradient
-                                        id="reportWeightGrad"
-                                        x1="0"
-                                        y1="0"
-                                        x2="0"
-                                        y2="1"
-                                      >
-                                        <stop
-                                          offset="5%"
-                                          stopColor={activeTheme.accent}
-                                          stopOpacity={0.25}
-                                        />
-                                        <stop
-                                          offset="95%"
-                                          stopColor={activeTheme.accent}
-                                          stopOpacity={0}
-                                        />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid
-                                      strokeDasharray="3 3"
-                                      stroke="#ffffff03"
-                                      vertical={false}
-                                    />
-                                    <XAxis
-                                      dataKey="date"
-                                      stroke="#ffffff60"
-                                      fontSize={10}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      tickFormatter={(str) => {
-                                        if (!str) return "";
-                                        try {
-                                          const [y, m, d] = str
-                                            .split("-")
-                                            .map(Number);
-                                          return new Date(
-                                            y,
-                                            m - 1,
-                                            d,
-                                          ).toLocaleDateString("en-GB", {
-                                            day: "numeric",
-                                            month: "short",
-                                          });
-                                        } catch (e) {
-                                          return str;
-                                        }
-                                      }}
-                                    />
-                                    <YAxis
-                                      domain={[
-                                        (dataMin: number) =>
-                                          Math.max(0, Math.floor(dataMin - 3)),
-                                        (dataMax: number) =>
-                                          Math.ceil(dataMax + 3),
-                                      ]}
-                                      stroke="#ffffff60"
-                                      fontSize={10}
-                                      tickLine={false}
-                                      axisLine={false}
-                                    />
-                                    <Area
-                                      type="monotone"
-                                      dataKey="weight"
-                                      stroke={activeTheme.accent}
-                                      strokeWidth={1.5}
-                                      fillOpacity={1}
-                                      fill="url(#reportWeightGrad)"
-                                    />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Chart Section 2: Volume Progression Timeline Area Chart */}
-                          <div className="bg-white/[0.015] border border-white/10 rounded-md p-5 relative overflow-hidden">
-                            <div className="flex items-center justify-between mb-4 relative z-10">
-                              <div>
-                                <span className="text-[10px] font-mono font-bold tracking-widest text-gym-accent uppercase block">
-                                  TIMELINE DATA _02
-                                </span>
-                                <span className="text-xs font-mono font-black text-white uppercase tracking-widest">
-                                  Training Volume Trend (kg)
-                                </span>
-                              </div>
-                              <span className="text-[10px] font-mono font-bold text-gym-accent uppercase tracking-widest pt-1">
-                                TIMEFRAME: {volumeTimeframe.toUpperCase()}
-                              </span>
-                            </div>
-                            <div className="h-32 w-full">
-                              {archivedWorkouts.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-md bg-black/40">
-                                  <Activity className="w-6 h-6 text-white/10 mb-1" />
-                                  <span className="text-[10px] text-white/55 uppercase tracking-widest">
-                                    No active training logs archived
-                                  </span>
-                                </div>
-                              ) : (
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart
-                                    data={getVolumeData()}
-                                    margin={{
-                                      top: 10,
-                                      right: 10,
-                                      left: -25,
-                                      bottom: 0,
-                                    }}
-                                  >
-                                    <defs>
-                                      <linearGradient
-                                        id="reportVolGrad"
-                                        x1="0"
-                                        y1="0"
-                                        x2="0"
-                                        y2="1"
-                                      >
-                                        <stop
-                                          offset="5%"
-                                          stopColor={activeTheme.accent}
-                                          stopOpacity={0.25}
-                                        />
-                                        <stop
-                                          offset="95%"
-                                          stopColor={activeTheme.accent}
-                                          stopOpacity={0}
-                                        />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid
-                                      strokeDasharray="3 3"
-                                      stroke="#ffffff03"
-                                      vertical={false}
-                                    />
-                                    <XAxis
-                                      dataKey="date"
-                                      stroke="#ffffff60"
-                                      fontSize={10}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      tickFormatter={(str) => {
-                                        if (!str) return "";
-                                        try {
-                                          if (volumeTimeframe === "month") {
-                                            const [y, m] = str.split("-");
-                                            return new Date(
-                                              Number(y),
-                                              Number(m) - 1,
-                                              1,
-                                            ).toLocaleDateString("en-GB", {
-                                              month: "short",
-                                              year: "2-digit",
-                                            });
-                                          }
-                                          if (volumeTimeframe === "week")
-                                            return `W/C ${str.split("-").slice(1).reverse().join("/")}`;
-                                          const [y, m, d] = str
-                                            .split("-")
-                                            .map(Number);
-                                          return new Date(
-                                            y,
-                                            m - 1,
-                                            d,
-                                          ).toLocaleDateString("en-GB", {
-                                            day: "numeric",
-                                            month: "short",
-                                          });
-                                        } catch (e) {
-                                          return str;
-                                        }
-                                      }}
-                                    />
-                                    <YAxis
-                                      stroke="#ffffff60"
-                                      fontSize={10}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      tickFormatter={(val) =>
-                                        val >= 1000
-                                          ? `${(val / 1000).toFixed(0)}t`
-                                          : `${val}`
-                                      }
-                                    />
-                                    <Area
-                                      type="monotone"
-                                      dataKey="volume"
-                                      stroke={activeTheme.accent}
-                                      strokeWidth={1.5}
-                                      fillOpacity={1}
-                                      fill="url(#reportVolGrad)"
-                                    />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Chart Section 3: Caloric Progression Timeline Area Chart */}
-                          <div className="bg-white/[0.015] border border-white/10 rounded-md p-5 relative overflow-hidden">
-                            <div className="flex items-center justify-between mb-4 relative z-10">
-                              <div>
-                                <span className="text-[10px] font-mono font-bold tracking-widest text-gym-accent uppercase block">
-                                  TIMELINE DATA _03
-                                </span>
-                                <span className="text-xs font-mono font-black text-white uppercase tracking-widest">
-                                  Active Calorie Expenditure (kcal)
-                                </span>
-                              </div>
-                              <span className="text-[10px] font-mono font-bold text-gym-accent uppercase tracking-widest pt-1">
-                                HISTORICAL ENTRIES: {archivedWorkouts.length}
-                              </span>
-                            </div>
-                            <div className="h-32 w-full">
-                              {archivedWorkouts.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-md bg-black/40">
-                                  <Flame className="w-5 h-5 text-white/10 mb-1 animate-pulse" />
-                                  <span className="text-[10px] text-white/55 uppercase tracking-widest">
-                                    No active training logs archived
-                                  </span>
-                                </div>
-                              ) : (
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart
-                                    data={(() => {
-                                      const getWorkoutCalories = (w: any) => {
-                                        if (w.sets && w.sets.length > 0) {
-                                          return calculateCaloriesBurned(w.sets, profile);
-                                        }
-                                        return w.estimatedCalories || w.caloriesBurned || 0;
-                                      };
-
-                                      const dailyMap: Record<
-                                        string,
-                                        { date: string; calories: number }
-                                      > = {};
-                                      archivedWorkouts.forEach((w) => {
-                                        const cal = getWorkoutCalories(w);
-                                        const d =
-                                          w.date ||
-                                          new Date()
-                                            .toISOString()
-                                            .split("T")[0];
-                                        if (!dailyMap[d]) {
-                                          dailyMap[d] = {
-                                            date: d,
-                                            calories: 0,
-                                          };
-                                        }
-                                        dailyMap[d].calories += cal;
-                                      });
-
-                                      return Object.values(dailyMap).sort(
-                                        (a, b) => a.date.localeCompare(b.date),
-                                      );
-                                    })()}
-                                    margin={{
-                                      top: 10,
-                                      right: 10,
-                                      left: -25,
-                                      bottom: 0,
-                                    }}
-                                  >
-                                    <defs>
-                                      <linearGradient
-                                        id="reportCalGrad"
-                                        x1="0"
-                                        y1="0"
-                                        x2="0"
-                                        y2="1"
-                                      >
-                                        <stop
-                                          offset="5%"
-                                          stopColor={activeTheme.accent}
-                                          stopOpacity={0.25}
-                                        />
-                                        <stop
-                                          offset="95%"
-                                          stopColor={activeTheme.accent}
-                                          stopOpacity={0}
-                                        />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid
-                                      strokeDasharray="3 3"
-                                      stroke="#ffffff03"
-                                      vertical={false}
-                                    />
-                                    <XAxis
-                                      dataKey="date"
-                                      stroke="#ffffff60"
-                                      fontSize={10}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      tickFormatter={(str) => {
-                                        if (!str) return "";
-                                        try {
-                                          const [y, m, d] = str
-                                            .split("-")
-                                            .map(Number);
-                                          return new Date(
-                                            y,
-                                            m - 1,
-                                            d,
-                                          ).toLocaleDateString("en-GB", {
-                                            day: "numeric",
-                                            month: "short",
-                                          });
-                                        } catch (e) {
-                                          return str;
-                                        }
-                                      }}
-                                    />
-                                    <YAxis
-                                      stroke="#ffffff60"
-                                      fontSize={10}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      width={25}
-                                    />
-                                    <Area
-                                      type="monotone"
-                                      dataKey="calories"
-                                      stroke={activeTheme.accent}
-                                      strokeWidth={1.5}
-                                      fillOpacity={1}
-                                      fill="url(#reportCalGrad)"
-                                    />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Chart Section 4: Body Fat Progression Timeline Area Chart */}
-                          <div className="bg-white/[0.015] border border-white/10 rounded-md p-5 relative overflow-hidden">
-                            <div className="flex items-center justify-between mb-4 relative z-10">
-                              <div>
-                                <span className="text-[10px] font-mono font-bold tracking-widest text-gym-accent uppercase block">
-                                  TIMELINE DATA _04
-                                </span>
-                                <span className="text-xs font-mono font-black text-white uppercase tracking-widest">
-                                  Body Fat Percentage Trend (%)
-                                </span>
-                              </div>
-                              <span className="text-[10px] font-mono font-bold text-gym-accent uppercase tracking-widest pt-1">
-                                HISTORICAL ENTRIES: {bodyFatHistory.length}
-                              </span>
-                            </div>
-                            <div className="h-32 w-full">
-                              {bodyFatHistory.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center border border-white/5 border-dashed rounded-md bg-black/40">
-                                  <Percent className="w-5 h-5 text-white/10 mb-1 animate-pulse" />
-                                  <span className="text-[10px] text-white/55 uppercase tracking-widest">
-                                    No body fat logs archived
-                                  </span>
-                                </div>
-                              ) : (
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart
-                                    data={(() => {
-                                      const grouped = bodyFatHistory.reduce(
-                                        (acc, entry) => {
-                                          acc[entry.date] = entry;
-                                          return acc;
-                                        },
-                                        {} as Record<string, BodyFatEntry>,
-                                      );
-                                      return (
-                                        Object.values(grouped) as BodyFatEntry[]
-                                      ).sort(
-                                        (a, b) =>
-                                          new Date(a.date).getTime() -
-                                          new Date(b.date).getTime(),
-                                      );
-                                    })()}
-                                    margin={{
-                                      top: 10,
-                                      right: 10,
-                                      left: -25,
-                                      bottom: 0,
-                                    }}
-                                  >
-                                    <defs>
-                                      <linearGradient
-                                        id="reportBodyFatGrad"
-                                        x1="0"
-                                        y1="0"
-                                        x2="0"
-                                        y2="1"
-                                      >
-                                        <stop
-                                          offset="5%"
-                                          stopColor={activeTheme.accent}
-                                          stopOpacity={0.25}
-                                        />
-                                        <stop
-                                          offset="95%"
-                                          stopColor={activeTheme.accent}
-                                          stopOpacity={0}
-                                        />
-                                      </linearGradient>
-                                    </defs>
-                                    <CartesianGrid
-                                      strokeDasharray="3 3"
-                                      stroke="#ffffff03"
-                                      vertical={false}
-                                    />
-                                    <XAxis
-                                      dataKey="date"
-                                      stroke="#ffffff60"
-                                      fontSize={10}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      tickFormatter={(str) => {
-                                        if (!str) return "";
-                                        try {
-                                          const [y, m, d] = str
-                                            .split("-")
-                                            .map(Number);
-                                          return new Date(
-                                            y,
-                                            m - 1,
-                                            d,
-                                          ).toLocaleDateString("en-GB", {
-                                            day: "numeric",
-                                            month: "short",
-                                          });
-                                        } catch (e) {
-                                          return str;
-                                        }
-                                      }}
-                                    />
-                                    <YAxis
-                                      domain={[
-                                        (dataMin: number) =>
-                                          Math.max(0, Math.floor(dataMin - 2)),
-                                        (dataMax: number) =>
-                                          Math.ceil(dataMax + 2),
-                                      ]}
-                                      stroke="#ffffff60"
-                                      fontSize={10}
-                                      tickLine={false}
-                                      axisLine={false}
-                                      width={25}
-                                      tickFormatter={(val) => `${val}%`}
-                                    />
-                                    <Area
-                                      type="monotone"
-                                      dataKey="bodyFatPercent"
-                                      stroke={activeTheme.accent}
-                                      strokeWidth={1.5}
-                                      fillOpacity={1}
-                                      fill="url(#reportBodyFatGrad)"
-                                    />
-                                  </AreaChart>
-                                </ResponsiveContainer>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Tech Badge Footer */}
-                          <div className="flex items-center justify-between border-t border-white/5 pt-5 mt-2 relative">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-full border border-gym-accent/40 flex items-center justify-center text-gym-accent text-[10px] font-mono font-bold font-black bg-gym-accent/5">
-                                IA
-                              </div>
-                              <div>
-                                <span className="text-[10px] font-mono font-bold text-white uppercase tracking-[0.2em] block">
-                                  SECURE CLOUD STORAGE
-                                </span>
-                                <span className="text-[11px] text-white tracking-wider font-mono font-medium">
-                                  ARCHIVE CORE ACCESS SIGN-OFF
-                                </span>
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <span className="text-[10px] font-mono font-bold text-white uppercase tracking-[0.2em] block">
-                                SECURE VERIFIED SIGNATURE
-                              </span>
-                              <span className="text-sm font-serif italic text-gym-accent">
-                                TEMPLE COMMAND ADMIN
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Floating Action Button (FAB) for PDF Export */}
-                    <motion.button
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleExportPdf}
-                      disabled={isExportingReport}
-                      className="absolute bottom-6 right-6 z-[130] flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-gym-accent to-gym-accent-light text-black font-black uppercase tracking-widest text-[10px] rounded-full shadow-2xl cursor-pointer hover:brightness-110 active:scale-95 transition-all outline-none border border-black/15 select-none group focus:ring-2 focus:ring-gym-accent/50"
-                    >
-                      {isExportingReport ? (
-                        <Loader2 className="w-4.5 h-4.5 animate-spin text-black" />
-                      ) : (
-                        <Download className="w-4.5 h-4.5 text-black group-hover:translate-y-0.5 transition-transform" />
-                      )}
-                      <span>{isExportingReport ? "Generating PDF..." : "Export PDF Summary"}</span>
-                    </motion.button>
-                  </motion.div>
-                </div>
-              );
-            })()}
         </AnimatePresence>
 
         {/* Floating Sticky Rest Timer Banner */}
