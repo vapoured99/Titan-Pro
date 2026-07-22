@@ -8397,7 +8397,7 @@ export default function App() {
                     <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
                       Exercise Archive
                     </h3>
-                    <p className="text-[10px] text-white uppercase tracking-widest font-bold font-mono">
+                    <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold font-mono">
                       Tactical Fitness & Drill Hub
                     </p>
                   </div>
@@ -12345,7 +12345,7 @@ export default function App() {
                     <h3 className="text-xl font-light italic font-serif flex items-center gap-3 mb-1">
                       Anatomical & Performance Matrix
                     </h3>
-                    <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold">
+                    <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
                       Dynamic Biomechanical Analysis & Power Standards
                     </p>
                   </div>
@@ -12382,7 +12382,7 @@ export default function App() {
                       <h3 className="text-xl font-light italic font-serif flex items-center gap-3">
                         Session Records
                       </h3>
-                      <p className="text-[10px] text-white/30 uppercase tracking-widest font-bold mt-1">
+                      <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mt-1">
                         Archived workout intelligence
                       </p>
                     </div>
@@ -12775,7 +12775,7 @@ export default function App() {
                       <div className="space-y-3 sm:space-y-8">
                         <div>
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-2 sm:pb-6 gap-2.5 sm:gap-4">
-                            <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.3em] flex items-center gap-3">
+                            <h4 className="text-[10px] text-white/70 font-bold uppercase tracking-[0.3em] flex items-center gap-3">
                               <History className="w-4 h-4 text-gym-accent" />
                               Archived Evolutions
                             </h4>
@@ -12895,7 +12895,7 @@ export default function App() {
                                 className="flex flex-col items-center justify-center p-20 border border-white/5 border-dashed rounded-md bg-white/[0.01]"
                               >
                                 <History className="w-12 h-12 text-white/5 mb-6" />
-                                <h3 className="text-xl font-serif italic text-white/40 text-center px-10">
+                                <h3 className="text-xl font-serif italic text-white/70 text-center px-10">
                                   Sync Required: Select Another Session Date
                                   Above
                                 </h3>
@@ -13093,7 +13093,7 @@ export default function App() {
                         <h3 className="text-xl font-light italic font-serif text-white">
                           Build Custom Routine
                         </h3>
-                        <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">
+                        <p className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-bold">
                           Configure a tailored, structured guide for automatic session tracking
                         </p>
                       </div>
@@ -13702,8 +13702,8 @@ export default function App() {
                         <h3 className="text-xl font-light italic font-serif">
                           Saved Workout Routines
                         </h3>
-                        <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">
-                          Instantly reload and execute your favorite workflows
+                        <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">
+                          Instantly reload and execute your favourite workflows
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -14754,10 +14754,6 @@ export default function App() {
                                       theme.id,
                                     );
                                     saveSettings({ themeId: theme.id });
-                                    setToast({
-                                      message: `🌌 Equipped Atmosphere: ${theme.name}!`,
-                                      type: "success",
-                                    });
                                   }}
                                   type="button"
                                   className={`relative text-left p-4 rounded-lg border cursor-pointer overflow-hidden transition-all duration-300 group flex flex-col justify-between h-24 ${
@@ -14851,10 +14847,6 @@ export default function App() {
                                           theme.id,
                                         );
                                         saveSettings({ themeId: theme.id });
-                                        setToast({
-                                          message: `🎯 Equipped Minimalist Aura: ${theme.name}!`,
-                                          type: "success",
-                                        });
                                       }}
                                       type="button"
                                       className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full cursor-pointer transition-all duration-300 relative flex items-center justify-center p-0.5 ${
@@ -14931,10 +14923,6 @@ export default function App() {
                                     setAtmosphereEffect(eff.id);
                                     localStorage.setItem("gym-atmosphere-effect", eff.id);
                                     saveSettings({ atmosphereEffect: eff.id });
-                                    setToast({
-                                      message: `✨ Equipped Atmosphere: ${eff.name}!`,
-                                      type: "success",
-                                    });
                                   }}
                                   className={`p-3 rounded-lg border text-left cursor-pointer transition-all duration-300 flex flex-col justify-between min-h-20 ${
                                     isActive
@@ -14978,15 +14966,6 @@ export default function App() {
                         </div>
                       </div>
                     </div>
-
-                    <div className="flex justify-center">
-                      <button
-                        onClick={handleLogout}
-                        className="text-[10px] text-white/20 hover:text-red-500 uppercase tracking-[0.3em] font-black underline underline-offset-8 decoration-white/10 hover:decoration-red-500 transition-all cursor-pointer"
-                      >
-                        Deactivate Session
-                      </button>
-                    </div>
                   </motion.div>
                 );
               })()
@@ -15003,7 +14982,7 @@ export default function App() {
                     <h3 className="text-xl font-light italic font-serif">
                       Training Programming
                     </h3>
-                    <p className="text-[10px] text-white uppercase tracking-[0.2em] font-bold">
+                    <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">
                       Curate your physical evolution
                     </p>
                   </div>
@@ -19153,71 +19132,91 @@ export default function App() {
         </AnimatePresence>
 
         {/* Universal Bottom Dock Navigation & Drawer */}
-        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-2 sm:px-8 py-3.5 sm:py-4 flex items-center justify-around sm:justify-center sm:gap-16 shadow-2xl safe-area-bottom w-full max-w-full">
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-gradient-to-b from-neutral-900/95 via-neutral-950/98 to-black backdrop-blur-2xl border-t border-white/20 px-2 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-around sm:justify-center gap-2 sm:gap-6 shadow-[0_-12px_30px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.15)] safe-area-bottom w-full max-w-full">
           {/* Button 1: Console */}
-          <button
-            onClick={() => {
-              setActiveView("console_d");
-              saveSettings({ activeView: "console_d" });
-              setActiveDrawer(null);
-              window.scrollTo({ top: 0, behavior: "smooth" });
-            }}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
-              activeView === "console_d" && !activeDrawer
-                ? "text-gym-accent font-bold"
-                : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            <Terminal className={`w-5 h-5 min-[380px]:w-6 min-[380px]:h-6 sm:w-7 sm:h-7 shrink-0 transition-transform ${activeView === "console_d" && !activeDrawer ? "scale-110 text-gym-accent" : ""}`} />
-            <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
-              Console
-            </span>
-          </button>
+          {(() => {
+            const isActive = activeView === "console_d" && !activeDrawer;
+            return (
+              <button
+                onClick={() => {
+                  setActiveView("console_d");
+                  saveSettings({ activeView: "console_d" });
+                  setActiveDrawer(null);
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className={`flex-1 max-w-[95px] sm:max-w-[130px] min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-4 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
+                  isActive
+                    ? "bg-gradient-to-b from-white/25 via-white/12 to-white/5 border border-white/80 text-white font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),0_4px_16px_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.8)] -translate-y-0.5"
+                    : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-gradient-to-b hover:from-white/[0.12] hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
+                }`}
+              >
+                <Terminal className={`w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
+                <span className="text-[9.5px] min-[380px]:text-[10px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-1 truncate max-w-full text-center leading-none">
+                  Console
+                </span>
+              </button>
+            );
+          })()}
 
           {/* Button 2: Gym */}
-          <button
-            onClick={() => setActiveDrawer(activeDrawer === "gym" ? null : "gym")}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
-              ["workout", "session", "library", "routines"].includes(activeView) || activeDrawer === "gym"
-                ? "text-gym-accent font-bold"
-                : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            <Dumbbell className={`w-5 h-5 min-[380px]:w-6 min-[380px]:h-6 sm:w-7 sm:h-7 shrink-0 transition-transform ${["workout", "session", "library", "routines"].includes(activeView) || activeDrawer === "gym" ? "scale-110 text-gym-accent" : ""}`} />
-            <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
-              Gym
-            </span>
-          </button>
+          {(() => {
+            const isActive = ["workout", "session", "library", "routines"].includes(activeView) || activeDrawer === "gym";
+            return (
+              <button
+                onClick={() => setActiveDrawer(activeDrawer === "gym" ? null : "gym")}
+                className={`flex-1 max-w-[95px] sm:max-w-[130px] min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-4 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
+                  isActive
+                    ? "bg-gradient-to-b from-white/25 via-white/12 to-white/5 border border-white/80 text-white font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),0_4px_16px_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.8)] -translate-y-0.5"
+                    : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-gradient-to-b hover:from-white/[0.12] hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
+                }`}
+              >
+                <Dumbbell className={`w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
+                <span className="text-[9.5px] min-[380px]:text-[10px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-1 truncate max-w-full text-center leading-none">
+                  Gym
+                </span>
+              </button>
+            );
+          })()}
 
           {/* Button 3: Analytics */}
-          <button
-            onClick={() => setActiveDrawer(activeDrawer === "analytics" ? null : "analytics")}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
-              ["anatomy", "progress"].includes(activeView) || activeDrawer === "analytics"
-                ? "text-gym-accent font-bold"
-                : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            <LineChart className={`w-5 h-5 min-[380px]:w-6 min-[380px]:h-6 sm:w-7 sm:h-7 shrink-0 transition-transform ${["anatomy", "progress"].includes(activeView) || activeDrawer === "analytics" ? "scale-110 text-gym-accent" : ""}`} />
-            <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
-              Analytics
-            </span>
-          </button>
+          {(() => {
+            const isActive = ["anatomy", "progress"].includes(activeView) || activeDrawer === "analytics";
+            return (
+              <button
+                onClick={() => setActiveDrawer(activeDrawer === "analytics" ? null : "analytics")}
+                className={`flex-1 max-w-[95px] sm:max-w-[130px] min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-4 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
+                  isActive
+                    ? "bg-gradient-to-b from-white/25 via-white/12 to-white/5 border border-white/80 text-white font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),0_4px_16px_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.8)] -translate-y-0.5"
+                    : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-gradient-to-b hover:from-white/[0.12] hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
+                }`}
+              >
+                <LineChart className={`w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
+                <span className="text-[9.5px] min-[380px]:text-[10px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-1 truncate max-w-full text-center leading-none">
+                  Analytics
+                </span>
+              </button>
+            );
+          })()}
 
           {/* Button 4: More */}
-          <button
-            onClick={() => setActiveDrawer(activeDrawer === "more" ? null : "more")}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
-              ["avatar", "profile"].includes(activeView) || activeDrawer === "more"
-                ? "text-gym-accent font-bold"
-                : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            <LayoutGrid className={`w-5 h-5 min-[380px]:w-6 min-[380px]:h-6 sm:w-7 sm:h-7 shrink-0 transition-transform ${["avatar", "profile"].includes(activeView) || activeDrawer === "more" ? "scale-110 text-gym-accent" : ""}`} />
-            <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
-              More
-            </span>
-          </button>
+          {(() => {
+            const isActive = ["avatar", "profile"].includes(activeView) || activeDrawer === "more";
+            return (
+              <button
+                onClick={() => setActiveDrawer(activeDrawer === "more" ? null : "more")}
+                className={`flex-1 max-w-[95px] sm:max-w-[130px] min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-4 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
+                  isActive
+                    ? "bg-gradient-to-b from-white/25 via-white/12 to-white/5 border border-white/80 text-white font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),0_4px_16px_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.8)] -translate-y-0.5"
+                    : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-gradient-to-b hover:from-white/[0.12] hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
+                }`}
+              >
+                <LayoutGrid className={`w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
+                <span className="text-[9.5px] min-[380px]:text-[10px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-1 truncate max-w-full text-center leading-none">
+                  More
+                </span>
+              </button>
+            );
+          })()}
         </nav>
 
         {/* Slide-Up Drawer for Additional Navigation */}
@@ -19246,7 +19245,7 @@ export default function App() {
                     setActiveDrawer(null);
                   }
                 }}
-                className="fixed bottom-20 sm:bottom-24 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-neutral-900/95 backdrop-blur-2xl border border-gym-accent/30 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[80vh] overflow-y-auto touch-pan-y"
+                className="fixed bottom-20 sm:bottom-24 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-gym-accent/40 rounded-t-2xl sm:rounded-2xl p-5 shadow-[0_-16px_36px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)] max-h-[80vh] overflow-y-auto touch-pan-y"
               >
                 {/* Gym Drawer Popup */}
                 {activeDrawer === "gym" && (
@@ -19257,7 +19256,7 @@ export default function App() {
                       </h3>
                       <button
                         onClick={() => setActiveDrawer(null)}
-                        className="p-1 rounded-full bg-white/5 text-white/60 hover:text-white"
+                        className="p-1.5 rounded-full bg-gradient-to-b from-white/10 to-black/50 border border-white/15 text-white/60 hover:text-white hover:border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -19280,17 +19279,17 @@ export default function App() {
                               setActiveDrawer(null);
                               window.scrollTo({ top: 0, behavior: "smooth" });
                             }}
-                            className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1 ${
+                            className={`p-3.5 rounded-xl border text-left transition-all duration-200 flex flex-col gap-1.5 cursor-pointer active:translate-y-0.5 active:scale-95 group ${
                               isActive
-                                ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
-                                : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                                ? "bg-gradient-to-b from-gym-accent/30 via-gym-accent/15 to-gym-accent/5 border-gym-accent/80 text-gym-accent font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.4),0_4px_16px_rgba(0,0,0,0.6)] -translate-y-0.5"
+                                : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border-white/10 text-white/80 hover:text-white hover:border-gym-accent/40 hover:bg-gradient-to-b hover:from-gym-accent/15 hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
                             }`}
                           >
                             <div className="flex items-center gap-2">
-                              <Icon className="w-4 h-4" />
+                              <Icon className={`w-4 h-4 ${isActive ? "text-gym-accent drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]" : "text-gym-accent/70 group-hover:text-gym-accent"}`} />
                               <span className="text-xs font-bold uppercase font-mono tracking-wider">{nav.label}</span>
                             </div>
-                            <span className="text-[10px] text-white/50 leading-snug">{nav.desc}</span>
+                            <span className="text-[10px] text-white/60 leading-snug">{nav.desc}</span>
                           </button>
                         );
                       })}
@@ -19307,7 +19306,7 @@ export default function App() {
                       </h3>
                       <button
                         onClick={() => setActiveDrawer(null)}
-                        className="p-1 rounded-full bg-white/5 text-white/60 hover:text-white"
+                        className="p-1.5 rounded-full bg-gradient-to-b from-white/10 to-black/50 border border-white/15 text-white/60 hover:text-white hover:border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -19328,17 +19327,17 @@ export default function App() {
                               setActiveDrawer(null);
                               window.scrollTo({ top: 0, behavior: "smooth" });
                             }}
-                            className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1 ${
+                            className={`p-3.5 rounded-xl border text-left transition-all duration-200 flex flex-col gap-1.5 cursor-pointer active:translate-y-0.5 active:scale-95 group ${
                               isActive
-                                ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
-                                : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                                ? "bg-gradient-to-b from-gym-accent/30 via-gym-accent/15 to-gym-accent/5 border-gym-accent/80 text-gym-accent font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.4),0_4px_16px_rgba(0,0,0,0.6)] -translate-y-0.5"
+                                : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border-white/10 text-white/80 hover:text-white hover:border-gym-accent/40 hover:bg-gradient-to-b hover:from-gym-accent/15 hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
                             }`}
                           >
                             <div className="flex items-center gap-2">
-                              <Icon className="w-4 h-4" />
+                              <Icon className={`w-4 h-4 ${isActive ? "text-gym-accent drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]" : "text-gym-accent/70 group-hover:text-gym-accent"}`} />
                               <span className="text-xs font-bold uppercase font-mono tracking-wider">{nav.label}</span>
                             </div>
-                            <span className="text-[10px] text-white/50 leading-snug">{nav.desc}</span>
+                            <span className="text-[10px] text-white/60 leading-snug">{nav.desc}</span>
                           </button>
                         );
                       })}
@@ -19355,7 +19354,7 @@ export default function App() {
                       </h3>
                       <button
                         onClick={() => setActiveDrawer(null)}
-                        className="p-1 rounded-full bg-white/5 text-white/60 hover:text-white"
+                        className="p-1.5 rounded-full bg-gradient-to-b from-white/10 to-black/50 border border-white/15 text-white/60 hover:text-white hover:border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -19376,29 +19375,29 @@ export default function App() {
                               setActiveDrawer(null);
                               window.scrollTo({ top: 0, behavior: "smooth" });
                             }}
-                            className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1 ${
+                            className={`p-3.5 rounded-xl border text-left transition-all duration-200 flex flex-col gap-1.5 cursor-pointer active:translate-y-0.5 active:scale-95 group ${
                               isActive
-                                ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
-                                : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                                ? "bg-gradient-to-b from-gym-accent/30 via-gym-accent/15 to-gym-accent/5 border-gym-accent/80 text-gym-accent font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.4),0_4px_16px_rgba(0,0,0,0.6)] -translate-y-0.5"
+                                : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border-white/10 text-white/80 hover:text-white hover:border-gym-accent/40 hover:bg-gradient-to-b hover:from-gym-accent/15 hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
                             }`}
                           >
                             <div className="flex items-center gap-2">
-                              <Icon className="w-4 h-4" />
+                              <Icon className={`w-4 h-4 ${isActive ? "text-gym-accent drop-shadow-[0_0_6px_rgba(255,255,255,0.4)]" : "text-gym-accent/70 group-hover:text-gym-accent"}`} />
                               <span className="text-xs font-bold uppercase font-mono tracking-wider">{nav.label}</span>
                             </div>
-                            <span className="text-[10px] text-white/50 leading-snug">{nav.desc}</span>
+                            <span className="text-[10px] text-white/60 leading-snug">{nav.desc}</span>
                           </button>
                         );
                       })}
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-2">
+                    <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-2.5">
                       <button
                         onClick={() => {
                           setShowLandingPage(true);
                           setActiveDrawer(null);
                         }}
-                        className="flex-1 py-2.5 px-3 bg-white/5 border border-white/10 rounded-xl text-xs font-mono uppercase tracking-wider text-white/80 flex items-center justify-center gap-2 hover:bg-white/10 transition-all active:scale-95"
+                        className="flex-1 py-2.5 px-3 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border border-white/15 hover:border-gym-accent/50 rounded-xl text-xs font-mono uppercase tracking-wider text-white hover:text-gym-accent flex items-center justify-center gap-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] transition-all cursor-pointer active:translate-y-0.5 hover:-translate-y-0.5"
                       >
                         <Compass className="w-3.5 h-3.5 text-gym-accent" /> Portal
                       </button>
@@ -19407,7 +19406,7 @@ export default function App() {
                           handleLogout();
                           setActiveDrawer(null);
                         }}
-                        className="py-2.5 px-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-mono uppercase tracking-wider text-red-400 flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all active:scale-95"
+                        className="py-2.5 px-3 bg-gradient-to-b from-red-500/15 via-red-500/8 to-black/40 border border-red-500/30 hover:border-red-500/60 rounded-xl text-xs font-mono uppercase tracking-wider text-red-400 flex items-center justify-center gap-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] transition-all cursor-pointer active:translate-y-0.5 hover:-translate-y-0.5"
                       >
                         <LogOut className="w-3.5 h-3.5" /> Logout
                       </button>

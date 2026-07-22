@@ -974,7 +974,7 @@ export default function ConsoleDView({
           <h3 className="text-xl font-light italic font-serif">
             Console
           </h3>
-          <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-bold">
+          <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-bold">
             Monitor metrics, recovery, and performance
           </p>
         </div>
@@ -988,12 +988,15 @@ export default function ConsoleDView({
             onMouseEnter={() => setHoveredCard("engagement")}
             onMouseLeave={() => setHoveredCard(null)}
             style={{ 
-              borderColor: hoveredCard === "engagement" ? `rgba(${accentRgb}, 0.2)` : "rgba(255, 255, 255, 0.04)"
+              borderColor: hoveredCard === "engagement" ? `rgba(${accentRgb}, 0.5)` : "rgba(255, 255, 255, 0.12)",
+              boxShadow: hoveredCard === "engagement"
+                ? `inset 0 1px 0 rgba(255,255,255,0.25), 0 12px 32px rgba(0,0,0,0.85), 0 0 20px rgba(${accentRgb}, 0.15)`
+                : "inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.7)"
             }}
-            className="bg-gradient-to-b from-[#090909] to-[#040404] border rounded-xl p-5 flex flex-col justify-between relative overflow-visible group transition-all duration-300 h-full"
+            className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border rounded-2xl p-5 md:p-6 flex flex-col justify-between relative overflow-visible group transition-all duration-300 h-full hover:-translate-y-0.5"
           >
             <div 
-              style={{ background: `linear-gradient(to right, transparent, rgba(${accentRgb}, 0.2), transparent)` }}
+              style={{ background: `linear-gradient(to right, transparent, rgba(${accentRgb}, 0.3), transparent)` }}
               className="absolute top-0 left-0 w-full h-[1px]" 
             />
             
@@ -1012,7 +1015,7 @@ export default function ConsoleDView({
             {/* Twin Graphics */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-4 flex-1 overflow-visible">
               <div 
-                className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-all duration-300 bg-black/40 border border-white/[0.02] rounded-xl p-3"
+                className="flex items-center justify-center cursor-pointer hover:scale-[1.02] transition-all duration-300 bg-gradient-to-b from-white/[0.05] to-black/60 border border-white/10 rounded-xl p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]"
                 onClick={() => setActiveView("anatomy")}
                 title="Click to view detailed diagnostics"
               >
@@ -1022,7 +1025,7 @@ export default function ConsoleDView({
                   compact={true}
                 />
               </div>
-              <div className="flex items-center justify-center bg-black/40 border border-white/[0.02] rounded-xl p-3 overflow-visible relative">
+              <div className="flex items-center justify-center bg-gradient-to-b from-white/[0.05] to-black/60 border border-white/10 rounded-xl p-3 overflow-visible relative shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
                 <RadarChart
                   sessionSets={sessionSets}
                   archivedWorkouts={archivedWorkouts}
@@ -1032,7 +1035,7 @@ export default function ConsoleDView({
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-white/[0.03] flex items-center justify-between text-[10px] text-white/30 font-mono">
+            <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[10px] text-white/40 font-mono">
               <span>ACTIVE ENGAGEMENT</span>
               <button 
                 onClick={() => setActiveView("anatomy")}
@@ -1051,16 +1054,19 @@ export default function ConsoleDView({
             onMouseEnter={() => setHoveredCard("capacity")}
             onMouseLeave={() => setHoveredCard(null)}
             style={{ 
-              borderColor: hoveredCard === "capacity" ? `rgba(${accentRgb}, 0.2)` : "rgba(255, 255, 255, 0.04)"
+              borderColor: hoveredCard === "capacity" ? `rgba(${accentRgb}, 0.5)` : "rgba(255, 255, 255, 0.12)",
+              boxShadow: hoveredCard === "capacity"
+                ? `inset 0 1px 0 rgba(255,255,255,0.25), 0 12px 32px rgba(0,0,0,0.85), 0 0 20px rgba(${accentRgb}, 0.15)`
+                : "inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.7)"
             }}
-            className="bg-gradient-to-b from-[#090909] to-[#040404] border rounded-xl p-5 md:p-6 flex flex-col justify-between transition-all duration-300 h-full relative overflow-hidden"
+            className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border rounded-2xl p-5 md:p-6 flex flex-col justify-between transition-all duration-300 h-full relative overflow-hidden hover:-translate-y-0.5"
           >
             <div 
-              style={{ background: `linear-gradient(to right, transparent, rgba(${accentRgb}, 0.2), transparent)` }}
+              style={{ background: `linear-gradient(to right, transparent, rgba(${accentRgb}, 0.3), transparent)` }}
               className="absolute top-0 left-0 w-full h-[1px]" 
             />
             
-            <div className="flex items-center justify-between border-b border-white/5 pb-3 mb-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
               <div className="space-y-0.5">
                 <span style={{ color: accent }} className="text-[9px] font-mono uppercase tracking-widest font-black">
                   Muscle Load Breakdown
@@ -1070,10 +1076,10 @@ export default function ConsoleDView({
                 </h3>
               </div>
               {/* Navigation buttons */}
-              <div className="flex items-center gap-1 bg-black/40 border border-white/10 rounded p-0.5 shrink-0">
+              <div className="flex items-center gap-1 bg-gradient-to-b from-white/10 to-black/60 border border-white/15 rounded-lg p-0.5 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
                 <button
                   onClick={() => setActiveMatrixSlide(prev => (prev === 0 ? matrixGroups.length - 1 : prev - 1))}
-                  className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
+                  className="p-1 text-white/60 hover:text-white hover:bg-white/10 rounded transition-all cursor-pointer"
                   title="Previous Muscle"
                 >
                   <ChevronLeft className="w-3.5 h-3.5" />
@@ -1083,7 +1089,7 @@ export default function ConsoleDView({
                 </span>
                 <button
                   onClick={() => setActiveMatrixSlide(prev => (prev === matrixGroups.length - 1 ? 0 : prev + 1))}
-                  className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
+                  className="p-1 text-white/60 hover:text-white hover:bg-white/10 rounded transition-all cursor-pointer"
                   title="Next Muscle"
                 >
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -1142,8 +1148,8 @@ export default function ConsoleDView({
               return (
                 <div className="flex-1 flex flex-col justify-between pt-1 h-full min-h-[300px]">
                   {/* Parent Overall Score Badge */}
-                  <div className="bg-white/[0.01] border border-white/5 rounded-lg p-3 flex items-center justify-between mb-2">
-                    <span className="text-[11px] text-white/50 font-mono">Overall {currentGroup} Recovery</span>
+                  <div className="bg-gradient-to-b from-white/[0.06] to-black/50 border border-white/10 rounded-xl p-3 flex items-center justify-between mb-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                    <span className="text-[11px] text-white/60 font-mono">Overall {currentGroup} Recovery</span>
                     <div className="flex items-center gap-2">
                       <span className={`text-[10px] font-mono font-black uppercase ${
                         parentRecovery >= 80 ? "text-emerald-400" : parentRecovery < 60 ? "text-red-400" : "text-amber-400"
@@ -1167,7 +1173,7 @@ export default function ConsoleDView({
                               {sub.pct}%
                             </span>
                           </div>
-                          <div className="h-2 w-full bg-white/[0.02] border border-white/5 rounded-full overflow-hidden">
+                          <div className="h-2 w-full bg-black/40 border border-white/10 rounded-full overflow-hidden shadow-[inset_0_1px_1px_rgba(0,0,0,0.8)]">
                             <motion.div
                               initial={{ width: 0 }}
                               animate={{ width: `${sub.pct}%` }}
@@ -1183,7 +1189,7 @@ export default function ConsoleDView({
               );
             })()}
 
-            <div className="mt-4 pt-3 border-t border-white/[0.03] text-[9px] text-white/30 font-mono flex items-center justify-between">
+            <div className="mt-4 pt-3 border-t border-white/10 text-[9px] text-white/40 font-mono flex items-center justify-between">
               {/* Dot Indicators */}
               <div className="flex items-center gap-1">
                 {matrixGroups.map((_, idx) => (
@@ -1206,12 +1212,15 @@ export default function ConsoleDView({
         onMouseEnter={() => setHoveredCard("performance")}
         onMouseLeave={() => setHoveredCard(null)}
         style={{ 
-          borderColor: hoveredCard === "performance" ? `rgba(${accentRgb}, 0.15)` : "rgba(255, 255, 255, 0.04)"
+          borderColor: hoveredCard === "performance" ? `rgba(${accentRgb}, 0.5)` : "rgba(255, 255, 255, 0.12)",
+          boxShadow: hoveredCard === "performance"
+            ? `inset 0 1px 0 rgba(255,255,255,0.25), 0 12px 32px rgba(0,0,0,0.85), 0 0 20px rgba(${accentRgb}, 0.15)`
+            : "inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.7)"
         }}
-        className="bg-gradient-to-b from-[#080808] to-[#040404] border rounded-2xl p-5 md:p-6 transition-all duration-300 relative overflow-hidden"
+        className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border rounded-2xl p-5 md:p-6 transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5"
       >
         <div 
-          style={{ background: `linear-gradient(to right, transparent, rgba(${accentRgb}, 0.15), transparent)` }}
+          style={{ background: `linear-gradient(to right, transparent, rgba(${accentRgb}, 0.3), transparent)` }}
           className="absolute top-0 left-0 w-full h-[1px]" 
         />
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
@@ -1227,10 +1236,10 @@ export default function ConsoleDView({
             </p>
           </div>
           {/* Slide Navigation Buttons */}
-          <div className="flex items-center gap-2 bg-black/60 border border-white/10 rounded-md p-1 self-start sm:self-auto">
+          <div className="flex items-center gap-2 bg-gradient-to-b from-white/10 to-black/60 border border-white/15 rounded-lg p-1 self-start sm:self-auto shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
             <button 
               onClick={() => setActiveChartSlide(prev => (prev === 0 ? chartTypes.length - 1 : prev - 1))}
-              className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
+              className="p-1 text-white/60 hover:text-white hover:bg-white/10 rounded transition-all cursor-pointer"
               title="Previous Metric"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -1246,7 +1255,7 @@ export default function ConsoleDView({
             </div>
             <button 
               onClick={() => setActiveChartSlide(prev => (prev === chartTypes.length - 1 ? 0 : prev + 1))}
-              className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
+              className="p-1 text-white/60 hover:text-white hover:bg-white/10 rounded transition-all cursor-pointer"
               title="Next Metric"
             >
               <ChevronRight className="w-4 h-4" />
@@ -1263,8 +1272,22 @@ export default function ConsoleDView({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* CAROUSEL 1: MONTHLY TRAINING DENSITY CALENDAR CAROUSEL */}
-        <div className="bg-[#090909] border border-white/[0.03] rounded-2xl p-5 md:p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+        <div 
+          onMouseEnter={() => setHoveredCard("calendar")}
+          onMouseLeave={() => setHoveredCard(null)}
+          style={{ 
+            borderColor: hoveredCard === "calendar" ? `rgba(${accentRgb}, 0.5)` : "rgba(255, 255, 255, 0.12)",
+            boxShadow: hoveredCard === "calendar"
+              ? `inset 0 1px 0 rgba(255,255,255,0.25), 0 12px 32px rgba(0,0,0,0.85), 0 0 20px rgba(${accentRgb}, 0.15)`
+              : "inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.7)"
+          }}
+          className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border rounded-2xl p-5 md:p-6 flex flex-col justify-between transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5"
+        >
+          <div 
+            style={{ background: `linear-gradient(to right, transparent, rgba(${accentRgb}, 0.3), transparent)` }}
+            className="absolute top-0 left-0 w-full h-[1px]" 
+          />
+          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
             <div>
               <h4 className="text-base font-semibold text-white leading-snug">
                 Monthly Training Density
@@ -1274,10 +1297,10 @@ export default function ConsoleDView({
               </p>
             </div>
             {/* Navigation Carousel Buttons */}
-            <div className="flex items-center gap-1.5 bg-black/60 border border-white/10 rounded-md p-1">
+            <div className="flex items-center gap-1.5 bg-gradient-to-b from-white/10 to-black/60 border border-white/15 rounded-lg p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
               <button 
                 onClick={() => navigateMonth("prev")}
-                className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
+                className="p-1 text-white/60 hover:text-white hover:bg-white/10 rounded transition-all cursor-pointer"
                 title="Previous Month"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -1287,7 +1310,7 @@ export default function ConsoleDView({
               </span>
               <button 
                 onClick={() => navigateMonth("next")}
-                className="p-1 text-white/50 hover:text-white hover:bg-white/5 rounded transition-all cursor-pointer"
+                className="p-1 text-white/60 hover:text-white hover:bg-white/10 rounded transition-all cursor-pointer"
                 title="Next Month"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -1310,7 +1333,7 @@ export default function ConsoleDView({
                   className={`aspect-square rounded-lg flex flex-col items-center justify-center font-mono relative transition-all duration-300 border ${
                     hasWorkout
                       ? "text-black font-extrabold hover:scale-105"
-                      : "bg-white/[0.01] border-white/5 text-white/30 hover:bg-white/5"
+                      : "bg-gradient-to-b from-white/[0.04] to-black/40 border-white/10 text-white/40 hover:bg-white/10"
                   }`}
                   title={`${monthName} ${dayNum}: ${hasWorkout ? "Workout Active" : "Rest Day"}`}
                 >
@@ -1323,9 +1346,9 @@ export default function ConsoleDView({
             })}
           </div>
 
-          <div className="flex items-center gap-4 text-[9px] font-mono text-white/30 mt-4 pt-3 border-t border-white/[0.03]">
+          <div className="flex items-center gap-4 text-[9px] font-mono text-white/40 mt-4 pt-3 border-t border-white/10">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded bg-white/[0.01] border border-white/5" />
+              <div className="w-2 h-2 rounded bg-white/[0.04] border border-white/10" />
               <span>Rest Day</span>
             </div>
             <div className="flex items-center gap-1">
@@ -1339,8 +1362,22 @@ export default function ConsoleDView({
         </div>
 
         {/* CAROUSEL 2: SIMPLIFIED NERVOUS SYSTEM & SPINE LOAD GAUGE */}
-        <div className="bg-[#090909] border border-white/[0.03] rounded-2xl p-5 md:p-6 flex flex-col justify-between">
-          <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+        <div 
+          onMouseEnter={() => setHoveredCard("spinal")}
+          onMouseLeave={() => setHoveredCard(null)}
+          style={{ 
+            borderColor: hoveredCard === "spinal" ? `rgba(${accentRgb}, 0.5)` : "rgba(255, 255, 255, 0.12)",
+            boxShadow: hoveredCard === "spinal"
+              ? `inset 0 1px 0 rgba(255,255,255,0.25), 0 12px 32px rgba(0,0,0,0.85), 0 0 20px rgba(${accentRgb}, 0.15)`
+              : "inset 0 1px 0 rgba(255,255,255,0.15), 0 8px 24px rgba(0,0,0,0.7)"
+          }}
+          className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border rounded-2xl p-5 md:p-6 flex flex-col justify-between transition-all duration-300 relative overflow-hidden hover:-translate-y-0.5"
+        >
+          <div 
+            style={{ background: `linear-gradient(to right, transparent, rgba(${accentRgb}, 0.3), transparent)` }}
+            className="absolute top-0 left-0 w-full h-[1px]" 
+          />
+          <div className="flex items-center justify-between border-b border-white/10 pb-4 mb-4">
             <div>
               <h4 className="text-base font-semibold text-white leading-snug">
                 Nervous System & Spine Load
@@ -1355,10 +1392,11 @@ export default function ConsoleDView({
                 onMouseEnter={() => setHoveredCard("reset-stress-btn")}
                 onMouseLeave={() => setHoveredCard(null)}
                 style={{
-                  borderColor: hoveredCard === "reset-stress-btn" ? `rgba(${accentRgb}, 0.4)` : "rgba(255, 255, 255, 0.1)",
-                  color: hoveredCard === "reset-stress-btn" ? accent : "rgba(255, 255, 255, 0.5)"
+                  borderColor: hoveredCard === "reset-stress-btn" ? `rgba(${accentRgb}, 0.4)` : "rgba(255, 255, 255, 0.15)",
+                  color: hoveredCard === "reset-stress-btn" ? accent : "rgba(255, 255, 255, 0.7)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1)"
                 }}
-                className="px-2 py-1 border rounded text-[8px] font-mono font-bold uppercase transition-all cursor-pointer"
+                className="px-2.5 py-1 bg-gradient-to-b from-white/10 to-black/60 border rounded-lg text-[8px] font-mono font-bold uppercase transition-all cursor-pointer hover:border-white/30"
               >
                 Reset
               </button>
@@ -1432,7 +1470,7 @@ export default function ConsoleDView({
             </div>
 
             <div className="text-center mt-3 space-y-1 font-mono">
-              <span className={`px-2.5 py-0.5 rounded text-[9px] font-bold uppercase inline-block border ${synergeticCNSInfo.levelColor}`}>
+              <span className={`px-2.5 py-0.5 rounded-lg text-[9px] font-bold uppercase inline-block border shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] ${synergeticCNSInfo.levelColor}`}>
                 {synergeticCNSInfo.label}
               </span>
               <p className="text-[10px] text-white/50 leading-snug px-3">
@@ -1441,7 +1479,7 @@ export default function ConsoleDView({
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-[9px] font-mono text-white/30 mt-4 pt-3 border-t border-white/[0.03]">
+          <div className="flex items-center justify-between text-[9px] font-mono text-white/40 mt-4 pt-3 border-t border-white/10">
             <span className="uppercase">CNS Status Monitoring</span>
             <span style={{ color: accent }} className="opacity-80 font-bold uppercase">
               Active Telemetry
@@ -1456,10 +1494,11 @@ export default function ConsoleDView({
           onMouseEnter={() => setHoveredCard("back-to-top-btn")}
           onMouseLeave={() => setHoveredCard(null)}
           style={{
-            borderColor: hoveredCard === "back-to-top-btn" ? `rgba(${accentRgb}, 0.35)` : "rgba(255, 255, 255, 0.1)",
-            color: hoveredCard === "back-to-top-btn" ? accent : "rgba(255, 255, 255, 0.6)"
+            borderColor: hoveredCard === "back-to-top-btn" ? `rgba(${accentRgb}, 0.5)` : "rgba(255, 255, 255, 0.15)",
+            color: hoveredCard === "back-to-top-btn" ? accent : "rgba(255, 255, 255, 0.7)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 12px rgba(0,0,0,0.6)"
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-black/60 border rounded-md text-[10px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer group"
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/60 border rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all cursor-pointer group active:translate-y-0.5 hover:-translate-y-0.5"
         >
           <ArrowUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
           Back to Top
