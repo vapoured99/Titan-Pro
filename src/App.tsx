@@ -2353,6 +2353,7 @@ export default function App() {
   const [currentThemeId, setCurrentThemeId] = useState<string>(() => {
     return localStorage.getItem("gym-theme-id") || "default";
   });
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
   const [atmosphereEffect, setAtmosphereEffect] = useState<string>(() => {
     return localStorage.getItem("gym-atmosphere-effect") || "video_theme3";
   });
@@ -7887,21 +7888,52 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="relative z-10 max-w-5xl mx-auto px-6 py-12 pb-32"
+            className="relative z-10 max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-12 pb-28 sm:pb-32"
           >
         {/* Header */}
-        <header className="flex flex-col md:flex-row items-stretch md:items-end justify-between mb-16 gap-6 border-b border-gym-accent/20 pb-10">
-          <div className="flex flex-col items-start gap-1 w-full md:w-auto">
-            <span className="text-[10px] uppercase tracking-[0.3em] text-gym-accent font-bold self-center md:self-start">
-              Premium Session
-            </span>
-            <h1 className="text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none self-start md:self-start">
-              Titan{" "}
-              <span className="text-gym-accent accent-glow-strong">Pro</span>
-            </h1>
+        <header className="flex flex-col md:flex-row items-stretch md:items-end justify-between mb-6 sm:mb-16 gap-4 sm:gap-6 border-b border-gym-accent/20 pb-4 sm:pb-10">
+          <div className="flex items-center justify-between w-full md:w-auto">
+            <div className="flex flex-col items-start gap-0.5">
+              <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-gym-accent font-bold">
+                Premium Session
+              </span>
+              <h1 className="text-3xl sm:text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none">
+                Titan{" "}
+                <span className="text-gym-accent accent-glow-strong">Pro</span>
+              </h1>
+            </div>
+
+            {/* Mobile Header Quick Actions */}
+            <div className="flex items-center gap-2 sm:hidden">
+              <button
+                onClick={() => setShowLandingPage(true)}
+                className="p-2 bg-white/5 border border-white/10 rounded-full text-theme-text-muted hover:text-theme-text transition-all active:scale-95"
+                title="Cinematic Portal"
+              >
+                <Compass className="w-4 h-4 text-gym-accent" />
+              </button>
+              <button
+                onClick={() => {
+                  setActiveView("profile");
+                  saveSettings({ activeView: "profile" });
+                }}
+                className={`p-0.5 border rounded-full transition-all active:scale-95 overflow-hidden w-8 h-8 ${activeView === "profile" ? "border-gym-accent bg-gym-accent/10" : "border-white/10 bg-white/5"}`}
+                title="Profile"
+              >
+                {profile?.photoURL || currentUser.photoURL ? (
+                  <img
+                    src={profile?.photoURL || currentUser.photoURL || ""}
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <UserIcon className="w-3.5 h-3.5 text-theme-text-muted" />
+                )}
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6 justify-between md:justify-end w-full md:w-auto">
+          <div className="hidden sm:flex items-center gap-6 justify-between md:justify-end w-full md:w-auto">
             <div className="flex flex-col items-start md:items-end text-left md:text-right">
               <p className="text-[10px] text-theme-text-muted uppercase tracking-widest mb-0.5 flex items-center gap-2 justify-start md:justify-end">
                 {new Date().toLocaleDateString("en-GB", {
@@ -7961,70 +7993,6 @@ export default function App() {
             </div>
           </div>
         </header>
-
-        {/* Tabs / Navigation */}
-        <nav className="flex items-center mb-12 border-b border-white/10 pb-6 overflow-x-auto no-scrollbar whitespace-nowrap scroll-smooth w-full">
-          <div className="flex items-center gap-3 flex-nowrap w-full pr-0">
-            {[
-              { id: "console_d", label: "Console" },
-              { id: "workout", label: "Workout" },
-              { id: "library", label: "Library" },
-              { id: "progress", label: "Progress" },
-              { id: "anatomy", label: "Anatomy" },
-              { id: "session", label: "Session" },
-              { id: "routines", label: "Routines" },
-            ].map((nav) => (
-              <button
-                key={nav.id}
-                onClick={() => {
-                  setActiveView(nav.id as any);
-                  saveSettings({ activeView: nav.id });
-                }}
-                className={`relative px-4 py-2 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
-                  activeView === nav.id
-                    ? "border-gym-accent/35 bg-black/60 backdrop-blur-sm text-gym-accent font-bold"
-                    : "border-white/10 bg-black/60 backdrop-blur-sm text-theme-text-muted hover:text-theme-text hover:bg-black/85 hover:border-white/20"
-                }`}
-                title={nav.label}
-              >
-                <span className="font-mono text-xs uppercase tracking-wider">
-                  {nav.label}
-                </span>
-                {activeView === nav.id && (
-                  <motion.div
-                    layoutId="nav-underline"
-                    className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav"
-                  />
-                )}
-              </button>
-            ))}
-
-            <div className="flex-grow" />
-
-            <button
-              onClick={() => {
-                setActiveView("avatar");
-                saveSettings({ activeView: "avatar" });
-              }}
-              className={`relative px-4 py-2 rounded-lg border transition-all cursor-pointer flex items-center justify-center shrink-0 select-none ${
-                activeView === "avatar"
-                  ? "border-gym-accent/35 bg-black/60 backdrop-blur-sm text-gym-accent font-bold"
-                  : "border-white/10 bg-black/60 backdrop-blur-sm text-theme-text-muted hover:text-theme-text hover:bg-black/85 hover:border-white/20"
-              }`}
-              title="Avatar"
-            >
-              <span className="font-mono text-xs uppercase tracking-wider">
-                Avatar
-              </span>
-              {activeView === "avatar" && (
-                <motion.div
-                  layoutId="nav-underline"
-                  className="absolute -bottom-[25px] left-0 right-0 h-0.5 bg-gym-accent accent-shadow-nav"
-                />
-              )}
-            </button>
-          </div>
-        </nav>
 
         {/* Main Content */}
         <main className="space-y-3">
@@ -19184,6 +19152,142 @@ export default function App() {
                 </div>
               </motion.div>
             </div>
+          )}
+        </AnimatePresence>
+
+        {/* Universal Bottom Dock Navigation & Drawer */}
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-2 sm:px-6 py-2 flex items-center justify-around sm:justify-center sm:gap-10 shadow-2xl safe-area-bottom">
+          {[
+            { id: "console_d", label: "Console", icon: Terminal },
+            { id: "workout", label: "Workout", icon: Dumbbell },
+            { id: "library", label: "Library", icon: BookOpen },
+            { id: "progress", label: "Progress", icon: LineChart },
+            { id: "anatomy", label: "Anatomy", icon: PersonStanding },
+            { id: "session", label: "Session", icon: Timer },
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveView(item.id as any);
+                  saveSettings({ activeView: item.id });
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                className={`flex flex-col items-center justify-center py-1 px-2 sm:px-4 rounded-xl transition-all cursor-pointer active:scale-95 ${
+                  isActive
+                    ? "text-gym-accent font-bold"
+                    : "text-white/50 hover:text-white/80"
+                }`}
+              >
+                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isActive ? "scale-110 text-gym-accent" : ""}`} />
+                <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-mono mt-0.5 sm:mt-1">
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+          <button
+            onClick={() => setMobileMoreOpen(!mobileMoreOpen)}
+            className={`flex flex-col items-center justify-center py-1 px-2 sm:px-4 rounded-xl transition-all cursor-pointer active:scale-95 ${
+              ["routines", "avatar", "profile"].includes(activeView) || mobileMoreOpen
+                ? "text-gym-accent font-bold"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-mono mt-0.5 sm:mt-1">
+              More
+            </span>
+          </button>
+        </nav>
+
+        {/* Slide-Up Drawer for Additional Navigation */}
+        <AnimatePresence>
+          {mobileMoreOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setMobileMoreOpen(false)}
+                className="fixed inset-0 bg-black/70 backdrop-blur-md z-50"
+              />
+              <motion.div
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="fixed bottom-14 sm:bottom-16 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-neutral-900/95 backdrop-blur-2xl border border-gym-accent/30 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[80vh] overflow-y-auto"
+              >
+                <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4" />
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
+                  <h3 className="text-xs font-mono uppercase tracking-widest text-gym-accent font-bold flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5" /> Navigation & Features
+                  </h3>
+                  <button
+                    onClick={() => setMobileMoreOpen(false)}
+                    className="p-1 rounded-full bg-white/5 text-white/60 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {[
+                    { id: "routines", label: "Routines", icon: ClipboardList, desc: "Saved split templates" },
+                    { id: "avatar", label: "3D Avatar", icon: Sparkles, desc: "Muscle avatar status" },
+                    { id: "profile", label: "Profile", icon: UserIcon, desc: "User profile & metrics" },
+                  ].map((nav) => {
+                    const Icon = nav.icon;
+                    const isActive = activeView === nav.id;
+                    return (
+                      <button
+                        key={nav.id}
+                        onClick={() => {
+                          setActiveView(nav.id as any);
+                          saveSettings({ activeView: nav.id });
+                          setMobileMoreOpen(false);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1 ${
+                          isActive
+                            ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
+                            : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon className="w-4 h-4" />
+                          <span className="text-xs font-bold uppercase font-mono tracking-wider">{nav.label}</span>
+                        </div>
+                        <span className="text-[10px] text-white/50 leading-snug">{nav.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => {
+                      setShowLandingPage(true);
+                      setMobileMoreOpen(false);
+                    }}
+                    className="flex-1 py-2.5 px-3 bg-white/5 border border-white/10 rounded-xl text-xs font-mono uppercase tracking-wider text-white/80 flex items-center justify-center gap-2"
+                  >
+                    <Compass className="w-3.5 h-3.5 text-gym-accent" /> Portal
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMoreOpen(false);
+                    }}
+                    className="py-2.5 px-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-mono uppercase tracking-wider text-red-400 flex items-center justify-center gap-2"
+                  >
+                    <LogOut className="w-3.5 h-3.5" /> Logout
+                  </button>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </motion.div>
