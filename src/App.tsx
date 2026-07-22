@@ -7888,7 +7888,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}
-            className="relative z-10 max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-12 pb-28 sm:pb-32"
+            className="relative z-10 max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-12 pb-32 sm:pb-40"
           >
         {/* Header */}
         <header className="flex flex-col md:flex-row items-stretch md:items-end justify-between mb-6 sm:mb-16 gap-4 sm:gap-6 border-b border-gym-accent/20 pb-4 sm:pb-10">
@@ -19156,7 +19156,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* Universal Bottom Dock Navigation & Drawer */}
-        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-2 sm:px-6 py-2 flex items-center justify-around sm:justify-center sm:gap-10 shadow-2xl safe-area-bottom">
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-2 sm:px-6 py-3.5 sm:py-5 flex items-center justify-around sm:justify-center sm:gap-12 shadow-2xl safe-area-bottom">
           {[
             { id: "console_d", label: "Console", icon: Terminal },
             { id: "workout", label: "Workout", icon: Dumbbell },
@@ -19175,14 +19175,14 @@ export default function App() {
                   saveSettings({ activeView: item.id });
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className={`flex flex-col items-center justify-center py-1 px-2 sm:px-4 rounded-xl transition-all cursor-pointer active:scale-95 ${
+                className={`flex flex-col items-center justify-center py-1.5 px-2 sm:px-5 rounded-xl transition-all cursor-pointer active:scale-95 ${
                   isActive
                     ? "text-gym-accent font-bold"
                     : "text-white/50 hover:text-white/80"
                 }`}
               >
-                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform ${isActive ? "scale-110 text-gym-accent" : ""}`} />
-                <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-mono mt-0.5 sm:mt-1">
+                <Icon className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform ${isActive ? "scale-110 text-gym-accent" : ""}`} />
+                <span className="text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5">
                   {item.label}
                 </span>
               </button>
@@ -19190,14 +19190,14 @@ export default function App() {
           })}
           <button
             onClick={() => setMobileMoreOpen(!mobileMoreOpen)}
-            className={`flex flex-col items-center justify-center py-1 px-2 sm:px-4 rounded-xl transition-all cursor-pointer active:scale-95 ${
+            className={`flex flex-col items-center justify-center py-1.5 px-2 sm:px-5 rounded-xl transition-all cursor-pointer active:scale-95 ${
               ["routines", "avatar", "profile"].includes(activeView) || mobileMoreOpen
                 ? "text-gym-accent font-bold"
                 : "text-white/50 hover:text-white/80"
             }`}
           >
-            <LayoutGrid className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-[8px] sm:text-[10px] uppercase tracking-wider font-mono mt-0.5 sm:mt-1">
+            <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6" />
+            <span className="text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5">
               More
             </span>
           </button>
@@ -19219,7 +19219,7 @@ export default function App() {
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-14 sm:bottom-16 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-neutral-900/95 backdrop-blur-2xl border border-gym-accent/30 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[80vh] overflow-y-auto"
+                className="fixed bottom-20 sm:bottom-24 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-neutral-900/95 backdrop-blur-2xl border border-gym-accent/30 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[80vh] overflow-y-auto"
               >
                 <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4" />
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
