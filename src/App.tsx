@@ -19156,7 +19156,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* Universal Bottom Dock Navigation & Drawer */}
-        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-2 sm:px-6 py-3.5 sm:py-5 flex items-center justify-around sm:justify-center sm:gap-12 shadow-2xl safe-area-bottom">
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-1 sm:px-6 py-2.5 sm:py-5 flex items-center justify-between sm:justify-center sm:gap-10 md:gap-12 shadow-2xl safe-area-bottom w-full max-w-full">
           {[
             { id: "console_d", label: "Console", icon: Terminal },
             { id: "workout", label: "Workout", icon: Dumbbell },
@@ -19175,14 +19175,14 @@ export default function App() {
                   saveSettings({ activeView: item.id });
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className={`flex flex-col items-center justify-center py-1.5 px-2 sm:px-5 rounded-xl transition-all cursor-pointer active:scale-95 ${
+                className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-0.5 sm:px-4 rounded-xl transition-all cursor-pointer active:scale-95 ${
                   isActive
                     ? "text-gym-accent font-bold"
                     : "text-white/50 hover:text-white/80"
                 }`}
               >
-                <Icon className={`w-5 h-5 sm:w-6 sm:h-6 transition-transform ${isActive ? "scale-110 text-gym-accent" : ""}`} />
-                <span className="text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5">
+                <Icon className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${isActive ? "scale-110 text-gym-accent" : ""}`} />
+                <span className="text-[7.5px] min-[380px]:text-[8.5px] sm:text-[11px] uppercase tracking-tighter min-[380px]:tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
                   {item.label}
                 </span>
               </button>
@@ -19190,14 +19190,14 @@ export default function App() {
           })}
           <button
             onClick={() => setMobileMoreOpen(!mobileMoreOpen)}
-            className={`flex flex-col items-center justify-center py-1.5 px-2 sm:px-5 rounded-xl transition-all cursor-pointer active:scale-95 ${
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-0.5 sm:px-4 rounded-xl transition-all cursor-pointer active:scale-95 ${
               ["routines", "avatar", "profile"].includes(activeView) || mobileMoreOpen
                 ? "text-gym-accent font-bold"
                 : "text-white/50 hover:text-white/80"
             }`}
           >
-            <LayoutGrid className="w-5 h-5 sm:w-6 sm:h-6" />
-            <span className="text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5">
+            <LayoutGrid className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0" />
+            <span className="text-[7.5px] min-[380px]:text-[8.5px] sm:text-[11px] uppercase tracking-tighter min-[380px]:tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
               More
             </span>
           </button>
