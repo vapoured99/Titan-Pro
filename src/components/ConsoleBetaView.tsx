@@ -305,7 +305,7 @@ export default function ConsoleBetaView({
                       <select
                         value={calcLift}
                         onChange={(e) => setCalcLift(e.target.value)}
-                        className="w-full bg-white/[0.02] border border-white/10 rounded-lg py-1 px-1 text-xs text-white outline-none"
+                        className="w-full bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/15 hover:border-gym-accent/50 focus:border-gym-accent rounded-xl py-1.5 px-2 text-xs font-bold text-white outline-none cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] [&>option]:bg-[#0c0c0e] [&>option]:text-white"
                       >
                         <option value="bench">Bench Press</option>
                         <option value="squat">Squat</option>

@@ -63,7 +63,7 @@ export const SpinalDepletionWidget: React.FC<SpinalDepletionWidgetProps> = ({
       initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      className="relative overflow-hidden bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-6 select-none hover:border-white/10 transition-all duration-300"
+      className="relative overflow-hidden bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 select-none shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] hover:border-gym-accent/30 transition-all duration-300"
       id="spinal-gauge-hero-card"
     >
       {/* Abstract Corner Radial Glow */}
@@ -253,7 +253,7 @@ export const SpinalDepletionWidget: React.FC<SpinalDepletionWidgetProps> = ({
                 e.stopPropagation();
                 setActiveView("anatomy");
               }}
-              className="ml-auto text-[9px] text-gym-accent font-extrabold uppercase tracking-wider border border-gym-accent/20 hover:border-gym-accent/60 bg-gym-accent/5 hover:bg-gym-accent/10 px-3 py-1.5 rounded-md transition-all duration-200 cursor-pointer flex items-center gap-1.5 font-mono hover:scale-[1.02] active:scale-[0.98]"
+              className="ml-auto text-[9px] text-gym-accent font-extrabold uppercase tracking-wider border border-gym-accent/40 hover:border-gym-accent bg-gradient-to-b from-gym-accent/20 to-black/60 hover:from-gym-accent/30 hover:to-black/40 px-3.5 py-2 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.6)] transition-all duration-200 cursor-pointer flex items-center gap-1.5 font-mono hover:scale-[1.02] active:scale-[0.98]"
             >
               Inspect Neural Component Log
               <span className="text-xs">→</span>

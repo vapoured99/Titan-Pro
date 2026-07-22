@@ -81,10 +81,8 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
 
   // Streak calculation from profile and archivedWorkouts
   const streak = useMemo(() => {
-    const profileStreak = currentProfile?.streakCount ?? currentProfile?.streak ?? 0;
-
     if (!archivedWorkouts || archivedWorkouts.length === 0) {
-      return profileStreak;
+      return 0;
     }
 
     const uniqueDates = new Set<string>();
@@ -94,19 +92,32 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
         if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
           uniqueDates.add(dateStr);
         }
+      } else if (w.timestamp?.seconds) {
+        const d = new Date(w.timestamp.seconds * 1000);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        uniqueDates.add(`${year}-${month}-${day}`);
       }
     });
 
-    if (uniqueDates.size === 0) return profileStreak;
+    if (uniqueDates.size === 0) return 0;
 
-    const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    const getLocalDateStr = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
 
-    const yesterday = new Date();
+    const now = new Date();
+    const todayStr = getLocalDateStr(now);
+
+    const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    const yesterdayStr = getLocalDateStr(yesterday);
 
-    let checkDate = new Date();
+    let checkDate = new Date(now);
     let checkStr = todayStr;
 
     if (!uniqueDates.has(todayStr)) {
@@ -118,11 +129,11 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
     while (uniqueDates.has(checkStr)) {
       workoutStreak++;
       checkDate.setDate(checkDate.getDate() - 1);
-      checkStr = checkDate.toISOString().split('T')[0];
+      checkStr = getLocalDateStr(checkDate);
     }
 
-    return Math.max(profileStreak, workoutStreak);
-  }, [archivedWorkouts, currentProfile]);
+    return workoutStreak;
+  }, [archivedWorkouts]);
 
   // Weight Change
   const currentWeight = currentProfile?.weight ?? (weightHistory && weightHistory[weightHistory.length - 1]?.weight) ?? null;

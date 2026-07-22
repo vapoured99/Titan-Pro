@@ -303,7 +303,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
   }, [adaptationMetrics, selectedMuscle]);
 
   return (
-    <div className="bg-[#050506] border border-white/10 rounded-md p-6 relative overflow-hidden space-y-6" id="hypertrophic-adaptations-panel">
+    <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 relative overflow-hidden space-y-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)]" id="hypertrophic-adaptations-panel">
       {/* Background neon dynamic grid element */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(34,197,94,0.015)_0%,transparent_60%)] pointer-events-none" />
 
@@ -326,7 +326,7 @@ export const HypertrophicAdaptationPredictor: React.FC<HypertrophicAdaptationPre
         <div>
           <button
             onClick={() => setShowExplanation(!showExplanation)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-[9.5px] font-mono rounded-md border border-white/10 cursor-pointer transition-all uppercase"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-b from-white/10 to-black/50 hover:from-white/15 hover:to-black/40 text-white/80 hover:text-white text-[9.5px] font-mono font-bold rounded-xl border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_2px_8px_rgba(0,0,0,0.5)] cursor-pointer transition-all uppercase"
           >
             <HelpCircle className="w-3.5 h-3.5" />
             {showExplanation ? "Hide Info" : "How It Works"}

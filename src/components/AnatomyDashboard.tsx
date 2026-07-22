@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Scroll3DItem } from '../App';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Activity, 
@@ -1199,8 +1198,7 @@ export default function AnatomyDashboard({
     <div className="space-y-6" id="anatomy-dashboard">
 
       {/* ────────────────── DROP DOWN 1: PHYSIOLOGICAL ANALYSIS ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-        <Scroll3DItem>
+      <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30">
         <button
           onClick={() => toggleSection('physiological')}
           className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -1228,7 +1226,6 @@ export default function AnatomyDashboard({
             )}
           </div>
         </button>
-        </Scroll3DItem>
 
         <AnimatePresence initial={false}>
           {expanded.physiological && (
@@ -1278,7 +1275,7 @@ export default function AnatomyDashboard({
                         <select
                           value={selectedDashboardRoutineId || ""}
                           onChange={(e) => setSelectedDashboardRoutineId(e.target.value)}
-                          className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer min-w-[200px] max-w-[320px] shadow-md"
+                          className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/15 hover:border-gym-accent/50 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-xl px-4 py-3 focus:outline-none transition-all cursor-pointer min-w-[200px] max-w-[320px] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_4px_12px_rgba(0,0,0,0.6)] [&>option]:bg-[#0c0c0e] [&>option]:text-white"
                         >
                           {routines.map((r: any, idx: number) => (
                             <option key={r.id || idx} value={r.id}>
@@ -1363,8 +1360,7 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 2: MUSCULAR RADAR ANALYSIS ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-        <Scroll3DItem>
+      <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30">
         <button
           onClick={() => toggleSection('radar')}
           className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -1391,7 +1387,6 @@ export default function AnatomyDashboard({
             )}
           </div>
         </button>
-        </Scroll3DItem>
 
         <AnimatePresence initial={false}>
           {expanded.radar && (
@@ -1755,8 +1750,7 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 3: BIOMECHANICAL STRUCTURAL LOAD ALERTER ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-        <Scroll3DItem>
+      <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30">
         <button
           onClick={() => toggleSection('biomechanical')}
           className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -1789,7 +1783,6 @@ export default function AnatomyDashboard({
             )}
           </div>
         </button>
-        </Scroll3DItem>
 
         <AnimatePresence initial={false}>
           {expanded.biomechanical && (
@@ -2101,8 +2094,7 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 4: RELATIVE STRENGTH RADAR ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md">
-        <Scroll3DItem>
+      <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30">
         <button
           onClick={() => toggleSection('strength')}
           className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
@@ -2124,7 +2116,6 @@ export default function AnatomyDashboard({
             )}
           </div>
         </button>
-        </Scroll3DItem>
 
         <AnimatePresence initial={false}>
           {expanded.strength && (
@@ -2150,11 +2141,12 @@ export default function AnatomyDashboard({
       </div>
 
       {/* ────────────────── DROP DOWN 5: DYNAMIC CNS FATIGUE INDEX ────────────────── */}
-      <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md mt-4">
-        <Scroll3DItem>
+      <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30 mt-4">
         <button
           onClick={() => toggleSection('cnsFatigue')}
-          className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
+          className={`w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left transition-all cursor-pointer group ${
+            expanded.cnsFatigue ? "border-b border-white/15" : ""
+          } hover:bg-white/[0.04]`}
           id="toggle-cns-fatigue"
         >
           <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
@@ -2182,7 +2174,6 @@ export default function AnatomyDashboard({
             )}
           </div>
         </button>
-        </Scroll3DItem>
 
         <AnimatePresence initial={false}>
           {expanded.cnsFatigue && (

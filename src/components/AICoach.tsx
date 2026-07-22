@@ -2,7 +2,6 @@ import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Cpu, Sparkles, AlertTriangle, CheckCircle, Zap, RotateCcw, Shield, ChevronDown, ChevronUp } from 'lucide-react';
 import { POOLS } from '../data/exercises';
-import { Scroll3DItem } from '../App';
 
 interface SessionSet {
   id?: string;
@@ -227,8 +226,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
   };
 
   return (
-    <div className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md h-full">
-      <Scroll3DItem>
+    <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md h-full">
         <button
           onClick={() => setIsMinimized(!isMinimized)}
           type="button"
@@ -258,7 +256,6 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
             )}
           </div>
         </button>
-      </Scroll3DItem>
 
       <AnimatePresence initial={false}>
         {!isMinimized && (
@@ -292,7 +289,7 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
                     onClick={executeAnalysis}
                     disabled={loading}
                     type="button"
-                    className="bg-gym-accent text-black font-black uppercase tracking-[0.2em] text-[10px] px-6 py-3.5 rounded-md hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-gym-accent/10 flex items-center gap-2.5"
+                    className="bg-gradient-to-b from-gym-accent via-gym-accent to-emerald-500 text-black font-black uppercase tracking-[0.2em] text-[10px] px-6 py-3.5 rounded-xl hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_4px_16px_rgba(34,197,94,0.3)] flex items-center gap-2.5"
                   >
                     <Cpu className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     {loading ? 'CALCULATING BIOMETRIC SYNAPSE...' : 'INITIATE TACTICAL ANALYSIS'}

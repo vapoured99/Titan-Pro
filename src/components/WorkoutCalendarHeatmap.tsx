@@ -111,13 +111,20 @@ export default function WorkoutCalendarHeatmap({
     let currentStreak = 0;
     
     if (allWorkoutDates.length > 0) {
-      const todayStr = now.toISOString().split('T')[0];
-      const yesterday = new Date();
+      const getLocalDateStr = (d: Date) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      const todayStr = getLocalDateStr(now);
+      const yesterday = new Date(now);
       yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      const yesterdayStr = getLocalDateStr(yesterday);
       
       const setOfDates = new Set(allWorkoutDates);
-      let tempDate = now;
+      let tempDate = new Date(now);
       let checkStr = todayStr;
       
       // If no workout today, check starting from yesterday
@@ -130,7 +137,7 @@ export default function WorkoutCalendarHeatmap({
         while (setOfDates.has(checkStr)) {
           currentStreak++;
           tempDate.setDate(tempDate.getDate() - 1);
-          checkStr = tempDate.toISOString().split('T')[0];
+          checkStr = getLocalDateStr(tempDate);
         }
       }
     }
@@ -199,7 +206,7 @@ export default function WorkoutCalendarHeatmap({
       {/* 1. Header and Micro Analytics Ribbell Blocks */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Stat block 1 */}
-        <div className="bg-white/[0.015] border border-white/5 rounded-md p-4 flex items-center gap-3">
+        <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 flex items-center gap-3 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 hover:shadow-[0_0_20px_rgba(194,254,30,0.1)]">
           <div className="w-9 h-9 rounded-full bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent shrink-0">
             <CheckCircle2 className="w-4.5 h-4.5" />
           </div>
@@ -210,7 +217,7 @@ export default function WorkoutCalendarHeatmap({
         </div>
 
         {/* Stat block 2 */}
-        <div className="bg-white/[0.015] border border-white/5 rounded-md p-4 flex items-center gap-3">
+        <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 flex items-center gap-3 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 hover:shadow-[0_0_20px_rgba(194,254,30,0.1)]">
           <div className="w-9 h-9 rounded-full bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent shrink-0">
             <Flame className="w-4.5 h-4.5" />
           </div>
@@ -221,7 +228,7 @@ export default function WorkoutCalendarHeatmap({
         </div>
 
         {/* Stat block 3 */}
-        <div className="bg-white/[0.015] border border-white/5 rounded-md p-4 flex items-center gap-3">
+        <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 flex items-center gap-3 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 hover:shadow-[0_0_20px_rgba(194,254,30,0.1)]">
           <div className="w-9 h-9 rounded-full bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent shrink-0">
             <TrendingUp className="w-4.5 h-4.5" />
           </div>
@@ -232,7 +239,7 @@ export default function WorkoutCalendarHeatmap({
         </div>
 
         {/* Stat block 4 */}
-        <div className="bg-white/[0.015] border border-white/5 rounded-md p-4 flex items-center gap-3">
+        <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 flex items-center gap-3 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 hover:shadow-[0_0_20px_rgba(194,254,30,0.1)]">
           <div className="w-9 h-9 rounded-full bg-gym-accent/10 border border-gym-accent/20 flex items-center justify-center text-gym-accent shrink-0">
             <Sparkles className="w-4.5 h-4.5" />
           </div>
@@ -265,7 +272,7 @@ export default function WorkoutCalendarHeatmap({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {calendarMonths.map((mObj, mIdx) => {
           return (
-            <div key={`${mObj.year}-${mObj.month}`} className="border border-white/5 bg-white/[0.01] rounded-md p-5 relative overflow-hidden">
+            <div key={`${mObj.year}-${mObj.month}`} className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-5 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 relative overflow-hidden">
               {/* Background Month Watermark */}
               <div className="absolute right-2 top-2 select-none opacity-[0.02] text-5xl font-black font-sans leading-none pointer-events-none">
                 {(mObj.month + 1).toString().padStart(2, '0')}
@@ -373,7 +380,7 @@ export default function WorkoutCalendarHeatmap({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 15 }}
             transition={{ duration: 0.25 }}
-            className="border border-white/10 rounded-md bg-black/60 p-6 backdrop-blur-md"
+            className="border border-white/12 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/90 p-6 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_16px_40px_rgba(0,0,0,0.9)]"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/5 mb-4">
               <div>
@@ -401,7 +408,7 @@ export default function WorkoutCalendarHeatmap({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {selectedDateWorkouts.map((w) => {
                   return (
-                    <div key={w.id} className="border border-white/10 rounded-md p-4 bg-white/[0.015] hover:border-gym-accent/30 hover:bg-white/[0.03] transition-all flex flex-col justify-between">
+                    <div key={w.id} className="border border-white/12 rounded-2xl p-4 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 hover:border-gym-accent/40 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 flex flex-col justify-between">
                       <div>
                         {/* Title Row */}
                         <div className="flex items-center justify-between gap-3 mb-2">

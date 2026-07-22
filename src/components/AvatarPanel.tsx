@@ -2958,7 +2958,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           </div>
 
           {/* Active Companion Pet Card (Injected under the Showcase card, constantly displayed on the left column) */}
-          <div className="w-full max-w-[440px] xl:max-w-none bg-black/85 border border-white/20 rounded-lg p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-xl group/petcard">
+          <div className="w-full max-w-[440px] xl:max-w-none bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-5 flex flex-col gap-4 relative overflow-hidden transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md group/petcard">
             {/* Background cyan/pink/amber gradient particle glow */}
             <div 
               className="absolute -right-12 -top-12 w-32 h-32 rounded-full filter blur-3xl opacity-20 pointer-events-none transition-all duration-700" 
@@ -3126,7 +3126,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 grid-rows-[auto_auto_1fr] flex-1">
                   
                   {/* Card 1: Integrated Profile & Combat Readiness (Span col-span-2) */}
-          <div className="md:col-span-2 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/40 group shadow-md">
+          <div className="md:col-span-2 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/40 group shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md">
             {/* Decal background grid patterns */}
             <div className="absolute inset-0 opacity-[0.03] bg-grid-pattern pointer-events-none" />
             
@@ -3195,7 +3195,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           </div>
  
           {/* Card 2: Arena Milestones & Trophy Standing (Col-span-1) */}
-          <div className="col-span-1 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden flex flex-col justify-between min-h-[178px] hover:border-gym-accent/40 group transition-all duration-300 shadow-md">
+          <div className="col-span-1 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[178px] hover:border-gym-accent/40 group transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md">
             <div className="absolute -top-6 -right-6 w-24 h-24 bg-purple-500/5 rounded-full filter blur-xl pointer-events-none" />
             
             <div className="flex items-start gap-3.5 relative z-10">
@@ -3229,7 +3229,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           </div>
  
           {/* Card 3: Neural Buffs & System Core Calibration (Col-span-1) */}
-          <div className="col-span-1 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden flex flex-col justify-between min-h-[178px] hover:border-gym-accent/40 group transition-all duration-300 shadow-md">
+          <div className="col-span-1 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[178px] hover:border-gym-accent/40 group transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md">
             <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-gym-accent/5 rounded-full filter blur-xl pointer-events-none" />
             
             <div className="relative z-10 flex justify-between items-start">
@@ -3281,7 +3281,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
           </div>
  
           {/* Card 4: Physiological Core & Biometrics Unified Calibration Matrix (Span col-span-2) */}
-          <div className="md:col-span-2 bg-black/85 border border-white/20 rounded-lg p-5 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/40 group shadow-md w-full flex flex-col justify-between h-full">
+          <div className="md:col-span-2 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/40 group shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md w-full flex flex-col justify-between h-full">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-gym-accent/10 to-transparent pointer-events-none" />
             
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-3 mb-5 relative z-10 gap-3">
@@ -3551,7 +3551,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
                   unlockedRelics={profile?.unlockedRelics || []}
                 />
               ) : (
-                <div id="trophy-shelf-section" className="bg-black/85 border border-white/10 rounded-lg p-6 relative overflow-hidden shadow-xl h-full flex flex-col justify-start flex-1 gap-6 min-h-[500px]">
+                <div id="trophy-shelf-section" className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md h-full flex flex-col justify-start flex-1 gap-6 min-h-[500px]">
                   <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-yellow-500/10 to-transparent pointer-events-none" />
                   <div className="absolute top-1/2 left-0 w-36 h-36 bg-gradient-to-r from-amber-500/5 to-transparent pointer-events-none blur-xl" />
                   
@@ -3681,7 +3681,7 @@ export default function AvatarPanel({ profile, setProfile, saveSettings, setToas
       {/* Relocated Widescreen Avatar Store Section at bottom */}
       {innerTab === 'customization' && (
         <div className="w-full mt-8 animate-[fadeIn_0.5s_ease-out]">
-          <div className="bg-black/90 border border-white/15 rounded-lg p-6 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/30 group shadow-2xl w-full">
+          <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 relative overflow-hidden transition-all duration-300 hover:border-gym-accent/30 group shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md w-full">
             <div className="absolute top-0 right-0 w-44 h-44 bg-gradient-to-bl from-gym-accent/5 to-transparent pointer-events-none" />
             <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-gradient-to-tr from-purple-500/5 to-transparent pointer-events-none" />
             

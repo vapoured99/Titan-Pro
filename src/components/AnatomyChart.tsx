@@ -1152,7 +1152,7 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
                     return (
                       <div 
                         key={`${ex.name}-${index}`} 
-                        className={`rounded-md border transition-all duration-300 ${isExpanded ? "bg-white/[0.04] border-gym-accent/30 shadow-[0_0_10px_rgba(255,215,0,0.02)]" : "bg-white/[0.015] border-white/5 hover:bg-white/[0.025]"}`}
+                        className={`rounded-xl border transition-all duration-300 overflow-hidden ${isExpanded ? "bg-gradient-to-b from-white/[0.1] via-white/[0.04] to-black/90 border-gym-accent/50 shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_16px_rgba(0,0,0,0.6)]" : "bg-gradient-to-b from-white/[0.06] to-black/60 border-white/12 hover:border-white/25 hover:from-white/[0.08]"}`}
                       >
                         {/* Summary Header Row */}
                         <div 

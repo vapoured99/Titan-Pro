@@ -710,7 +710,7 @@ export default function AIPlanActive({
       <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
         
         {/* Progress & Metrics Card (Takes full width) */}
-        <div className="md:col-span-12 w-full bg-black/40 border border-white/5 rounded-2xl p-5 backdrop-blur-md flex flex-col justify-between relative overflow-hidden shadow-md">
+        <div className="md:col-span-12 w-full bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 backdrop-blur-md flex flex-col justify-between relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <span className="text-[10px] font-mono font-black uppercase text-gym-accent tracking-widest flex items-center gap-1.5">
@@ -836,10 +836,10 @@ export default function AIPlanActive({
                   return (
                     <div
                       key={exName}
-                      className={`bg-black/40 border border-l-4 rounded-2xl p-4 sm:p-5 backdrop-blur-md transition-all ${
+                      className={`bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-l-4 rounded-2xl p-4 sm:p-5 backdrop-blur-md transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] ${
                         isDone
-                          ? "border-emerald-500/20 border-l-emerald-500 bg-emerald-950/5 shadow-[0_0_15px_rgba(16,185,129,0.02)]"
-                          : "border-white/5 border-l-gym-accent shadow-[0_0_15px_rgba(194,254,30,0.01)] hover:shadow-[0_0_20px_rgba(194,254,30,0.03)]"
+                          ? "border-white/12 border-l-emerald-500 hover:border-emerald-500/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_0_20px_rgba(16,185,129,0.15)]"
+                          : "border-white/12 border-l-red-500 hover:border-red-500/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_0_20px_rgba(239,68,68,0.15)]"
                       }`}
                     >
                       {/* Sub-header row */}

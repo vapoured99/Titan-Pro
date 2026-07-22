@@ -404,13 +404,13 @@ export default function ConsoleIntelligencePanel({
       {/* Primary Header Console Banner */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-white/10 pb-4 mb-6 relative z-10 gap-3">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gym-accent/10 border border-gym-accent/30 rounded-lg relative overflow-hidden shadow-[inset_0_0_10px_rgba(163,230,53,0.1)]">
+          <div className="p-2.5 bg-gradient-to-b from-gym-accent/20 to-black/60 border border-gym-accent/40 rounded-xl relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_0_12px_rgba(163,230,53,0.15)]">
             <Cpu className="w-5 h-5 text-gym-accent animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-black uppercase text-white tracking-[0.25em]">Tactical Intelligence HUD</h4>
-              <span className="text-[7px] font-mono bg-white/10 text-white/50 px-1 py-0.2 rounded uppercase">V2.4</span>
+              <span className="text-[7px] font-mono bg-white/10 border border-white/15 text-white/70 px-1.5 py-0.5 rounded-md uppercase font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">V2.4</span>
             </div>
             <p className="text-[10px] text-white/40 uppercase tracking-widest font-mono mt-0.5">Automated Bio-mechanical Performance Calibration</p>
           </div>
@@ -420,16 +420,16 @@ export default function ConsoleIntelligencePanel({
           {/* Diagnostic Stats */}
           <div className="hidden md:flex items-center gap-4 text-white/40 border-r border-white/10 pr-4">
             <div>
-              <span className="text-white/20 mr-1">SETS_LOGGED:</span>
-              <span className="text-white/80 font-bold">{sessionSets.length}</span>
+              <span className="text-white/30 mr-1">SETS_LOGGED:</span>
+              <span className="text-white/90 font-bold">{sessionSets.length}</span>
             </div>
             <div>
-              <span className="text-white/20 mr-1">TARGET_MATCH:</span>
-              <span className="text-white/80 font-bold">{evolutionData.hasPrevious ? 'ACTIVE' : 'READY'}</span>
+              <span className="text-white/30 mr-1">TARGET_MATCH:</span>
+              <span className="text-white/90 font-bold">{evolutionData.hasPrevious ? 'ACTIVE' : 'READY'}</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-gym-accent/10 border border-gym-accent/25 rounded-md text-[8px] font-bold text-gym-accent uppercase tracking-widest">
+          <div className="flex items-center gap-1.5 px-3 py-1 bg-gradient-to-b from-gym-accent/20 via-gym-accent/10 to-black/60 border border-gym-accent/40 rounded-lg text-[8px] font-bold text-gym-accent uppercase tracking-widest shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_2px_6px_rgba(0,0,0,0.5)]">
             <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-ping" />
             Telemetry System Live
           </div>
@@ -439,36 +439,37 @@ export default function ConsoleIntelligencePanel({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative z-10">
         
         {/* Widget 1: Pacing Sparkline */}
-        <div className="space-y-4 bg-black/40 border border-white/5 p-5 rounded-lg relative hover:border-gym-accent/20 transition-all duration-300">
+        <div className="space-y-4 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 p-5 md:p-6 rounded-2xl relative shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.7)] hover:border-gym-accent/40 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
           <CornerAccents />
-          <div className="flex items-center justify-between">
-            <h5 className="text-[11px] font-bold uppercase tracking-widest text-white/70 flex items-center gap-2">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h5 className="text-[11px] font-bold uppercase tracking-widest text-white/80 flex items-center gap-2">
               <Clock className="w-4 h-4 text-gym-accent" /> Live Rest Pacing Analytics
             </h5>
-            <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest bg-white/5 px-1.5 py-0.5 rounded">PACING_CORE</span>
+            <span className="text-[8px] font-mono text-white/50 uppercase tracking-widest bg-gradient-to-b from-white/10 to-black/60 border border-white/15 px-2 py-0.5 rounded-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">PACING_CORE</span>
           </div>
 
           <div className="space-y-4 pt-1">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[9px] font-mono border-b border-white/5 pb-3">
-              <div className="bg-white/[0.01] border border-white/5 p-2 rounded">
-                <span className="text-white/30 uppercase block text-[7px] tracking-widest">Active Rest</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[9px] font-mono border-b border-white/10 pb-3">
+              <div className="bg-gradient-to-b from-white/[0.06] to-black/50 border border-white/10 p-2.5 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                <span className="text-white/40 uppercase block text-[7px] tracking-widest font-bold">Active Rest</span>
                 <span className={`text-sm font-black tracking-tight ${pacingData.intervals.length > 0 ? "text-gym-accent animate-pulse" : "text-white/30"}`}>
                   {pacingData.intervals.length > 0 ? formatTime(pacingData.activeAvg) : "Awaiting..."}
                 </span>
               </div>
-              <div className="bg-white/[0.01] border border-white/5 p-2 rounded">
-                <span className="text-white/30 uppercase block text-[7px] tracking-widest">Target Rest</span>
-                <span className="text-sm font-black text-white/85 tracking-tight">
+              <div className="bg-gradient-to-b from-white/[0.06] to-black/50 border border-white/10 p-2.5 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                <span className="text-white/40 uppercase block text-[7px] tracking-widest font-bold">Target Rest</span>
+                <span className="text-sm font-black text-white/90 tracking-tight">
                   {formatTime(pacingData.historicalAvg)}
                 </span>
               </div>
-              <div className="bg-white/[0.01] border border-white/5 p-2 rounded">
-                <span className="text-white/30 uppercase block text-[7px] tracking-widest">Fatigue Trend</span>
+              <div className="bg-gradient-to-b from-white/[0.06] to-black/50 border border-white/10 p-2.5 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                <span className="text-white/40 uppercase block text-[7px] tracking-widest font-bold">Fatigue Trend</span>
                 <div className="flex items-center gap-1 mt-0.5">
                   <span className={`text-sm font-black leading-none ${
                     pacingData.trend === 'escalating' ? 'text-red-400' :
                     pacingData.trend === 'tightening' ? 'text-gym-accent' :
-                    'text-white/55'
+                    'text-white/60'
                   }`}>
                     {pacingData.trend === 'escalating' ? '↗' :
                      pacingData.trend === 'tightening' ? '↘' : '→'}
@@ -476,15 +477,15 @@ export default function ConsoleIntelligencePanel({
                   <span className={`text-[8px] font-bold tracking-tight uppercase ${
                     pacingData.trend === 'escalating' ? 'text-red-400' :
                     pacingData.trend === 'tightening' ? 'text-gym-accent' :
-                    'text-white/55'
+                    'text-white/60'
                   }`}>
                     {pacingData.trend === 'escalating' ? 'Escalating' :
                      pacingData.trend === 'tightening' ? 'Tightening' : 'Stable'}
                   </span>
                 </div>
               </div>
-              <div className="bg-white/[0.01] border border-white/5 p-2 rounded text-right sm:text-left">
-                <span className="text-white/30 uppercase block text-[7px] tracking-widest">Est. Finish</span>
+              <div className="bg-gradient-to-b from-white/[0.06] to-black/50 border border-white/10 p-2.5 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] text-right sm:text-left">
+                <span className="text-white/40 uppercase block text-[7px] tracking-widest font-bold">Est. Finish</span>
                 <span className="text-sm font-black text-gym-accent tracking-tight block mt-0.5">{pacingData.estFinishStr}</span>
               </div>
             </div>
@@ -492,23 +493,23 @@ export default function ConsoleIntelligencePanel({
             {/* Sparkline Graphic representing intervals */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest flex items-center gap-1.5">
+                <span className="text-[8px] font-mono text-white/50 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                   <BarChart3 className="w-3 h-3 text-gym-accent" /> Cumulative Pace Timeline
                 </span>
                 {pacingData.intervals.length > 0 && (
-                  <span className="text-[7px] font-mono text-white/20 uppercase">Hover bars for details</span>
+                  <span className="text-[7px] font-mono text-white/30 uppercase">Hover bars for details</span>
                 )}
               </div>
               
-              <div className="h-16 bg-black/60 rounded border border-white/5 p-2.5 flex items-end gap-1.5 relative overflow-hidden">
+              <div className="h-16 bg-gradient-to-b from-black/80 to-black/60 rounded-xl border border-white/10 p-2.5 flex items-end gap-1.5 relative overflow-hidden shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)]">
                 {/* Visual horizontal guide lines */}
                 <div className="absolute inset-x-0 top-1/3 border-t border-white/5 border-dashed pointer-events-none" />
                 <div className="absolute inset-x-0 top-2/3 border-t border-white/5 border-dashed pointer-events-none" />
                 
                 {pacingData.intervals.length === 0 ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-[8px] text-white/30 font-mono uppercase tracking-widest text-center px-4 leading-relaxed">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-[8px] text-white/40 font-mono uppercase tracking-widest text-center px-4 leading-relaxed">
                     <span>Awaiting sequential sets to plot rhythm...</span>
-                    <span className="text-[7px] text-white/10 normal-case">Log 2 or more sets of any exercise to start</span>
+                    <span className="text-[7px] text-white/20 normal-case">Log 2 or more sets of any exercise to start</span>
                   </div>
                 ) : (
                   <>
@@ -538,14 +539,14 @@ export default function ConsoleIntelligencePanel({
                           className="flex-1 flex flex-col items-center gap-1 group/pbar h-full justify-end relative"
                         >
                           {/* Rich HUD Tooltip */}
-                          <div className="absolute bottom-full mb-2 bg-[#090a0f] border border-white/15 rounded px-2.5 py-1.5 text-[8px] font-mono text-white whitespace-nowrap opacity-0 group-hover/pbar:opacity-100 transition-opacity duration-200 z-20 pointer-events-none shadow-xl">
-                            <div className="text-[7px] text-white/30 uppercase font-black border-b border-white/10 pb-0.5 mb-1 flex justify-between gap-4">
+                          <div className="absolute bottom-full mb-2 bg-[#090a0f] border border-white/20 rounded-lg px-2.5 py-1.5 text-[8px] font-mono text-white whitespace-nowrap opacity-0 group-hover/pbar:opacity-100 transition-opacity duration-200 z-20 pointer-events-none shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_8px_20px_rgba(0,0,0,0.9)]">
+                            <div className="text-[7px] text-white/40 uppercase font-black border-b border-white/10 pb-0.5 mb-1 flex justify-between gap-4">
                               <span>INTERVAL #{idx + 1}➔#{idx + 2}</span>
                               <span className="text-gym-accent font-bold">{label}</span>
                             </div>
                             <div className="flex justify-between gap-6">
                               <span>REST: <strong className="text-white">{formatTime(interval)}</strong></span>
-                              <span>TARGET: <strong className="text-white/60">{formatTime(pacingData.historicalAvg)}</strong></span>
+                              <span>TARGET: <strong className="text-white/70">{formatTime(pacingData.historicalAvg)}</strong></span>
                             </div>
                           </div>
                           
@@ -555,7 +556,7 @@ export default function ConsoleIntelligencePanel({
                             style={{ height: `${heightPct}%`, originY: 1 }}
                             className={`w-full rounded-md bg-gradient-to-t ${barBg} ${glowShadow} hover:brightness-125 transition-all duration-300`}
                           />
-                          <span className="text-[7px] font-mono text-white/20 absolute -bottom-1 select-none">#{idx + 1}</span>
+                          <span className="text-[7px] font-mono text-white/30 absolute -bottom-1 select-none">#{idx + 1}</span>
                         </div>
                       );
                     })}
@@ -564,40 +565,40 @@ export default function ConsoleIntelligencePanel({
               </div>
             </div>
 
-            {/* Pacing Diagnostic Box to explain the fatigue trend and perfectly balance column heights */}
-            <div className="text-[10px] font-mono p-3 rounded-lg bg-white/[0.01] border border-white/5 flex items-start gap-2.5">
+            {/* Pacing Diagnostic Box */}
+            <div className="text-[10px] font-mono p-3 rounded-xl bg-gradient-to-b from-white/[0.04] to-black/50 border border-white/10 flex items-start gap-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
               <Activity className={`w-4 h-4 shrink-0 mt-0.5 ${
-                pacingData.intervals.length === 0 ? 'text-white/30 animate-pulse' :
+                pacingData.intervals.length === 0 ? 'text-white/40 animate-pulse' :
                 pacingData.trend === 'escalating' ? 'text-red-400' :
                 pacingData.trend === 'tightening' ? 'text-gym-accent' :
-                'text-white/70'
+                'text-white/80'
               }`} />
               <div className="space-y-1 leading-normal">
                 {pacingData.intervals.length === 0 ? (
                   <>
-                    <div className="font-bold text-white/50 uppercase tracking-widest text-[9px]">Pacing Diagnostics Standby</div>
-                    <div className="text-white/45 text-[9px]">
+                    <div className="font-bold text-white/60 uppercase tracking-widest text-[9px]">Pacing Diagnostics Standby</div>
+                    <div className="text-white/50 text-[9px]">
                       Rest telemetry requires at least two sequential sets of any exercise to start profiling work density and heart-rate recovery.
                     </div>
                   </>
                 ) : pacingData.trend === 'escalating' ? (
                   <>
                     <div className="font-bold text-red-400 uppercase tracking-widest text-[9px]">Fatigue Accrual Alert</div>
-                    <div className="text-white/60 text-[9px]">
+                    <div className="text-white/70 text-[9px]">
                       Your rest intervals are steadily climbing as you progress (Early: <span className="text-white font-semibold">{formatTime(Math.round(pacingData.earlyAvg))}</span> vs Late: <span className="text-white font-bold">{formatTime(Math.round(pacingData.lateAvg))}</span>). Maintain focus on recovery tempo to sustain workout density.
                     </div>
                   </>
                 ) : pacingData.trend === 'tightening' ? (
                   <>
                     <div className="font-bold text-gym-accent uppercase tracking-widest text-[9px]">High Efficiency Pacing</div>
-                    <div className="text-white/60 text-[9px]">
+                    <div className="text-white/70 text-[9px]">
                       Rest intervals are tightening (Early: <span className="text-white font-semibold">{formatTime(Math.round(pacingData.earlyAvg))}</span> vs Late: <span className="text-white font-bold">{formatTime(Math.round(pacingData.lateAvg))}</span>). Excellent work capacity! Avoid rushing set starts to preserve maximum mechanical tension.
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="font-bold text-white/70 uppercase tracking-widest text-[9px]">Pacing Velocity Stable</div>
-                    <div className="text-white/60 text-[9px]">
+                    <div className="font-bold text-white/80 uppercase tracking-widest text-[9px]">Pacing Velocity Stable</div>
+                    <div className="text-white/70 text-[9px]">
                       Recovery intervals are stable within 5 seconds (Avg: <span className="text-white font-semibold">{formatTime(Math.round(pacingData.activeAvg))}</span>). Your autonomic response is matched perfectly with your workload.
                     </div>
                   </>
@@ -608,44 +609,45 @@ export default function ConsoleIntelligencePanel({
         </div>
 
         {/* Widget 2: Muscle-Matched Overload Tracker */}
-        <div className="space-y-4 bg-black/40 border border-white/5 p-5 rounded-lg relative hover:border-gym-accent/20 transition-all duration-300">
+        <div className="space-y-4 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 p-5 md:p-6 rounded-2xl relative shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.7)] hover:border-gym-accent/40 hover:-translate-y-0.5 transition-all duration-300 overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
           <CornerAccents />
-          <div className="flex items-center justify-between">
-            <h5 className="text-[11px] font-bold uppercase tracking-widest text-white/70 flex items-center gap-2">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h5 className="text-[11px] font-bold uppercase tracking-widest text-white/80 flex items-center gap-2">
               <Zap className="w-4 h-4 text-gym-accent" /> Muscle-Matched Overload Tracker
             </h5>
-            <span className="text-[8px] font-mono text-white/30 uppercase tracking-widest bg-white/5 px-1.5 py-0.5 rounded">OVERLOAD_CORE</span>
+            <span className="text-[8px] font-mono text-white/50 uppercase tracking-widest bg-gradient-to-b from-white/10 to-black/60 border border-white/15 px-2 py-0.5 rounded-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">OVERLOAD_CORE</span>
           </div>
 
           <div className="space-y-4 pt-1">
             {/* Target Muscles Badges */}
-            <div className="bg-white/[0.01] border border-white/5 p-2.5 rounded-md space-y-1.5">
-              <span className="text-[8px] font-mono text-white/40 uppercase tracking-widest block">Active Session Footprint:</span>
+            <div className="bg-gradient-to-b from-white/[0.04] to-black/50 border border-white/10 p-2.5 rounded-xl space-y-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+              <span className="text-[8px] font-mono text-white/50 uppercase tracking-widest block font-bold">Active Session Footprint:</span>
               <div className="flex flex-wrap items-center gap-1.5">
                 {evolutionData.activeMuscles.length > 0 ? (
                   evolutionData.activeMuscles.map((muscle) => (
                     <span 
                       key={muscle} 
-                      className="px-2 py-0.5 bg-gym-accent/5 border border-gym-accent/15 rounded-full text-[8px] font-mono text-gym-accent uppercase tracking-wider flex items-center gap-1"
+                      className="px-2.5 py-0.5 bg-gradient-to-b from-gym-accent/20 to-gym-accent/5 border border-gym-accent/30 rounded-full text-[8px] font-mono text-gym-accent uppercase tracking-wider flex items-center gap-1 font-bold shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
                     >
                       <span className="w-1 h-1 rounded-full bg-gym-accent" />
                       {muscle}
                     </span>
                   ))
                 ) : (
-                  <span className="text-[8px] font-mono text-white/20 uppercase italic">No muscle metrics recorded. Log sets to evaluate...</span>
+                  <span className="text-[8px] font-mono text-white/30 uppercase italic">No muscle metrics recorded. Log sets to evaluate...</span>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-[9px] font-mono border-b border-white/5 pb-3">
-              <div>
-                <span className="text-white/30 uppercase block text-[8px] tracking-wider">Matched Active Volume</span>
+            <div className="grid grid-cols-2 gap-4 text-[9px] font-mono border-b border-white/10 pb-3">
+              <div className="bg-gradient-to-b from-white/[0.06] to-black/50 border border-white/10 p-2.5 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                <span className="text-white/40 uppercase block text-[8px] tracking-wider font-bold">Matched Active Volume</span>
                 <span className="text-base font-black text-white">{evolutionData.currentVolume.toLocaleString()} <span className="text-[9px] font-medium text-white/40">kg</span></span>
               </div>
-              <div className="text-right">
-                <span className="text-white/30 uppercase block text-[8px] tracking-wider">Matched Target Volume</span>
-                <span className="text-base font-black text-white/60">
+              <div className="bg-gradient-to-b from-white/[0.06] to-black/50 border border-white/10 p-2.5 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] text-right">
+                <span className="text-white/40 uppercase block text-[8px] tracking-wider font-bold">Matched Target Volume</span>
+                <span className="text-base font-black text-white/70">
                   {evolutionData.hasPrevious ? `${evolutionData.previousVolume.toLocaleString()} kg` : 'N/A (Baseline)'}
                 </span>
               </div>
@@ -654,8 +656,8 @@ export default function ConsoleIntelligencePanel({
             {/* LED Segmented Volume Progress Bar */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-[8px] font-mono">
-                <span className="text-white/35 uppercase flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3 text-white/40" /> Performance Bar
+                <span className="text-white/50 uppercase flex items-center gap-1 font-bold">
+                  <TrendingUp className="w-3 h-3 text-white/50" /> Performance Bar
                 </span>
                 <span className="text-gym-accent font-black tracking-wider uppercase">
                   {evolutionData.hasPrevious ? `${evolutionData.progressPct}% achieved` : 'Establishing baseline...'}
@@ -672,38 +674,38 @@ export default function ConsoleIntelligencePanel({
 
             {/* Target Comparison Meta */}
             {evolutionData.hasPrevious && (
-              <div className="text-[8px] font-mono text-white/50 bg-[#090b0e] border border-white/5 px-2.5 py-2 rounded flex justify-between items-center">
-                <span className="text-white/35 tracking-wider flex items-center gap-1">
-                  <Info className="w-3 h-3 text-white/30" /> COGNITIVE PAIRING:
+              <div className="text-[8px] font-mono text-white/60 bg-gradient-to-b from-white/[0.04] to-black/60 border border-white/10 px-3 py-2 rounded-xl flex justify-between items-center shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
+                <span className="text-white/40 tracking-wider flex items-center gap-1 font-bold">
+                  <Info className="w-3 h-3 text-white/40" /> COGNITIVE PAIRING:
                 </span>
-                <span className="text-white font-bold uppercase truncate max-w-[190px] border-b border-dotted border-white/20 pb-0.5">
+                <span className="text-white font-bold uppercase truncate max-w-[190px] border-b border-dotted border-white/30 pb-0.5">
                   {evolutionData.matchedWorkoutName}
                 </span>
               </div>
             )}
 
             {/* Status and Dynamic Guidance */}
-            <div className="text-[10px] font-mono p-3 rounded-lg bg-white/[0.01] border border-white/5 flex items-start gap-2.5">
+            <div className="text-[10px] font-mono p-3 rounded-xl bg-gradient-to-b from-white/[0.04] to-black/50 border border-white/10 flex items-start gap-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
               <ShieldAlert className={`w-4 h-4 shrink-0 mt-0.5 ${evolutionData.isOverloadAchieved ? 'text-gym-accent' : 'text-amber-500'}`} />
               <div className="space-y-1 leading-normal">
                 {evolutionData.isOverloadAchieved ? (
                   <>
                     <div className="font-bold text-gym-accent uppercase tracking-widest text-[9px]">Progressive Overload Achieved!</div>
-                    <div className="text-white/60 text-[9px]">
+                    <div className="text-white/70 text-[9px]">
                       Stellar work! You exceeded your historical volume on <span className="text-white font-semibold">{evolutionData.matchingMuscles.join(', ')}</span> by <span className="text-gym-accent font-bold">+{evolutionData.volumeDiff.toLocaleString()} kg</span>. Stimulus has been successfully upgraded.
                     </div>
                   </>
                 ) : evolutionData.hasPrevious ? (
                   <>
                     <div className="font-bold text-amber-500 uppercase tracking-widest text-[9px]">Stimulus Overload Deficit</div>
-                    <div className="text-white/40 text-[9px]">
-                      Log <span className="text-white/80 font-bold">{Math.abs(evolutionData.volumeDiff).toLocaleString()} kg</span> more volume on <span className="text-white font-semibold">{evolutionData.matchingMuscles.join(', ')}</span> to match and upgrade your matched target of <span className="text-white/80 font-bold">{evolutionData.previousVolume.toLocaleString()} kg</span>.
+                    <div className="text-white/50 text-[9px]">
+                      Log <span className="text-white/90 font-bold">{Math.abs(evolutionData.volumeDiff).toLocaleString()} kg</span> more volume on <span className="text-white font-semibold">{evolutionData.matchingMuscles.join(', ')}</span> to match and upgrade your matched target of <span className="text-white/90 font-bold">{evolutionData.previousVolume.toLocaleString()} kg</span>.
                     </div>
                   </>
                 ) : (
                   <>
-                    <div className="font-bold text-white/50 uppercase tracking-widest text-[9px]">Target Calibration Stage</div>
-                    <div className="text-white/40 text-[9px]">
+                    <div className="font-bold text-white/60 uppercase tracking-widest text-[9px]">Target Calibration Stage</div>
+                    <div className="text-white/50 text-[9px]">
                       Add sets to the active log. The cumulative volume logged for active muscles will serve as your target benchmark next time you train them.
                     </div>
                   </>

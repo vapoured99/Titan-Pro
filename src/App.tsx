@@ -2778,6 +2778,82 @@ export default function App() {
     return { startFat, currentFat, diff, diffStr };
   }, [bodyFatHistory, profile]);
 
+  const calculatedStreak = useMemo(() => {
+    const uniqueDates = new Set<string>();
+
+    archivedWorkouts.forEach((w) => {
+      if (w.date) {
+        const dateStr = typeof w.date === "string" ? w.date.split("T")[0] : new Date(w.date).toISOString().split("T")[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          uniqueDates.add(dateStr);
+        }
+      } else if (w.timestamp?.seconds) {
+        const d = new Date(w.timestamp.seconds * 1000);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        uniqueDates.add(`${year}-${month}-${day}`);
+      }
+    });
+
+    sessionSets.forEach((s) => {
+      if (s.timestamp?.seconds) {
+        const d = new Date(s.timestamp.seconds * 1000);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        uniqueDates.add(`${year}-${month}-${day}`);
+      } else if (s.date) {
+        const dateStr = typeof s.date === "string" ? s.date.split("T")[0] : new Date(s.date).toISOString().split("T")[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          uniqueDates.add(dateStr);
+        }
+      }
+    });
+
+    if (uniqueDates.size === 0) return 0;
+
+    const now = new Date();
+    const getLocalDateStr = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    const todayStr = getLocalDateStr(now);
+
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = getLocalDateStr(yesterday);
+
+    let checkDate = new Date(now);
+    let checkStr = todayStr;
+
+    if (!uniqueDates.has(todayStr)) {
+      checkDate = yesterday;
+      checkStr = yesterdayStr;
+    }
+
+    let streak = 0;
+    while (uniqueDates.has(checkStr)) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+      checkStr = getLocalDateStr(checkDate);
+    }
+
+    return streak;
+  }, [archivedWorkouts, sessionSets]);
+
+  useEffect(() => {
+    if (!currentUser || !profile) return;
+    if (profile.streakCount !== calculatedStreak) {
+      setProfile((prev) => (prev ? { ...prev, streakCount: calculatedStreak } : null));
+      const settingsPath = `users/${currentUser.uid}/profile/settings`;
+      setDoc(doc(db, settingsPath), { streakCount: calculatedStreak }, { merge: true }).catch(() => {});
+    }
+  }, [calculatedStreak, currentUser, profile]);
+
   const handleExportStatsImage = async () => {
     if (isExportingStatsImage) return;
     setIsExportingStatsImage(true);
@@ -9231,7 +9307,7 @@ export default function App() {
                 })().map((section) => (
                   <div
                     key={section.title}
-                    className={`mb-6 border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md ${libraryViewMode === "deck" && !searchQuery ? "p-2" : ""}`}
+                    className={`mb-6 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30 ${libraryViewMode === "deck" && !searchQuery ? "p-2" : ""}`}
                   >
                     {libraryViewMode === "deck" && !searchQuery ? (
                       <div className="px-6 pt-5 pb-3 flex items-center justify-between border-b border-white/5 mb-4 text-left">
@@ -9247,34 +9323,32 @@ export default function App() {
                         </span>
                       </div>
                     ) : (
-                      <Scroll3DItem>
-                        <button
-                          onClick={() =>
-                            setExpandedLibrarySections((prev) => ({
-                              ...prev,
-                              [section.title]: !prev[section.title],
-                            }))
-                          }
-                          className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
-                        >
-                          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
-                            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-                              {getLibraryCategoryIcon(section.key)}
-                            </div>
-                            <h3 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
-                              {section.title}
-                            </h3>
+                      <button
+                        onClick={() =>
+                          setExpandedLibrarySections((prev) => ({
+                            ...prev,
+                            [section.title]: !prev[section.title],
+                          }))
+                        }
+                        className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                      >
+                        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+                          <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
+                            {getLibraryCategoryIcon(section.key)}
                           </div>
-                          <div className="flex items-center gap-3 shrink-0">
-                            <span className="text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
-                              {section.list.length} Ex.
-                            </span>
-                            <ChevronDown
-                              className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500 ${expandedLibrarySections[section.title] ? "rotate-180" : ""}`}
-                            />
-                          </div>
-                        </button>
-                      </Scroll3DItem>
+                          <h3 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+                            {section.title}
+                          </h3>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
+                            {section.list.length} Ex.
+                          </span>
+                          <ChevronDown
+                            className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500 ${expandedLibrarySections[section.title] ? "rotate-180" : ""}`}
+                          />
+                        </div>
+                      </button>
                     )}
 
                     <AnimatePresence>
@@ -10239,7 +10313,7 @@ export default function App() {
                       </div>
 
                       {/* Active Slide Glassmorphic Container */}
-                      <div className="relative overflow-hidden bg-gradient-to-b from-[#090909] to-[#040404] border border-white/[0.04] rounded-xl p-6 md:p-8 shadow-2xl transition-all duration-300">
+                      <div className="relative overflow-hidden bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 md:p-8 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
                         {/* Interactive glow effect in the corner */}
                         <div className="absolute top-0 right-10 w-44 h-44 bg-gym-accent/[0.02] rounded-full blur-3xl -z-10" />
                         
@@ -10348,9 +10422,9 @@ export default function App() {
                             </div>
                           </div>
 
-                          <div className="h-[350px] w-full mb-10">
+                          <div className="h-[350px] w-full mb-10 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 md:p-6 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
                             {weightHistory.length === 0 ? (
-                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-md border border-white/5 border-dashed">
+                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-xl border border-white/5 border-dashed">
                                 <TrendingUp className="w-12 h-12 text-white/10 mb-2" />
                                 <p className="text-white/20 font-bold text-sm">
                                   Add your weight to see your progress data
@@ -10458,12 +10532,13 @@ export default function App() {
                                         strokeDasharray: "4 4",
                                       }}
                                       contentStyle={{
-                                        backgroundColor: "#0d0d0d",
-                                        borderColor: "#ffffff10",
-                                        borderRadius: "4px",
+                                        backgroundColor: "rgba(10, 10, 12, 0.95)",
+                                        borderColor: "rgba(255, 255, 255, 0.15)",
+                                        borderRadius: "12px",
                                         boxShadow:
-                                          "0 20px 40px rgba(0,0,0,0.5)",
+                                          "inset 0 1px 0 rgba(255,255,255,0.2), 0 20px 40px rgba(0,0,0,0.8)",
                                         padding: "12px",
+                                        backdropFilter: "blur(12px)",
                                       }}
                                       itemStyle={{
                                         color: activeTheme.accent,
@@ -10524,25 +10599,23 @@ export default function App() {
                           </div>
 
                           <div className="mt-6">
-                            <Scroll3DItem>
-                              <button
-                                onClick={() =>
-                                  setShowWeightHistoryList(!showWeightHistoryList)
-                                }
-                                type="button"
-                                className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
-                              >
-                                <span className="flex items-center gap-2">
-                                  <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
-                                  {showWeightHistoryList
-                                    ? "Hide Weight Logs"
-                                    : `View Weight Logs (${weightHistory.length})`}
-                                </span>
-                                <ChevronDown
-                                  className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showWeightHistoryList ? "rotate-180" : ""}`}
-                                />
-                              </button>
-                            </Scroll3DItem>
+                            <button
+                              onClick={() =>
+                                setShowWeightHistoryList(!showWeightHistoryList)
+                              }
+                              type="button"
+                              className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-all cursor-pointer group backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] hover:border-gym-accent/30"
+                            >
+                              <span className="flex items-center gap-2">
+                                <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
+                                {showWeightHistoryList
+                                  ? "Hide Weight Logs"
+                                  : `View Weight Logs (${weightHistory.length})`}
+                              </span>
+                              <ChevronDown
+                                className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showWeightHistoryList ? "rotate-180" : ""}`}
+                              />
+                            </button>
 
                             <AnimatePresence>
                               {showWeightHistoryList && (
@@ -10558,12 +10631,14 @@ export default function App() {
                                       No logged weight entries yet
                                     </div>
                                   ) : (
-                                    <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/15 rounded-md bg-black">
+                                    <div className="mt-2 max-h-56 overflow-y-auto no-scrollbar space-y-2 p-1">
                                       {[...weightHistory]
                                         .reverse()
                                         .map((entry, i) => (
-                                          <Scroll3DItem key={entry.id || i}>
-                                            <div className="flex items-center justify-between px-6 py-3.5 hover:bg-white/[0.02] transition-colors group">
+                                          <div
+                                            key={entry.id || i}
+                                            className="flex items-center justify-between px-6 py-3.5 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 group"
+                                          >
                                             <div className="flex flex-col gap-0.5">
                                               <div className="flex items-baseline gap-1.5">
                                                 <span className="text-base font-medium text-white">
@@ -10623,8 +10698,7 @@ export default function App() {
                                                 <Trash2 className="w-3.5 h-3.5 text-red-500" />
                                               </button>
                                             )}
-                                            </div>
-                                          </Scroll3DItem>
+                                          </div>
                                         ))}
                                     </div>
                                   )}
@@ -10710,9 +10784,9 @@ export default function App() {
                             </div>
                           </div>
 
-                          <div className="h-[350px] w-full mb-10">
+                          <div className="h-[350px] w-full mb-10 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 md:p-6 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
                             {bodyFatHistory.length === 0 ? (
-                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-md border border-white/5 border-dashed">
+                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-xl border border-white/5 border-dashed">
                                 <Percent className="w-12 h-12 text-white/10 mb-2 animate-pulse" />
                                 <p className="text-white/20 font-bold text-sm">
                                   Add your body fat % to see your progress data
@@ -10820,12 +10894,13 @@ export default function App() {
                                         strokeDasharray: "4 4",
                                       }}
                                       contentStyle={{
-                                        backgroundColor: "#0d0d0d",
-                                        borderColor: "#ffffff10",
-                                        borderRadius: "4px",
+                                        backgroundColor: "rgba(10, 10, 12, 0.95)",
+                                        borderColor: "rgba(255, 255, 255, 0.15)",
+                                        borderRadius: "12px",
                                         boxShadow:
-                                          "0 20px 40px rgba(0,0,0,0.5)",
+                                          "inset 0 1px 0 rgba(255,255,255,0.2), 0 20px 40px rgba(0,0,0,0.8)",
                                         padding: "12px",
+                                        backdropFilter: "blur(12px)",
                                       }}
                                       itemStyle={{
                                         color: activeTheme.accent,
@@ -10886,27 +10961,25 @@ export default function App() {
                           </div>
 
                           <div className="mt-6">
-                            <Scroll3DItem>
-                              <button
-                                onClick={() =>
-                                  setShowBodyFatHistoryList(
-                                    !showBodyFatHistoryList,
-                                  )
-                                }
-                                type="button"
-                                className="w-full flex items-center justify-between px-6 py-4 bg-black/65 hover:bg-black/85 border border-white/10 rounded-md text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-all cursor-pointer group"
-                              >
-                                <span className="flex items-center gap-2">
-                                  <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
-                                  {showBodyFatHistoryList
-                                    ? "Hide Body Fat Logs"
-                                    : `View Body Fat Logs (${bodyFatHistory.length})`}
-                                </span>
-                                <ChevronDown
-                                  className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showBodyFatHistoryList ? "rotate-180" : ""}`}
-                                />
-                              </button>
-                            </Scroll3DItem>
+                            <button
+                              onClick={() =>
+                                setShowBodyFatHistoryList(
+                                  !showBodyFatHistoryList,
+                                )
+                              }
+                              type="button"
+                              className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-all cursor-pointer group backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] hover:border-gym-accent/30"
+                            >
+                              <span className="flex items-center gap-2">
+                                <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
+                                {showBodyFatHistoryList
+                                  ? "Hide Body Fat Logs"
+                                  : `View Body Fat Logs (${bodyFatHistory.length})`}
+                              </span>
+                              <ChevronDown
+                                className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showBodyFatHistoryList ? "rotate-180" : ""}`}
+                              />
+                            </button>
 
                             <AnimatePresence>
                               {showBodyFatHistoryList && (
@@ -10922,13 +10995,13 @@ export default function App() {
                                       No logged body fat entries yet
                                     </div>
                                   ) : (
-                                    <div className="mt-2 max-h-56 overflow-y-auto divide-y divide-white/5 border border-white/15 rounded-md bg-black">
+                                    <div className="mt-2 max-h-56 overflow-y-auto no-scrollbar space-y-2 p-1">
                                       {[...bodyFatHistory]
                                         .reverse()
                                         .map((entry, i) => (
                                           <div
                                             key={entry.id || i}
-                                            className="flex items-center justify-between px-6 py-3.5 hover:bg-white/[0.02] transition-colors group"
+                                            className="flex items-center justify-between px-6 py-3.5 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 group"
                                           >
                                             <div className="flex flex-col gap-0.5">
                                               <div className="flex items-baseline gap-1.5">
@@ -11057,9 +11130,9 @@ export default function App() {
                             </div>
                           </div>
 
-                          <div className="h-[350px] w-full">
+                          <div className="h-[350px] w-full bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 md:p-6 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
                             {archivedWorkouts.length === 0 ? (
-                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-md border border-white/5 border-dashed">
+                              <div className="h-full flex flex-col items-center justify-center bg-white/5 rounded-xl border border-white/5 border-dashed">
                                 <Activity className="w-12 h-12 text-white/10 mb-2" />
                                 <p className="text-white/20 font-bold text-sm">
                                   Capture workouts to see your volume trending
@@ -11169,12 +11242,13 @@ export default function App() {
                                         strokeDasharray: "4 4",
                                       }}
                                       contentStyle={{
-                                        backgroundColor: "#0d0d0d",
-                                        borderColor: "#ffffff10",
-                                        borderRadius: "4px",
+                                        backgroundColor: "rgba(10, 10, 12, 0.95)",
+                                        borderColor: "rgba(255, 255, 255, 0.15)",
+                                        borderRadius: "12px",
                                         boxShadow:
-                                          "0 20px 40px rgba(0,0,0,0.5)",
+                                          "inset 0 1px 0 rgba(255,255,255,0.2), 0 20px 40px rgba(0,0,0,0.8)",
                                         padding: "12px",
+                                        backdropFilter: "blur(12px)",
                                       }}
                                       itemStyle={{
                                         color: activeTheme.accent,
@@ -11488,7 +11562,7 @@ export default function App() {
                                         {sortedPbs.map((pb, index) => (
                                           <div
                                             key={pb.exerciseName || index}
-                                            className={`pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3.5 rounded-md bg-black/45 border border-white/5 hover:border-white/10 hover:bg-white/[0.01] transition-all group/pbitem ${
+                                            className={`pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 hover:border-gym-accent/30 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 group/pbitem ${
                                               index === 0 ? "pt-3.5" : ""
                                             }`}
                                           >
@@ -11605,7 +11679,7 @@ export default function App() {
                                         {sortedProgression.map((item, index) => (
                                           <div
                                             key={item.exerciseName}
-                                            className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-md bg-black/45 border border-emerald-500/10 hover:border-emerald-500/25 hover:bg-emerald-500/[0.01] transition-all group/progitem"
+                                            className="pt-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-emerald-500/20 hover:border-emerald-500/40 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8),0_0_20px_rgba(16,185,129,0.1)] transition-all duration-300 group/progitem"
                                           >
                                             <div className="flex-1">
                                               <div className="flex items-center gap-2">
@@ -11824,7 +11898,7 @@ export default function App() {
                                       {/* Compare stats grid */}
                                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                         {/* First Ever Set weight log */}
-                                        <div className="bg-black/30 border border-white/5 rounded-md p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px]">
+                                        <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
                                           <div>
                                             <span className="text-[8px] text-white/30 uppercase tracking-wider font-bold block mb-1">
                                               First Ever Recorded Set
@@ -11840,7 +11914,7 @@ export default function App() {
                                         </div>
 
                                         {/* Most Recent Set weight log */}
-                                        <div className="bg-black/30 border border-white/5 rounded-md p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px]">
+                                        <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px] backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
                                           <div>
                                             <span className="text-[8px] text-white/30 uppercase tracking-wider font-bold block mb-1">
                                               Most Recent Recorded Set
@@ -11856,7 +11930,7 @@ export default function App() {
                                         </div>
 
                                         {/* Absolute & relative progress delta */}
-                                        <div className={`border rounded-md p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px] ${trendBg}`}>
+                                        <div className={`border rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between min-h-[90px] bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 ${trendBg}`}>
                                           <div>
                                             <span className="text-[8px] text-white/30 uppercase tracking-wider font-bold block mb-1">
                                               {isAssisted ? "Assistance reduction adaptation" : "Progression adaptation Delta"}
@@ -11880,7 +11954,7 @@ export default function App() {
                                       </div>
 
                                       {/* Chart Section - Visual line graph showing progress */}
-                                      <div className="bg-white/[0.005] border border-white/[0.03] p-4 rounded-md">
+                                      <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 p-5 rounded-2xl backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
                                         <div className="flex justify-between items-center mb-3">
                                           <span className="text-[9px] text-white/40 font-mono uppercase tracking-wider">
                                             {isAssisted 
@@ -11918,7 +11992,7 @@ export default function App() {
                                                   if (active && payload && payload.length) {
                                                     const d = payload[0].payload;
                                                     return (
-                                                      <div className="bg-zinc-950/95 border border-white/10 px-2.5 py-1.5 rounded-md font-mono text-[9px] shadow-xl">
+                                                      <div className="bg-zinc-950/95 border border-white/20 px-3 py-2 rounded-xl font-mono text-[9px] shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_30px_rgba(0,0,0,0.8)] backdrop-blur-md">
                                                         <span className="text-white/30 block text-[7.5px] uppercase">{d.workout}</span>
                                                         <span className="text-white font-black block mt-0.5">{d.date}</span>
                                                         <span className="text-gym-accent font-black block mt-1">{d.weight} KG &times; {d.reps} reps</span>
@@ -12007,7 +12081,7 @@ export default function App() {
                             return (
                               <div className="space-y-8">
                                 {/* Total Combined Display Card */}
-                                <div className="bg-[#0c0c0c] border border-white/5 rounded-md p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
                                   <div className="flex items-center gap-4">
                                     <Flame className="w-8 h-8 text-gym-accent animate-pulse shrink-0" />
                                     <div>
@@ -12035,7 +12109,7 @@ export default function App() {
                                   <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.25em]">
                                     Output Distribution over Time
                                   </h4>
-                                  <div className="h-[250px] w-full bg-[#050505]/40 border border-white/5 rounded-md p-4">
+                                  <div className="h-[250px] w-full bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-5 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30">
                                     {chronologicalDays.length === 0 ? (
                                       <div className="h-full flex flex-col items-center justify-center border border-dashed border-white/5 rounded-md">
                                         <Flame className="w-8 h-8 text-white/10 mb-2" />
@@ -12139,12 +12213,13 @@ export default function App() {
                                                 strokeDasharray: "3 3",
                                               }}
                                               contentStyle={{
-                                                backgroundColor: "#0a0a0a",
-                                                borderColor: "#ffffff10",
-                                                borderRadius: "2px",
+                                                backgroundColor: "rgba(9, 9, 11, 0.95)",
+                                                borderColor: "rgba(255, 255, 255, 0.2)",
+                                                borderRadius: "12px",
                                                 boxShadow:
-                                                  "0 10px 30px rgba(0,0,0,0.8)",
-                                                padding: "10px",
+                                                  "inset 0 1px 0 rgba(255,255,255,0.2), 0 10px 30px rgba(0,0,0,0.8)",
+                                                padding: "10px 14px",
+                                                backdropFilter: "blur(12px)",
                                               }}
                                               itemStyle={{
                                                 color: activeTheme.accent,
@@ -12203,71 +12278,54 @@ export default function App() {
                                 </div>
 
                                 {/* Collapsible Daily Breakdown List */}
-                                <div>
-                                  <div className="mt-6 flex justify-between items-center pb-2 border-b border-white/5">
-                                    <h4 className="text-[10px] text-white/40 font-bold uppercase tracking-[0.25em]">
-                                      Daily Energy Output History
-                                    </h4>
-                                    {sortedDays.length > 0 && (
-                                      <Scroll3DItem>
-                                        <button
-                                          onClick={() =>
-                                            setShowCalorieHistoryList(
-                                              !showCalorieHistoryList,
-                                            )
-                                          }
-                                          className="flex items-center gap-2 group cursor-pointer"
-                                        >
-                                          <span className="text-[9px] text-white/40 uppercase tracking-widest font-bold group-hover:text-gym-accent transition-colors">
-                                            {showCalorieHistoryList
-                                              ? "Hide History Log"
-                                              : `Show History Log (${sortedDays.length})`}
-                                          </span>
-                                          <ChevronDown
-                                            className={`w-3.5 h-3.5 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showCalorieHistoryList ? "rotate-180" : ""}`}
-                                          />
-                                        </button>
-                                      </Scroll3DItem>
-                                    )}
-                                  </div>
+                                <div className="mt-6">
+                                  <button
+                                    onClick={() =>
+                                      setShowCalorieHistoryList(
+                                        !showCalorieHistoryList,
+                                      )
+                                    }
+                                    type="button"
+                                    className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-all cursor-pointer group backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] hover:border-gym-accent/30"
+                                  >
+                                    <span className="flex items-center gap-2">
+                                      <History className="w-3.5 h-3.5 text-gym-accent group-hover:scale-110 transition-transform" />
+                                      {showCalorieHistoryList
+                                        ? "Hide Daily Energy Logs"
+                                        : `View Daily Energy Logs (${sortedDays.length})`}
+                                    </span>
+                                    <ChevronDown
+                                      className={`w-4 h-4 text-white/30 group-hover:text-gym-accent transition-transform duration-300 ${showCalorieHistoryList ? "rotate-180" : ""}`}
+                                    />
+                                  </button>
 
-                                  {sortedDays.length === 0 ? (
-                                    <div className="text-center py-10 border border-dashed border-white/5 rounded-md bg-black/30 mt-4">
-                                      <p className="text-xs text-white/30 font-light">
-                                        No logged workout calorie telemetry
-                                        found
-                                      </p>
-                                      <p className="text-[9px] text-white/20 mt-1 uppercase tracking-widest">
-                                        Complete workout sessions in the Session
-                                        tab to begin tracking
-                                      </p>
-                                    </div>
-                                  ) : (
-                                    <AnimatePresence>
-                                      {showCalorieHistoryList && (
-                                        <motion.div
-                                          initial={{ height: 0, opacity: 0 }}
-                                          animate={{
-                                            height: "auto",
-                                            opacity: 1,
-                                          }}
-                                          exit={{ height: 0, opacity: 0 }}
-                                          transition={{ duration: 0.25 }}
-                                          className="overflow-hidden mt-4"
-                                        >
-                                          <div className="divide-y divide-white/5 border border-white/10 rounded-md overflow-hidden bg-[#070707]/60 max-h-[300px] overflow-y-auto no-scrollbar">
+                                  <AnimatePresence>
+                                    {showCalorieHistoryList && (
+                                      <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: "auto", opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.25 }}
+                                        className="overflow-hidden"
+                                      >
+                                        {sortedDays.length === 0 ? (
+                                          <div className="py-8 text-center text-xs text-white/20 italic bg-white/[0.01] border border-white/5 border-t-0 rounded-b-sm">
+                                            No logged workout calorie telemetry found
+                                          </div>
+                                        ) : (
+                                          <div className="mt-2 max-h-56 overflow-y-auto no-scrollbar space-y-2 p-1">
                                             {sortedDays.map((day) => (
                                               <div
                                                 key={day.date}
-                                                className="flex items-center justify-between p-4 hover:bg-white/[0.02] transition-colors"
+                                                className="flex items-center justify-between px-6 py-3.5 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 group"
                                               >
                                                 <div className="flex items-center gap-3">
-                                                  <div className="w-1.5 h-1.5 rounded-full bg-gym-accent" />
-                                                  <div>
-                                                    <span className="text-xs font-semibold text-white/80 tracking-wider font-mono">
+                                                  <div className="w-2 h-2 rounded-full bg-gym-accent shadow-[0_0_10px_rgba(239,68,68,0.5)] group-hover:scale-125 transition-transform" />
+                                                  <div className="flex items-baseline gap-2">
+                                                    <span className="text-xs font-semibold text-white tracking-wider font-mono">
                                                       {day.date}
                                                     </span>
-                                                    <span className="text-[9px] text-white/30 ml-3 uppercase tracking-widest">
+                                                    <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest font-mono">
                                                       ({day.count}{" "}
                                                       {day.count === 1
                                                         ? "evolution"
@@ -12276,21 +12334,21 @@ export default function App() {
                                                     </span>
                                                   </div>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                  <span className="text-sm font-light text-gym-accent tabular-nums">
+                                                <div className="flex items-center gap-1.5">
+                                                  <span className="text-base font-light font-mono text-gym-accent tabular-nums">
                                                     {day.calories.toLocaleString()}
                                                   </span>
-                                                  <span className="text-[9px] font-serif italic text-white/40 lowercase">
+                                                  <span className="text-[10px] font-serif italic text-white/40 lowercase">
                                                     kcal
                                                   </span>
                                                 </div>
                                               </div>
                                             ))}
                                           </div>
-                                        </motion.div>
-                                      )}
-                                    </AnimatePresence>
-                                  )}
+                                        )}
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
                                 </div>
                               </div>
                             );
@@ -12562,8 +12620,7 @@ export default function App() {
                           );
 
                           return (
-                            <Scroll3DItem>
-                              <div className="mt-8 bg-[#0a0a0a]/80 border border-white/10 rounded-md p-6 relative overflow-hidden backdrop-blur-md">
+                              <div className="mt-8 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-6 relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30">
                               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                                 <div className="flex items-center gap-3">
                                   <Flame className="w-5 h-5 text-gym-accent animate-pulse" />
@@ -12606,8 +12663,8 @@ export default function App() {
                               </div>
 
                               {/* Dynamic Session Stopwatch & Calibration Panel */}
-                              <div className="mt-6 pt-5 border-t border-white/5 flex flex-col gap-4">
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/5 p-3 rounded-md">
+                              <div className="mt-6 pt-5 border-t border-white/10 flex flex-col gap-4">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white/[0.03] border border-white/10 p-4 rounded-xl shadow-inner backdrop-blur-md">
                                   <div className="flex items-center gap-2">
                                     <Timer className={`w-4 h-4 ${profile?.timerActive ? "text-gym-accent animate-spin" : "text-white/40"}`} style={{ animationDuration: "3s" }} />
                                     <div>
@@ -12679,7 +12736,7 @@ export default function App() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
                                   {/* Timing Status Readout */}
-                                  <div className="flex flex-col justify-center bg-white/[0.01] border border-white/[0.03] p-3 rounded-md">
+                                  <div className="flex flex-col justify-center bg-white/[0.02] border border-white/10 p-3.5 rounded-xl backdrop-blur-sm">
                                     <span className="text-[8px] text-white/30 uppercase tracking-widest font-black mb-1">Time Elapsed Status</span>
                                     <div className="flex items-baseline gap-1.5">
                                       {(() => {
@@ -12720,7 +12777,7 @@ export default function App() {
                                   </div>
 
                                   {/* Fail-safe Manual override minutes input */}
-                                  <div className="flex flex-col justify-center bg-white/[0.01] border border-white/[0.03] p-3 rounded-md">
+                                  <div className="flex flex-col justify-center bg-white/[0.02] border border-white/10 p-3.5 rounded-xl backdrop-blur-sm">
                                     <label className="text-[8px] text-white/30 uppercase tracking-widest font-black mb-1.5 flex items-center gap-1">
                                       <Clock className="w-3 h-3 text-white/30" /> Manual Override Calibration (Fail-safe)
                                     </label>
@@ -12746,27 +12803,24 @@ export default function App() {
                                 </div>
                               </div>
                             </div>
-                          </Scroll3DItem>
                         );
                         })()}
 
-                        <Scroll3DItem>
-                          <div className="mt-8 flex items-center justify-center gap-4">
-                            <button
-                              onClick={handleClearActiveSession}
-                              className="px-6 py-4 border border-red-500/20 text-red-500/60 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/10 transition-all cursor-pointer rounded-md"
-                            >
-                              Discard Session
-                            </button>
-                            <button
-                              onClick={handleArchiveWorkout}
-                              className="px-6 py-4 border border-gym-accent/30 text-gym-accent text-[10px] font-bold uppercase tracking-widest hover:bg-gym-accent/10 transition-all cursor-pointer rounded-md flex items-center gap-3"
-                            >
-                              <Save className="w-4 h-4 animate-pulse" />
-                              Capture Workout Session
-                            </button>
-                          </div>
-                        </Scroll3DItem>
+                        <div className="mt-8 flex items-center justify-center gap-4">
+                          <button
+                            onClick={handleClearActiveSession}
+                            className="px-6 py-4 border border-red-500/20 text-red-500/60 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500/10 transition-all cursor-pointer rounded-md"
+                          >
+                            Discard Session
+                          </button>
+                          <button
+                            onClick={handleArchiveWorkout}
+                            className="px-6 py-4 border border-gym-accent/30 text-gym-accent text-[10px] font-bold uppercase tracking-widest hover:bg-gym-accent/10 transition-all cursor-pointer rounded-md flex items-center gap-3"
+                          >
+                            <Save className="w-4 h-4 animate-pulse" />
+                            Capture Workout Session
+                          </button>
+                        </div>
                       </motion.div>
                     )}
 
@@ -12911,7 +12965,7 @@ export default function App() {
                           return (
                             <div
                               key={workout.id}
-                              className="border border-white/15 rounded-md overflow-hidden bg-black/70 backdrop-blur-md"
+                              className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30"
                             >
                               <div className="p-4 sm:p-8 border-b border-white/5 bg-black/45 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8">
@@ -13145,7 +13199,7 @@ export default function App() {
                                 }
                               }}
                               defaultValue=""
-                              className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
+                              className="w-full bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/15 hover:border-gym-accent/50 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-xl px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_4px_12px_rgba(0,0,0,0.6)] [&>option]:bg-[#0c0c0e] [&>option]:text-white"
                             >
                               <option value="" disabled>-- Select a routine to preload & tweak --</option>
                               {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
@@ -13886,7 +13940,7 @@ export default function App() {
                             <select
                               value={selectedRoutineId || ""}
                               onChange={(e) => setSelectedRoutineId(e.target.value)}
-                              className="bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-3 py-2.5 focus:outline-none transition-all cursor-pointer w-full sm:w-auto min-w-[150px] max-w-full sm:max-w-[320px] shadow-md"
+                              className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/15 hover:border-gym-accent/50 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-xl px-3.5 py-2.5 focus:outline-none transition-all cursor-pointer w-full sm:w-auto min-w-[150px] max-w-full sm:max-w-[320px] shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_4px_12px_rgba(0,0,0,0.6)] [&>option]:bg-[#0c0c0e] [&>option]:text-white"
                             >
                               {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
                                 <option key={r.id || ri} value={r.id}>
@@ -14023,35 +14077,33 @@ export default function App() {
                       const isOpen = !!expandedRoutinesDays[di];
 
                       return (
-                        <div key={di} className="group">
-                          <Scroll3DItem>
-                            <button
-                              onClick={() =>
-                                setExpandedRoutinesDays((prev) => ({
-                                  ...prev,
-                                  [di]: !isOpen,
-                                }))
-                              }
-                              className="w-full flex items-center justify-between py-4 px-4 sm:px-6 rounded-md bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
-                            >
-                              <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
-                                <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-                                  {day.icon}
-                                </div>
-                                <h3 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
-                                  {day.name}
-                                </h3>
+                        <div key={di} className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30 mb-4">
+                          <button
+                            onClick={() =>
+                              setExpandedRoutinesDays((prev) => ({
+                                ...prev,
+                                [di]: !isOpen,
+                              }))
+                            }
+                            className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                          >
+                            <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+                              <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
+                                {day.icon}
                               </div>
-                              <div className="flex items-center gap-3 shrink-0">
-                                <span className="text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
-                                  {categoryRoutines.length} Saved
-                                </span>
-                                <ChevronDown
-                                  className={`w-4 h-4 transition-transform duration-500 ${isOpen ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
-                                />
-                              </div>
-                            </button>
-                          </Scroll3DItem>
+                              <h3 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+                                {day.name}
+                              </h3>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              <span className="text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
+                                {categoryRoutines.length} Saved
+                              </span>
+                              <ChevronDown
+                                className={`w-4 h-4 transition-transform duration-500 ${isOpen ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
+                              />
+                            </div>
+                          </button>
 
                       <AnimatePresence>
                         {isOpen && (
@@ -14365,10 +14417,10 @@ export default function App() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-black/85 border border-white/20 rounded-lg p-8 flex flex-col items-center justify-center relative overflow-hidden group">
+                      <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-8 flex flex-col items-center justify-center relative overflow-hidden group shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30">
                         <Flame className="w-8 h-8 text-gym-accent mb-4 relative z-10" />
                         <div className="text-4xl font-light text-white mb-1 relative z-10">
-                          {profile?.streakCount || 0}
+                          {calculatedStreak}
                         </div>
                         <div className="text-[10px] text-white/30 uppercase tracking-widest font-black relative z-10">
                           Current Streak
@@ -14377,7 +14429,7 @@ export default function App() {
                           <Flame className="w-16 h-16 text-gym-accent" />
                         </div>
                       </div>
-                      <div className="bg-black/85 border border-white/20 rounded-lg p-8 flex flex-col items-center justify-center relative overflow-hidden group">
+                      <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-8 flex flex-col items-center justify-center relative overflow-hidden group shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md transition-all duration-300 hover:border-gym-accent/30">
                         <Activity className="w-8 h-8 text-gym-accent mb-4 relative z-10" />
                         <div className="text-4xl font-light text-white mb-1 relative z-10">
                           {archivedWorkouts.length}
@@ -14393,7 +14445,7 @@ export default function App() {
 
 
                     {/* Volume Gamification Section */}
-                    <div className="bg-black/85 border border-gym-accent/25 rounded-lg p-8 relative overflow-hidden">
+                    <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-gym-accent/30 rounded-2xl p-8 relative overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md">
                       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-gym-accent/30 to-transparent" />
 
                       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
@@ -14494,7 +14546,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    <div className="bg-black/85 border border-white/20 rounded-lg p-8 space-y-8">
+                    <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-8 space-y-8 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md">
                       <div>
                         <h4 className="text-[10px] font-black text-gym-accent uppercase tracking-[0.3em] mb-6 border-b border-white/5 pb-4">
                           Personal Details
@@ -14638,7 +14690,7 @@ export default function App() {
                                     prev ? { ...prev, sex: val as any } : null,
                                   );
                                 }}
-                                className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
+                                className="w-full bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/15 hover:border-gym-accent/50 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-xl px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_4px_12px_rgba(0,0,0,0.6)] [&>option]:bg-[#0c0c0e] [&>option]:text-white"
                               >
                                 <option
                                   value="male"
@@ -15060,8 +15112,17 @@ export default function App() {
                         <div className="space-y-2 mb-6 max-h-48 overflow-y-auto text-left border-t border-b border-white/5 py-3 pr-2">
                           {aiPlanExercises.map((exItem, i) => {
                             const progState = getExerciseProgressionState(exItem.exercise.name, allLoggedSets);
+                            const exSets = sessionSets?.filter((s) => s && s.exerciseName && s.exerciseName.trim().toLowerCase() === exItem.exercise.name.trim().toLowerCase()) || [];
+                            const isLoggedDone = exSets.length >= exItem.targetSets && exItem.targetSets > 0;
                             return (
-                              <div key={i} className="flex items-center justify-between text-xs text-white/80 py-2 px-3 font-mono bg-white/[0.02] border border-white/5 border-l-2 border-l-gym-accent rounded-md">
+                              <div
+                                key={i}
+                                className={`flex items-center justify-between text-xs text-white/80 py-2.5 px-3.5 font-mono bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 border-l-4 rounded-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] transition-all duration-300 ${
+                                  isLoggedDone
+                                    ? "border-l-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                                    : "border-l-red-500 shadow-[0_0_15px_rgba(239,68,68,0.15)]"
+                                }`}
+                              >
                                 <div className="flex flex-col min-w-0 flex-1">
                                   <div className="flex items-center gap-2">
                                     <span className="truncate pr-2">{exItem.exercise.name}</span>
@@ -15329,8 +15390,8 @@ export default function App() {
                                 setManualRestTime(val);
                                 setManualRestActive(false);
                               }}
-                              className={`bg-black/80 border border-white/10 text-white/70 rounded-md text-[9px] px-1 py-0.5 font-mono focus:outline-none cursor-pointer h-full ${
-                                !restTimerEnabled ? "text-white/25 border-white/5 cursor-not-allowed" : ""
+                              className={`bg-gradient-to-b from-white/[0.1] to-black/70 border border-white/15 text-white/80 rounded-lg text-[9px] px-2 py-0.5 font-mono focus:outline-none cursor-pointer h-full shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] [&>option]:bg-[#0c0c0e] [&>option]:text-white ${
+                                !restTimerEnabled ? "text-white/25 border-white/5 cursor-not-allowed opacity-50" : ""
                               }`}
                             >
                               {[30, 45, 60, 90, 120, 180].map((sec) => (
@@ -15619,46 +15680,44 @@ export default function App() {
                   <div
                     key={di}
                     ref={di === 5 ? equipmentRef : undefined}
-                    className={`border rounded-md overflow-hidden bg-black/70 backdrop-blur-md mb-4 transition-all ${
+                    className={`bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border rounded-2xl overflow-hidden shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] backdrop-blur-md mb-4 transition-all duration-300 hover:border-gym-accent/30 ${
                       lastLoadedDayIndex === di
-                        ? "border-gym-accent shadow-md shadow-gym-accent/10"
-                        : "border-white/15"
+                        ? "border-gym-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_0_20px_rgba(34,197,94,0.15)]"
+                        : "border-white/12"
                     }`}
                   >
-                    <Scroll3DItem>
-                      <button
-                        onClick={() =>
-                          setExpandedDays((prev) => ({
-                            ...prev,
-                            [di]: !prev[di],
-                          }))
-                        }
-                        className={`w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left transition-all cursor-pointer group ${
-                          expandedDays[di] ? "border-b border-white/15" : ""
-                        } ${
-                          lastLoadedDayIndex === di
-                            ? "bg-gym-accent/[0.04]"
-                            : "hover:bg-white/[0.04]"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
-                          <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-                            {day.icon}
-                          </div>
-                          <h3 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
-                            {day.name}
-                          </h3>
+                    <button
+                      onClick={() =>
+                        setExpandedDays((prev) => ({
+                          ...prev,
+                          [di]: !prev[di],
+                        }))
+                      }
+                      className={`w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left transition-all cursor-pointer group ${
+                        expandedDays[di] ? "border-b border-white/15" : ""
+                      } ${
+                        lastLoadedDayIndex === di
+                          ? "bg-gym-accent/[0.04]"
+                          : "hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+                        <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
+                          {day.icon}
                         </div>
-                        <div className="flex items-center gap-3 shrink-0">
-                          <span className="text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
-                            {currentDays[di]?.length || 0} Ex.
-                          </span>
-                          <ChevronDown
-                            className={`w-4 h-4 transition-transform duration-500 ${expandedDays[di] ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
-                          />
-                        </div>
-                      </button>
-                    </Scroll3DItem>
+                        <h3 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+                          {day.name}
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
+                          {currentDays[di]?.length || 0} Ex.
+                        </span>
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-500 ${expandedDays[di] ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
+                        />
+                      </div>
+                    </button>
 
                     <AnimatePresence>
                       {expandedDays[di] && (
@@ -15709,19 +15768,27 @@ export default function App() {
                                 return weights.length > 0 ? Math.max(...weights) : null;
                               })();
 
+                              // Check if exercise has logged sets
+                              const exSets = sessionSets?.filter((s) => s && s.exerciseName && s.exerciseName.trim().toLowerCase() === ex.name.trim().toLowerCase()) || [];
+                              const isLoggedDone = exSets.length >= 3;
+
                               return (
                                 <motion.div
                                   key={`${ei}-${ex.name}`}
                                   layout
                                   initial={{ opacity: 0, y: 15 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  className="bg-black/35 border border-white/10 hover:border-gym-accent/30 rounded-xl p-5 flex flex-col justify-between backdrop-blur-xl relative overflow-hidden group/card transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] hover:bg-black/55"
+                                  className={`bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-l-4 rounded-2xl p-5 flex flex-col justify-between backdrop-blur-xl relative overflow-hidden group/card transition-all duration-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] ${
+                                    isLoggedDone
+                                      ? "border-white/12 border-l-emerald-500 hover:border-emerald-500/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_0_20px_rgba(16,185,129,0.15)]"
+                                      : "border-white/12 border-l-red-500 hover:border-red-500/40 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_0_20px_rgba(239,68,68,0.15)]"
+                                  }`}
                                 >
                                   {/* Top accent glow line */}
-                                  <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-gym-accent/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                                  <div className={`absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent ${isLoggedDone ? "via-emerald-400/40" : "via-red-500/40"} to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300`} />
                                   
                                   {/* Left subtle indicator bar */}
-                                  <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-gym-accent opacity-35 group-hover/card:opacity-100 transition-opacity duration-300" />
+                                  <div className={`absolute top-0 bottom-0 left-0 w-[4px] transition-all duration-300 ${isLoggedDone ? "bg-emerald-500" : "bg-red-500"}`} />
 
                                   <div className="space-y-4 pl-1">
                                     {/* Row 1: Badges & Actions */}
@@ -16861,7 +16928,7 @@ export default function App() {
               </div>
               <div className="mt-4">
                 <span className="text-3xl font-mono text-white font-bold tracking-tight">
-                  {profile?.streakCount || 0}
+                  {calculatedStreak}
                 </span>
                 <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest block mt-0.5 font-sans">CURRENT DAY STREAK</span>
               </div>
@@ -17178,7 +17245,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.95, y: 25 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 25 }}
-                className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-md overflow-hidden flex flex-col shadow-2xl z-50 p-6 sm:p-8"
+                className="relative w-full max-w-2xl bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-white/20 rounded-2xl overflow-hidden flex flex-col shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_20px_50px_rgba(0,0,0,0.95)] z-50 p-6 sm:p-8"
               >
                 {/* Visual Glow */}
                 <div
@@ -17455,7 +17522,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-md flex flex-col max-h-[90vh] overflow-y-auto shadow-2xl p-8"
+                className="relative w-full max-w-md bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-white/20 rounded-2xl flex flex-col max-h-[90vh] overflow-y-auto shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_20px_50px_rgba(0,0,0,0.95)] p-6 sm:p-8"
               >
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -17504,7 +17571,7 @@ export default function App() {
                     <select
                       value={customExPool}
                       onChange={(e) => setCustomExPool(e.target.value as any)}
-                      className="w-full bg-black/80 border border-white/15 hover:border-white/25 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-md px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-md"
+                      className="w-full bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/15 hover:border-gym-accent/50 focus:border-gym-accent text-white text-xs font-bold uppercase tracking-widest rounded-xl px-4 py-3 focus:outline-none transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_4px_12px_rgba(0,0,0,0.6)] [&>option]:bg-[#0c0c0e] [&>option]:text-white"
                     >
                       {creatingCustomForDay !== null ? (
                         DAY_CONFIG[creatingCustomForDay].pools.map(
@@ -17758,7 +17825,7 @@ export default function App() {
                     initial={{ opacity: 0, scale: 0.9, y: 30 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                    className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-md flex flex-col shadow-2xl my-auto z-10"
+                    className="relative w-full max-w-2xl bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-white/20 rounded-2xl flex flex-col shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_20px_50px_rgba(0,0,0,0.95)] my-auto z-10 overflow-hidden"
                   >
                     <div className="p-10 border-b border-white/5 relative overflow-hidden">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-gym-accent/5 rounded-full blur-3xl -mr-16 -mt-16" />
@@ -18007,7 +18074,7 @@ export default function App() {
                     initial={{ opacity: 0, scale: 0.9, y: 30 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                    className="relative w-full max-w-lg bg-[#0a0a0a] border border-white/10 rounded-md flex flex-col shadow-2xl my-auto z-10 overflow-hidden"
+                    className="relative w-full max-w-lg bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-white/20 rounded-2xl flex flex-col shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_20px_50px_rgba(0,0,0,0.95)] my-auto z-10 overflow-hidden"
                   >
                     <div className="p-6 border-b border-white/15 relative overflow-hidden bg-white/[0.01]">
                       <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-2xl -mr-12 -mt-12" />
@@ -18436,7 +18503,7 @@ export default function App() {
                     initial={{ opacity: 0, scale: 0.9, y: 30 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                    className="relative w-full max-w-2xl bg-[#0a0a0a] border border-white/10 rounded-md flex flex-col shadow-2xl my-auto z-10"
+                    className="relative w-full max-w-2xl bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-white/20 rounded-2xl flex flex-col shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_20px_50px_rgba(0,0,0,0.95)] my-auto z-10 overflow-hidden"
                   >
                     {/* Header */}
                     <div className="p-8 border-b border-white/5 relative overflow-hidden">
@@ -18592,7 +18659,7 @@ export default function App() {
                 initial={{ opacity: 0, scale: 0.9, y: 30 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                className="relative w-full max-w-md bg-[#0a0a0a] border border-white/10 rounded-md overflow-hidden flex flex-col shadow-2xl"
+                className="relative w-full max-w-md bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-white/20 rounded-2xl overflow-hidden flex flex-col shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_20px_50px_rgba(0,0,0,0.95)] p-6 sm:p-8"
               >
                 <div className="p-8 border-b border-white/5 relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-gym-accent/5 rounded-full blur-2xl -mr-12 -mt-12" />
