@@ -635,18 +635,18 @@ export const DAY_CONFIG = [
   },
   {
     label: "3",
-    name: "Shoulders & Forearms",
-    pools: ["front_delts", "side_delts", "rear_delts", "forearms"],
-    icon: <Target className="w-5 h-5 text-gym-accent" />,
+    name: "Legs & Core",
+    pools: ["quads", "hamstrings", "calves", "glutes", "upper_core", "lower_core", "obliques"],
+    icon: <ArrowDown className="w-5 h-5 text-gym-accent" />,
     bg: "bg-white/[0.03]",
     border: "border-gym-accent/10",
     text: "text-white",
   },
   {
     label: "4",
-    name: "Legs & Core",
-    pools: ["quads", "hamstrings", "calves", "glutes", "upper_core", "lower_core", "obliques"],
-    icon: <ArrowDown className="w-5 h-5 text-gym-accent" />,
+    name: "Shoulders & Forearms",
+    pools: ["front_delts", "side_delts", "rear_delts", "forearms"],
+    icon: <Target className="w-5 h-5 text-gym-accent" />,
     bg: "bg-white/[0.03]",
     border: "border-gym-accent/10",
     text: "text-white",
@@ -4762,6 +4762,39 @@ export default function App() {
     setShowAddCustomModal(false);
   };
 
+  // Helper to group and sort exercises within their muscle groups (compounds first)
+  const sortExercisesMuscleGroupWise = (exercises: Exercise[]) => {
+    const muscleGroupsOrder: string[] = [];
+    const exercisesByGroup: Record<string, Exercise[]> = {};
+
+    exercises.forEach((ex) => {
+      const resolved = findExerciseByName(ex.name) || ex;
+      const group = (resolved.muscleGroup || resolved.pool || "other").toLowerCase();
+      if (!exercisesByGroup[group]) {
+        exercisesByGroup[group] = [];
+        muscleGroupsOrder.push(group);
+      }
+      exercisesByGroup[group].push(ex);
+    });
+
+    const sorted: Exercise[] = [];
+    muscleGroupsOrder.forEach((group) => {
+      const groupExs = exercisesByGroup[group];
+      groupExs.sort((a, b) => {
+        const resA = findExerciseByName(a.name) || a;
+        const resB = findExerciseByName(b.name) || b;
+        const catA = resA.category || a.category || "isolation";
+        const catB = resB.category || b.category || "isolation";
+        if (catA === "compound" && catB !== "compound") return -1;
+        if (catA !== "compound" && catB === "compound") return 1;
+        return 0;
+      });
+      sorted.push(...groupExs);
+    });
+
+    return sorted;
+  };
+
   const handleAddMultipleExercisesToPlan = (dayIndex: number, exercises: Exercise[]) => {
     if (exercises.length === 0) return;
     const nextDays = [...currentDays];
@@ -4773,7 +4806,8 @@ export default function App() {
       return;
     }
 
-    nextDays[dayIndex] = [...nextDays[dayIndex], ...toAdd];
+    const merged = [...nextDays[dayIndex], ...toAdd];
+    nextDays[dayIndex] = sortExercisesMuscleGroupWise(merged);
     setCurrentDays(nextDays);
     saveWorkout(nextDays);
     setAddingToDay(null);
@@ -4788,7 +4822,8 @@ export default function App() {
       alert("Exercise already in plan for this day.");
       return;
     }
-    nextDays[dayIndex] = [...nextDays[dayIndex], ex];
+    const merged = [...nextDays[dayIndex], ex];
+    nextDays[dayIndex] = sortExercisesMuscleGroupWise(merged);
     setCurrentDays(nextDays);
     saveWorkout(nextDays);
     setAddingToDay(null);
@@ -4993,39 +5028,6 @@ export default function App() {
       setToast({ message: "No exercises selected to organize.", type: "info" });
       return;
     }
-
-    // Helper to group and sort exercises within their muscle groups
-    const sortExercisesMuscleGroupWise = (exercises: Exercise[]) => {
-      const muscleGroupsOrder: string[] = [];
-      const exercisesByGroup: Record<string, Exercise[]> = {};
-
-      exercises.forEach((ex) => {
-        const resolved = findExerciseByName(ex.name) || ex;
-        const group = (resolved.muscleGroup || resolved.pool || "other").toLowerCase();
-        if (!exercisesByGroup[group]) {
-          exercisesByGroup[group] = [];
-          muscleGroupsOrder.push(group);
-        }
-        exercisesByGroup[group].push(ex);
-      });
-
-      const sorted: Exercise[] = [];
-      muscleGroupsOrder.forEach((group) => {
-        const groupExs = exercisesByGroup[group];
-        groupExs.sort((a, b) => {
-          const resA = findExerciseByName(a.name) || a;
-          const resB = findExerciseByName(b.name) || b;
-          const catA = resA.category || a.category || "isolation";
-          const catB = resB.category || b.category || "isolation";
-          if (catA === "compound" && catB !== "compound") return -1;
-          if (catA !== "compound" && catB === "compound") return 1;
-          return 0;
-        });
-        sorted.push(...groupExs);
-      });
-
-      return sorted;
-    };
 
     const sortAIPlanExercisesMuscleGroupWise = (items: AIPlanExercise[]) => {
       const muscleGroupsOrder: string[] = [];
@@ -7918,33 +7920,6 @@ export default function App() {
             </div>
 
             {/* Mobile Header Quick Actions */}
-            <div className="flex items-center gap-2 sm:hidden">
-              <button
-                onClick={() => setShowLandingPage(true)}
-                className="p-2 bg-white/5 border border-white/10 rounded-full text-theme-text-muted hover:text-theme-text transition-all active:scale-95"
-                title="Cinematic Portal"
-              >
-                <Compass className="w-4 h-4 text-gym-accent" />
-              </button>
-              <button
-                onClick={() => {
-                  setActiveView("profile");
-                  saveSettings({ activeView: "profile" });
-                }}
-                className={`p-0.5 border rounded-full transition-all active:scale-95 overflow-hidden w-8 h-8 ${activeView === "profile" ? "border-gym-accent bg-gym-accent/10" : "border-white/10 bg-white/5"}`}
-                title="Profile"
-              >
-                {profile?.photoURL || currentUser.photoURL ? (
-                  <img
-                    src={profile?.photoURL || currentUser.photoURL || ""}
-                    alt="Avatar"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <UserIcon className="w-3.5 h-3.5 text-theme-text-muted" />
-                )}
-              </button>
-            </div>
           </div>
 
           <div className="hidden sm:flex items-center gap-6 justify-between md:justify-end w-full md:w-auto">
@@ -9280,24 +9255,24 @@ export default function App() {
                               [section.title]: !prev[section.title],
                             }))
                           }
-                          className="w-full text-left p-6 flex items-center justify-between hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
+                          className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left hover:bg-white/[0.04] transition-all cursor-pointer group backdrop-blur-md"
                         >
-                          <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
                             <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
                               {getLibraryCategoryIcon(section.key)}
                             </div>
-                            <div className="flex items-center gap-3">
-                              <h3 className="text-lg font-light italic font-serif text-white/90">
-                                {section.title}
-                              </h3>
-                              <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
-                                {section.list.length} Ex.
-                              </span>
-                            </div>
+                            <h3 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+                              {section.title}
+                            </h3>
                           </div>
-                          <ChevronDown
-                            className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-all ${expandedLibrarySections[section.title] ? "rotate-180" : ""}`}
-                          />
+                          <div className="flex items-center gap-3 shrink-0">
+                            <span className="text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
+                              {section.list.length} Ex.
+                            </span>
+                            <ChevronDown
+                              className={`w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500 ${expandedLibrarySections[section.title] ? "rotate-180" : ""}`}
+                            />
+                          </div>
                         </button>
                       </Scroll3DItem>
                     )}
@@ -12805,37 +12780,38 @@ export default function App() {
                               Archived Evolutions
                             </h4>
 
-                            <div className="relative">
-                              <Scroll3DItem>
-                                <button
-                                  onClick={() =>
-                                    setShowHistoryMenu(!showHistoryMenu)
-                                  }
-                                  className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
-                                >
-                                  <History className="w-3 h-3" />
-                                  {selectedWorkoutId &&
-                                  archivedWorkouts.find(
-                                    (w) => w.id === selectedWorkoutId,
-                                  )
-                                    ? archivedWorkouts.find(
-                                        (w) => w.id === selectedWorkoutId,
-                                      )?.date
-                                    : "History Explorer"}
-                                  <ChevronDown
-                                    className={`w-3 h-3 transition-transform ${showHistoryMenu ? "rotate-180" : ""}`}
-                                  />
-                                </button>
-                              </Scroll3DItem>
+                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                              <div className="relative">
+                                <Scroll3DItem>
+                                  <button
+                                    onClick={() =>
+                                      setShowHistoryMenu(!showHistoryMenu)
+                                    }
+                                    className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
+                                  >
+                                    <History className="w-3 h-3" />
+                                    {selectedWorkoutId &&
+                                    archivedWorkouts.find(
+                                      (w) => w.id === selectedWorkoutId,
+                                    )
+                                      ? archivedWorkouts.find(
+                                          (w) => w.id === selectedWorkoutId,
+                                        )?.date
+                                      : "History Explorer"}
+                                    <ChevronDown
+                                      className={`w-3 h-3 transition-transform ${showHistoryMenu ? "rotate-180" : ""}`}
+                                    />
+                                  </button>
+                                </Scroll3DItem>
 
-                            <AnimatePresence>
-                              {showHistoryMenu && (
-                                <motion.div
-                                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                  className="absolute top-full right-0 mt-2 w-64 bg-black border border-white/20 rounded-md shadow-2xl z-50 overflow-hidden"
-                                >
+                                <AnimatePresence>
+                                  {showHistoryMenu && (
+                                    <motion.div
+                                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                      className="absolute top-full left-0 mt-2 w-64 bg-black border border-white/20 rounded-md shadow-2xl z-50 overflow-hidden"
+                                    >
                                   <div className="max-h-72 overflow-y-auto py-2">
                                     {archivedWorkouts.map((w) => {
                                       const d = new Date(w.date);
@@ -12886,8 +12862,24 @@ export default function App() {
                               )}
                             </AnimatePresence>
                           </div>
+
+                          <Scroll3DItem>
+                            <button
+                              onClick={() => {
+                                setActiveView("workout");
+                                setWorkoutInnerTab("ai_program");
+                                saveSettings({ activeView: "workout" });
+                              }}
+                              className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:border-gym-accent/50 hover:bg-black/80 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
+                              title="Return to Active Plan"
+                            >
+                              <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>Plan</span>
+                            </button>
+                          </Scroll3DItem>
                         </div>
-                        </div>
+                      </div>
+                    </div>
 
                         {/* Selected or Latest Workout Display */}
                         {(() => {
@@ -14040,24 +14032,24 @@ export default function App() {
                                   [di]: !isOpen,
                                 }))
                               }
-                              className="w-full flex items-center justify-between p-6 rounded-md bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
+                              className="w-full flex items-center justify-between py-4 px-4 sm:px-6 rounded-md bg-black/65 border border-white/15 hover:bg-black/80 hover:border-white/25 transition-all cursor-pointer group backdrop-blur-md"
                             >
-                              <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0">
+                              <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+                                <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
                                   {day.icon}
                                 </div>
-                                <div className="flex items-center gap-3">
-                                  <h3 className="text-lg font-light italic font-serif text-white/90">
-                                    {day.name}
-                                  </h3>
-                                  <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
-                                    {categoryRoutines.length} Saved
-                                  </span>
-                                </div>
+                                <h3 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+                                  {day.name}
+                                </h3>
                               </div>
-                              <ChevronDown
-                                className={`w-4 h-4 transition-transform duration-500 ${isOpen ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
-                              />
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className="text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
+                                  {categoryRoutines.length} Saved
+                                </span>
+                                <ChevronDown
+                                  className={`w-4 h-4 transition-transform duration-500 ${isOpen ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
+                                />
+                              </div>
                             </button>
                           </Scroll3DItem>
 
@@ -15018,27 +15010,19 @@ export default function App() {
                   <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
                     <button
                       onClick={handleFormatProgram}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-md shadow-gym-accent/20 font-bold"
+                      className="flex items-center justify-center gap-1.5 px-3 py-2 min-w-[84px] bg-gym-accent hover:bg-gym-accent/90 text-black rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-md shadow-gym-accent/20"
                       title="Format and capture all selected exercises into a clean list view"
                     >
-                      <ClipboardList className="w-3.5 h-3.5" />
+                      <ClipboardList className="w-3.5 h-3.5 shrink-0" />
                       BUILD
                     </button>
                     <button
-                      onClick={handleOrganizeMovementOrder}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-gym-accent/20 border border-gym-accent/50 hover:border-gym-accent/75 hover:bg-gym-accent/35 text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-gym-accent/5"
-                      title="Prioritise compound exercises and move isolation movements to the end"
-                    >
-                      <ArrowUpDown className="w-3.5 h-3.5" />
-                       compounds
-                    </button>
-                    <button
                       onClick={handleClearAllExercises}
-                      className="flex items-center gap-2 px-4 py-2.5 bg-red-500/20 border border-red-500/50 hover:border-red-500/75 hover:bg-red-500/35 text-red-400 rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-red-500/5"
+                      className="flex items-center justify-center gap-1.5 px-3 py-2 min-w-[84px] bg-red-500/20 border border-red-500/50 hover:border-red-500/75 hover:bg-red-500/35 text-red-400 rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-red-500/5"
                       title="Clear and de-select all exercises from weekly programming"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      Remove All
+                      <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                      CLEAR
                     </button>
                   </div>
                 </div>
@@ -15670,7 +15654,7 @@ export default function App() {
                             [di]: !prev[di],
                           }))
                         }
-                        className={`w-full flex items-center justify-between p-6 text-left transition-all cursor-pointer group ${
+                        className={`w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left transition-all cursor-pointer group ${
                           expandedDays[di] ? "border-b border-white/15" : ""
                         } ${
                           lastLoadedDayIndex === di
@@ -15678,25 +15662,18 @@ export default function App() {
                             : "hover:bg-white/[0.04]"
                         }`}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
                           <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
                             {day.icon}
                           </div>
-                          <div className="flex items-center gap-3">
-                            <h3 className="text-lg font-light italic font-serif text-white/90">
-                              {day.name}
-                            </h3>
-                            <span className="text-[9px] text-white/10 px-2 py-0.5 border border-white/5 rounded-full uppercase tabular-nums">
-                              {currentDays[di]?.length || 0} Ex.
-                            </span>
-                          </div>
+                          <h3 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+                            {day.name}
+                          </h3>
                         </div>
-                        <div className="flex items-center gap-4">
-                          {!expandedDays[di] && currentDays[di]?.length === 0 && (
-                            <span className="text-[9px] text-gym-accent font-bold uppercase tracking-widest opacity-60 group-hover:opacity-100">
-                              Click to Create Plan
-                            </span>
-                          )}
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
+                            {currentDays[di]?.length || 0} Ex.
+                          </span>
                           <ChevronDown
                             className={`w-4 h-4 transition-transform duration-500 ${expandedDays[di] ? "rotate-180" : ""} text-white/20 group-hover:text-gym-accent`}
                           />
@@ -16265,7 +16242,13 @@ export default function App() {
                         !currentDays[addingToDay].some(
                           (p) => p.name === ex.name,
                         ),
-                    );
+                    ).sort((a, b) => {
+                      const catA = a.category || "isolation";
+                      const catB = b.category || "isolation";
+                      if (catA === "compound" && catB !== "compound") return -1;
+                      if (catA !== "compound" && catB === "compound") return 1;
+                      return a.name.localeCompare(b.name);
+                    });
 
                     if (filtered.length === 0) return null;
 

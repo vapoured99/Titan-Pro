@@ -1203,33 +1203,28 @@ export default function AnatomyDashboard({
         <Scroll3DItem>
         <button
           onClick={() => toggleSection('physiological')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-physiological"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
               <Activity className="w-4 h-4" />
             </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                Physiological Analysis
-              </h4>
-              <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
-                Real-Time Muscle Stimulation Mapping & Recovery Grid
-              </p>
-            </div>
+            <h4 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+              Physiological Analysis
+            </h4>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {/* Quick status summary for closed state */}
             {!expanded.physiological && (
-              <span className="hidden sm:inline-block text-[9px] bg-white/5 border border-white/10 px-2.5 py-1 text-white/50 uppercase tracking-widest font-mono">
-                Recruited: {radarData.list.filter(l => l.count > 0).length} / 6 Zones
+              <span className="hidden sm:inline-block text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
+                Recruited: {radarData.list.filter(l => l.count > 0).length} / 6
               </span>
             )}
             {expanded.physiological ? (
-              <ChevronUp className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronUp className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronDown className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             )}
           </div>
         </button>
@@ -1372,32 +1367,27 @@ export default function AnatomyDashboard({
         <Scroll3DItem>
         <button
           onClick={() => toggleSection('radar')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-radar"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
               <Brain className="w-4 h-4" />
             </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                Muscular Radar Analysis
-              </h4>
-              <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
-                Dynamic Biomechanical Symmetry Map & Volume Breakdown
-              </p>
-            </div>
+            <h4 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+              Muscular Radar Analysis
+            </h4>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {!expanded.radar && (
-              <span className="hidden sm:inline-block text-[9px] bg-white/5 border border-white/10 px-2.5 py-1 text-white/50 uppercase tracking-widest font-mono">
+              <span className="hidden sm:inline-block text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
                 Symmetry: {balanceAnalysis.score}%
               </span>
             )}
             {expanded.radar ? (
-              <ChevronUp className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronUp className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronDown className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             )}
           </div>
         </button>
@@ -1769,38 +1759,33 @@ export default function AnatomyDashboard({
         <Scroll3DItem>
         <button
           onClick={() => toggleSection('biomechanical')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-biomechanical"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
               <Scale className="w-4 h-4" />
             </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                Muscle Balance & Joint Safety
-              </h4>
-              <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
-                Rolling 30-Day Push/Pull Ratios & Postural Joint Safety
-              </p>
-            </div>
+            <h4 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+              Muscle Balance & Joint Safety
+            </h4>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {!expanded.biomechanical && (
-              <span className={`text-[9px] px-2.5 py-1 uppercase tracking-widest font-mono border ${
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors border ${
                 biomechanicalAnalysis.totalAlerts > 0
-                  ? 'bg-red-950/40 border-red-500/20 text-red-400 font-bold animate-pulse'
-                  : 'bg-white/5 border-white/10 text-white/50'
+                  ? 'bg-red-950/40 border-red-500/30 text-red-400 font-bold animate-pulse'
+                  : 'text-white/40 border-white/10 group-hover:text-gym-accent/80'
               }`}>
                 {biomechanicalAnalysis.totalAlerts > 0
-                  ? `❗ POSTURAL WARNINGS: ${biomechanicalAnalysis.totalAlerts}`
-                  : "● WORKLOAD: BALANCED"}
+                  ? `❗ ALERTS: ${biomechanicalAnalysis.totalAlerts}`
+                  : "BALANCED"}
               </span>
             )}
             {expanded.biomechanical ? (
-              <ChevronUp className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronUp className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronDown className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             )}
           </div>
         </button>
@@ -2120,27 +2105,22 @@ export default function AnatomyDashboard({
         <Scroll3DItem>
         <button
           onClick={() => toggleSection('strength')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-strength"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
               <Award className="w-4 h-4" />
             </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                Relative Strength Radar
-              </h4>
-              <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
-                D3 concentric muscle group development comparison against baseline 1RMs
-              </p>
-            </div>
+            <h4 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+              Relative Strength Radar
+            </h4>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {expanded.strength ? (
-              <ChevronUp className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronUp className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronDown className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             )}
           </div>
         </button>
@@ -2174,36 +2154,31 @@ export default function AnatomyDashboard({
         <Scroll3DItem>
         <button
           onClick={() => toggleSection('cnsFatigue')}
-          className="w-full flex items-center justify-between p-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
+          className="w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left border-b border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer group"
           id="toggle-cns-fatigue"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center shrink-0 text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
               <Brain className="w-4 h-4" />
             </div>
-            <div>
-              <h4 className="text-xs font-black uppercase tracking-wider text-white">
-                Central Nervous System (CNS) Fatigue Index
-              </h4>
-              <p className="text-[9px] text-white/30 uppercase tracking-widest mt-0.5">
-                Dynamic fatigue index & joint-shear risk based on 72h compound spinal loading
-              </p>
-            </div>
+            <h4 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+              CNS Fatigue Index
+            </h4>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {!expanded.cnsFatigue && (
-              <span className={`text-[8.5px] font-mono uppercase px-2 py-0.5 border font-semibold ${
-                cnsFatigueAnalysis.score > 85 ? 'text-red-400 bg-red-950/20 border-red-500/20 animate-pulse' :
-                cnsFatigueAnalysis.score > 55 ? 'text-amber-400 bg-amber-950/20 border-amber-500/20' :
-                'text-green-400 bg-green-950/20 border-green-500/20'
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors border ${
+                cnsFatigueAnalysis.score > 85 ? 'text-red-400 bg-red-950/20 border-red-500/30 animate-pulse font-bold' :
+                cnsFatigueAnalysis.score > 55 ? 'text-amber-400 bg-amber-950/20 border-amber-500/30 font-semibold' :
+                'text-green-400 bg-green-950/20 border-green-500/30 font-semibold'
               }`}>
                 Fatigue: {cnsFatigueAnalysis.score}%
               </span>
             )}
             {expanded.cnsFatigue ? (
-              <ChevronUp className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronUp className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronDown className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             )}
           </div>
         </button>

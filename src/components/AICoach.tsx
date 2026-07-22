@@ -232,30 +232,29 @@ const AICoach: React.FC<AICoachProps> = ({ sets = [], archivedWorkouts = [], use
         <button
           onClick={() => setIsMinimized(!isMinimized)}
           type="button"
-          className={`w-full flex items-center justify-between p-6 text-left transition-all cursor-pointer group ${
+          className={`w-full flex items-center justify-between py-4 px-4 sm:px-6 text-left transition-all cursor-pointer group ${
             !isMinimized ? "border-b border-white/15" : ""
           } hover:bg-white/[0.04]`}
         >
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all">
-              <Cpu className="w-5 h-5 animate-pulse" />
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-md bg-gym-accent/10 border border-gym-accent/25 flex items-center justify-center text-gym-accent group-hover:bg-gym-accent/20 group-hover:border-gym-accent/40 transition-all shrink-0">
+              <Cpu className="w-4 h-4 animate-pulse" />
             </div>
-            <div>
-              <h4 className="text-[10px] text-gym-accent font-black uppercase tracking-[0.3em] font-mono leading-none">TACTICAL OPERATIVE CO-PILOT</h4>
-              <p className="text-xs sm:text-sm text-white font-medium mt-1">Real-time biomechanical target guidance</p>
-            </div>
+            <h4 className="text-sm sm:text-base md:text-lg font-light italic font-serif text-white/90 whitespace-nowrap truncate">
+              Tactical AI Co-Pilot
+            </h4>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0">
             {advice && isMinimized && (
-              <span className="hidden sm:inline-block text-[9px] bg-white/5 border border-white/10 px-2.5 py-1 text-white/50 uppercase tracking-widest font-mono">
+              <span className="hidden sm:inline-block text-[10px] font-mono text-white/40 group-hover:text-gym-accent/80 px-2 py-0.5 border border-white/10 rounded-full uppercase tabular-nums whitespace-nowrap shrink-0 transition-colors">
                 {advice.recoveryScore}% READY • {advice.overallStatus}
               </span>
             )}
             {!isMinimized ? (
-              <ChevronUp className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronUp className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             ) : (
-              <ChevronDown className="w-4 h-4 text-white/40 group-hover:text-white" />
+              <ChevronDown className="w-4 h-4 text-white/20 group-hover:text-gym-accent transition-transform duration-500" />
             )}
           </div>
         </button>

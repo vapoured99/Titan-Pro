@@ -79,8 +79,50 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
   const cnsLabel = cnsFatigueAnalysis?.label ?? "RESTORED";
   const cnsHexColor = cnsFatigueAnalysis?.hexColor ?? "#10b981";
 
-  // Streak
-  const streak = currentProfile?.streak ?? 0;
+  // Streak calculation from profile and archivedWorkouts
+  const streak = useMemo(() => {
+    const profileStreak = currentProfile?.streakCount ?? currentProfile?.streak ?? 0;
+
+    if (!archivedWorkouts || archivedWorkouts.length === 0) {
+      return profileStreak;
+    }
+
+    const uniqueDates = new Set<string>();
+    archivedWorkouts.forEach((w) => {
+      if (w.date) {
+        const dateStr = typeof w.date === 'string' ? w.date.split('T')[0] : new Date(w.date).toISOString().split('T')[0];
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          uniqueDates.add(dateStr);
+        }
+      }
+    });
+
+    if (uniqueDates.size === 0) return profileStreak;
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    let checkDate = new Date();
+    let checkStr = todayStr;
+
+    if (!uniqueDates.has(todayStr)) {
+      checkDate = yesterday;
+      checkStr = yesterdayStr;
+    }
+
+    let workoutStreak = 0;
+    while (uniqueDates.has(checkStr)) {
+      workoutStreak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+      checkStr = checkDate.toISOString().split('T')[0];
+    }
+
+    return Math.max(profileStreak, workoutStreak);
+  }, [archivedWorkouts, currentProfile]);
 
   // Weight Change
   const currentWeight = currentProfile?.weight ?? (weightHistory && weightHistory[weightHistory.length - 1]?.weight) ?? null;
