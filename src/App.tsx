@@ -2353,7 +2353,7 @@ export default function App() {
   const [currentThemeId, setCurrentThemeId] = useState<string>(() => {
     return localStorage.getItem("gym-theme-id") || "default";
   });
-  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
+  const [activeDrawer, setActiveDrawer] = useState<"gym" | "analytics" | "more" | null>(null);
   const [atmosphereEffect, setAtmosphereEffect] = useState<string>(() => {
     return localStorage.getItem("gym-atmosphere-effect") || "video_theme3";
   });
@@ -19156,48 +19156,68 @@ export default function App() {
         </AnimatePresence>
 
         {/* Universal Bottom Dock Navigation & Drawer */}
-        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-1 sm:px-6 py-5 sm:py-8 flex items-center justify-between sm:justify-center sm:gap-10 md:gap-12 shadow-2xl safe-area-bottom w-full max-w-full">
-          {[
-            { id: "console_d", label: "Console", icon: Terminal },
-            { id: "workout", label: "Workout", icon: Dumbbell },
-            { id: "library", label: "Library", icon: BookOpen },
-            { id: "progress", label: "Progress", icon: LineChart },
-            { id: "anatomy", label: "Anatomy", icon: PersonStanding },
-            { id: "session", label: "Session", icon: Timer },
-          ].map((item) => {
-            const Icon = item.icon;
-            const isActive = activeView === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveView(item.id as any);
-                  saveSettings({ activeView: item.id });
-                  window.scrollTo({ top: 0, behavior: "smooth" });
-                }}
-                className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-0.5 sm:px-4 rounded-xl transition-all cursor-pointer active:scale-95 ${
-                  isActive
-                    ? "text-gym-accent font-bold"
-                    : "text-white/50 hover:text-white/80"
-                }`}
-              >
-                <Icon className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${isActive ? "scale-110 text-gym-accent" : ""}`} />
-                <span className="text-[7.5px] min-[380px]:text-[8.5px] sm:text-[11px] uppercase tracking-tighter min-[380px]:tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
-                  {item.label}
-                </span>
-              </button>
-            );
-          })}
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-2 sm:px-8 py-5 sm:py-8 flex items-center justify-around sm:justify-center sm:gap-16 shadow-2xl safe-area-bottom w-full max-w-full">
+          {/* Button 1: Console */}
           <button
-            onClick={() => setMobileMoreOpen(!mobileMoreOpen)}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-0.5 sm:px-4 rounded-xl transition-all cursor-pointer active:scale-95 ${
-              ["routines", "avatar", "profile"].includes(activeView) || mobileMoreOpen
+            onClick={() => {
+              setActiveView("console_d");
+              saveSettings({ activeView: "console_d" });
+              setActiveDrawer(null);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
+              activeView === "console_d" && !activeDrawer
                 ? "text-gym-accent font-bold"
                 : "text-white/50 hover:text-white/80"
             }`}
           >
-            <LayoutGrid className="w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0" />
-            <span className="text-[7.5px] min-[380px]:text-[8.5px] sm:text-[11px] uppercase tracking-tighter min-[380px]:tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
+            <Terminal className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${activeView === "console_d" && !activeDrawer ? "scale-110 text-gym-accent" : ""}`} />
+            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
+              Console
+            </span>
+          </button>
+
+          {/* Button 2: Gym */}
+          <button
+            onClick={() => setActiveDrawer(activeDrawer === "gym" ? null : "gym")}
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
+              ["workout", "session", "library", "routines"].includes(activeView) || activeDrawer === "gym"
+                ? "text-gym-accent font-bold"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            <Dumbbell className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${["workout", "session", "library", "routines"].includes(activeView) || activeDrawer === "gym" ? "scale-110 text-gym-accent" : ""}`} />
+            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
+              Gym
+            </span>
+          </button>
+
+          {/* Button 3: Analytics */}
+          <button
+            onClick={() => setActiveDrawer(activeDrawer === "analytics" ? null : "analytics")}
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
+              ["anatomy", "progress"].includes(activeView) || activeDrawer === "analytics"
+                ? "text-gym-accent font-bold"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            <LineChart className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${["anatomy", "progress"].includes(activeView) || activeDrawer === "analytics" ? "scale-110 text-gym-accent" : ""}`} />
+            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
+              Analytics
+            </span>
+          </button>
+
+          {/* Button 4: More */}
+          <button
+            onClick={() => setActiveDrawer(activeDrawer === "more" ? null : "more")}
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
+              ["avatar", "profile"].includes(activeView) || activeDrawer === "more"
+                ? "text-gym-accent font-bold"
+                : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            <LayoutGrid className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${["avatar", "profile"].includes(activeView) || activeDrawer === "more" ? "scale-110 text-gym-accent" : ""}`} />
+            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
               More
             </span>
           </button>
@@ -19205,13 +19225,13 @@ export default function App() {
 
         {/* Slide-Up Drawer for Additional Navigation */}
         <AnimatePresence>
-          {mobileMoreOpen && (
+          {activeDrawer && (
             <>
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => setMobileMoreOpen(false)}
+                onClick={() => setActiveDrawer(null)}
                 className="fixed inset-0 bg-black/70 backdrop-blur-md z-50"
               />
               <motion.div
@@ -19222,70 +19242,173 @@ export default function App() {
                 className="fixed bottom-24 sm:bottom-32 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-neutral-900/95 backdrop-blur-2xl border border-gym-accent/30 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[80vh] overflow-y-auto"
               >
                 <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4" />
-                <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
-                  <h3 className="text-xs font-mono uppercase tracking-widest text-gym-accent font-bold flex items-center gap-2">
-                    <Sparkles className="w-3.5 h-3.5" /> Navigation & Features
-                  </h3>
-                  <button
-                    onClick={() => setMobileMoreOpen(false)}
-                    className="p-1 rounded-full bg-white/5 text-white/60 hover:text-white"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 gap-2.5">
-                  {[
-                    { id: "routines", label: "Routines", icon: ClipboardList, desc: "Saved split templates" },
-                    { id: "avatar", label: "3D Avatar", icon: Sparkles, desc: "Muscle avatar status" },
-                    { id: "profile", label: "Profile", icon: UserIcon, desc: "User profile & metrics" },
-                  ].map((nav) => {
-                    const Icon = nav.icon;
-                    const isActive = activeView === nav.id;
-                    return (
+                
+                {/* Gym Drawer Popup */}
+                {activeDrawer === "gym" && (
+                  <>
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
+                      <h3 className="text-xs font-mono uppercase tracking-widest text-gym-accent font-bold flex items-center gap-2">
+                        <Dumbbell className="w-3.5 h-3.5" /> Gym Features
+                      </h3>
                       <button
-                        key={nav.id}
-                        onClick={() => {
-                          setActiveView(nav.id as any);
-                          saveSettings({ activeView: nav.id });
-                          setMobileMoreOpen(false);
-                          window.scrollTo({ top: 0, behavior: "smooth" });
-                        }}
-                        className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1 ${
-                          isActive
-                            ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
-                            : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
-                        }`}
+                        onClick={() => setActiveDrawer(null)}
+                        className="p-1 rounded-full bg-white/5 text-white/60 hover:text-white"
                       >
-                        <div className="flex items-center gap-2">
-                          <Icon className="w-4 h-4" />
-                          <span className="text-xs font-bold uppercase font-mono tracking-wider">{nav.label}</span>
-                        </div>
-                        <span className="text-[10px] text-white/50 leading-snug">{nav.desc}</span>
+                        <X className="w-4 h-4" />
                       </button>
-                    );
-                  })}
-                </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {[
+                        { id: "workout", label: "Workout", icon: Dumbbell, desc: "Active workout logger & sets" },
+                        { id: "session", label: "Session", icon: Timer, desc: "Stopwatch & session tracking" },
+                        { id: "library", label: "Library", icon: BookOpen, desc: "Exercise library & guides" },
+                        { id: "routines", label: "Routines", icon: ClipboardList, desc: "Saved split templates" },
+                      ].map((nav) => {
+                        const Icon = nav.icon;
+                        const isActive = activeView === nav.id;
+                        return (
+                          <button
+                            key={nav.id}
+                            onClick={() => {
+                              setActiveView(nav.id as any);
+                              saveSettings({ activeView: nav.id });
+                              setActiveDrawer(null);
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                            className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1 ${
+                              isActive
+                                ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
+                                : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4" />
+                              <span className="text-xs font-bold uppercase font-mono tracking-wider">{nav.label}</span>
+                            </div>
+                            <span className="text-[10px] text-white/50 leading-snug">{nav.desc}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
-                <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => {
-                      setShowLandingPage(true);
-                      setMobileMoreOpen(false);
-                    }}
-                    className="flex-1 py-2.5 px-3 bg-white/5 border border-white/10 rounded-xl text-xs font-mono uppercase tracking-wider text-white/80 flex items-center justify-center gap-2"
-                  >
-                    <Compass className="w-3.5 h-3.5 text-gym-accent" /> Portal
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleLogout();
-                      setMobileMoreOpen(false);
-                    }}
-                    className="py-2.5 px-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-mono uppercase tracking-wider text-red-400 flex items-center justify-center gap-2"
-                  >
-                    <LogOut className="w-3.5 h-3.5" /> Logout
-                  </button>
-                </div>
+                {/* Analytics Drawer Popup */}
+                {activeDrawer === "analytics" && (
+                  <>
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
+                      <h3 className="text-xs font-mono uppercase tracking-widest text-gym-accent font-bold flex items-center gap-2">
+                        <LineChart className="w-3.5 h-3.5" /> Analytics & Body
+                      </h3>
+                      <button
+                        onClick={() => setActiveDrawer(null)}
+                        className="p-1 rounded-full bg-white/5 text-white/60 hover:text-white"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {[
+                        { id: "anatomy", label: "Anatomy", icon: PersonStanding, desc: "Spinal depletion & muscle map" },
+                        { id: "progress", label: "Progress", icon: LineChart, desc: "Personal bests & history" },
+                      ].map((nav) => {
+                        const Icon = nav.icon;
+                        const isActive = activeView === nav.id;
+                        return (
+                          <button
+                            key={nav.id}
+                            onClick={() => {
+                              setActiveView(nav.id as any);
+                              saveSettings({ activeView: nav.id });
+                              setActiveDrawer(null);
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                            className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1 ${
+                              isActive
+                                ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
+                                : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4" />
+                              <span className="text-xs font-bold uppercase font-mono tracking-wider">{nav.label}</span>
+                            </div>
+                            <span className="text-[10px] text-white/50 leading-snug">{nav.desc}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {/* More Drawer Popup */}
+                {activeDrawer === "more" && (
+                  <>
+                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-white/10">
+                      <h3 className="text-xs font-mono uppercase tracking-widest text-gym-accent font-bold flex items-center gap-2">
+                        <Sparkles className="w-3.5 h-3.5" /> Additional Options
+                      </h3>
+                      <button
+                        onClick={() => setActiveDrawer(null)}
+                        className="p-1 rounded-full bg-white/5 text-white/60 hover:text-white"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                      {[
+                        { id: "avatar", label: "3D Avatar", icon: Sparkles, desc: "Muscle avatar status" },
+                        { id: "profile", label: "Profile", icon: UserIcon, desc: "User profile & metrics" },
+                      ].map((nav) => {
+                        const Icon = nav.icon;
+                        const isActive = activeView === nav.id;
+                        return (
+                          <button
+                            key={nav.id}
+                            onClick={() => {
+                              setActiveView(nav.id as any);
+                              saveSettings({ activeView: nav.id });
+                              setActiveDrawer(null);
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                            }}
+                            className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1 ${
+                              isActive
+                                ? "border-gym-accent bg-gym-accent/10 text-gym-accent"
+                                : "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4" />
+                              <span className="text-xs font-bold uppercase font-mono tracking-wider">{nav.label}</span>
+                            </div>
+                            <span className="text-[10px] text-white/50 leading-snug">{nav.desc}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between gap-2">
+                      <button
+                        onClick={() => {
+                          setShowLandingPage(true);
+                          setActiveDrawer(null);
+                        }}
+                        className="flex-1 py-2.5 px-3 bg-white/5 border border-white/10 rounded-xl text-xs font-mono uppercase tracking-wider text-white/80 flex items-center justify-center gap-2 hover:bg-white/10 transition-all active:scale-95"
+                      >
+                        <Compass className="w-3.5 h-3.5 text-gym-accent" /> Portal
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setActiveDrawer(null);
+                        }}
+                        className="py-2.5 px-3 bg-red-500/10 border border-red-500/20 rounded-xl text-xs font-mono uppercase tracking-wider text-red-400 flex items-center justify-center gap-2 hover:bg-red-500/20 transition-all active:scale-95"
+                      >
+                        <LogOut className="w-3.5 h-3.5" /> Logout
+                      </button>
+                    </div>
+                  </>
+                )}
               </motion.div>
             </>
           )}
