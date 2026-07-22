@@ -2354,6 +2354,20 @@ export default function App() {
     return localStorage.getItem("gym-theme-id") || "default";
   });
   const [activeDrawer, setActiveDrawer] = useState<"gym" | "analytics" | "more" | null>(null);
+
+  useEffect(() => {
+    if (activeDrawer) {
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
+    };
+  }, [activeDrawer]);
   const [atmosphereEffect, setAtmosphereEffect] = useState<string>(() => {
     return localStorage.getItem("gym-atmosphere-effect") || "video_theme3";
   });
@@ -19156,7 +19170,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* Universal Bottom Dock Navigation & Drawer */}
-        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-2 sm:px-8 py-5 sm:py-8 flex items-center justify-around sm:justify-center sm:gap-16 shadow-2xl safe-area-bottom w-full max-w-full">
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-black/95 backdrop-blur-xl border-t border-gym-accent/25 px-2 sm:px-8 py-3.5 sm:py-4 flex items-center justify-around sm:justify-center sm:gap-16 shadow-2xl safe-area-bottom w-full max-w-full">
           {/* Button 1: Console */}
           <button
             onClick={() => {
@@ -19165,14 +19179,14 @@ export default function App() {
               setActiveDrawer(null);
               window.scrollTo({ top: 0, behavior: "smooth" });
             }}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
               activeView === "console_d" && !activeDrawer
                 ? "text-gym-accent font-bold"
                 : "text-white/50 hover:text-white/80"
             }`}
           >
-            <Terminal className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${activeView === "console_d" && !activeDrawer ? "scale-110 text-gym-accent" : ""}`} />
-            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
+            <Terminal className={`w-5 h-5 min-[380px]:w-6 min-[380px]:h-6 sm:w-7 sm:h-7 shrink-0 transition-transform ${activeView === "console_d" && !activeDrawer ? "scale-110 text-gym-accent" : ""}`} />
+            <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
               Console
             </span>
           </button>
@@ -19180,14 +19194,14 @@ export default function App() {
           {/* Button 2: Gym */}
           <button
             onClick={() => setActiveDrawer(activeDrawer === "gym" ? null : "gym")}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
               ["workout", "session", "library", "routines"].includes(activeView) || activeDrawer === "gym"
                 ? "text-gym-accent font-bold"
                 : "text-white/50 hover:text-white/80"
             }`}
           >
-            <Dumbbell className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${["workout", "session", "library", "routines"].includes(activeView) || activeDrawer === "gym" ? "scale-110 text-gym-accent" : ""}`} />
-            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
+            <Dumbbell className={`w-5 h-5 min-[380px]:w-6 min-[380px]:h-6 sm:w-7 sm:h-7 shrink-0 transition-transform ${["workout", "session", "library", "routines"].includes(activeView) || activeDrawer === "gym" ? "scale-110 text-gym-accent" : ""}`} />
+            <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
               Gym
             </span>
           </button>
@@ -19195,14 +19209,14 @@ export default function App() {
           {/* Button 3: Analytics */}
           <button
             onClick={() => setActiveDrawer(activeDrawer === "analytics" ? null : "analytics")}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
               ["anatomy", "progress"].includes(activeView) || activeDrawer === "analytics"
                 ? "text-gym-accent font-bold"
                 : "text-white/50 hover:text-white/80"
             }`}
           >
-            <LineChart className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${["anatomy", "progress"].includes(activeView) || activeDrawer === "analytics" ? "scale-110 text-gym-accent" : ""}`} />
-            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
+            <LineChart className={`w-5 h-5 min-[380px]:w-6 min-[380px]:h-6 sm:w-7 sm:h-7 shrink-0 transition-transform ${["anatomy", "progress"].includes(activeView) || activeDrawer === "analytics" ? "scale-110 text-gym-accent" : ""}`} />
+            <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
               Analytics
             </span>
           </button>
@@ -19210,14 +19224,14 @@ export default function App() {
           {/* Button 4: More */}
           <button
             onClick={() => setActiveDrawer(activeDrawer === "more" ? null : "more")}
-            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
+            className={`flex-1 min-w-0 flex flex-col items-center justify-center py-1 sm:py-1.5 px-1 sm:px-6 rounded-xl transition-all cursor-pointer active:scale-95 ${
               ["avatar", "profile"].includes(activeView) || activeDrawer === "more"
                 ? "text-gym-accent font-bold"
                 : "text-white/50 hover:text-white/80"
             }`}
           >
-            <LayoutGrid className={`w-4 h-4 xs:w-5 xs:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform ${["avatar", "profile"].includes(activeView) || activeDrawer === "more" ? "scale-110 text-gym-accent" : ""}`} />
-            <span className="text-[8px] min-[380px]:text-[9px] sm:text-[11px] uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
+            <LayoutGrid className={`w-5 h-5 min-[380px]:w-6 min-[380px]:h-6 sm:w-7 sm:h-7 shrink-0 transition-transform ${["avatar", "profile"].includes(activeView) || activeDrawer === "more" ? "scale-110 text-gym-accent" : ""}`} />
+            <span className="text-[9.5px] min-[380px]:text-[10.5px] sm:text-[12px] font-bold uppercase tracking-wider font-mono mt-1 sm:mt-1.5 truncate max-w-full text-center leading-none">
               More
             </span>
           </button>
@@ -19232,17 +19246,25 @@ export default function App() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setActiveDrawer(null)}
-                className="fixed inset-0 bg-black/70 backdrop-blur-md z-50"
+                onTouchMove={(e) => e.preventDefault()}
+                className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 touch-none"
               />
               <motion.div
-                initial={{ y: "100%" }}
-                animate={{ y: 0 }}
-                exit={{ y: "100%" }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="fixed bottom-24 sm:bottom-32 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-neutral-900/95 backdrop-blur-2xl border border-gym-accent/30 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[80vh] overflow-y-auto"
+                initial={{ y: "100%", opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: "120%", opacity: 0 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                drag="y"
+                dragConstraints={{ top: 0 }}
+                dragElastic={{ top: 0, bottom: 0.2 }}
+                dragSnapToOrigin={false}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 50 || info.velocity.y > 200) {
+                    setActiveDrawer(null);
+                  }
+                }}
+                className="fixed bottom-20 sm:bottom-24 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-neutral-900/95 backdrop-blur-2xl border border-gym-accent/30 rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[80vh] overflow-y-auto touch-pan-y"
               >
-                <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-4" />
-                
                 {/* Gym Drawer Popup */}
                 {activeDrawer === "gym" && (
                   <>
