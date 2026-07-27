@@ -165,12 +165,12 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
 
       const item = exMap.get(exName)!;
       item.sets.push(s);
-      item.totalVolume += vol;
+      item.totalVolume = Math.round((item.totalVolume + vol) * 10) / 10;
       item.totalReps += r;
 
       if (w > item.maxWeight || (w === item.maxWeight && r > item.bestSet.reps)) {
-        item.maxWeight = w;
-        item.bestSet = { weight: w, reps: r };
+        item.maxWeight = Math.round(w * 10) / 10;
+        item.bestSet = { weight: Math.round(w * 10) / 10, reps: r };
       }
 
       // Muscle group breakdown
@@ -178,7 +178,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
         ? getExerciseMuscleGroup(exName, findExerciseByName)
         : null;
       if (mg && mgVolume[mg] !== undefined) {
-        mgVolume[mg] += vol;
+        mgVolume[mg] = Math.round((mgVolume[mg] + vol) * 10) / 10;
       }
     });
 
@@ -201,12 +201,12 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
 
     return {
       dateStr,
-      totalVolume: workout.totalVolume || totalVol,
+      totalVolume: Math.round((workout.totalVolume || totalVol) * 10) / 10,
       totalSets: workout.totalSets || totalS,
       exercisesCount: workout.exercisesCount || exMap.size,
-      calories: workout.estimatedCalories || workout.caloriesBurned || 0,
+      calories: Math.round((workout.estimatedCalories || workout.caloriesBurned || 0) * 10) / 10,
       tags,
-      peakWeight: workout.peakWeight || maxW,
+      peakWeight: Math.round((workout.peakWeight || maxW) * 10) / 10,
       peakExercise: workout.peakExercise || maxEx,
       exercisesMap: exMap,
       muscleGroupVolume: mgVolume,
@@ -380,9 +380,10 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                   >
                     {sortedWorkouts.map((w, idx) => {
                       const tag = getWorkoutMuscleTags(w, findExerciseByName);
+                      const displayVol = Math.round((w.totalVolume || 0) * 10) / 10;
                       return (
                         <option key={`a-${w.id}`} value={w.id} className="bg-black text-white">
-                          {idx === 0 ? "🔥 " : ""}{w.date || w.formattedDate} ({w.totalVolume || 0} kg {tag ? `• ${tag}` : ""})
+                          {idx === 0 ? "🔥 " : ""}{w.date || w.formattedDate} ({displayVol} kg {tag ? `• ${tag}` : ""})
                         </option>
                       );
                     })}
@@ -423,9 +424,10 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                   >
                     {sortedWorkouts.map((w, idx) => {
                       const tag = getWorkoutMuscleTags(w, findExerciseByName);
+                      const displayVol = Math.round((w.totalVolume || 0) * 10) / 10;
                       return (
                         <option key={`b-${w.id}`} value={w.id} className="bg-black text-white">
-                          {idx === 0 ? "🔥 " : ""}{w.date || w.formattedDate} ({w.totalVolume || 0} kg {tag ? `• ${tag}` : ""})
+                          {idx === 0 ? "🔥 " : ""}{w.date || w.formattedDate} ({displayVol} kg {tag ? `• ${tag}` : ""})
                         </option>
                       );
                     })}
@@ -733,10 +735,10 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                               {exA ? (
                                 <div>
                                   <div className="font-bold text-cyan-300 text-xs">
-                                    {exA.bestSet.weight} kg × {exA.bestSet.reps} reps
+                                    {Math.round((exA.bestSet.weight || 0) * 10) / 10} kg × {exA.bestSet.reps} reps
                                   </div>
                                   <div className="text-[9px] text-white/40">
-                                    {exA.sets.length} sets • {exA.totalVolume} kg
+                                    {exA.sets.length} sets • {Math.round((exA.totalVolume || 0) * 10) / 10} kg
                                   </div>
                                 </div>
                               ) : (
@@ -749,10 +751,10 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                               {exB ? (
                                 <div>
                                   <div className="font-bold text-gym-accent text-xs">
-                                    {exB.bestSet.weight} kg × {exB.bestSet.reps} reps
+                                    {Math.round((exB.bestSet.weight || 0) * 10) / 10} kg × {exB.bestSet.reps} reps
                                   </div>
                                   <div className="text-[9px] text-white/40">
-                                    {exB.sets.length} sets • {exB.totalVolume} kg
+                                    {exB.sets.length} sets • {Math.round((exB.totalVolume || 0) * 10) / 10} kg
                                   </div>
                                 </div>
                               ) : (
