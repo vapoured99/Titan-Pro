@@ -2794,6 +2794,218 @@ export default function App() {
     return null;
   };
 
+  const getExerciseMuscleGroup = (
+    exerciseName: string,
+    findExerciseFn?: (name: string) => any
+  ): string | null => {
+    if (!exerciseName) return null;
+    const nameLower = exerciseName.trim().toLowerCase();
+
+    const resolvedFn = findExerciseFn || findExerciseByName;
+    const ex = resolvedFn(exerciseName);
+    if (ex) {
+      const mg = (ex.muscleGroup || ex.pool || "").toLowerCase();
+      if (mg.includes("chest") || mg.includes("pec")) return "Chest";
+      if (mg.includes("tricep")) return "Triceps";
+      if (mg.includes("back") || mg.includes("lat") || mg.includes("rhomboid") || mg.includes("trap") || mg.includes("erector")) return "Back";
+      if (mg.includes("bicep") || mg.includes("brachial")) return "Biceps";
+      if (mg.includes("quad") || mg.includes("hamstring") || mg.includes("calf") || mg.includes("glute") || mg.includes("leg")) return "Legs";
+      if (mg.includes("core") || mg.includes("ab") || mg.includes("oblique")) return "Core";
+      if (mg.includes("shoulder") || mg.includes("delt")) return "Shoulders";
+      if (mg.includes("forearm") || mg.includes("wrist")) return "Forearms";
+    }
+
+    if (
+      nameLower.includes("forearm") ||
+      nameLower.includes("wrist curl") ||
+      nameLower.includes("wrist roller") ||
+      nameLower.includes("reverse wrist") ||
+      nameLower.includes("plate pinch")
+    ) {
+      return "Forearms";
+    }
+
+    if (
+      nameLower.includes("leg press") ||
+      nameLower.includes("leg extension") ||
+      nameLower.includes("leg curl") ||
+      (!nameLower.includes("leg raise") &&
+        (nameLower.includes("squat") ||
+          nameLower.includes("lunge") ||
+          nameLower.includes("calf") ||
+          nameLower.includes("calves") ||
+          nameLower.includes("hamstring") ||
+          nameLower.includes("glute") ||
+          nameLower.includes("hack") ||
+          nameLower.includes("hip thrust")))
+    ) {
+      return "Legs";
+    }
+
+    if (
+      nameLower.includes("leg raise") ||
+      nameLower.includes("crunch") ||
+      nameLower.includes("plank") ||
+      nameLower.includes("situp") ||
+      nameLower.includes("sit-up") ||
+      nameLower.includes("ab ") ||
+      nameLower.includes("abs") ||
+      nameLower.includes("russian twist")
+    ) {
+      return "Core";
+    }
+
+    if (
+      nameLower.includes("tricep") ||
+      nameLower.includes("pushdown") ||
+      nameLower.includes("skullcrusher") ||
+      nameLower.includes("skull crusher") ||
+      nameLower.includes("kickback") ||
+      nameLower.includes("close grip bench") ||
+      nameLower.includes("french press")
+    ) {
+      return "Triceps";
+    }
+
+    if (
+      nameLower.includes("bicep") ||
+      nameLower.includes("hammer curl") ||
+      nameLower.includes("preacher") ||
+      nameLower.includes("concentration curl") ||
+      nameLower.includes("spider curl") ||
+      (nameLower.includes("curl") &&
+        !nameLower.includes("leg") &&
+        !nameLower.includes("wrist"))
+    ) {
+      return "Biceps";
+    }
+
+    if (
+      nameLower.includes("shoulder press") ||
+      nameLower.includes("overhead press") ||
+      nameLower.includes("military press") ||
+      nameLower.includes("arnold press") ||
+      nameLower.includes("lateral raise") ||
+      nameLower.includes("front raise") ||
+      nameLower.includes("delt") ||
+      nameLower.includes("shoulder") ||
+      nameLower.includes("upright row")
+    ) {
+      return "Shoulders";
+    }
+
+    if (
+      nameLower.includes("bench press") ||
+      nameLower.includes("chest press") ||
+      nameLower.includes("chest fly") ||
+      nameLower.includes("pec deck") ||
+      nameLower.includes("pec fly") ||
+      nameLower.includes("pushup") ||
+      nameLower.includes("push-up") ||
+      nameLower.includes("incline press") ||
+      nameLower.includes("decline press") ||
+      nameLower.includes("chest") ||
+      nameLower.includes("dips") ||
+      nameLower.includes("dip")
+    ) {
+      return "Chest";
+    }
+
+    if (
+      nameLower.includes("lat pulldown") ||
+      nameLower.includes("row") ||
+      nameLower.includes("lat ") ||
+      nameLower.includes("pulldown") ||
+      nameLower.includes("pullup") ||
+      nameLower.includes("pull-up") ||
+      nameLower.includes("chinup") ||
+      nameLower.includes("chin-up") ||
+      nameLower.includes("back") ||
+      nameLower.includes("deadlift") ||
+      nameLower.includes("shrug") ||
+      nameLower.includes("hyperextension")
+    ) {
+      return "Back";
+    }
+
+    return null;
+  };
+
+  const getWorkoutMuscleTags = (
+    workout: any,
+    findExerciseFn?: (name: string) => any
+  ): string => {
+    if (!workout) return "";
+
+    let exerciseNames: string[] = [];
+    if (workout.sets && Array.isArray(workout.sets)) {
+      exerciseNames = Array.from(
+        new Set(
+          workout.sets
+            .map((s: any) => s.exerciseName || s.name)
+            .filter(Boolean)
+        )
+      );
+    } else if (workout.exercises && Array.isArray(workout.exercises)) {
+      exerciseNames = Array.from(
+        new Set(
+          workout.exercises
+            .map((e: any) => (typeof e === "string" ? e : e.name || e.exerciseName))
+            .filter(Boolean)
+        )
+      );
+    }
+
+    const groupCounts: Record<string, number> = {
+      Chest: 0,
+      Triceps: 0,
+      Back: 0,
+      Biceps: 0,
+      Legs: 0,
+      Core: 0,
+      Shoulders: 0,
+      Forearms: 0,
+    };
+
+    exerciseNames.forEach((name) => {
+      const group = getExerciseMuscleGroup(name, findExerciseFn);
+      if (group && groupCounts[group] !== undefined) {
+        groupCounts[group] += 1;
+      }
+    });
+
+    const tagMap: Record<string, string> = {
+      Chest: "C",
+      Triceps: "T",
+      Back: "B",
+      Biceps: "Bi",
+      Legs: "L",
+      Core: "C",
+      Shoulders: "S",
+      Forearms: "F",
+    };
+
+    const activeTags: string[] = [];
+    const muscleGroupOrder = [
+      "Chest",
+      "Triceps",
+      "Back",
+      "Biceps",
+      "Legs",
+      "Core",
+      "Shoulders",
+      "Forearms",
+    ];
+
+    muscleGroupOrder.forEach((group) => {
+      if (groupCounts[group] >= 2) {
+        activeTags.push(tagMap[group]);
+      }
+    });
+
+    return activeTags.join("/");
+  };
+
   const handleExportRoutinesAsImage = async () => {
     if (isExportingRoutines) return;
     setIsExportingRoutines(true);
@@ -13318,36 +13530,58 @@ export default function App() {
                                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                       animate={{ opacity: 1, y: 0, scale: 1 }}
                                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                      className="absolute top-full left-0 mt-2 w-64 bg-black border border-white/20 rounded-md shadow-2xl z-50 overflow-hidden"
+                                      className="absolute top-full left-0 mt-2 w-72 sm:w-80 bg-black border border-white/20 rounded-md shadow-2xl z-50 overflow-hidden"
                                     >
                                   <div className="max-h-72 overflow-y-auto py-2">
                                     {archivedWorkouts.map((w) => {
                                       const d = new Date(w.date);
+                                      const tags = getWorkoutMuscleTags(w, findExerciseByName);
                                       return (
                                         <div
                                           key={w.id}
-                                          className={`group/item w-full text-left px-4 py-3 hover:bg-white/5 transition-colors flex items-center justify-between ${selectedWorkoutId === w.id ? "bg-gym-accent/10 border-l-2 border-gym-accent" : ""}`}
+                                          className={`group/item w-full text-left px-3 sm:px-4 py-3 hover:bg-white/5 transition-colors grid grid-cols-[1fr_auto_1fr] items-center gap-2 ${selectedWorkoutId === w.id ? "bg-gym-accent/10 border-l-2 border-gym-accent" : ""}`}
                                         >
                                           <div
-                                            className="flex flex-col flex-grow cursor-pointer"
+                                            className="flex flex-col cursor-pointer min-w-0"
                                             onClick={() => {
                                               setSelectedWorkoutId(w.id);
                                               setShowHistoryMenu(false);
                                             }}
                                           >
-                                            <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest">
+                                            <span className="text-[10px] font-bold text-white/80 uppercase tracking-widest truncate">
                                               {d.toLocaleDateString("en-GB", {
                                                 day: "2-digit",
                                                 month: "short",
                                               })}
                                             </span>
-                                            <span className="text-[9px] text-white/20 uppercase">
+                                            <span className="text-[9px] text-white/20 uppercase truncate">
                                               {d.toLocaleDateString("en-GB", {
                                                 weekday: "long",
                                               })}
                                             </span>
                                           </div>
-                                          <div className="flex items-center gap-3 font-mono">
+
+                                          {/* Middle Tags Badge (Centered vertically in widget) */}
+                                          <div
+                                            className="flex items-center justify-center cursor-pointer min-w-0 px-1"
+                                            onClick={() => {
+                                              setSelectedWorkoutId(w.id);
+                                              setShowHistoryMenu(false);
+                                            }}
+                                          >
+                                            {tags ? (
+                                              <span
+                                                className="px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/50 text-rose-400 font-mono text-[10px] font-black tracking-widest shadow-[0_0_10px_rgba(244,63,94,0.3)] whitespace-nowrap"
+                                                title={`Targeted Groups (2+ Exercises): ${tags}`}
+                                              >
+                                                {tags}
+                                              </span>
+                                            ) : (
+                                              <span className="text-[9px] text-white/20 font-mono font-bold">-</span>
+                                            )}
+                                          </div>
+
+                                          <div className="flex items-center justify-end gap-3 font-mono min-w-0">
                                             <div className="text-[10px] text-gym-accent/60 font-bold tabular-nums flex flex-col items-end">
                                               <span>{w.exercisesCount} Ex</span>
                                               <span className="text-[8px] text-white/40 font-normal">
@@ -13466,6 +13700,16 @@ export default function App() {
                                           kcal
                                         </span>
                                       </div>
+                                      {getWorkoutMuscleTags(workout, findExerciseByName) && (
+                                        <div className="flex items-center gap-1.5">
+                                          <span
+                                            className="px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/50 text-rose-400 font-mono text-[10px] sm:text-xs font-black tracking-widest shadow-[0_0_12px_rgba(244,63,94,0.35)]"
+                                            title="Targeted Muscle Groups (2+ Exercises)"
+                                          >
+                                            TAGS: {getWorkoutMuscleTags(workout, findExerciseByName)}
+                                          </span>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -19313,7 +19557,7 @@ export default function App() {
         <AnimatePresence>
           {sessionSummary && (
             <div
-              className="fixed inset-0 z-[240] flex items-center justify-center overflow-y-auto p-4 sm:p-10 bg-black/90 backdrop-blur-md"
+              className="fixed inset-0 z-[240] flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-md overflow-hidden"
               onClick={() => setSessionSummary(null)}
             >
               <motion.div
@@ -19322,7 +19566,7 @@ export default function App() {
                 exit={{ opacity: 0, scale: 0.9, y: 40 }}
                 transition={{ type: "spring", damping: 25, stiffness: 180 }}
                 onClick={(e) => e.stopPropagation()}
-                className="relative w-full max-w-3xl bg-[#080808] border border-gym-accent/20 rounded-md flex flex-col shadow-2xl my-auto z-10 overflow-hidden"
+                className="relative w-full max-w-3xl bg-[#080808] border border-gym-accent/20 rounded-md flex flex-col shadow-2xl my-auto z-10 overflow-hidden max-h-[calc(100dvh-1.5rem)] sm:max-h-[88vh]"
               >
                 {/* Visual Top Glow and Accent lines */}
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-cyan-500 via-gym-accent to-purple-600" />
@@ -19330,22 +19574,22 @@ export default function App() {
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
 
                 {/* Header */}
-                <div className="p-8 border-b border-white/5 relative z-10 flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gym-accent/10 border border-gym-accent/30 rounded-md flex items-center justify-center shadow-[0_0_15px_rgba(235,255,0,0.1)]">
-                      <Award className="w-6 h-6 text-gym-accent" />
+                <div className="p-4 sm:p-8 border-b border-white/5 relative z-10 flex flex-wrap items-center justify-between gap-3 sm:gap-4 shrink-0">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gym-accent/10 border border-gym-accent/30 rounded-md flex items-center justify-center shadow-[0_0_15px_rgba(235,255,0,0.1)] shrink-0">
+                      <Award className="w-5 h-5 sm:w-6 sm:h-6 text-gym-accent" />
                     </div>
                     <div>
-                      <span className="text-[9px] text-gym-accent font-black uppercase tracking-[0.3em] block mb-1">
+                      <span className="text-[9px] text-gym-accent font-black uppercase tracking-[0.3em] block mb-0.5 sm:mb-1">
                         Evolution Achieved
                       </span>
-                      <h3 className="text-2xl font-light italic font-serif text-white leading-none">
+                      <h3 className="text-lg sm:text-2xl font-light italic font-serif text-white leading-none">
                         Workout Session Completed!
                       </h3>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-white/40 font-mono uppercase tracking-widest block">
+                  <div className="text-left sm:text-right">
+                    <span className="text-[9px] sm:text-[10px] text-white/40 font-mono uppercase tracking-widest block">
                       Session Date
                     </span>
                     <span className="text-xs font-bold text-white/90 uppercase tracking-widest font-mono">
@@ -19355,7 +19599,7 @@ export default function App() {
                 </div>
 
                 {/* Scrollable Body */}
-                <div className="p-8 overflow-y-auto max-h-[70vh] space-y-8 relative z-10 custom-scrollbar">
+                <div className="p-4 sm:p-8 overflow-y-auto flex-1 min-h-0 space-y-6 sm:space-y-8 relative z-10 custom-scrollbar">
                   {/* Grid of Key Performance Indicators */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {/* Volume KPI */}
@@ -19579,7 +19823,7 @@ export default function App() {
                 </div>
 
                 {/* Footer Controls */}
-                <div className="p-8 border-t border-white/5 bg-black/40 flex items-center justify-between gap-4 z-10">
+                <div className="p-4 sm:p-6 border-t border-white/5 bg-black/80 backdrop-blur-md flex items-center justify-between gap-4 z-10 shrink-0 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
                   <div className="hidden sm:block text-left">
                     <p className="text-[9px] text-white/20 uppercase tracking-widest font-black leading-normal">
                       PureGym Performance Engine
@@ -19590,7 +19834,7 @@ export default function App() {
                   </div>
                   <button
                     onClick={() => setSessionSummary(null)}
-                    className="w-full sm:w-auto px-10 py-4 bg-gym-accent text-black hover:bg-white font-black uppercase tracking-[0.25em] text-[10px] cursor-pointer rounded-md transition-all duration-300 shadow-lg shadow-gym-accent/10 active:scale-[0.98] flex items-center justify-center gap-2"
+                    className="w-full sm:w-auto px-6 sm:px-10 py-3.5 sm:py-4 bg-gym-accent text-black hover:bg-white font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-[10px] cursor-pointer rounded-md transition-all duration-300 shadow-lg shadow-gym-accent/10 active:scale-[0.98] flex items-center justify-center gap-2"
                   >
                     <Check className="w-4 h-4 stroke-[3px]" />
                     Acknowledge Evolution
