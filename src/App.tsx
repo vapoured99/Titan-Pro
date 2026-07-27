@@ -8562,7 +8562,7 @@ export default function App() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="fixed left-3 right-3 top-20 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 z-[120] w-auto sm:w-96 max-w-sm sm:max-w-none mx-auto sm:mx-0 bg-gradient-to-b from-[#14151a]/95 via-[#0b0c0f]/98 to-[#050507] border border-white/20 backdrop-blur-3xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_25px_60px_rgba(0,0,0,0.95)] rounded-3xl p-4 sm:p-5 text-white font-sans relative overflow-hidden"
+                      className="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 z-[120] w-auto sm:w-96 max-w-[calc(100vw-1.5rem)] sm:max-w-none mx-auto sm:mx-0 bg-gradient-to-b from-[#14151a]/95 via-[#0b0c0f]/98 to-[#050507] border border-white/20 backdrop-blur-3xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_25px_60px_rgba(0,0,0,0.95)] rounded-3xl p-4 sm:p-5 text-white font-sans overflow-hidden"
                     >
                       {/* Ambient 3D Glass Glow Accents */}
                       <div className="absolute -top-20 -right-20 w-48 h-48 bg-gym-accent/15 rounded-full blur-3xl pointer-events-none" />
