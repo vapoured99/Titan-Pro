@@ -8517,8 +8517,8 @@ export default function App() {
               onClick={() => setShowProfilePopover((prev) => !prev)}
               className={`flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border transition-all cursor-pointer backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgba(0,0,0,0.6)] active:scale-95 ${
                 showProfilePopover
-                  ? "border-rose-500/80 bg-gradient-to-b from-rose-500/25 via-rose-500/10 to-black/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_20px_rgba(244,63,94,0.35)] text-white"
-                  : "border-white/20 bg-gradient-to-b from-white/[0.12] via-white/[0.04] to-black/80 hover:border-rose-500/50 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_0_15px_rgba(244,63,94,0.2)] text-white"
+                  ? "border-gym-accent/80 bg-gradient-to-b from-gym-accent/20 via-gym-accent/10 to-black/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_20px_rgba(235,255,0,0.3)] text-white"
+                  : "border-white/20 bg-gradient-to-b from-white/[0.12] via-white/[0.04] to-black/80 hover:border-gym-accent/50 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_0_15px_rgba(235,255,0,0.2)] text-white"
               }`}
               title="Interactive Profile & Performance Card"
             >
@@ -8530,7 +8530,7 @@ export default function App() {
                   }).toUpperCase()}
                 </span>
                 <div className="h-3 sm:h-3.5 w-px bg-white/20 mx-0.5" />
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border-2 border-rose-500/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_10px_rgba(244,63,94,0.4)] shrink-0 bg-black">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border-2 border-gym-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_10px_rgba(235,255,0,0.5)] shrink-0 bg-black">
                   {profile?.photoURL || currentUser.photoURL ? (
                     <img
                       src={profile?.photoURL || currentUser.photoURL || ""}
@@ -8543,7 +8543,7 @@ export default function App() {
                 </div>
                 <ChevronDown
                   className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/70 transition-transform duration-200 ${
-                    showProfilePopover ? "rotate-180 text-rose-400" : ""
+                    showProfilePopover ? "rotate-180 text-gym-accent" : ""
                   }`}
                 />
               </button>
@@ -8565,9 +8565,9 @@ export default function App() {
                       className="fixed left-3 right-3 top-20 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 z-[120] w-auto sm:w-96 max-w-sm sm:max-w-none mx-auto sm:mx-0 bg-gradient-to-b from-[#14151a]/95 via-[#0b0c0f]/98 to-[#050507] border border-white/20 backdrop-blur-3xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_25px_60px_rgba(0,0,0,0.95)] rounded-3xl p-4 sm:p-5 text-white font-sans relative overflow-hidden"
                     >
                       {/* Ambient 3D Glass Glow Accents */}
-                      <div className="absolute -top-20 -right-20 w-48 h-48 bg-rose-500/15 rounded-full blur-3xl pointer-events-none" />
+                      <div className="absolute -top-20 -right-20 w-48 h-48 bg-gym-accent/15 rounded-full blur-3xl pointer-events-none" />
                       <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-amber-400 to-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.8)] z-10" />
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gym-accent via-amber-400 to-gym-accent shadow-[0_0_12px_rgba(235,255,0,0.7)] z-10" />
 
                         {(() => {
                           const level = profile?.avatarLevel ?? 1;
@@ -8599,14 +8599,14 @@ export default function App() {
                                         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
                                       }
                                       alt="Avatar"
-                                      className="w-12 h-12 rounded-full border-2 border-rose-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_15px_rgba(244,63,94,0.5)] object-cover bg-black"
+                                      className="w-12 h-12 rounded-full border-2 border-gym-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_15px_rgba(235,255,0,0.5)] object-cover bg-black"
                                     />
                                   </div>
                                   <div className="flex flex-col">
                                     <span className="text-base font-black text-white leading-tight font-sans tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                                       {profile?.displayName || currentUser?.displayName || "Athlete"}
                                     </span>
-                                    <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-rose-300 bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 rounded-full inline-block mt-1 self-start shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
+                                    <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-gym-accent bg-gym-accent/15 border border-gym-accent/30 px-2 py-0.5 rounded-full inline-block mt-1 self-start shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
                                       {equippedTitleName}
                                     </span>
                                   </div>
