@@ -982,6 +982,20 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Stand tall and squeeze your glutes at the top.",
         "Lower the bar back to the floor with control, keeping it close to your body."
       ]
+    },
+    {
+      name: "Hip Thrust Machine",
+      icon: "ArrowUp",
+      pool: "hamstrings",
+      muscleGroup: "glutes",
+      legRegion: "upper",
+      instructions: [
+        "Setup & Belt/Pad Adjustment: Sit into the hip thrust machine and position the padded waist belt or lap bar securely across your lower hips (just above your hip bones).",
+        "Foot Placement & Back Support: Place your feet flat on the footplate at shoulder-width distance. Adjust your upper back securely against the padded pivot rest so your shoulder blades are well supported.",
+        "The Thrust (Drive Phase): Inhale, brace your core, and drive forcefully through your heels to thrust your hips upward until your knees, hips, and shoulders form a straight line.",
+        "Glute Lockout & Rib Position: Lock out your hips at the top by contracting your glutes aggressively for 1-2 seconds. Keep your chin slightly tucked and your ribs pulled down to prevent lower back arching.",
+        "Controlled Descent: Lower your hips back down in a smooth, controlled motion until you feel a deep stretch in your glutes, then repeat without letting the weight stack or lever crash."
+      ]
     }
   ],
   calves: [
@@ -1136,6 +1150,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Maintain a steady tempo throughout the exercise.",
         "Provides constant tension and stability for bicep isolation."
       ]
+    },
+    {
+      name: "Preacher Curl Machine",
+      icon: "Activity",
+      pool: "short_biceps",
+      instructions: [
+        "Machine & Seat Adjustment: Adjust the preacher curl machine seat height so that your armpits rest comfortably over the top edge of the angled pad.",
+        "Arm Positioning & Grip: Place your upper arms flat and flush against the preacher pad. Grasp the machine handles with an underhand grip (palms facing up), keeping your wrists firm and neutral.",
+        "The Curl (Concentric): Exhale, brace your torso firmly against the seat, and contract your biceps to curl the handles smoothly upward toward your shoulders.",
+        "Peak Contraction: Squeeze your biceps forcefully at the top peak of the curl without letting your elbows lift or shift off the pad.",
+        "Controlled Lowering (Eccentric): Slowly lower the handles back down under complete control (2-3 seconds) until your arms are almost fully extended, maintaining constant biceps tension while protecting your elbow joints."
+      ]
     }
   ],
   brachialis: [
@@ -1222,6 +1248,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Stop just above your forehead, then contract your triceps to return to the starting position.",
         "Keep your elbows tucked and avoid flaring them outward during the contraction."
       ]
+    },
+    {
+      name: "Single Arm Overhead Tricep Extension",
+      icon: "ArrowUpCircle",
+      pool: "long_triceps",
+      instructions: [
+        "Machine Setup & Cable Height: Set a single cable pulley to a low or waist-height position. Attach a single D-handle or single rope attachment. Stand facing away from the cable stack with your feet in a stable split stance.",
+        "Grip & Overhead Positioning: Reach back and grab the handle with one hand, bringing your upper arm vertically alongside your head so your elbow points toward the ceiling. Use your non-working hand to brace your core or torso for stability.",
+        "The Extension (Execution): Inhale, brace your core, and extend your arm upwards by contracting your triceps until your elbow is fully extended overhead. Keep your upper arm stationary and close to your head throughout.",
+        "Peak Contraction: Squeeze the long head of your tricep intensely at the top lockout position for a brief second, feeling complete muscular engagement.",
+        "Controlled Eccentric Stretch: Slowly lower the handle back behind your head in a controlled 2-3 second movement, taking your tricep into a deep stretch before initiating the next repetition."
+      ]
     }
   ],
   lateral_triceps: [
@@ -1235,6 +1273,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Push the bar down until your arms are fully extended at your sides.",
         "Focus on using only your triceps to move the weight; keep your shoulders still.",
         "Slowly bring the bar back up to the starting position."
+      ]
+    },
+    {
+      name: "Single Arm Tricep Pushdown",
+      icon: "ArrowDown",
+      pool: "lateral_triceps",
+      instructions: [
+        "Set Up & Attachment: Set a cable pulley to the high top setting and attach a single D-handle or comfortable single grip attachment.",
+        "Stance & Elbow Fixation: Stand upright facing the cable machine in a solid athletic stance. Grab the handle with an overhand or neutral grip and lock your working elbow firmly against the side of your torso.",
+        "Execution (Pushdown): Exhale and drive the handle straight down by contracting your triceps until your arm is completely straight alongside your hip.",
+        "Peak Squeeze: Flex and squeeze your tricep aggressively at the bottom lockout position without allowing your shoulder to roll forward or lift.",
+        "Controlled Negative: Slowly guide the handle back up to approximately 90 degrees at elbow height, maintaining continuous cable tension on the tricep throughout the full range of motion."
       ]
     }
   ],
@@ -2491,14 +2541,29 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Wide Grip Lat Pulldowns": "7JnP8dFbS14",
   "Wood Chops (Mid)": "iWxTGXIViro",
   "Wood Chops (H2L)": "gcGNypjIQDo",
-  "Wood Chops (L2H)": "mvvu8imyMFs"
+  "Wood Chops (L2H)": "mvvu8imyMFs",
+  "Single Arm Overhead Tricep Extension": "https://www.youtube.com/watch?v=pLtjQNIKy40",
+  "Single Arm Overhead Tricep Extensions": "https://www.youtube.com/watch?v=pLtjQNIKy40",
+  "Single Arm Tricep Pushdown": "https://www.youtube.com/shorts/CsUQLMngO7w",
+  "Single Arm Tricep Pushdowns": "https://www.youtube.com/shorts/CsUQLMngO7w",
+  "Preacher Curl Machine": "https://www.youtube.com/shorts/S4dDLfp3e8w",
+  "Machine Preacher Curl": "https://www.youtube.com/shorts/S4dDLfp3e8w",
+  "Hip Thrust Machine": "https://www.youtube.com/watch?v=xzR8Pq_iaz4",
+  "Machine Hip Thrust": "https://www.youtube.com/watch?v=xzR8Pq_iaz4"
+};
+
+const extractYoutubeIdFromUrlOrVal = (val: string): string => {
+  if (!val) return "";
+  if (val.length === 11 && !val.includes("/") && !val.includes(".")) return val;
+  const match = val.match(/(?:v=|shorts\/|embed\/|youtu\.be\/|\/v\/)([^#&?]{11})/);
+  return match ? match[1] : (val.startsWith("http") ? "" : val);
 };
 
 export const POOLS: Record<string, Exercise[]> = Object.keys(RAW_POOLS).reduce((acc, key) => {
   acc[key] = RAW_POOLS[key].map(ex => {
     const val = EXERCISE_YOUTUBE_MAP[ex.name] || "";
     const isUrl = val.startsWith("http://") || val.startsWith("https://");
-    const youtubeId = isUrl ? "" : val;
+    const youtubeId = extractYoutubeIdFromUrlOrVal(val);
     const youtubeUrl = isUrl 
       ? val 
       : (youtubeId 

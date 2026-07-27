@@ -1443,6 +1443,122 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
     }
   }
 
+  // Single Arm Overhead Tricep Extension
+  if (nameLower.includes("single arm overhead tricep") || nameLower.includes("overhead tricep extension") && nameLower.includes("single arm")) {
+    const targetSteps = [
+      "Machine Setup & Cable Height: Set a single cable pulley to a low or waist-height position. Attach a single D-handle or single rope attachment. Stand facing away from the cable stack with your feet in a stable split stance.",
+      "Grip & Overhead Positioning: Reach back and grab the handle with one hand, bringing your upper arm vertically alongside your head so your elbow points toward the ceiling. Use your non-working hand to brace your core or torso for stability.",
+      "The Extension (Execution): Inhale, brace your core, and extend your arm upwards by contracting your triceps until your elbow is fully extended overhead. Keep your upper arm stationary and close to your head throughout.",
+      "Peak Contraction: Squeeze the long head of your tricep intensely at the top lockout position for a brief second, feeling complete muscular engagement.",
+      "Controlled Eccentric Stretch: Slowly lower the handle back behind your head in a controlled 2-3 second movement, taking your tricep into a deep stretch before initiating the next repetition."
+    ];
+    const targetYoutubeId = "pLtjQNIKy40";
+    const targetYoutubeUrl = "https://www.youtube.com/watch?v=pLtjQNIKy40";
+
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch) {
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl,
+        pool: currentEx.pool || "long_triceps"
+      };
+      changed = true;
+    }
+  }
+
+  // Single Arm Tricep Pushdown / Pulldown
+  if (nameLower.includes("single arm tricep pushdown") || nameLower.includes("single arm - tricep pulldown") || nameLower.includes("single arm tricep pulldown") || (nameLower.includes("tricep pushdown") && nameLower.includes("single arm"))) {
+    const targetSteps = [
+      "Set Up & Attachment: Set a cable pulley to the high top setting and attach a single D-handle or comfortable single grip attachment.",
+      "Stance & Elbow Fixation: Stand upright facing the cable machine in a solid athletic stance. Grab the handle with an overhand or neutral grip and lock your working elbow firmly against the side of your torso.",
+      "Execution (Pushdown): Exhale and drive the handle straight down by contracting your triceps until your arm is completely straight alongside your hip.",
+      "Peak Squeeze: Flex and squeeze your tricep aggressively at the bottom lockout position without allowing your shoulder to roll forward or lift.",
+      "Controlled Negative: Slowly guide the handle back up to approximately 90 degrees at elbow height, maintaining continuous cable tension on the tricep throughout the full range of motion."
+    ];
+    const targetYoutubeId = "CsUQLMngO7w";
+    const targetYoutubeUrl = "https://www.youtube.com/shorts/CsUQLMngO7w";
+
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch) {
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl,
+        pool: currentEx.pool || "lateral_triceps"
+      };
+      changed = true;
+    }
+  }
+
+  // Preacher Curl Machine
+  if (nameLower.includes("preacher curl machine") || nameLower.includes("machine preacher curl") || nameLower === "preacher curls machine") {
+    const targetSteps = [
+      "Machine & Seat Adjustment: Adjust the preacher curl machine seat height so that your armpits rest comfortably over the top edge of the angled pad.",
+      "Arm Positioning & Grip: Place your upper arms flat and flush against the preacher pad. Grasp the machine handles with an underhand grip (palms facing up), keeping your wrists firm and neutral.",
+      "The Curl (Concentric): Exhale, brace your torso firmly against the seat, and contract your biceps to curl the handles smoothly upward toward your shoulders.",
+      "Peak Contraction: Squeeze your biceps forcefully at the top peak of the curl without letting your elbows lift or shift off the pad.",
+      "Controlled Lowering (Eccentric): Slowly lower the handles back down under complete control (2-3 seconds) until your arms are almost fully extended, maintaining constant biceps tension while protecting your elbow joints."
+    ];
+    const targetYoutubeId = "S4dDLfp3e8w";
+    const targetYoutubeUrl = "https://www.youtube.com/shorts/S4dDLfp3e8w";
+
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch) {
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl,
+        pool: currentEx.pool || "short_biceps"
+      };
+      changed = true;
+    }
+  }
+
+  // Hip Thrust Machine
+  if (nameLower.includes("hip thrust machine") || nameLower.includes("machine hip thrust") || nameLower === "hip thrusts machine") {
+    const targetSteps = [
+      "Setup & Belt/Pad Adjustment: Sit into the hip thrust machine and position the padded waist belt or lap bar securely across your lower hips (just above your hip bones).",
+      "Foot Placement & Back Support: Place your feet flat on the footplate at shoulder-width distance. Adjust your upper back securely against the padded pivot rest so your shoulder blades are well supported.",
+      "The Thrust (Drive Phase): Inhale, brace your core, and drive forcefully through your heels to thrust your hips upward until your knees, hips, and shoulders form a straight line.",
+      "Glute Lockout & Rib Position: Lock out your hips at the top by contracting your glutes aggressively for 1-2 seconds. Keep your chin slightly tucked and your ribs pulled down to prevent lower back arching.",
+      "Controlled Descent: Lower your hips back down in a smooth, controlled motion until you feel a deep stretch in your glutes, then repeat without letting the weight stack or lever crash."
+    ];
+    const targetYoutubeId = "xzR8Pq_iaz4";
+    const targetYoutubeUrl = "https://www.youtube.com/watch?v=xzR8Pq_iaz4";
+
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch) {
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl,
+        pool: currentEx.pool || "hamstrings"
+      };
+      changed = true;
+    }
+  }
+
   // Generic static library fallback lookup for any custom exercise
   // that lacks professional guidance/instructions.
   const hasNoInstructions = !currentEx.instructions || 
@@ -1612,6 +1728,10 @@ export default function App() {
     | "avatar"
   >("console_d");
   const [showLandingPage, setShowLandingPage] = useState<boolean>(false);
+  const [showProfilePopover, setShowProfilePopover] = useState<boolean>(false);
+  const [userStatus, setUserStatus] = useState<string>(() => {
+    return localStorage.getItem("gym_user_status") || "In Gym 🏋️";
+  });
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
   const [hasCheckedLanding, setHasCheckedLanding] = useState<boolean>(false);
   const [routines, setRoutines] = useState<any[]>([]);
@@ -2104,6 +2224,158 @@ export default function App() {
     const pool = ex.pool || "";
     const idx = DAY_CONFIG.findIndex(day => day.pools.includes(pool));
     return idx !== -1 ? idx : 4; // default to equipment/extra (Day 5)
+  };
+
+  const getRoutineCategoryIndex = (routine: any): number => {
+    if (!routine) return 0;
+
+    // 1. Analyze exercise sets
+    const sets = routine.sets || [];
+    if (Array.isArray(sets) && sets.length > 0) {
+      const counts: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      sets.forEach((s: any) => {
+        const exName = (s.exerciseName || "").trim().toLowerCase();
+        if (!exName) return;
+
+        let pool = "";
+        for (const [poolKey, exList] of Object.entries(POOLS)) {
+          if (exList.some((e) => e.name.trim().toLowerCase() === exName)) {
+            pool = poolKey;
+            break;
+          }
+        }
+
+        if (!pool && customExercises && customExercises.length > 0) {
+          const foundCustom = customExercises.find(
+            (ce) => ce.name.trim().toLowerCase() === exName,
+          );
+          if (foundCustom) pool = foundCustom.pool || "";
+        }
+
+        let dayIdx = -1;
+        if (pool) {
+          dayIdx = DAY_CONFIG.findIndex((day) => day.pools.includes(pool));
+        }
+
+        if (dayIdx === -1) {
+          if (
+            exName.includes("squat") ||
+            exName.includes("leg") ||
+            exName.includes("quad") ||
+            exName.includes("hamstring") ||
+            exName.includes("calf") ||
+            exName.includes("calves") ||
+            exName.includes("glute") ||
+            exName.includes("lunge") ||
+            exName.includes("crunch") ||
+            exName.includes("plank") ||
+            exName.includes("core") ||
+            exName.includes("abs")
+          ) {
+            dayIdx = 2; // Legs & Core
+          } else if (
+            (exName.includes("press") &&
+              (exName.includes("shoulder") ||
+                exName.includes("overhead") ||
+                exName.includes("military") ||
+                exName.includes("arnold"))) ||
+            exName.includes("delt") ||
+            exName.includes("shoulder") ||
+            exName.includes("lateral raise") ||
+            exName.includes("shrug") ||
+            exName.includes("wrist") ||
+            exName.includes("forearm")
+          ) {
+            dayIdx = 3; // Shoulders & Forearms
+          } else if (
+            exName.includes("chest") ||
+            exName.includes("bench") ||
+            exName.includes("fly") ||
+            exName.includes("tricep") ||
+            exName.includes("dip") ||
+            exName.includes("pushup") ||
+            exName.includes("push up")
+          ) {
+            dayIdx = 0; // Chest & Triceps
+          } else if (
+            exName.includes("back") ||
+            exName.includes("row") ||
+            exName.includes("pulldown") ||
+            exName.includes("pullup") ||
+            exName.includes("bicep") ||
+            exName.includes("lat")
+          ) {
+            dayIdx = 1; // Back & Biceps
+          }
+        }
+
+        if (dayIdx >= 0 && dayIdx <= 5) {
+          counts[dayIdx] = (counts[dayIdx] || 0) + 1;
+        }
+      });
+
+      let bestDay = -1;
+      let maxCount = 0;
+      Object.entries(counts).forEach(([dayStr, count]) => {
+        if (count > maxCount) {
+          maxCount = count;
+          bestDay = Number(dayStr);
+        }
+      });
+
+      if (bestDay !== -1 && maxCount > 0) {
+        return bestDay;
+      }
+    }
+
+    // 2. Analyze routine name
+    const nameLower = (routine.name || "").toLowerCase();
+    if (
+      nameLower.includes("leg") ||
+      nameLower.includes("quad") ||
+      nameLower.includes("hamstring") ||
+      nameLower.includes("glute") ||
+      nameLower.includes("core") ||
+      nameLower.includes("abs") ||
+      nameLower.includes("lower body")
+    ) {
+      return 2; // Legs & Core
+    }
+    if (
+      nameLower.includes("shoulder") ||
+      nameLower.includes("delt") ||
+      nameLower.includes("forearm")
+    ) {
+      return 3; // Shoulders & Forearms
+    }
+    if (
+      nameLower.includes("chest") ||
+      nameLower.includes("tricep") ||
+      nameLower.includes("push")
+    ) {
+      return 0; // Chest & Triceps
+    }
+    if (
+      nameLower.includes("back") ||
+      nameLower.includes("bicep") ||
+      nameLower.includes("pull")
+    ) {
+      return 1; // Back & Biceps
+    }
+    if (nameLower.includes("cardio")) {
+      return 4;
+    }
+
+    // 3. Fallback to categoryIndex if valid
+    if (
+      typeof routine.categoryIndex === "number" &&
+      routine.categoryIndex >= 0 &&
+      routine.categoryIndex < DAY_CONFIG.length
+    ) {
+      return routine.categoryIndex;
+    }
+
+    return 0;
   };
 
   const getExercisesForDay = (categoryIdx: number): Exercise[] => {
@@ -3721,6 +3993,15 @@ export default function App() {
               return s;
             });
           }
+          const calcCat = getRoutineCategoryIndex(rData);
+          if (rData.categoryIndex !== calcCat) {
+            rData.categoryIndex = calcCat;
+            setDoc(
+              doc(db, `users/${currentUser.uid}/routines`, d.id),
+              { categoryIndex: calcCat },
+              { merge: true },
+            ).catch(() => {});
+          }
           routineList.push({ id: d.id, ...rData });
         });
         setRoutines(
@@ -4759,7 +5040,7 @@ export default function App() {
   const extractYoutubeId = (url: string): string | undefined => {
     if (!url) return undefined;
     const regExp =
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return match && match[2].length === 11 ? match[2] : undefined;
   };
@@ -6571,7 +6852,7 @@ export default function App() {
     if (!routine) return;
     setTweakingRoutineId(routine.id || null);
     setNewRoutineName(routine.name || "");
-    setNewRoutineCategory(routine.categoryIndex !== undefined ? routine.categoryIndex : 0);
+    setNewRoutineCategory(getRoutineCategoryIndex(routine));
     
     const rawPeriod = routine.periodization;
     const period: "hypertrophy" | "strength" | "deload" =
@@ -6654,8 +6935,7 @@ export default function App() {
         );
       });
 
-      const defaultCategory =
-        typeof routine.categoryIndex === "number" ? routine.categoryIndex : 0;
+      const defaultCategory = getRoutineCategoryIndex(routine);
       const nextCurrentDays = [...currentDays];
 
       // Group loaded exercises by their target day index based on the pool they belong to
@@ -7989,54 +8269,44 @@ export default function App() {
               <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-gym-accent font-bold">
                 Premium Session
               </span>
-              <h1 className="text-3xl sm:text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none">
-                Titan{" "}
-                <span className="text-gym-accent accent-glow-strong">Pro</span>
-              </h1>
+              <button
+                onClick={() => {
+                  setActiveView("console_d");
+                  saveSettings({ activeView: "console_d" });
+                }}
+                className="group flex items-center gap-1.5 text-left cursor-pointer transition-transform hover:scale-[1.01] focus:outline-none"
+                title="Go to Console Dashboard"
+              >
+                <h1 className="text-3xl sm:text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none">
+                  Titan{" "}
+                  <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 group-hover:brightness-125 transition-all">
+                    Pro
+                  </span>
+                </h1>
+              </button>
             </div>
 
             {/* Mobile Header Quick Actions */}
-          </div>
-
-          <div className="hidden sm:flex items-center gap-6 justify-between md:justify-end w-full md:w-auto">
-            <div className="flex flex-col items-start md:items-end text-left md:text-right">
-              <p className="text-[10px] text-theme-text-muted uppercase tracking-widest mb-0.5 flex items-center gap-2 justify-start md:justify-end">
-                {new Date().toLocaleDateString("en-GB", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "short",
-                })}
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${firebaseConnected ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-red-500 animate-pulse"}`}
-                  title={
-                    firebaseConnected
-                      ? "Cloud Sync Active"
-                      : "Connecting to Cloud..."
-                  }
-                />
-              </p>
-              <p className="text-lg font-medium text-theme-text">
-                {profile?.displayName || currentUser.displayName || "Athlete"}
-              </p>
-            </div>
-            <div className="h-10 w-px bg-white/10" />
-            <div className="flex gap-2">
+            <div className="flex sm:hidden items-center gap-2">
               <button
-                onClick={() => setShowLandingPage(true)}
-                className="p-2.5 bg-white/5 border border-white/10 rounded-md text-theme-text-muted hover:text-theme-text hover:bg-white/10 transition-all cursor-pointer flex items-center justify-center"
-                title="Cinematic Portal"
+                onClick={() => setShowProfilePopover((prev) => !prev)}
+                className={`flex items-center gap-2 px-2.5 py-1 rounded-xl border transition-all cursor-pointer ${
+                  showProfilePopover ? "border-rose-500 bg-rose-500/10" : "border-white/10 bg-white/5"
+                }`}
+                title="Profile Menu"
               >
-                <Compass className="w-4 h-4 text-gym-accent" />
-              </button>
-              <div className="relative group/profile">
-                <button
-                  onClick={() => {
-                    setActiveView("profile");
-                    saveSettings({ activeView: "profile" });
-                  }}
-                  className={`p-1 border rounded-full transition-all cursor-pointer flex items-center justify-center overflow-hidden w-10 h-10 ${activeView === "profile" ? "border-gym-accent bg-gym-accent/10" : "border-white/10 bg-white/5 hover:border-white/20"}`}
-                  title="Profile"
-                >
+                <span className="text-[10px] text-theme-text-muted uppercase tracking-wider flex items-center gap-1 font-mono">
+                  {new Date().toLocaleDateString("en-GB", {
+                    weekday: "short",
+                    day: "numeric",
+                    month: "short",
+                  }).toUpperCase()}
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${firebaseConnected ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-red-500 animate-pulse"}`}
+                  />
+                </span>
+                <div className="h-3 w-px bg-white/15" />
+                <div className="w-6 h-6 rounded-full overflow-hidden border border-rose-500/80 shrink-0 bg-black">
                   {profile?.photoURL || currentUser.photoURL ? (
                     <img
                       src={profile?.photoURL || currentUser.photoURL || ""}
@@ -8044,17 +8314,247 @@ export default function App() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <UserIcon className="w-4 h-4 text-theme-text-muted" />
+                    <UserIcon className="w-3 h-3 text-theme-text-muted m-auto mt-1" />
                   )}
-                </button>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="p-2.5 bg-white/5 border border-white/10 rounded-md text-theme-text-muted hover:text-theme-text hover:bg-white/10 transition-all cursor-pointer"
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
+                </div>
+                <ChevronDown
+                  className={`w-3 h-3 text-zinc-400 transition-transform duration-200 ${
+                    showProfilePopover ? "rotate-180 text-rose-500" : ""
+                  }`}
+                />
               </button>
+            </div>
+          </div>
+
+          {/* Desktop Header Actions & Profile Dropdown */}
+          <div className="hidden sm:flex items-center gap-3 justify-between md:justify-end w-full md:w-auto">
+            <div className="flex items-center gap-2 relative">
+              {/* Profile Trigger Button Pill with Date & Time integrated */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfilePopover((prev) => !prev)}
+                  className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl border transition-all cursor-pointer ${
+                    showProfilePopover
+                      ? "border-rose-500/80 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.25)]"
+                      : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                  }`}
+                  title="Interactive Profile & Performance Card"
+                >
+                  <span className="text-[11px] text-theme-text-muted uppercase tracking-widest flex items-center gap-1.5 font-mono">
+                    {new Date().toLocaleDateString("en-GB", {
+                      weekday: "short",
+                      day: "numeric",
+                      month: "short",
+                    }).toUpperCase()}
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${firebaseConnected ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-red-500 animate-pulse"}`}
+                      title={
+                        firebaseConnected
+                          ? "Cloud Sync Active"
+                          : "Connecting to Cloud..."
+                      }
+                    />
+                  </span>
+                  <div className="h-3.5 w-px bg-white/15 mx-0.5" />
+                  <div className="w-7 h-7 rounded-full overflow-hidden border border-rose-500/80 shrink-0 bg-black">
+                    {profile?.photoURL || currentUser.photoURL ? (
+                      <img
+                        src={profile?.photoURL || currentUser.photoURL || ""}
+                        alt="Avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="w-4 h-4 text-theme-text-muted m-auto mt-1" />
+                    )}
+                  </div>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${
+                      showProfilePopover ? "rotate-180 text-rose-500" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Interactive Profile Popover Modal */}
+                <AnimatePresence>
+                  {showProfilePopover && (
+                    <>
+                      {/* Click Outside Backdrop */}
+                      <div
+                        className="fixed inset-0 z-[110]"
+                        onClick={() => setShowProfilePopover(false)}
+                      />
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-0 top-full mt-3 z-[120] w-80 sm:w-96 bg-[#0c0c0e]/98 border border-white/15 backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] rounded-2xl p-4 sm:p-5 text-white font-sans"
+                      >
+                        {(() => {
+                          const level = profile?.avatarLevel ?? 1;
+                          const xp = profile?.avatarXp ?? 0;
+                          const targetXp = level * 500 + 2000;
+                          const xpPercent = Math.min(100, Math.round((xp / targetXp) * 100));
+                          const equippedTitleId = profile?.equippedTitle ?? "lifter";
+                          const equippedTitleObj = TITLES.find((t) => t.id === equippedTitleId) || TITLES[0];
+                          const equippedTitleName = equippedTitleObj?.name || "Lifter";
+                          const setsLoggedCount = sessionSets.length;
+                          const todayVolume = Math.round(
+                            sessionSets.reduce(
+                              (sum, s) => sum + (Number(s.weight) || 0) * (Number(s.reps) || 0),
+                              0
+                            )
+                          );
+                          const cnsScore = Math.max(0, 100 - (cnsFatigueAnalysis?.score || 0));
+
+                          return (
+                            <div>
+                              {/* Top User Info Header */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="relative shrink-0">
+                                    <img
+                                      src={
+                                        profile?.photoURL ||
+                                        currentUser?.photoURL ||
+                                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
+                                      }
+                                      alt="Avatar"
+                                      className="w-12 h-12 rounded-full border-2 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.4)] object-cover bg-black"
+                                    />
+                                  </div>
+                                  <div className="flex flex-col">
+                                    <span className="text-base font-bold text-white leading-tight font-sans">
+                                      {profile?.displayName || currentUser?.displayName || "Athlete"}
+                                    </span>
+                                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-rose-500 mt-0.5">
+                                      {equippedTitleName}
+                                    </span>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => setShowProfilePopover(false)}
+                                  className="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                                  title="Close"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+
+                              <div className="border-b border-white/10 my-3.5" />
+
+                              {/* Level & XP Progress Section */}
+                              <div className="bg-zinc-900/60 border border-white/5 rounded-xl p-3">
+                                <div className="flex items-center justify-between text-xs mb-1.5">
+                                  <span className="font-mono font-bold text-white flex items-center gap-1.5">
+                                    <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" /> LVL {level}
+                                  </span>
+                                  <span className="font-mono text-zinc-400 text-[11px]">
+                                    {xp.toLocaleString()} / {targetXp.toLocaleString()} XP
+                                  </span>
+                                </div>
+                                <div className="w-full bg-zinc-800/80 rounded-full h-2.5 p-0.5 border border-white/5 overflow-hidden mb-2">
+                                  <div
+                                    className="bg-gradient-to-r from-red-500 via-orange-500 to-amber-400 h-full rounded-full transition-all duration-500"
+                                    style={{ width: `${xpPercent}%` }}
+                                  />
+                                </div>
+                                <div className="flex items-center justify-between text-[11px] text-zinc-400 font-sans">
+                                  <span>Title: {equippedTitleName}</span>
+                                  <span className="font-mono">{xpPercent}% To Level Up</span>
+                                </div>
+                              </div>
+
+                              {/* Today's Performance Section */}
+                              <div className="mt-4 mb-2 flex items-center justify-between">
+                                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400">
+                                  TODAY'S PERFORMANCE
+                                </span>
+                                <span className="text-[10px] font-mono font-bold text-rose-500">
+                                  Ready
+                                </span>
+                              </div>
+
+                              <div className="grid grid-cols-3 gap-2">
+                                <div className="bg-zinc-900/80 border border-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                                    SETS LOGGED
+                                  </span>
+                                  <span className="text-base font-bold font-mono text-white leading-tight">
+                                    {setsLoggedCount}
+                                  </span>
+                                  <span className="text-[9px] font-mono text-rose-500 mt-0.5">
+                                    Completed
+                                  </span>
+                                </div>
+
+                                <div className="bg-zinc-900/80 border border-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                                    VOLUME
+                                  </span>
+                                  <span className="text-base font-bold font-mono text-amber-400 leading-tight">
+                                    {todayVolume}
+                                  </span>
+                                  <span className="text-[9px] font-mono text-amber-500/90 mt-0.5">
+                                    KG Total
+                                  </span>
+                                </div>
+
+                                <div className="bg-zinc-900/80 border border-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
+                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                                    CNS READY
+                                  </span>
+                                  <span className="text-base font-bold font-mono text-emerald-400 leading-tight">
+                                    {cnsScore}%
+                                  </span>
+                                  <span className="text-[9px] font-mono text-emerald-500/90 mt-0.5">
+                                    Score
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Bottom Action Navigation Buttons */}
+                              <div className="grid grid-cols-[1fr_auto_auto] gap-2 mt-4 pt-3 border-t border-white/10">
+                                <button
+                                  onClick={() => {
+                                    setActiveView("profile");
+                                    saveSettings({ activeView: "profile" });
+                                    setShowProfilePopover(false);
+                                  }}
+                                  className="py-2.5 px-3 rounded-xl border border-rose-500/50 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-mono text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                                >
+                                  <UserIcon className="w-3.5 h-3.5" />
+                                  <span>Profile</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setShowLandingPage(true);
+                                    setShowProfilePopover(false);
+                                  }}
+                                  className="py-2.5 px-3.5 rounded-xl border border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-mono text-xs font-medium flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                                >
+                                  <Compass className="w-3.5 h-3.5 text-gym-accent" />
+                                  <span>Portal</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setShowProfilePopover(false);
+                                    handleLogout();
+                                  }}
+                                  className="p-2.5 rounded-xl border border-white/10 bg-zinc-900 hover:bg-red-500/20 hover:border-red-500/40 text-zinc-400 hover:text-red-400 cursor-pointer transition-all active:scale-95 flex items-center justify-center"
+                                  title="Logout"
+                                >
+                                  <LogOut className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </motion.div>
+                    </>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
         </header>
@@ -13204,7 +13704,7 @@ export default function App() {
                               <option value="" disabled>-- Select a routine to preload & tweak --</option>
                               {[...routines].sort((a, b) => a.name.localeCompare(b.name)).map((r, ri) => (
                                 <option key={r.id || ri} value={r.id}>
-                                  {r.name} ({DAY_CONFIG[r.categoryIndex]?.name || "Muscle Focus"})
+                                  {r.name} ({DAY_CONFIG[getRoutineCategoryIndex(r)]?.name || "Muscle Focus"})
                                 </option>
                               ))}
                             </select>
@@ -13841,8 +14341,8 @@ export default function App() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                               {[...routines]
                                 .sort((a, b) => {
-                                  const aIndex = a.categoryIndex !== undefined && a.categoryIndex !== null ? Number(a.categoryIndex) : 999;
-                                  const bIndex = b.categoryIndex !== undefined && b.categoryIndex !== null ? Number(b.categoryIndex) : 999;
+                                  const aIndex = getRoutineCategoryIndex(a);
+                                  const bIndex = getRoutineCategoryIndex(b);
                                   if (aIndex !== bIndex) {
                                     return aIndex - bIndex;
                                   }
@@ -13854,8 +14354,9 @@ export default function App() {
                                   const uniqueExNames = Array.from(
                                     new Set(routine.sets?.map((s: any) => s.exerciseName) || [])
                                   ) as string[];
-                                  const catName = DAY_CONFIG[routine.categoryIndex]?.name || "Custom Split";
-                                  const catIcon = DAY_CONFIG[routine.categoryIndex]?.icon || <Dumbbell className="w-3.5 h-3.5 text-gym-accent" />;
+                                  const catIdx = getRoutineCategoryIndex(routine);
+                                  const catName = DAY_CONFIG[catIdx]?.name || "Custom Split";
+                                  const catIcon = DAY_CONFIG[catIdx]?.icon || <Dumbbell className="w-3.5 h-3.5 text-gym-accent" />;
 
                                   return (
                                     <div
@@ -13928,7 +14429,7 @@ export default function App() {
                             <h4 className="text-base font-light italic font-serif text-white flex items-center gap-2">
                               Analyzing: <span className="font-semibold text-white/95 non-italic">{selectedRoutine.name}</span>
                               <span className="text-[9px] px-2.5 py-0.5 rounded-full border border-white/10 bg-white/5 uppercase non-italic text-white/60 font-mono tracking-wider">
-                                {DAY_CONFIG[selectedRoutine.categoryIndex]?.name || "Custom"}
+                                {DAY_CONFIG[getRoutineCategoryIndex(selectedRoutine)]?.name || "Custom"}
                               </span>
                             </h4>
                           </div>
@@ -14072,7 +14573,7 @@ export default function App() {
 
                     {DAY_CONFIG.map((day, di) => {
                       const categoryRoutines = routines.filter(
-                        (r) => r.categoryIndex === di,
+                        (r) => getRoutineCategoryIndex(r) === di,
                       );
                       const isOpen = !!expandedRoutinesDays[di];
 
@@ -18833,10 +19334,10 @@ export default function App() {
         <AnimatePresence>
           {toast && (
             <motion.div
-              initial={{ opacity: 0, y: 50, x: "-50%" }}
+              initial={{ opacity: 0, y: -50, x: "-50%" }}
               animate={{ opacity: 1, y: 0, x: "-50%" }}
-              exit={{ opacity: 0, y: 20, x: "-50%" }}
-              className={`fixed bottom-10 left-1/2 z-[200] px-6 py-3 rounded-md border shadow-2xl flex items-center gap-3 min-w-[280px] ${
+              exit={{ opacity: 0, y: -20, x: "-50%" }}
+              className={`fixed top-6 left-1/2 z-[250] px-6 py-3 rounded-md border shadow-2xl flex items-center gap-3 min-w-[280px] max-w-[90vw] ${
                 toast.type === "pb"
                   ? "bg-gym-accent border-gym-accent text-black"
                   : "bg-[#0d0d0d] border-gym-accent/30 text-white"
