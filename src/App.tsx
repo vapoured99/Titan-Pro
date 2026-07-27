@@ -19936,7 +19936,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* Universal Bottom Dock Navigation & Drawer */}
-        <nav className="fixed bottom-0 inset-x-0 z-50 bg-gradient-to-b from-neutral-900/95 via-neutral-950/98 to-black backdrop-blur-2xl border-t border-white/20 px-2 sm:px-8 py-2.5 sm:py-3.5 flex items-center justify-around sm:justify-center gap-2 sm:gap-6 shadow-[0_-12px_30px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.15)] safe-area-bottom w-full max-w-full">
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-gradient-to-b from-neutral-900/95 via-neutral-950/98 to-black backdrop-blur-2xl border-t border-white/20 px-2 sm:px-8 pt-2 sm:pt-3 pb-6 sm:pb-4 flex items-center justify-around sm:justify-center gap-2 sm:gap-6 shadow-[0_-12px_30px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.15)] safe-area-bottom w-full max-w-full">
           {/* Button 1: Console */}
           {(() => {
             const isActive = activeView === "console_d" && !activeDrawer;
@@ -20049,7 +20049,7 @@ export default function App() {
                     setActiveDrawer(null);
                   }
                 }}
-                className="fixed bottom-20 sm:bottom-24 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-gym-accent/40 rounded-t-2xl sm:rounded-2xl p-5 shadow-[0_-16px_36px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)] max-h-[80vh] overflow-y-auto touch-pan-y"
+                className="fixed bottom-24 sm:bottom-28 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-gym-accent/40 rounded-t-2xl sm:rounded-2xl p-5 shadow-[0_-16px_36px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)] max-h-[80vh] overflow-y-auto touch-pan-y"
               >
                 {/* Gym Drawer Popup */}
                 {activeDrawer === "gym" && (
