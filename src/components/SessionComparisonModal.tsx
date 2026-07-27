@@ -647,14 +647,14 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                   </span>
                 </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left font-mono border-collapse">
+                <div className="overflow-x-auto custom-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
+                  <table className="w-full min-w-[560px] text-left font-mono border-collapse">
                     <thead>
                       <tr className="border-b border-white/10 text-[9px] font-black text-white/40 uppercase tracking-widest">
-                        <th className="py-2.5 px-3">Movement</th>
-                        <th className="py-2.5 px-3 text-cyan-400">Baseline (A)</th>
-                        <th className="py-2.5 px-3 text-gym-accent">Target (B)</th>
-                        <th className="py-2.5 px-3 text-right">Progression Delta</th>
+                        <th className="py-2.5 px-3 w-[32%]">Movement</th>
+                        <th className="py-2.5 px-3 text-cyan-400 w-[23%] whitespace-nowrap">Baseline (A)</th>
+                        <th className="py-2.5 px-3 text-gym-accent w-[23%] whitespace-nowrap">Target (B)</th>
+                        <th className="py-2.5 px-3 text-right w-[22%] whitespace-nowrap">Progression Delta</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-xs">
@@ -674,39 +674,39 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
 
                           if (wDiff > 0) {
                             deltaContent = (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black shadow-[0_0_8px_rgba(16,185,129,0.2)]">
-                                <TrendingUp className="w-3 h-3" />+{wDiff} kg (+{pct.toFixed(1)}%)
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black shadow-[0_0_8px_rgba(16,185,129,0.2)] whitespace-nowrap">
+                                <TrendingUp className="w-3 h-3 shrink-0" />+{wDiff} kg (+{pct.toFixed(1)}%)
                               </span>
                             );
                           } else if (wDiff < 0) {
                             deltaContent = (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/40 text-rose-400 text-[10px] font-black">
-                                <TrendingDown className="w-3 h-3" />
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/40 text-rose-400 text-[10px] font-black whitespace-nowrap">
+                                <TrendingDown className="w-3 h-3 shrink-0" />
                                 {wDiff} kg ({pct.toFixed(1)}%)
                               </span>
                             );
                           } else if (volDiff > 0) {
                             deltaContent = (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 text-[10px] font-black">
-                                <TrendingUp className="w-3 h-3" /> Vol +{volDiff} kg
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 text-[10px] font-black whitespace-nowrap">
+                                <TrendingUp className="w-3 h-3 shrink-0" /> Vol +{volDiff} kg
                               </span>
                             );
                           } else {
                             deltaContent = (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/40 text-[10px] font-bold">
-                                <Minus className="w-3 h-3" /> Equal Load
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/40 text-[10px] font-bold whitespace-nowrap">
+                                <Minus className="w-3 h-3 shrink-0" /> Equal Load
                               </span>
                             );
                           }
                         } else if (!exA && exB) {
                           deltaContent = (
-                            <span className="px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[10px] font-black">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[10px] font-black whitespace-nowrap">
                               ✨ New Movement
                             </span>
                           );
                         } else if (exA && !exB) {
                           deltaContent = (
-                            <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/30 text-[10px]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/30 text-[10px] whitespace-nowrap">
                               Omitted in B
                             </span>
                           );
