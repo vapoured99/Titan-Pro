@@ -82,9 +82,80 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
     [sortedWorkouts, sessionAId]
   );
 
+  // Helper to extract tag tokens (e.g. ['C', 'T', 'S']) for a workout
+  const getWorkoutTagTokens = React.useCallback(
+    (workout: any): string[] => {
+      if (!workout) return [];
+      const tagStr = getWorkoutMuscleTags ? getWorkoutMuscleTags(workout, findExerciseByName) : "";
+      if (tagStr && tagStr.trim()) {
+        return tagStr.split("/").map((t) => t.trim()).filter(Boolean);
+      }
+      // Fallback: derive tags from exercise muscle groups if tagStr is empty
+      const sets = workout.sets || [];
+      const groups = new Set<string>();
+      sets.forEach((s: any) => {
+        const exName = s.exerciseName || s.name;
+        if (exName && getExerciseMuscleGroup) {
+          const mg = getExerciseMuscleGroup(exName, findExerciseByName);
+          if (mg) groups.add(mg);
+        }
+      });
+      const tagMap: Record<string, string> = {
+        Chest: "C",
+        Triceps: "T",
+        Back: "B",
+        Biceps: "Bi",
+        Legs: "L",
+        Core: "C",
+        Shoulders: "S",
+        Forearms: "F",
+      };
+      return Array.from(groups).map((g) => tagMap[g]).filter(Boolean);
+    },
+    [getWorkoutMuscleTags, findExerciseByName, getExerciseMuscleGroup]
+  );
+
+  // Check if two workouts share at least 1 tag letter
+  const hasMatchingTags = React.useCallback(
+    (workout1: any, workout2: any): boolean => {
+      if (!workout1 || !workout2) return false;
+      const tokens1 = getWorkoutTagTokens(workout1);
+      const tokens2 = getWorkoutTagTokens(workout2);
+
+      // If either has no tag tokens at all, allow comparison as fallback
+      if (tokens1.length === 0 || tokens2.length === 0) return true;
+
+      // Check if there is at least 1 matching tag letter/token
+      return tokens1.some((t1) =>
+        tokens2.some((t2) => t1.toUpperCase() === t2.toUpperCase())
+      );
+    },
+    [getWorkoutTagTokens]
+  );
+
+  // Filter available Target (B) options based on Baseline (A) tag letters
+  const targetBWorkouts = useMemo(() => {
+    if (!workoutA || sortedWorkouts.length === 0) return sortedWorkouts;
+    const filtered = sortedWorkouts.filter((w) => hasMatchingTags(workoutA, w));
+    return filtered.length > 0 ? filtered : sortedWorkouts;
+  }, [sortedWorkouts, workoutA, hasMatchingTags]);
+
+  // Ensure sessionBId points to a valid session in targetBWorkouts when Baseline (A) changes
+  React.useEffect(() => {
+    if (workoutA && targetBWorkouts.length > 0) {
+      const isCurrentBValid = targetBWorkouts.some((w) => w.id === sessionBId);
+      if (!isCurrentBValid) {
+        const candidate = targetBWorkouts.find((w) => w.id !== workoutA.id) || targetBWorkouts[0];
+        if (candidate) {
+          setSessionBId(candidate.id);
+        }
+      }
+    }
+  }, [workoutA, targetBWorkouts, sessionBId]);
+
   const workoutB = useMemo(
-    () => sortedWorkouts.find((w) => w.id === sessionBId) || sortedWorkouts[0],
-    [sortedWorkouts, sessionBId]
+    () => targetBWorkouts.find((w) => w.id === sessionBId) || targetBWorkouts[0] || sortedWorkouts[0],
+    [targetBWorkouts, sortedWorkouts, sessionBId]
   );
 
   // Helper to calculate detailed metrics for a workout
@@ -282,29 +353,44 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
   // Quick Preset Handlers
   const handlePresetRecent = () => {
     if (sortedWorkouts.length >= 2) {
-      setSessionBId(sortedWorkouts[0].id);
-      setSessionAId(sortedWorkouts[1].id);
+      const baseA = sortedWorkouts[1];
+      setSessionAId(baseA.id);
+      const matchingB = sortedWorkouts.find(
+        (w) => w.id !== baseA.id && hasMatchingTags(baseA, w)
+      );
+      if (matchingB) {
+        setSessionBId(matchingB.id);
+      } else {
+        setSessionBId(sortedWorkouts[0].id);
+      }
     }
   };
 
   const handlePresetBestVolume = () => {
     if (sortedWorkouts.length >= 2) {
-      const best = [...sortedWorkouts].sort(
+      const bestA = [...sortedWorkouts].sort(
         (a, b) => (b.totalVolume || 0) - (a.totalVolume || 0)
       )[0];
-      setSessionBId(sortedWorkouts[0].id);
-      setSessionAId(best.id);
+      setSessionAId(bestA.id);
+      const matchingB = sortedWorkouts.find(
+        (w) => w.id !== bestA.id && hasMatchingTags(bestA, w)
+      );
+      if (matchingB) {
+        setSessionBId(matchingB.id);
+      } else {
+        setSessionBId(sortedWorkouts[0].id);
+      }
     }
   };
 
   const handlePresetSameRoutine = () => {
-    if (!workoutB || sortedWorkouts.length < 2) return;
-    const tagB = detailsB.tags;
+    if (!workoutA || sortedWorkouts.length < 2) return;
+    const tagA = detailsA.tags;
     const matching = sortedWorkouts.find(
-      (w) => w.id !== workoutB.id && getWorkoutMuscleTags(w, findExerciseByName) === tagB
+      (w) => w.id !== workoutA.id && getWorkoutMuscleTags(w, findExerciseByName) === tagA
     );
     if (matching) {
-      setSessionAId(matching.id);
+      setSessionBId(matching.id);
     }
   };
 
@@ -410,11 +496,21 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                     <span className="w-1.5 h-1.5 rounded-full bg-gym-accent shrink-0 shadow-[0_0_6px_#ebff00]" />
                     Target (B)
                   </span>
-                  {detailsB.tags && (
-                    <span className="px-1 py-0.2 rounded bg-gym-accent/10 border border-gym-accent/30 text-gym-accent font-mono text-[7px] sm:text-[9px] font-black truncate hidden sm:inline-block">
-                      {detailsB.tags}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1 shrink-0">
+                    {targetBWorkouts.length < sortedWorkouts.length && (
+                      <span
+                        title="Only showing sessions sharing at least 1 muscle tag letter with Baseline (A)"
+                        className="px-1.5 py-0.2 rounded bg-gym-accent/15 border border-gym-accent/30 text-gym-accent font-mono text-[7px] sm:text-[8px] font-black"
+                      >
+                        {targetBWorkouts.length} Tag Matches
+                      </span>
+                    )}
+                    {detailsB.tags && (
+                      <span className="px-1 py-0.2 rounded bg-gym-accent/10 border border-gym-accent/30 text-gym-accent font-mono text-[7px] sm:text-[9px] font-black truncate hidden sm:inline-block">
+                        {detailsB.tags}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="relative">
                   <select
@@ -422,12 +518,13 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                     onChange={(e) => setSessionBId(e.target.value)}
                     className="w-full bg-black/80 border border-white/20 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold text-white focus:outline-none focus:border-gym-accent cursor-pointer appearance-none truncate pr-6"
                   >
-                    {sortedWorkouts.map((w, idx) => {
+                    {targetBWorkouts.map((w) => {
+                      const originalIdx = sortedWorkouts.findIndex((sw) => sw.id === w.id);
                       const tag = getWorkoutMuscleTags(w, findExerciseByName);
                       const displayVol = Math.round((w.totalVolume || 0) * 10) / 10;
                       return (
                         <option key={`b-${w.id}`} value={w.id} className="bg-black text-white">
-                          {idx === 0 ? "🔥 " : ""}{w.date || w.formattedDate} ({displayVol} kg {tag ? `• ${tag}` : ""})
+                          {originalIdx === 0 ? "🔥 " : ""}{w.date || w.formattedDate} ({displayVol} kg {tag ? `• ${tag}` : ""})
                         </option>
                       );
                     })}
