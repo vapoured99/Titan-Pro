@@ -214,17 +214,23 @@ export const ImmersiveLanding: React.FC<ImmersiveLandingProps> = ({
 
       <div className="relative z-10 w-full flex flex-col min-h-screen justify-between">
         
-        {/* Sleek Minimalist Header - Now contains the primary brand title "Titan Pro" */}
-        <header className="max-w-7xl w-full mx-auto px-8 md:px-16 pt-16 pb-16 flex items-end justify-between">
-          <div className="space-y-2">
+        {/* Minimalist Header - "Titan Pro" Brand Title */}
+        <header className="max-w-7xl w-full mx-auto px-8 md:px-16 pt-12 pb-12 flex items-center justify-between">
+          <div className="flex flex-col items-start space-y-2">
             <div className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-gym-accent animate-pulse" />
-              <span className="text-[10px] font-mono text-white/30 tracking-[0.35em] uppercase font-black block">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
+              <span className="text-[10px] font-mono font-bold text-gym-accent uppercase tracking-[0.3em]">
                 WELCOME BACK, {athleteName.toUpperCase()}
               </span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-extralight tracking-tight text-white leading-none">
-              TITAN <span className="font-serif italic font-light text-gym-accent">PRO</span>
+
+            <h1 className="text-4xl md:text-5xl font-light italic font-serif tracking-widest leading-none flex items-center gap-2">
+              <span className="bg-gradient-to-b from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                Titan
+              </span>
+              <span className="bg-gradient-to-b from-white via-gym-accent-light to-gym-accent bg-clip-text text-transparent font-serif italic font-extrabold drop-shadow-[0_2px_8px_rgba(212,175,55,0.5)] drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+                Pro
+              </span>
             </h1>
           </div>
           

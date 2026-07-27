@@ -7589,11 +7589,16 @@ export default function App() {
           animate={{ opacity: 1, scale: 1 }}
           className="relative z-10 max-w-md w-full p-10 border border-white/10 rounded-md bg-black/40 backdrop-blur-md"
         >
-          <span className="text-[10px] uppercase tracking-[0.3em] text-gym-accent mb-2 block font-bold">
+          <span className="text-[10px] uppercase tracking-[0.3em] font-mono font-black text-rose-300 bg-rose-500/15 border border-rose-500/35 px-2.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] inline-block mb-3">
             Est. 2026
           </span>
-          <h1 className="text-4xl font-light italic font-serif tracking-widest mb-4 text-white">
-            Titan <span className="text-gym-accent accent-glow">Pro</span>
+          <h1 className="text-4xl sm:text-5xl font-light italic font-serif tracking-widest mb-4 flex items-center gap-2">
+            <span className="bg-gradient-to-b from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+              Titan
+            </span>
+            <span className="bg-gradient-to-b from-white via-gym-accent-light to-gym-accent bg-clip-text text-transparent font-serif italic font-extrabold drop-shadow-[0_2px_8px_rgba(212,175,55,0.5)] drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+              Pro
+            </span>
           </h1>
           <p className="text-white/40 mb-10 text-sm font-light leading-relaxed">
             The sophisticated approach to physical excellence.
@@ -8477,23 +8482,29 @@ export default function App() {
             transition={{ duration: 0.5 }}
             className="relative z-10 max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-12 pb-36 sm:pb-44"
           >
-        {/* Header */}
-        <header className="flex items-center justify-between w-full mb-6 sm:mb-16 gap-4 border-b border-gym-accent/20 pb-4 sm:pb-10">
-          <div className="flex flex-col items-start gap-0.5">
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-gym-accent font-bold">
-              Premium Session
-            </span>
+        {/* Header - Typography & Brand */}
+        <header className="flex items-center justify-between w-full mb-6 sm:mb-16 gap-4 border-b border-white/10 pb-4 sm:pb-10">
+          <div className="flex flex-col items-start">
             <button
               onClick={() => {
                 setActiveView("console_d");
                 saveSettings({ activeView: "console_d" });
               }}
-              className="group flex items-center gap-1.5 text-left cursor-pointer transition-transform hover:scale-[1.01] focus:outline-none"
+              className="group flex flex-col items-start text-left cursor-pointer transition-transform hover:scale-[1.01] focus:outline-none"
               title="Go to Console Dashboard"
             >
-              <h1 className="text-3xl sm:text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none">
-                Titan{" "}
-                <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 group-hover:brightness-125 transition-all">
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
+                <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.3em] font-mono font-bold text-gym-accent">
+                  Premium Session
+                </span>
+              </div>
+
+              <h1 className="text-3xl sm:text-5xl font-light italic font-serif tracking-widest leading-none flex items-center gap-2">
+                <span className="bg-gradient-to-b from-white via-zinc-100 to-zinc-400 bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                  Titan
+                </span>
+                <span className="bg-gradient-to-b from-white via-gym-accent-light to-gym-accent bg-clip-text text-transparent font-serif italic font-extrabold drop-shadow-[0_2px_8px_rgba(212,175,55,0.5)] drop-shadow-[0_0_15px_rgba(212,175,55,0.3)] group-hover:brightness-125 transition-all">
                   Pro
                 </span>
               </h1>
@@ -8504,30 +8515,22 @@ export default function App() {
           <div className="relative shrink-0">
             <button
               onClick={() => setShowProfilePopover((prev) => !prev)}
-              className={`flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
+              className={`flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border transition-all cursor-pointer backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_8px_20px_rgba(0,0,0,0.6)] active:scale-95 ${
                 showProfilePopover
-                  ? "border-rose-500/80 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.25)]"
-                  : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+                  ? "border-rose-500/80 bg-gradient-to-b from-rose-500/25 via-rose-500/10 to-black/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_20px_rgba(244,63,94,0.35)] text-white"
+                  : "border-white/20 bg-gradient-to-b from-white/[0.12] via-white/[0.04] to-black/80 hover:border-rose-500/50 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_0_15px_rgba(244,63,94,0.2)] text-white"
               }`}
               title="Interactive Profile & Performance Card"
             >
-                <span className="text-[10px] sm:text-[11px] text-theme-text-muted uppercase tracking-wider sm:tracking-widest flex items-center gap-1 sm:gap-1.5 font-mono">
+                <span className="text-[10px] sm:text-[11px] text-white/90 font-bold uppercase tracking-wider sm:tracking-widest flex items-center gap-1 sm:gap-1.5 font-mono drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                   {new Date().toLocaleDateString("en-GB", {
                     weekday: "short",
                     day: "numeric",
                     month: "short",
                   }).toUpperCase()}
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${firebaseConnected ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-red-500 animate-pulse"}`}
-                    title={
-                      firebaseConnected
-                        ? "Cloud Sync Active"
-                        : "Connecting to Cloud..."
-                    }
-                  />
                 </span>
-                <div className="h-3 sm:h-3.5 w-px bg-white/15 mx-0.5" />
-                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border border-rose-500/80 shrink-0 bg-black">
+                <div className="h-3 sm:h-3.5 w-px bg-white/20 mx-0.5" />
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border-2 border-rose-500/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_10px_rgba(244,63,94,0.4)] shrink-0 bg-black">
                   {profile?.photoURL || currentUser.photoURL ? (
                     <img
                       src={profile?.photoURL || currentUser.photoURL || ""}
@@ -8539,8 +8542,8 @@ export default function App() {
                   )}
                 </div>
                 <ChevronDown
-                  className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-zinc-400 transition-transform duration-200 ${
-                    showProfilePopover ? "rotate-180 text-rose-500" : ""
+                  className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/70 transition-transform duration-200 ${
+                    showProfilePopover ? "rotate-180 text-rose-400" : ""
                   }`}
                 />
               </button>
@@ -8559,8 +8562,13 @@ export default function App() {
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, y: -10 }}
                       transition={{ duration: 0.15 }}
-                      className="fixed left-3 right-3 top-20 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 z-[120] w-auto sm:w-96 max-w-sm sm:max-w-none mx-auto sm:mx-0 bg-[#0c0c0e]/98 border border-white/15 backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] rounded-2xl p-4 sm:p-5 text-white font-sans"
+                      className="fixed left-3 right-3 top-20 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 z-[120] w-auto sm:w-96 max-w-sm sm:max-w-none mx-auto sm:mx-0 bg-gradient-to-b from-[#14151a]/95 via-[#0b0c0f]/98 to-[#050507] border border-white/20 backdrop-blur-3xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25),0_25px_60px_rgba(0,0,0,0.95)] rounded-3xl p-4 sm:p-5 text-white font-sans relative overflow-hidden"
                     >
+                      {/* Ambient 3D Glass Glow Accents */}
+                      <div className="absolute -top-20 -right-20 w-48 h-48 bg-rose-500/15 rounded-full blur-3xl pointer-events-none" />
+                      <div className="absolute -bottom-20 -left-20 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+                      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-amber-400 to-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.8)] z-10" />
+
                         {(() => {
                           const level = profile?.avatarLevel ?? 1;
                           const xp = profile?.avatarXp ?? 0;
@@ -8579,7 +8587,7 @@ export default function App() {
                           const cnsScore = Math.max(0, 100 - (cnsFatigueAnalysis?.score || 0));
 
                           return (
-                            <div>
+                            <div className="relative z-10">
                               {/* Top User Info Header */}
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -8591,108 +8599,108 @@ export default function App() {
                                         "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
                                       }
                                       alt="Avatar"
-                                      className="w-12 h-12 rounded-full border-2 border-rose-500 shadow-[0_0_12px_rgba(244,63,94,0.4)] object-cover bg-black"
+                                      className="w-12 h-12 rounded-full border-2 border-rose-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_15px_rgba(244,63,94,0.5)] object-cover bg-black"
                                     />
                                   </div>
                                   <div className="flex flex-col">
-                                    <span className="text-base font-bold text-white leading-tight font-sans">
+                                    <span className="text-base font-black text-white leading-tight font-sans tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                                       {profile?.displayName || currentUser?.displayName || "Athlete"}
                                     </span>
-                                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-rose-500 mt-0.5">
+                                    <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-rose-300 bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 rounded-full inline-block mt-1 self-start shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
                                       {equippedTitleName}
                                     </span>
                                   </div>
                                 </div>
                                 <button
                                   onClick={() => setShowProfilePopover(false)}
-                                  className="p-1 text-zinc-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                                  className="w-8 h-8 rounded-xl bg-gradient-to-b from-white/10 to-white/5 border border-white/15 hover:border-white/35 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95"
                                   title="Close"
                                 >
                                   <X className="w-4 h-4" />
                                 </button>
                               </div>
 
-                              <div className="border-b border-white/10 my-3.5" />
+                              <div className="border-b border-white/12 my-3.5" />
 
                               {/* Level & XP Progress Section */}
-                              <div className="bg-zinc-900/60 border border-white/5 rounded-xl p-3">
+                              <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-3.5 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_20px_rgba(0,0,0,0.6)]">
                                 <div className="flex items-center justify-between text-xs mb-1.5">
-                                  <span className="font-mono font-bold text-white flex items-center gap-1.5">
-                                    <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400" /> LVL {level}
+                                  <span className="font-mono font-black text-amber-400 flex items-center gap-1.5 drop-shadow-[0_0_8px_rgba(245,158,11,0.4)]">
+                                    <Zap className="w-3.5 h-3.5 text-amber-400 fill-amber-400 animate-pulse" /> LVL {level}
                                   </span>
-                                  <span className="font-mono text-zinc-400 text-[11px]">
+                                  <span className="font-mono text-zinc-300 font-bold text-[11px]">
                                     {xp.toLocaleString()} / {targetXp.toLocaleString()} XP
                                   </span>
                                 </div>
-                                <div className="w-full bg-zinc-800/80 rounded-full h-2.5 p-0.5 border border-white/5 overflow-hidden mb-2">
+                                <div className="w-full bg-black/80 rounded-full h-2.5 p-0.5 border border-white/10 overflow-hidden mb-2 shadow-[inset_0_1px_2px_rgba(0,0,0,0.8)]">
                                   <div
-                                    className="bg-gradient-to-r from-red-500 via-orange-500 to-amber-400 h-full rounded-full transition-all duration-500"
+                                    className="bg-gradient-to-r from-red-500 via-orange-500 to-amber-400 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(245,158,11,0.6)]"
                                     style={{ width: `${xpPercent}%` }}
                                   />
                                 </div>
                                 <div className="flex items-center justify-between text-[11px] text-zinc-400 font-sans">
-                                  <span>Title: {equippedTitleName}</span>
-                                  <span className="font-mono">{xpPercent}% To Level Up</span>
+                                  <span>Title: <strong className="text-white">{equippedTitleName}</strong></span>
+                                  <span className="font-mono font-bold text-amber-300">{xpPercent}% To Level Up</span>
                                 </div>
                               </div>
 
                               {/* Today's Performance Section */}
                               <div className="mt-4 mb-2 flex items-center justify-between">
-                                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400">
+                                <span className="text-[10px] font-mono font-black uppercase tracking-widest text-white/50">
                                   TODAY'S PERFORMANCE
                                 </span>
-                                <span className="text-[10px] font-mono font-bold text-rose-500">
+                                <span className="text-[9px] font-mono font-bold text-rose-300 bg-rose-500/15 border border-rose-500/30 px-2 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
                                   Ready
                                 </span>
                               </div>
 
                               <div className="grid grid-cols-3 gap-2">
-                                <div className="bg-zinc-900/80 border border-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
-                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                                <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_20px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-white/25 hover:scale-[1.02] group">
+                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-white/50 block mb-0.5">
                                     SETS LOGGED
                                   </span>
-                                  <span className="text-base font-bold font-mono text-white leading-tight">
+                                  <span className="text-base font-black font-mono text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                                     {setsLoggedCount}
                                   </span>
-                                  <span className="text-[9px] font-mono text-rose-500 mt-0.5">
+                                  <span className="text-[9px] font-mono font-bold text-rose-400 mt-0.5">
                                     Completed
                                   </span>
                                 </div>
 
-                                <div className="bg-zinc-900/80 border border-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
-                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                                <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_20px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-white/25 hover:scale-[1.02] group">
+                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-white/50 block mb-0.5">
                                     VOLUME
                                   </span>
-                                  <span className="text-base font-bold font-mono text-amber-400 leading-tight">
+                                  <span className="text-base font-black font-mono text-amber-400 leading-tight drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]">
                                     {todayVolume}
                                   </span>
-                                  <span className="text-[9px] font-mono text-amber-500/90 mt-0.5">
+                                  <span className="text-[9px] font-mono font-bold text-amber-400/90 mt-0.5">
                                     KG Total
                                   </span>
                                 </div>
 
-                                <div className="bg-zinc-900/80 border border-white/5 rounded-xl p-2.5 flex flex-col items-center justify-center text-center">
-                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-zinc-400 block mb-0.5">
+                                <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_20px_rgba(0,0,0,0.6)] transition-all duration-300 hover:border-white/25 hover:scale-[1.02] group">
+                                  <span className="text-[8px] font-mono font-bold uppercase tracking-wider text-white/50 block mb-0.5">
                                     CNS READY
                                   </span>
-                                  <span className="text-base font-bold font-mono text-emerald-400 leading-tight">
+                                  <span className="text-base font-black font-mono text-emerald-400 leading-tight drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]">
                                     {cnsScore}%
                                   </span>
-                                  <span className="text-[9px] font-mono text-emerald-500/90 mt-0.5">
+                                  <span className="text-[9px] font-mono font-bold text-emerald-400/90 mt-0.5">
                                     Score
                                   </span>
                                 </div>
                               </div>
 
                               {/* Bottom Action Navigation Buttons */}
-                              <div className="grid grid-cols-[1fr_auto_auto] gap-2 mt-4 pt-3 border-t border-white/10">
+                              <div className="grid grid-cols-[1fr_auto_auto] gap-2 mt-4 pt-3 border-t border-white/12">
                                 <button
                                   onClick={() => {
                                     setActiveView("profile");
                                     saveSettings({ activeView: "profile" });
                                     setShowProfilePopover(false);
                                   }}
-                                  className="py-2.5 px-3 rounded-xl border border-rose-500/50 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-mono text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                                  className="py-2.5 px-3 rounded-xl border border-rose-500/60 bg-gradient-to-b from-rose-500/25 via-rose-500/15 to-rose-950/40 hover:from-rose-500/35 hover:to-rose-950/60 text-rose-300 font-mono text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_4px_12px_rgba(244,63,94,0.25)] active:scale-95"
                                 >
                                   <UserIcon className="w-3.5 h-3.5" />
                                   <span>Profile</span>
@@ -8702,7 +8710,7 @@ export default function App() {
                                     setShowLandingPage(true);
                                     setShowProfilePopover(false);
                                   }}
-                                  className="py-2.5 px-3.5 rounded-xl border border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 font-mono text-xs font-medium flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-95"
+                                  className="py-2.5 px-3.5 rounded-xl border border-white/15 bg-gradient-to-b from-white/12 via-white/5 to-zinc-950/80 hover:border-gym-accent/60 hover:text-gym-accent text-white font-mono text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.5)] active:scale-95"
                                 >
                                   <Compass className="w-3.5 h-3.5 text-gym-accent" />
                                   <span>Portal</span>
@@ -8712,7 +8720,7 @@ export default function App() {
                                     setShowProfilePopover(false);
                                     handleLogout();
                                   }}
-                                  className="p-2.5 rounded-xl border border-white/10 bg-zinc-900 hover:bg-red-500/20 hover:border-red-500/40 text-zinc-400 hover:text-red-400 cursor-pointer transition-all active:scale-95 flex items-center justify-center"
+                                  className="p-2.5 rounded-xl border border-white/15 bg-gradient-to-b from-white/10 via-white/5 to-zinc-950/80 hover:bg-rose-500/20 hover:border-rose-500/50 text-zinc-300 hover:text-rose-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] cursor-pointer transition-all active:scale-95 flex items-center justify-center"
                                   title="Logout"
                                 >
                                   <LogOut className="w-3.5 h-3.5" />
