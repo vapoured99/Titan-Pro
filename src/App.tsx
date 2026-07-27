@@ -8286,16 +8286,18 @@ export default function App() {
               </button>
             </div>
 
-            {/* Mobile Header Quick Actions */}
-            <div className="flex sm:hidden items-center gap-2">
+            {/* Profile Trigger Button Pill & Popover (Responsive for both Mobile and Desktop) */}
+            <div className="relative">
               <button
                 onClick={() => setShowProfilePopover((prev) => !prev)}
-                className={`flex items-center gap-2 px-2.5 py-1 rounded-xl border transition-all cursor-pointer ${
-                  showProfilePopover ? "border-rose-500 bg-rose-500/10" : "border-white/10 bg-white/5"
+                className={`flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
+                  showProfilePopover
+                    ? "border-rose-500/80 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.25)]"
+                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
                 }`}
-                title="Profile Menu"
+                title="Interactive Profile & Performance Card"
               >
-                <span className="text-[10px] text-theme-text-muted uppercase tracking-wider flex items-center gap-1 font-mono">
+                <span className="text-[10px] sm:text-[11px] text-theme-text-muted uppercase tracking-wider sm:tracking-widest flex items-center gap-1 sm:gap-1.5 font-mono">
                   {new Date().toLocaleDateString("en-GB", {
                     weekday: "short",
                     day: "numeric",
@@ -8303,10 +8305,15 @@ export default function App() {
                   }).toUpperCase()}
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${firebaseConnected ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-red-500 animate-pulse"}`}
+                    title={
+                      firebaseConnected
+                        ? "Cloud Sync Active"
+                        : "Connecting to Cloud..."
+                    }
                   />
                 </span>
-                <div className="h-3 w-px bg-white/15" />
-                <div className="w-6 h-6 rounded-full overflow-hidden border border-rose-500/80 shrink-0 bg-black">
+                <div className="h-3 sm:h-3.5 w-px bg-white/15 mx-0.5" />
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border border-rose-500/80 shrink-0 bg-black">
                   {profile?.photoURL || currentUser.photoURL ? (
                     <img
                       src={profile?.photoURL || currentUser.photoURL || ""}
@@ -8314,82 +8321,32 @@ export default function App() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <UserIcon className="w-3 h-3 text-theme-text-muted m-auto mt-1" />
+                    <UserIcon className="w-3.5 h-3.5 text-theme-text-muted m-auto mt-1" />
                   )}
                 </div>
                 <ChevronDown
-                  className={`w-3 h-3 text-zinc-400 transition-transform duration-200 ${
+                  className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-zinc-400 transition-transform duration-200 ${
                     showProfilePopover ? "rotate-180 text-rose-500" : ""
                   }`}
                 />
               </button>
-            </div>
-          </div>
 
-          {/* Desktop Header Actions & Profile Dropdown */}
-          <div className="hidden sm:flex items-center gap-3 justify-between md:justify-end w-full md:w-auto">
-            <div className="flex items-center gap-2 relative">
-              {/* Profile Trigger Button Pill with Date & Time integrated */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowProfilePopover((prev) => !prev)}
-                  className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl border transition-all cursor-pointer ${
-                    showProfilePopover
-                      ? "border-rose-500/80 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.25)]"
-                      : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
-                  }`}
-                  title="Interactive Profile & Performance Card"
-                >
-                  <span className="text-[11px] text-theme-text-muted uppercase tracking-widest flex items-center gap-1.5 font-mono">
-                    {new Date().toLocaleDateString("en-GB", {
-                      weekday: "short",
-                      day: "numeric",
-                      month: "short",
-                    }).toUpperCase()}
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${firebaseConnected ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-red-500 animate-pulse"}`}
-                      title={
-                        firebaseConnected
-                          ? "Cloud Sync Active"
-                          : "Connecting to Cloud..."
-                      }
+              {/* Interactive Profile Popover Modal */}
+              <AnimatePresence>
+                {showProfilePopover && (
+                  <>
+                    {/* Click Outside Backdrop */}
+                    <div
+                      className="fixed inset-0 z-[110]"
+                      onClick={() => setShowProfilePopover(false)}
                     />
-                  </span>
-                  <div className="h-3.5 w-px bg-white/15 mx-0.5" />
-                  <div className="w-7 h-7 rounded-full overflow-hidden border border-rose-500/80 shrink-0 bg-black">
-                    {profile?.photoURL || currentUser.photoURL ? (
-                      <img
-                        src={profile?.photoURL || currentUser.photoURL || ""}
-                        alt="Avatar"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <UserIcon className="w-4 h-4 text-theme-text-muted m-auto mt-1" />
-                    )}
-                  </div>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${
-                      showProfilePopover ? "rotate-180 text-rose-500" : ""
-                    }`}
-                  />
-                </button>
-
-                {/* Interactive Profile Popover Modal */}
-                <AnimatePresence>
-                  {showProfilePopover && (
-                    <>
-                      {/* Click Outside Backdrop */}
-                      <div
-                        className="fixed inset-0 z-[110]"
-                        onClick={() => setShowProfilePopover(false)}
-                      />
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                        transition={{ duration: 0.15 }}
-                        className="absolute right-0 top-full mt-3 z-[120] w-80 sm:w-96 bg-[#0c0c0e]/98 border border-white/15 backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] rounded-2xl p-4 sm:p-5 text-white font-sans"
-                      >
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      transition={{ duration: 0.15 }}
+                      className="fixed left-3 right-3 top-20 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-3 z-[120] w-auto sm:w-96 max-w-sm sm:max-w-none mx-auto sm:mx-0 bg-[#0c0c0e]/98 border border-white/15 backdrop-blur-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] rounded-2xl p-4 sm:p-5 text-white font-sans"
+                    >
                         {(() => {
                           const level = profile?.avatarLevel ?? 1;
                           const xp = profile?.avatarXp ?? 0;
@@ -8555,7 +8512,6 @@ export default function App() {
                   )}
                 </AnimatePresence>
               </div>
-            </div>
           </div>
         </header>
 
