@@ -19936,7 +19936,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* Universal Bottom Dock Navigation & Drawer */}
-        <nav className="fixed bottom-0 inset-x-0 z-50 bg-gradient-to-b from-neutral-900/95 via-neutral-950/98 to-black backdrop-blur-2xl border-t border-white/20 px-2 sm:px-8 pt-2 sm:pt-3 pb-6 sm:pb-4 flex items-center justify-around sm:justify-center gap-2 sm:gap-6 shadow-[0_-12px_30px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.15)] safe-area-bottom w-full max-w-full">
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-gradient-to-b from-neutral-900/95 via-neutral-950/98 to-black backdrop-blur-2xl border-t border-white/20 px-1 sm:px-6 pt-1 sm:pt-2 pb-2 sm:pb-2 flex items-center justify-center gap-1 sm:gap-3.5 shadow-[0_-12px_30px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.15)] safe-area-bottom w-full max-w-full">
           {/* Button 1: Console */}
           {(() => {
             const isActive = activeView === "console_d" && !activeDrawer;
@@ -19948,14 +19948,14 @@ export default function App() {
                   setActiveDrawer(null);
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className={`flex-1 max-w-[95px] sm:max-w-[130px] min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-4 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
+                className={`flex-1 max-w-[76px] sm:max-w-[115px] min-w-0 flex flex-col items-center justify-center py-0.5 sm:py-1.5 px-0.5 sm:px-2 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
                   isActive
                     ? "bg-gradient-to-b from-white/25 via-white/12 to-white/5 border border-white/80 text-white font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),0_4px_16px_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.8)] -translate-y-0.5"
                     : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-gradient-to-b hover:from-white/[0.12] hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
                 }`}
               >
-                <Terminal className={`w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
-                <span className="text-[9.5px] min-[380px]:text-[10px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-1 truncate max-w-full text-center leading-none">
+                <Terminal className={`w-4.5 h-4.5 min-[380px]:w-5 min-[380px]:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
+                <span className="text-[9px] min-[380px]:text-[9.5px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-0.5 truncate max-w-full text-center leading-none">
                   Console
                 </span>
               </button>
@@ -19968,14 +19968,14 @@ export default function App() {
             return (
               <button
                 onClick={() => setActiveDrawer(activeDrawer === "gym" ? null : "gym")}
-                className={`flex-1 max-w-[95px] sm:max-w-[130px] min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-4 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
+                className={`flex-1 max-w-[76px] sm:max-w-[115px] min-w-0 flex flex-col items-center justify-center py-0.5 sm:py-1.5 px-0.5 sm:px-2 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
                   isActive
                     ? "bg-gradient-to-b from-white/25 via-white/12 to-white/5 border border-white/80 text-white font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),0_4px_16px_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.8)] -translate-y-0.5"
                     : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-gradient-to-b hover:from-white/[0.12] hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
                 }`}
               >
-                <Dumbbell className={`w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
-                <span className="text-[9.5px] min-[380px]:text-[10px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-1 truncate max-w-full text-center leading-none">
+                <Dumbbell className={`w-4.5 h-4.5 min-[380px]:w-5 min-[380px]:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
+                <span className="text-[9px] min-[380px]:text-[9.5px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-0.5 truncate max-w-full text-center leading-none">
                   Gym
                 </span>
               </button>
@@ -19988,14 +19988,14 @@ export default function App() {
             return (
               <button
                 onClick={() => setActiveDrawer(activeDrawer === "analytics" ? null : "analytics")}
-                className={`flex-1 max-w-[95px] sm:max-w-[130px] min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-4 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
+                className={`flex-1 max-w-[76px] sm:max-w-[115px] min-w-0 flex flex-col items-center justify-center py-0.5 sm:py-1.5 px-0.5 sm:px-2 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
                   isActive
                     ? "bg-gradient-to-b from-white/25 via-white/12 to-white/5 border border-white/80 text-white font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),0_4px_16px_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.8)] -translate-y-0.5"
                     : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-gradient-to-b hover:from-white/[0.12] hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
                 }`}
               >
-                <LineChart className={`w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
-                <span className="text-[9.5px] min-[380px]:text-[10px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-1 truncate max-w-full text-center leading-none">
+                <LineChart className={`w-4.5 h-4.5 min-[380px]:w-5 min-[380px]:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
+                <span className="text-[9px] min-[380px]:text-[9.5px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-0.5 truncate max-w-full text-center leading-none">
                   Analytics
                 </span>
               </button>
@@ -20008,14 +20008,14 @@ export default function App() {
             return (
               <button
                 onClick={() => setActiveDrawer(activeDrawer === "more" ? null : "more")}
-                className={`flex-1 max-w-[95px] sm:max-w-[130px] min-w-0 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1 sm:px-4 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
+                className={`flex-1 max-w-[76px] sm:max-w-[115px] min-w-0 flex flex-col items-center justify-center py-0.5 sm:py-1.5 px-0.5 sm:px-2 rounded-xl transition-all cursor-pointer duration-200 active:translate-y-0.5 active:scale-95 group ${
                   isActive
                     ? "bg-gradient-to-b from-white/25 via-white/12 to-white/5 border border-white/80 text-white font-bold shadow-[inset_0_1.5px_1px_rgba(255,255,255,0.6),0_4px_16px_rgba(255,255,255,0.25),0_2px_4px_rgba(0,0,0,0.8)] -translate-y-0.5"
                     : "bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/40 border border-white/10 text-white/60 hover:text-white hover:border-white/25 hover:bg-gradient-to-b hover:from-white/[0.12] hover:to-black/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_3px_8px_rgba(0,0,0,0.6)] hover:-translate-y-0.5"
                 }`}
               >
-                <LayoutGrid className={`w-5 h-5 min-[380px]:w-5.5 min-[380px]:h-5.5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
-                <span className="text-[9.5px] min-[380px]:text-[10px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-1 truncate max-w-full text-center leading-none">
+                <LayoutGrid className={`w-4.5 h-4.5 min-[380px]:w-5 min-[380px]:h-5 sm:w-6 sm:h-6 shrink-0 transition-transform duration-200 ${isActive ? "scale-110 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]" : "text-white/60 group-hover:text-white"}`} />
+                <span className="text-[9px] min-[380px]:text-[9.5px] sm:text-[11px] font-bold uppercase tracking-wider font-mono mt-0.5 truncate max-w-full text-center leading-none">
                   More
                 </span>
               </button>
@@ -20049,7 +20049,7 @@ export default function App() {
                     setActiveDrawer(null);
                   }
                 }}
-                className="fixed bottom-24 sm:bottom-28 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-gym-accent/40 rounded-t-2xl sm:rounded-2xl p-5 shadow-[0_-16px_36px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)] max-h-[80vh] overflow-y-auto touch-pan-y"
+                className="fixed bottom-16 sm:bottom-20 inset-x-0 sm:max-w-md sm:mx-auto z-50 bg-gradient-to-b from-neutral-900/98 via-neutral-950/98 to-black backdrop-blur-2xl border border-gym-accent/40 rounded-t-2xl sm:rounded-2xl p-5 shadow-[0_-16px_36px_rgba(0,0,0,0.95),inset_0_1px_1px_rgba(255,255,255,0.2)] max-h-[80vh] overflow-y-auto touch-pan-y"
               >
                 {/* Gym Drawer Popup */}
                 {activeDrawer === "gym" && (
