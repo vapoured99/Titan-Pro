@@ -8263,40 +8263,39 @@ export default function App() {
             className="relative z-10 max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-12 pb-36 sm:pb-44"
           >
         {/* Header */}
-        <header className="flex flex-col md:flex-row items-stretch md:items-end justify-between mb-6 sm:mb-16 gap-4 sm:gap-6 border-b border-gym-accent/20 pb-4 sm:pb-10">
-          <div className="flex items-center justify-between w-full md:w-auto">
-            <div className="flex flex-col items-start gap-0.5">
-              <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-gym-accent font-bold">
-                Premium Session
-              </span>
-              <button
-                onClick={() => {
-                  setActiveView("console_d");
-                  saveSettings({ activeView: "console_d" });
-                }}
-                className="group flex items-center gap-1.5 text-left cursor-pointer transition-transform hover:scale-[1.01] focus:outline-none"
-                title="Go to Console Dashboard"
-              >
-                <h1 className="text-3xl sm:text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none">
-                  Titan{" "}
-                  <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 group-hover:brightness-125 transition-all">
-                    Pro
-                  </span>
-                </h1>
-              </button>
-            </div>
+        <header className="flex items-center justify-between w-full mb-6 sm:mb-16 gap-4 border-b border-gym-accent/20 pb-4 sm:pb-10">
+          <div className="flex flex-col items-start gap-0.5">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.3em] text-gym-accent font-bold">
+              Premium Session
+            </span>
+            <button
+              onClick={() => {
+                setActiveView("console_d");
+                saveSettings({ activeView: "console_d" });
+              }}
+              className="group flex items-center gap-1.5 text-left cursor-pointer transition-transform hover:scale-[1.01] focus:outline-none"
+              title="Go to Console Dashboard"
+            >
+              <h1 className="text-3xl sm:text-5xl font-light italic font-serif tracking-widest text-theme-text leading-none">
+                Titan{" "}
+                <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 group-hover:brightness-125 transition-all">
+                  Pro
+                </span>
+              </h1>
+            </button>
+          </div>
 
-            {/* Profile Trigger Button Pill & Popover (Responsive for both Mobile and Desktop) */}
-            <div className="relative">
-              <button
-                onClick={() => setShowProfilePopover((prev) => !prev)}
-                className={`flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
-                  showProfilePopover
-                    ? "border-rose-500/80 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.25)]"
-                    : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
-                }`}
-                title="Interactive Profile & Performance Card"
-              >
+          {/* Profile Trigger Button Pill & Popover (Aligned to far right on all screens) */}
+          <div className="relative shrink-0">
+            <button
+              onClick={() => setShowProfilePopover((prev) => !prev)}
+              className={`flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border transition-all cursor-pointer ${
+                showProfilePopover
+                  ? "border-rose-500/80 bg-rose-500/10 shadow-[0_0_15px_rgba(244,63,94,0.25)]"
+                  : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10"
+              }`}
+              title="Interactive Profile & Performance Card"
+            >
                 <span className="text-[10px] sm:text-[11px] text-theme-text-muted uppercase tracking-wider sm:tracking-widest flex items-center gap-1 sm:gap-1.5 font-mono">
                   {new Date().toLocaleDateString("en-GB", {
                     weekday: "short",
@@ -8512,7 +8511,6 @@ export default function App() {
                   )}
                 </AnimatePresence>
               </div>
-          </div>
         </header>
 
         {/* Main Content */}
