@@ -408,28 +408,33 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ type: "spring", damping: 26, stiffness: 220 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-5xl bg-[#0a0a0a] border-0 sm:border border-white/15 rounded-none sm:rounded-2xl flex flex-col shadow-[0_0_50px_rgba(0,0,0,0.9)] h-[100dvh] sm:h-[88vh] sm:max-h-[92vh] overflow-hidden"
+          className="relative w-full max-w-5xl bg-gradient-to-b from-[#121318]/95 via-[#0a0b0e]/98 to-[#050507] border-0 sm:border border-white/15 rounded-none sm:rounded-3xl flex flex-col shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_25px_60px_-15px_rgba(0,0,0,0.95)] h-[100dvh] sm:h-[88vh] sm:max-h-[92vh] overflow-hidden backdrop-blur-2xl"
         >
+          {/* Ambient Background 3D Glass Glows */}
+          <div className="absolute -top-28 -left-28 w-72 h-72 bg-cyan-500/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -top-28 -right-28 w-72 h-72 bg-gym-accent/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-28 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
           {/* Top Decorative Glow Line */}
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-rose-500 via-gym-accent to-cyan-500" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan-400 via-gym-accent to-purple-500 shadow-[0_0_12px_rgba(235,255,0,0.8)] z-10" />
 
           {/* Modal Header */}
-          <div className="p-3 sm:p-5 border-b border-white/10 bg-black/80 flex flex-col gap-2.5 sm:gap-4 shrink-0">
+          <div className="p-3 sm:p-5 border-b border-white/12 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 backdrop-blur-xl flex flex-col gap-2.5 sm:gap-4 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] relative z-10">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2.5 sm:gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gym-accent/10 border border-gym-accent/30 flex items-center justify-center text-gym-accent shadow-[0_0_15px_rgba(235,255,0,0.15)] shrink-0">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-b from-gym-accent/20 to-gym-accent/5 border border-gym-accent/40 flex items-center justify-center text-gym-accent shadow-[inset_0_1px_0_rgba(255,255,255,0.3),0_0_15px_rgba(235,255,0,0.2)] shrink-0">
                   <BarChart2 className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5 sm:gap-2">
-                    <span className="text-[8px] sm:text-[9px] font-black tracking-[0.2em] text-gym-accent uppercase">
+                    <span className="text-[8px] sm:text-[9px] font-black tracking-[0.2em] text-gym-accent uppercase drop-shadow-[0_0_8px_rgba(235,255,0,0.3)]">
                       PureGym Analytics Studio
                     </span>
-                    <span className="px-1.5 py-0.5 rounded bg-white/10 text-[7px] sm:text-[8px] font-mono text-white/60 font-bold uppercase hidden sm:inline-block">
+                    <span className="px-2 py-0.5 rounded-full bg-gradient-to-b from-white/15 to-white/5 border border-white/15 text-[7px] sm:text-[8px] font-mono text-white/80 font-bold uppercase hidden sm:inline-block shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       Session Head-To-Head
                     </span>
                   </div>
-                  <h3 className="text-base sm:text-2xl font-black italic tracking-tight text-white uppercase font-sans leading-none">
+                  <h3 className="text-base sm:text-2xl font-black italic tracking-tight text-white uppercase font-sans leading-none mt-0.5">
                     Evolution Comparison
                   </h3>
                 </div>
@@ -437,23 +442,23 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
 
               <button
                 onClick={onClose}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-white/60 hover:text-white flex items-center justify-center transition-all cursor-pointer shrink-0"
+                className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-b from-white/10 to-white/5 border border-white/15 hover:border-white/35 text-white/70 hover:text-white flex items-center justify-center transition-all cursor-pointer shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] active:scale-95"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
             {/* Session Selectors Bar */}
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 sm:gap-3 bg-white/[0.02] border border-white/10 p-2 sm:p-3 rounded-xl backdrop-blur-md">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1.5 sm:gap-3 bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/90 border border-white/12 p-2.5 sm:p-3.5 rounded-2xl backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_8px_24px_rgba(0,0,0,0.8)]">
               {/* Baseline Session (A) */}
               <div className="flex flex-col gap-1 min-w-0">
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[8px] sm:text-[9px] font-mono font-black text-cyan-400 uppercase tracking-wider flex items-center gap-1 truncate">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0 shadow-[0_0_6px_#22d3ee]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shrink-0 shadow-[0_0_8px_#22d3ee]" />
                     Baseline (A)
                   </span>
                   {detailsA.tags && (
-                    <span className="px-1 py-0.2 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 font-mono text-[7px] sm:text-[9px] font-black truncate hidden sm:inline-block">
+                    <span className="px-1.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-400/40 text-cyan-300 font-mono text-[7px] sm:text-[9px] font-black truncate hidden sm:inline-block shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       {detailsA.tags}
                     </span>
                   )}
@@ -462,7 +467,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                   <select
                     value={sessionAId}
                     onChange={(e) => setSessionAId(e.target.value)}
-                    className="w-full bg-black/80 border border-white/20 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold text-white focus:outline-none focus:border-cyan-400 cursor-pointer appearance-none truncate pr-6"
+                    className="w-full bg-gradient-to-b from-black/90 to-zinc-950/90 border border-white/20 hover:border-cyan-400/50 rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] focus:outline-none focus:ring-2 focus:ring-cyan-400/40 cursor-pointer appearance-none truncate pr-6 transition-all"
                   >
                     {sortedWorkouts.map((w, idx) => {
                       const tag = getWorkoutMuscleTags(w, findExerciseByName);
@@ -474,7 +479,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                       );
                     })}
                   </select>
-                  <ChevronDown className="w-3 h-3 text-white/40 absolute right-1.5 sm:right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <ChevronDown className="w-3 h-3 text-cyan-400/80 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
 
@@ -483,7 +488,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                 <button
                   onClick={handleSwapSessions}
                   title="Swap Baseline (A) and Target (B)"
-                  className="p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl bg-white/5 border border-white/15 text-white/70 hover:text-gym-accent hover:border-gym-accent/40 hover:bg-gym-accent/10 transition-all cursor-pointer shadow-md active:scale-95"
+                  className="p-1.5 sm:p-2.5 rounded-xl bg-gradient-to-b from-white/10 to-white/5 border border-white/15 text-white/80 hover:text-gym-accent hover:border-gym-accent/50 hover:bg-gym-accent/10 transition-all cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_4px_12px_rgba(0,0,0,0.5)] active:scale-95"
                 >
                   <ArrowLeftRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
@@ -493,20 +498,20 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
               <div className="flex flex-col gap-1 min-w-0">
                 <div className="flex items-center justify-between gap-1">
                   <span className="text-[8px] sm:text-[9px] font-mono font-black text-gym-accent uppercase tracking-wider flex items-center gap-1 truncate">
-                    <span className="w-1.5 h-1.5 rounded-full bg-gym-accent shrink-0 shadow-[0_0_6px_#ebff00]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-gym-accent shrink-0 shadow-[0_0_8px_#ebff00]" />
                     Target (B)
                   </span>
                   <div className="flex items-center gap-1 shrink-0">
                     {targetBWorkouts.length < sortedWorkouts.length && (
                       <span
                         title="Only showing sessions sharing at least 1 muscle tag letter with Baseline (A)"
-                        className="px-1.5 py-0.2 rounded bg-gym-accent/15 border border-gym-accent/30 text-gym-accent font-mono text-[7px] sm:text-[8px] font-black"
+                        className="px-1.5 py-0.5 rounded-full bg-gym-accent/15 border border-gym-accent/40 text-gym-accent font-mono text-[7px] sm:text-[8px] font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]"
                       >
                         {targetBWorkouts.length} Tag Matches
                       </span>
                     )}
                     {detailsB.tags && (
-                      <span className="px-1 py-0.2 rounded bg-gym-accent/10 border border-gym-accent/30 text-gym-accent font-mono text-[7px] sm:text-[9px] font-black truncate hidden sm:inline-block">
+                      <span className="px-1.5 py-0.5 rounded-full bg-gym-accent/10 border border-gym-accent/30 text-gym-accent font-mono text-[7px] sm:text-[9px] font-black truncate hidden sm:inline-block shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                         {detailsB.tags}
                       </span>
                     )}
@@ -516,7 +521,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                   <select
                     value={sessionBId}
                     onChange={(e) => setSessionBId(e.target.value)}
-                    className="w-full bg-black/80 border border-white/20 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold text-white focus:outline-none focus:border-gym-accent cursor-pointer appearance-none truncate pr-6"
+                    className="w-full bg-gradient-to-b from-black/90 to-zinc-950/90 border border-white/20 hover:border-gym-accent/50 rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-mono font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] focus:outline-none focus:ring-2 focus:ring-gym-accent/40 cursor-pointer appearance-none truncate pr-6 transition-all"
                   >
                     {targetBWorkouts.map((w) => {
                       const originalIdx = sortedWorkouts.findIndex((sw) => sw.id === w.id);
@@ -529,7 +534,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                       );
                     })}
                   </select>
-                  <ChevronDown className="w-3 h-3 text-white/40 absolute right-1.5 sm:right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <ChevronDown className="w-3 h-3 text-gym-accent/80 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -538,57 +543,57 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-0.5">
               {/* Presets */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-[8px] sm:text-[9px] font-mono no-scrollbar">
-                <span className="font-bold text-white/30 uppercase tracking-widest shrink-0">
+                <span className="font-bold text-white/40 uppercase tracking-widest shrink-0">
                   Presets:
                 </span>
                 <button
                   onClick={handlePresetRecent}
-                  className="px-2 py-1 rounded bg-white/5 border border-white/10 hover:border-white/30 font-bold text-white/80 hover:text-white transition-all cursor-pointer whitespace-nowrap shrink-0"
+                  className="px-2.5 py-1 rounded-lg bg-gradient-to-b from-white/10 to-white/5 border border-white/12 hover:border-white/30 font-bold text-white/80 hover:text-white transition-all cursor-pointer whitespace-nowrap shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] active:scale-95"
                 >
                   ⚡ Last 2
                 </button>
                 <button
                   onClick={handlePresetBestVolume}
-                  className="px-2 py-1 rounded bg-white/5 border border-white/10 hover:border-white/30 font-bold text-white/80 hover:text-white transition-all cursor-pointer whitespace-nowrap shrink-0"
+                  className="px-2.5 py-1 rounded-lg bg-gradient-to-b from-white/10 to-white/5 border border-white/12 hover:border-white/30 font-bold text-white/80 hover:text-white transition-all cursor-pointer whitespace-nowrap shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] active:scale-95"
                 >
                   🏆 Best Volume
                 </button>
                 <button
                   onClick={handlePresetSameRoutine}
-                  className="px-2 py-1 rounded bg-white/5 border border-white/10 hover:border-white/30 font-bold text-white/80 hover:text-white transition-all cursor-pointer whitespace-nowrap shrink-0"
+                  className="px-2.5 py-1 rounded-lg bg-gradient-to-b from-white/10 to-white/5 border border-white/12 hover:border-white/30 font-bold text-white/80 hover:text-white transition-all cursor-pointer whitespace-nowrap shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] active:scale-95"
                 >
                   🔄 Same Tag
                 </button>
               </div>
 
               {/* Tabs */}
-              <div className="flex items-center gap-1 bg-black p-1 rounded-xl border border-white/10 justify-between sm:justify-start w-full sm:w-auto shrink-0">
+              <div className="flex items-center gap-1 bg-black/80 p-1 rounded-2xl border border-white/15 shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)] backdrop-blur-md justify-between sm:justify-start w-full sm:w-auto shrink-0">
                 <button
                   onClick={() => setActiveTab("breakdown")}
-                  className={`flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
+                  className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === "breakdown"
-                      ? "bg-gym-accent text-black shadow-[0_0_10px_rgba(235,255,0,0.3)]"
-                      : "text-white/60 hover:text-white"
+                      ? "bg-gradient-to-b from-gym-accent via-gym-accent to-yellow-400 text-black shadow-[0_0_15px_rgba(235,255,0,0.35),inset_0_1px_0_rgba(255,255,255,0.4)]"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   Movement Breakdown
                 </button>
                 <button
                   onClick={() => setActiveTab("charts")}
-                  className={`flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
+                  className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === "charts"
-                      ? "bg-gym-accent text-black shadow-[0_0_10px_rgba(235,255,0,0.3)]"
-                      : "text-white/60 hover:text-white"
+                      ? "bg-gradient-to-b from-gym-accent via-gym-accent to-yellow-400 text-black shadow-[0_0_15px_rgba(235,255,0,0.35),inset_0_1px_0_rgba(255,255,255,0.4)]"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   Visual Analytics
                 </button>
                 <button
                   onClick={() => setActiveTab("insights")}
-                  className={`flex-1 sm:flex-initial text-center px-2.5 py-1.5 rounded-lg text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
+                  className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-xl text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                     activeTab === "insights"
-                      ? "bg-gym-accent text-black shadow-[0_0_10px_rgba(235,255,0,0.3)]"
-                      : "text-white/60 hover:text-white"
+                      ? "bg-gradient-to-b from-gym-accent via-gym-accent to-yellow-400 text-black shadow-[0_0_15px_rgba(235,255,0,0.35),inset_0_1px_0_rgba(255,255,255,0.4)]"
+                      : "text-white/60 hover:text-white hover:bg-white/5"
                   }`}
                 >
                   Tactical Insights
@@ -598,34 +603,35 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
           </div>
 
           {/* Modal Body (Scrollable) */}
-          <div className="p-3 sm:p-6 overflow-y-auto flex-1 min-h-0 space-y-4 sm:space-y-6 custom-scrollbar bg-black/40">
+          <div className="p-3 sm:p-6 overflow-y-auto flex-1 min-h-0 space-y-4 sm:space-y-6 custom-scrollbar bg-black/40 relative z-10">
             {/* Top KPI Comparison Matrix */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5">
               {/* Total Volume KPI */}
-              <div className="bg-white/[0.03] border border-white/10 rounded-xl p-2.5 sm:p-3.5 flex flex-col justify-between relative overflow-hidden group hover:border-gym-accent/30 transition-all">
+              <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-3 sm:p-4 flex flex-col justify-between relative overflow-hidden backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 group">
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div>
-                  <span className="text-[8px] sm:text-[9px] font-mono font-black text-white/40 uppercase tracking-widest block mb-0.5 sm:mb-1">
+                  <span className="text-[8px] sm:text-[9px] font-mono font-black text-white/50 uppercase tracking-widest block mb-0.5 sm:mb-1">
                     Total Volume
                   </span>
                   <div className="flex items-baseline gap-1.5 sm:gap-2">
-                    <span className="text-base sm:text-xl font-mono font-black text-white tabular-nums">
+                    <span className="text-base sm:text-2xl font-mono font-black text-white tabular-nums drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                       {detailsB.totalVolume.toLocaleString()}{" "}
                       <span className="text-[9px] sm:text-[10px] text-white/40 font-normal">kg</span>
                     </span>
                   </div>
-                  <span className="text-[9px] sm:text-[10px] font-mono text-white/30 block mt-0.5">
+                  <span className="text-[9px] sm:text-[10px] font-mono text-white/40 block mt-0.5">
                     vs {detailsA.totalVolume.toLocaleString()} kg
                   </span>
                 </div>
 
-                <div className="mt-2 sm:mt-3 pt-1.5 sm:pt-2 border-t border-white/5 flex items-center justify-between">
+                <div className="mt-2.5 sm:mt-3.5 pt-2 border-t border-white/10 flex items-center justify-between">
                   {volumeDelta.diff >= 0 ? (
-                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-emerald-400">
+                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       <TrendingUp className="w-3 h-3" />+{volumeDelta.diff.toLocaleString()} kg (+
                       {volumeDelta.pct.toFixed(1)}%)
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-rose-400">
+                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 px-1.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       <TrendingDown className="w-3 h-3" />
                       {volumeDelta.diff.toLocaleString()} kg ({volumeDelta.pct.toFixed(1)}%)
                     </span>
@@ -634,30 +640,31 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
               </div>
 
               {/* Total Sets KPI */}
-              <div className="bg-white/[0.03] border border-white/10 rounded-xl p-2.5 sm:p-3.5 flex flex-col justify-between relative overflow-hidden group hover:border-gym-accent/30 transition-all">
+              <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-3 sm:p-4 flex flex-col justify-between relative overflow-hidden backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 group">
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div>
-                  <span className="text-[8px] sm:text-[9px] font-mono font-black text-white/40 uppercase tracking-widest block mb-0.5 sm:mb-1">
+                  <span className="text-[8px] sm:text-[9px] font-mono font-black text-white/50 uppercase tracking-widest block mb-0.5 sm:mb-1">
                     Total Sets
                   </span>
                   <div className="flex items-baseline gap-1.5 sm:gap-2">
-                    <span className="text-base sm:text-xl font-mono font-black text-white tabular-nums">
+                    <span className="text-base sm:text-2xl font-mono font-black text-white tabular-nums drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                       {detailsB.totalSets}{" "}
                       <span className="text-[9px] sm:text-[10px] text-white/40 font-normal">sets</span>
                     </span>
                   </div>
-                  <span className="text-[9px] sm:text-[10px] font-mono text-white/30 block mt-0.5">
+                  <span className="text-[9px] sm:text-[10px] font-mono text-white/40 block mt-0.5">
                     vs {detailsA.totalSets} sets
                   </span>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between">
+                <div className="mt-2.5 sm:mt-3.5 pt-2 border-t border-white/10 flex items-center justify-between">
                   {setsDelta.diff >= 0 ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-black text-emerald-400">
+                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       <TrendingUp className="w-3 h-3" />+{setsDelta.diff} sets (+
                       {setsDelta.pct.toFixed(0)}%)
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-black text-rose-400">
+                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 px-1.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       <TrendingDown className="w-3 h-3" />
                       {setsDelta.diff} sets ({setsDelta.pct.toFixed(0)}%)
                     </span>
@@ -666,30 +673,31 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
               </div>
 
               {/* Peak Weight KPI */}
-              <div className="bg-white/[0.03] border border-white/10 rounded-xl p-3.5 flex flex-col justify-between relative overflow-hidden group hover:border-gym-accent/30 transition-all">
+              <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-3 sm:p-4 flex flex-col justify-between relative overflow-hidden backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 group">
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div>
-                  <span className="text-[9px] font-mono font-black text-white/40 uppercase tracking-widest block mb-1 truncate">
+                  <span className="text-[8px] sm:text-[9px] font-mono font-black text-white/50 uppercase tracking-widest block mb-1 truncate">
                     Peak Load ({detailsB.peakExercise})
                   </span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-mono font-black text-white tabular-nums">
+                    <span className="text-base sm:text-2xl font-mono font-black text-white tabular-nums drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                       {detailsB.peakWeight}{" "}
-                      <span className="text-[10px] text-white/40 font-normal">kg</span>
+                      <span className="text-[9px] sm:text-[10px] text-white/40 font-normal">kg</span>
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono text-white/30 block mt-0.5 truncate">
+                  <span className="text-[9px] sm:text-[10px] font-mono text-white/40 block mt-0.5 truncate">
                     vs {detailsA.peakWeight} kg ({detailsA.peakExercise})
                   </span>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between">
+                <div className="mt-2.5 sm:mt-3.5 pt-2 border-t border-white/10 flex items-center justify-between">
                   {peakDelta.diff >= 0 ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-black text-emerald-400">
+                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       <TrendingUp className="w-3 h-3" />+{peakDelta.diff} kg (+
                       {peakDelta.pct.toFixed(1)}%)
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-black text-rose-400">
+                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 px-1.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       <TrendingDown className="w-3 h-3" />
                       {peakDelta.diff} kg ({peakDelta.pct.toFixed(1)}%)
                     </span>
@@ -698,29 +706,30 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
               </div>
 
               {/* Calories KPI */}
-              <div className="bg-white/[0.03] border border-white/10 rounded-xl p-3.5 flex flex-col justify-between relative overflow-hidden group hover:border-gym-accent/30 transition-all">
+              <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-3 sm:p-4 flex flex-col justify-between relative overflow-hidden backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)] transition-all duration-300 hover:border-gym-accent/30 group">
+                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                 <div>
-                  <span className="text-[9px] font-mono font-black text-white/40 uppercase tracking-widest block mb-1">
+                  <span className="text-[8px] sm:text-[9px] font-mono font-black text-white/50 uppercase tracking-widest block mb-1">
                     Est. Energy Output
                   </span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-mono font-black text-white tabular-nums">
+                    <span className="text-base sm:text-2xl font-mono font-black text-white tabular-nums drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                       {detailsB.calories}{" "}
-                      <span className="text-[10px] text-white/40 font-normal">kcal</span>
+                      <span className="text-[9px] sm:text-[10px] text-white/40 font-normal">kcal</span>
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono text-white/30 block mt-0.5">
+                  <span className="text-[9px] sm:text-[10px] font-mono text-white/40 block mt-0.5">
                     vs {detailsA.calories} kcal
                   </span>
                 </div>
 
-                <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between">
+                <div className="mt-2.5 sm:mt-3.5 pt-2 border-t border-white/10 flex items-center justify-between">
                   {calsDelta.diff >= 0 ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-black text-emerald-400">
+                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-1.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       <TrendingUp className="w-3 h-3" />+{calsDelta.diff} kcal
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-black text-rose-400">
+                    <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-mono font-black text-rose-400 bg-rose-500/10 border border-rose-500/30 px-1.5 py-0.5 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                       <TrendingDown className="w-3 h-3" />
                       {calsDelta.diff} kcal
                     </span>
@@ -731,8 +740,8 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
 
             {/* TAB 1: MOVEMENT BREAKDOWN TABLE */}
             {activeTab === "breakdown" && (
-              <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-6 space-y-4">
-                <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 sm:p-6 space-y-4 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)]">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3">
                   <div>
                     <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                       <Dumbbell className="w-4 h-4 text-gym-accent" />
@@ -742,7 +751,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                       Comparing top set weights, total volume, and overload status
                     </p>
                   </div>
-                  <span className="text-[10px] font-mono text-white/50">
+                  <span className="text-[10px] font-mono text-white/60 font-bold bg-white/5 border border-white/10 px-2.5 py-1 rounded-full shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
                     {allExerciseNames.length} Total Exercises
                   </span>
                 </div>
@@ -750,7 +759,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                 <div className="overflow-x-auto custom-scrollbar -mx-2 px-2 sm:mx-0 sm:px-0">
                   <table className="w-full min-w-[560px] text-left font-mono border-collapse">
                     <thead>
-                      <tr className="border-b border-white/10 text-[9px] font-black text-white/40 uppercase tracking-widest">
+                      <tr className="border-b border-white/12 text-[9px] font-black text-white/50 uppercase tracking-widest bg-black/40">
                         <th className="py-2.5 px-3 w-[32%]">Movement</th>
                         <th className="py-2.5 px-3 text-cyan-400 w-[23%] whitespace-nowrap">Baseline (A)</th>
                         <th className="py-2.5 px-3 text-gym-accent w-[23%] whitespace-nowrap">Target (B)</th>
@@ -774,39 +783,39 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
 
                           if (wDiff > 0) {
                             deltaContent = (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black shadow-[0_0_8px_rgba(16,185,129,0.2)] whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-black shadow-[0_0_10px_rgba(16,185,129,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] whitespace-nowrap">
                                 <TrendingUp className="w-3 h-3 shrink-0" />+{wDiff} kg (+{pct.toFixed(1)}%)
                               </span>
                             );
                           } else if (wDiff < 0) {
                             deltaContent = (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/40 text-rose-400 text-[10px] font-black whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-400/40 text-rose-300 text-[10px] font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] whitespace-nowrap">
                                 <TrendingDown className="w-3 h-3 shrink-0" />
                                 {wDiff} kg ({pct.toFixed(1)}%)
                               </span>
                             );
                           } else if (volDiff > 0) {
                             deltaContent = (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 text-[10px] font-black whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[10px] font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] whitespace-nowrap">
                                 <TrendingUp className="w-3 h-3 shrink-0" /> Vol +{volDiff} kg
                               </span>
                             );
                           } else {
                             deltaContent = (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/40 text-[10px] font-bold whitespace-nowrap">
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/12 text-white/50 text-[10px] font-bold whitespace-nowrap shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]">
                                 <Minus className="w-3 h-3 shrink-0" /> Equal Load
                               </span>
                             );
                           }
                         } else if (!exA && exB) {
                           deltaContent = (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/40 text-purple-300 text-[10px] font-black whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-500/20 border border-purple-400/40 text-purple-200 text-[10px] font-black shadow-[0_0_10px_rgba(168,85,247,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] whitespace-nowrap">
                               ✨ New Movement
                             </span>
                           );
                         } else if (exA && !exB) {
                           deltaContent = (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-white/30 text-[10px] whitespace-nowrap">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white/30 text-[10px] whitespace-nowrap">
                               Omitted in B
                             </span>
                           );
@@ -815,13 +824,13 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                         return (
                           <tr
                             key={exName}
-                            className="hover:bg-white/[0.02] transition-colors"
+                            className="hover:bg-white/[0.04] transition-all"
                           >
                             {/* Movement Name */}
                             <td className="py-3 px-3">
                               <div className="font-bold text-white text-xs">{exName}</div>
                               {mg && (
-                                <span className="text-[8px] uppercase tracking-widest font-black text-white/30 block mt-0.5">
+                                <span className="text-[8px] uppercase tracking-widest font-black text-white/40 block mt-0.5">
                                   {mg}
                                 </span>
                               )}
@@ -831,7 +840,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                             <td className="py-3 px-3 text-white/80">
                               {exA ? (
                                 <div>
-                                  <div className="font-bold text-cyan-300 text-xs">
+                                  <div className="font-bold text-cyan-300 text-xs drop-shadow-[0_0_6px_rgba(34,211,238,0.2)]">
                                     {Math.round((exA.bestSet.weight || 0) * 10) / 10} kg × {exA.bestSet.reps} reps
                                   </div>
                                   <div className="text-[9px] text-white/40">
@@ -847,7 +856,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                             <td className="py-3 px-3 text-white/80">
                               {exB ? (
                                 <div>
-                                  <div className="font-bold text-gym-accent text-xs">
+                                  <div className="font-bold text-gym-accent text-xs drop-shadow-[0_0_6px_rgba(235,255,0,0.2)]">
                                     {Math.round((exB.bestSet.weight || 0) * 10) / 10} kg × {exB.bestSet.reps} reps
                                   </div>
                                   <div className="text-[9px] text-white/40">
@@ -874,7 +883,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
             {activeTab === "charts" && (
               <div className="space-y-6">
                 {/* Exercise Volume Comparison Chart */}
-                <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-6 space-y-4">
+                <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 sm:p-6 space-y-4 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)]">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div>
                       <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
@@ -886,7 +895,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                       </p>
                     </div>
                     {exerciseChartData.length > 4 && (
-                      <span className="text-[9px] font-mono font-bold text-gym-accent/90 bg-gym-accent/10 border border-gym-accent/25 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                      <span className="text-[9px] font-mono font-bold text-gym-accent bg-gym-accent/15 border border-gym-accent/30 px-2.5 py-0.5 rounded-full flex items-center gap-1 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                         ↔ Scroll horizontally ({exerciseChartData.length} movements)
                       </span>
                     )}
@@ -899,25 +908,27 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                     >
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={exerciseChartData} margin={{ top: 10, right: 15, left: -10, bottom: 25 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#222" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" />
                           <XAxis
                             dataKey="name"
-                            stroke="#666"
-                            tick={{ fill: "#aaa", fontSize: 10, fontWeight: "bold" }}
+                            stroke="#888"
+                            tick={{ fill: "#bbb", fontSize: 10, fontWeight: "bold" }}
                             interval={0}
                             angle={-15}
                             textAnchor="end"
                           />
-                          <YAxis stroke="#666" tick={{ fill: "#aaa", fontSize: 10 }} />
+                          <YAxis stroke="#888" tick={{ fill: "#bbb", fontSize: 10 }} />
                           <Tooltip
                             labelFormatter={(label, payload) => payload?.[0]?.payload?.fullName || label}
                             contentStyle={{
-                              backgroundColor: "#0d0d0d",
-                              borderColor: "#333",
-                              borderRadius: "8px",
+                              backgroundColor: "rgba(10, 10, 15, 0.95)",
+                              borderColor: "rgba(255, 255, 255, 0.2)",
+                              borderRadius: "12px",
                               fontSize: "12px",
                               color: "#fff",
                               fontWeight: "bold",
+                              backdropFilter: "blur(12px)",
+                              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2), 0 10px 25px rgba(0,0,0,0.8)",
                             }}
                           />
                           <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
@@ -931,7 +942,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
 
                 {/* Muscle Group Distribution Comparison */}
                 {muscleGroupChartData.length > 0 && (
-                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-6 space-y-4">
+                  <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 sm:p-6 space-y-4 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)]">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <div>
                         <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
@@ -943,7 +954,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                         </p>
                       </div>
                       {muscleGroupChartData.length > 5 && (
-                        <span className="text-[9px] font-mono font-bold text-cyan-400/90 bg-cyan-400/10 border border-cyan-400/25 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                        <span className="text-[9px] font-mono font-bold text-cyan-300 bg-cyan-500/15 border border-cyan-400/30 px-2.5 py-0.5 rounded-full flex items-center gap-1 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                           ↔ Scroll horizontally
                         </span>
                       )}
@@ -956,17 +967,19 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                       >
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={muscleGroupChartData} margin={{ top: 10, right: 15, left: -10, bottom: 25 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-                            <XAxis dataKey="group" stroke="#666" tick={{ fill: "#aaa", fontSize: 10, fontWeight: "bold" }} />
-                            <YAxis stroke="#666" tick={{ fill: "#aaa", fontSize: 10 }} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.07)" />
+                            <XAxis dataKey="group" stroke="#888" tick={{ fill: "#bbb", fontSize: 10, fontWeight: "bold" }} />
+                            <YAxis stroke="#888" tick={{ fill: "#bbb", fontSize: 10 }} />
                             <Tooltip
                               contentStyle={{
-                                backgroundColor: "#0d0d0d",
-                                borderColor: "#333",
-                                borderRadius: "8px",
+                                backgroundColor: "rgba(10, 10, 15, 0.95)",
+                                borderColor: "rgba(255, 255, 255, 0.2)",
+                                borderRadius: "12px",
                                 fontSize: "12px",
                                 color: "#fff",
                                 fontWeight: "bold",
+                                backdropFilter: "blur(12px)",
+                                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.2), 0 10px 25px rgba(0,0,0,0.8)",
                               }}
                             />
                             <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
@@ -983,9 +996,9 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
 
             {/* TAB 3: TACTICAL COACH INSIGHTS */}
             {activeTab === "insights" && (
-              <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-6 space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400">
+              <div className="bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-black/80 border border-white/12 rounded-2xl p-4 sm:p-6 space-y-6 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_12px_32px_rgba(0,0,0,0.8)]">
+                <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-b from-purple-500/20 to-purple-500/5 border border-purple-400/30 flex items-center justify-center text-purple-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                     <Sparkles className="w-5 h-5 animate-pulse" />
                   </div>
                   <div>
@@ -1000,7 +1013,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono">
                   {/* Volume Analysis */}
-                  <div className="bg-black/60 border border-white/10 p-4 rounded-xl space-y-2">
+                  <div className="bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-black/90 border border-white/12 p-4 sm:p-5 rounded-2xl space-y-2 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_20px_rgba(0,0,0,0.8)] hover:border-gym-accent/30 transition-all">
                     <div className="text-[10px] font-black text-gym-accent uppercase tracking-wider flex items-center gap-2">
                       <Zap className="w-3.5 h-3.5" />
                       Volume & Mechanical Work
@@ -1015,7 +1028,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                   </div>
 
                   {/* Overload Movements */}
-                  <div className="bg-black/60 border border-white/10 p-4 rounded-xl space-y-2">
+                  <div className="bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-black/90 border border-white/12 p-4 sm:p-5 rounded-2xl space-y-2 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_20px_rgba(0,0,0,0.8)] hover:border-cyan-400/30 transition-all">
                     <div className="text-[10px] font-black text-cyan-400 uppercase tracking-wider flex items-center gap-2">
                       <TrendingUp className="w-3.5 h-3.5" />
                       Overload Progression Count
@@ -1040,7 +1053,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                   </div>
 
                   {/* Density Assessment */}
-                  <div className="bg-black/60 border border-white/10 p-4 rounded-xl space-y-2">
+                  <div className="bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-black/90 border border-white/12 p-4 sm:p-5 rounded-2xl space-y-2 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_20px_rgba(0,0,0,0.8)] hover:border-amber-400/30 transition-all">
                     <div className="text-[10px] font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
                       <Activity className="w-3.5 h-3.5" />
                       Training Density (Vol / Set)
@@ -1059,7 +1072,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                   </div>
 
                   {/* Muscle Targeting */}
-                  <div className="bg-black/60 border border-white/10 p-4 rounded-xl space-y-2">
+                  <div className="bg-gradient-to-b from-white/[0.06] via-white/[0.02] to-black/90 border border-white/12 p-4 sm:p-5 rounded-2xl space-y-2 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_8px_20px_rgba(0,0,0,0.8)] hover:border-purple-400/30 transition-all">
                     <div className="text-[10px] font-black text-purple-400 uppercase tracking-wider flex items-center gap-2">
                       <Target className="w-3.5 h-3.5" />
                       Target Muscle Focus
@@ -1076,14 +1089,14 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
           </div>
 
           {/* Modal Footer */}
-          <div className="p-3 sm:p-5 border-t border-white/10 bg-black/80 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
+          <div className="p-3 sm:p-5 border-t border-white/12 bg-gradient-to-b from-black/80 to-zinc-950/90 backdrop-blur-xl flex items-center justify-between gap-3 shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] relative z-10">
             <div className="text-[10px] font-mono text-white/40 hidden sm:block">
               Comparing <span className="text-cyan-400 font-bold">{detailsA.dateStr}</span> vs{" "}
               <span className="text-gym-accent font-bold">{detailsB.dateStr}</span>
             </div>
             <button
               onClick={onClose}
-              className="w-full sm:w-auto px-6 sm:px-8 py-2.5 sm:py-3 bg-gym-accent text-black hover:bg-white font-black uppercase tracking-[0.2em] text-[10px] cursor-pointer rounded-xl transition-all shadow-lg shadow-gym-accent/10 active:scale-95"
+              className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-to-b from-gym-accent via-gym-accent to-yellow-400 text-black hover:brightness-110 font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs cursor-pointer rounded-xl transition-all shadow-[0_0_20px_rgba(235,255,0,0.3),inset_0_1px_0_rgba(255,255,255,0.4)] active:scale-95"
             >
               Close Comparison
             </button>
