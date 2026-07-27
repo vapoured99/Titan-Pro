@@ -999,12 +999,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
             />
             {/* Hamstrings */}
             <path 
-              d="M82,225 L95,225 L92,265 L84,265 Z M118,225 L105,225 L108,265 L116,265 Z" 
+              d="M82,225 L95,225 L92,262 L84,262 Z M118,225 L105,225 L108,262 L116,262 Z" 
               {...getMuscleProps('hamstrings')}
             />
             {/* Calves (Lower Legs) */}
             <path 
-              d="M84,265 L92,265 L88,335 L78,335 Z M116,265 L108,265 L112,335 L122,335 Z" 
+              d="M83,270 L91,270 L88,330 L79,330 Z M117,270 L109,270 L112,330 L121,330 Z" 
               {...getMuscleProps('calves')}
             />
           </svg>
@@ -1055,12 +1055,12 @@ const AnatomyChart: React.FC<AnatomyChartProps> = ({
               />
               {/* Hamstrings */}
               <path 
-                d="M82,225 L95,225 L92,265 L84,265 Z M118,225 L105,225 L108,265 L116,265 Z" 
+                d="M82,225 L95,225 L92,262 L84,262 Z M118,225 L105,225 L108,262 L116,262 Z" 
                 {...getSecondaryMuscleProps('hamstrings')}
               />
               {/* Calves (Lower Legs) */}
               <path 
-                d="M84,265 L92,265 L88,335 L78,335 Z M116,265 L108,265 L112,335 L122,335 Z" 
+                d="M83,270 L91,270 L88,330 L79,330 Z M117,270 L109,270 L112,330 L121,330 Z" 
                 {...getSecondaryMuscleProps('calves')}
               />
             </svg>
