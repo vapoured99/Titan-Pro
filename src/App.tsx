@@ -68,6 +68,7 @@ import {
   Cpu,
   Camera,
   Share2,
+  GitCompare,
 } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import {
@@ -129,6 +130,7 @@ import { Exercise, POOLS, getSecondaryMusclesForExercise } from "./data/exercise
 import AIPlanActive, { AIPlanExercise } from "./components/AIPlanActive";
 import { getExerciseProgressionState } from "./lib/progression";
 import { AtmosphereCanvas } from "./components/AtmosphereCanvas";
+import { SessionComparisonModal } from "./components/SessionComparisonModal";
 
 export function migrateExerciseName(name: string): string {
   if (!name) return "";
@@ -1716,6 +1718,7 @@ export default function App() {
     null,
   );
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [activeView, setActiveView] = useState<
     | "console_d"
     | "workout"
@@ -13494,32 +13497,36 @@ export default function App() {
                     {archivedWorkouts.length > 0 && (
                       <div className="space-y-3 sm:space-y-8">
                         <div>
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-2 sm:pb-6 gap-2.5 sm:gap-4">
-                            <h4 className="text-[10px] text-white/70 font-bold uppercase tracking-[0.3em] flex items-center gap-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-3 sm:pb-6 gap-3 sm:gap-4">
+                            <h4 className="text-[10px] text-white/70 font-bold uppercase tracking-[0.3em] flex items-center gap-3 shrink-0">
                               <History className="w-4 h-4 text-gym-accent" />
                               Archived Evolutions
                             </h4>
 
-                            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                              <div className="relative">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 w-full sm:w-auto">
+                              <div className="relative w-full sm:w-auto">
                                 <Scroll3DItem>
                                   <button
                                     onClick={() =>
                                       setShowHistoryMenu(!showHistoryMenu)
                                     }
-                                    className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center gap-3 cursor-pointer"
+                                    className="w-full sm:w-auto bg-black/60 border border-white/20 px-3.5 sm:px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-black/80 transition-all flex items-center justify-between sm:justify-start gap-3 cursor-pointer"
                                   >
-                                    <History className="w-3 h-3" />
-                                    {selectedWorkoutId &&
-                                    archivedWorkouts.find(
-                                      (w) => w.id === selectedWorkoutId,
-                                    )
-                                      ? archivedWorkouts.find(
+                                    <div className="flex items-center gap-2 truncate">
+                                      <History className="w-3.5 h-3.5 shrink-0" />
+                                      <span className="truncate">
+                                        {selectedWorkoutId &&
+                                        archivedWorkouts.find(
                                           (w) => w.id === selectedWorkoutId,
-                                        )?.date
-                                      : "History Explorer"}
+                                        )
+                                          ? archivedWorkouts.find(
+                                              (w) => w.id === selectedWorkoutId,
+                                            )?.date
+                                          : "History Explorer"}
+                                      </span>
+                                    </div>
                                     <ChevronDown
-                                      className={`w-3 h-3 transition-transform ${showHistoryMenu ? "rotate-180" : ""}`}
+                                      className={`w-3.5 h-3.5 shrink-0 transition-transform ${showHistoryMenu ? "rotate-180" : ""}`}
                                     />
                                   </button>
                                 </Scroll3DItem>
@@ -13530,7 +13537,7 @@ export default function App() {
                                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                       animate={{ opacity: 1, y: 0, scale: 1 }}
                                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                      className="absolute top-full left-0 mt-2 w-72 sm:w-80 bg-black border border-white/20 rounded-md shadow-2xl z-50 overflow-hidden"
+                                      className="absolute top-full left-0 sm:left-auto sm:right-0 mt-2 w-full sm:w-80 bg-black border border-white/20 rounded-md shadow-2xl z-50 overflow-hidden"
                                     >
                                   <div className="max-h-72 overflow-y-auto py-2">
                                     {archivedWorkouts.map((w) => {
@@ -13605,20 +13612,33 @@ export default function App() {
                             </AnimatePresence>
                           </div>
 
-                          <Scroll3DItem>
-                            <button
-                              onClick={() => {
-                                setActiveView("workout");
-                                setWorkoutInnerTab("ai_program");
-                                saveSettings({ activeView: "workout" });
-                              }}
-                              className="bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:border-gym-accent/50 hover:bg-black/80 transition-all flex items-center gap-2 cursor-pointer shadow-sm"
-                              title="Return to Active Plan"
-                            >
-                              <Activity className="w-3.5 h-3.5 text-cyan-400" />
-                              <span>Plan</span>
-                            </button>
-                          </Scroll3DItem>
+                          <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-3 w-full sm:w-auto">
+                            <Scroll3DItem className="flex-1 sm:flex-initial">
+                              <button
+                                onClick={() => setIsCompareModalOpen(true)}
+                                className="w-full sm:w-auto bg-gym-accent/10 border border-gym-accent/40 px-3.5 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:bg-gym-accent hover:text-black transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-gym-accent/5 active:scale-95 whitespace-nowrap"
+                                title="Compare Workout Sessions Head-to-Head"
+                              >
+                                <GitCompare className="w-3.5 h-3.5 shrink-0" />
+                                <span>Compare Sessions</span>
+                              </button>
+                            </Scroll3DItem>
+
+                            <Scroll3DItem className="shrink-0">
+                              <button
+                                onClick={() => {
+                                  setActiveView("workout");
+                                  setWorkoutInnerTab("ai_program");
+                                  saveSettings({ activeView: "workout" });
+                                }}
+                                className="w-full sm:w-auto bg-black/60 border border-white/20 px-4 py-2 rounded-md text-[10px] font-bold uppercase tracking-widest text-gym-accent hover:border-gym-accent/50 hover:bg-black/80 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm whitespace-nowrap"
+                                title="Return to Active Plan"
+                              >
+                                <Activity className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                                <span>Plan</span>
+                              </button>
+                            </Scroll3DItem>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -19844,6 +19864,16 @@ export default function App() {
             </div>
           )}
         </AnimatePresence>
+
+        {/* Session Evolution Comparison Studio Modal */}
+        <SessionComparisonModal
+          isOpen={isCompareModalOpen}
+          onClose={() => setIsCompareModalOpen(false)}
+          archivedWorkouts={archivedWorkouts}
+          findExerciseByName={findExerciseByName}
+          getWorkoutMuscleTags={getWorkoutMuscleTags}
+          getExerciseMuscleGroup={getExerciseMuscleGroup}
+        />
 
         {/* Full Note Overlay Modal */}
         <AnimatePresence>
