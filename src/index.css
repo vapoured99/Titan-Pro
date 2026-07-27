@@ -82,6 +82,6 @@
 }
 
 .safe-area-bottom {
-  padding-bottom: max(0.6rem, calc(0.35rem + env(safe-area-inset-bottom, 0.6rem)));
+  padding-bottom: max(0.625rem, calc(0.625rem + env(safe-area-inset-bottom, 0px)));
 }
 
