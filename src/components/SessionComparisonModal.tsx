@@ -224,9 +224,10 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
     return Array.from(set);
   }, [detailsA, detailsB]);
 
-  // Calculate percentage delta helper
+  // Calculate percentage delta helper (rounded to avoid floating point precision artifacts)
   const getDelta = (valA: number, valB: number) => {
-    const diff = valB - valA;
+    const rawDiff = valB - valA;
+    const diff = Math.round(rawDiff * 10) / 10;
     const pct = valA > 0 ? (diff / valA) * 100 : valB > 0 ? 100 : 0;
     return { diff, pct };
   };
@@ -242,7 +243,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
       const exA = detailsA.exercisesMap.get(name);
       const exB = detailsB.exercisesMap.get(name);
       return {
-        name: name.length > 16 ? name.slice(0, 14) + "…" : name,
+        name: name.length > 20 ? name.slice(0, 18) + "…" : name,
         fullName: name,
         "Baseline (A)": exA ? exA.totalVolume : 0,
         "Target (B)": exB ? exB.totalVolume : 0,
@@ -668,8 +669,8 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                         // Progression logic
                         let deltaContent = null;
                         if (exA && exB) {
-                          const wDiff = exB.maxWeight - exA.maxWeight;
-                          const volDiff = exB.totalVolume - exA.totalVolume;
+                          const wDiff = Math.round((exB.maxWeight - exA.maxWeight) * 10) / 10;
+                          const volDiff = Math.round((exB.totalVolume - exA.totalVolume) * 10) / 10;
                           const pct = exA.maxWeight > 0 ? (wDiff / exA.maxWeight) * 100 : 0;
 
                           if (wDiff > 0) {
@@ -775,7 +776,7 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
               <div className="space-y-6">
                 {/* Exercise Volume Comparison Chart */}
                 <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-6 space-y-4">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div>
                       <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
                         <BarChart2 className="w-4 h-4 text-gym-accent" />
@@ -785,64 +786,39 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                         Side-by-side total tonnage moved per movement
                       </p>
                     </div>
+                    {exerciseChartData.length > 4 && (
+                      <span className="text-[9px] font-mono font-bold text-gym-accent/90 bg-gym-accent/10 border border-gym-accent/25 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                        ↔ Scroll horizontally ({exerciseChartData.length} movements)
+                      </span>
+                    )}
                   </div>
 
-                  <div className="h-64 sm:h-72 w-full pt-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={exerciseChartData} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-                        <XAxis
-                          dataKey="name"
-                          stroke="#666"
-                          tick={{ fill: "#aaa", fontSize: 10 }}
-                          interval={0}
-                          angle={-15}
-                          textAnchor="end"
-                        />
-                        <YAxis stroke="#666" tick={{ fill: "#aaa", fontSize: 10 }} />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "#0d0d0d",
-                            borderColor: "#333",
-                            borderRadius: "8px",
-                            fontSize: "12px",
-                            color: "#fff",
-                          }}
-                        />
-                        <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
-                        <Bar dataKey="Baseline (A)" fill="#22d3ee" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="Target (B)" fill="#ebff00" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                {/* Muscle Group Distribution Comparison */}
-                {muscleGroupChartData.length > 0 && (
-                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-6 space-y-4">
-                    <div>
-                      <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-                        <Target className="w-4 h-4 text-cyan-400" />
-                        Muscle Group Volume Distribution
-                      </h4>
-                      <p className="text-[10px] text-white/40 font-mono">
-                        Tonnage distribution across targeted muscle groups
-                      </p>
-                    </div>
-
-                    <div className="h-64 sm:h-72 w-full pt-4">
+                  <div className="overflow-x-auto custom-scrollbar pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
+                    <div
+                      style={{ minWidth: `${Math.max(520, exerciseChartData.length * 85)}px` }}
+                      className="h-64 sm:h-72 w-full pt-4"
+                    >
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={muscleGroupChartData} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
+                        <BarChart data={exerciseChartData} margin={{ top: 10, right: 15, left: -10, bottom: 25 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#222" />
-                          <XAxis dataKey="group" stroke="#666" tick={{ fill: "#aaa", fontSize: 10 }} />
+                          <XAxis
+                            dataKey="name"
+                            stroke="#666"
+                            tick={{ fill: "#aaa", fontSize: 10, fontWeight: "bold" }}
+                            interval={0}
+                            angle={-15}
+                            textAnchor="end"
+                          />
                           <YAxis stroke="#666" tick={{ fill: "#aaa", fontSize: 10 }} />
                           <Tooltip
+                            labelFormatter={(label, payload) => payload?.[0]?.payload?.fullName || label}
                             contentStyle={{
                               backgroundColor: "#0d0d0d",
                               borderColor: "#333",
                               borderRadius: "8px",
                               fontSize: "12px",
                               color: "#fff",
+                              fontWeight: "bold",
                             }}
                           />
                           <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
@@ -850,6 +826,56 @@ export const SessionComparisonModal: React.FC<SessionComparisonModalProps> = ({
                           <Bar dataKey="Target (B)" fill="#ebff00" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Muscle Group Distribution Comparison */}
+                {muscleGroupChartData.length > 0 && (
+                  <div className="bg-white/[0.02] border border-white/10 rounded-2xl p-4 sm:p-6 space-y-4">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div>
+                        <h4 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+                          <Target className="w-4 h-4 text-cyan-400" />
+                          Muscle Group Volume Distribution
+                        </h4>
+                        <p className="text-[10px] text-white/40 font-mono">
+                          Tonnage distribution across targeted muscle groups
+                        </p>
+                      </div>
+                      {muscleGroupChartData.length > 5 && (
+                        <span className="text-[9px] font-mono font-bold text-cyan-400/90 bg-cyan-400/10 border border-cyan-400/25 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                          ↔ Scroll horizontally
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="overflow-x-auto custom-scrollbar pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
+                      <div
+                        style={{ minWidth: `${Math.max(480, muscleGroupChartData.length * 80)}px` }}
+                        className="h-64 sm:h-72 w-full pt-4"
+                      >
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={muscleGroupChartData} margin={{ top: 10, right: 15, left: -10, bottom: 25 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#222" />
+                            <XAxis dataKey="group" stroke="#666" tick={{ fill: "#aaa", fontSize: 10, fontWeight: "bold" }} />
+                            <YAxis stroke="#666" tick={{ fill: "#aaa", fontSize: 10 }} />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: "#0d0d0d",
+                                borderColor: "#333",
+                                borderRadius: "8px",
+                                fontSize: "12px",
+                                color: "#fff",
+                                fontWeight: "bold",
+                              }}
+                            />
+                            <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
+                            <Bar dataKey="Baseline (A)" fill="#22d3ee" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="Target (B)" fill="#ebff00" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
                     </div>
                   </div>
                 )}
