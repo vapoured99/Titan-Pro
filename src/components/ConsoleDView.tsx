@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { AnimatedDivider } from "./AnimatedDivider";
 import { 
   AreaChart, 
   Area, 
@@ -1028,7 +1029,7 @@ export default function ConsoleDView({
       className="space-y-6 pb-12 text-left"
     >
       {/* Standard Header View */}
-      <div className="mb-6 pb-6 border-b border-white/5 flex items-center justify-between">
+      <div className="mb-2 pb-2 flex items-center justify-between">
         <div>
           <h3 className="text-xl font-light italic font-serif">
             Console
@@ -1038,6 +1039,8 @@ export default function ConsoleDView({
           </p>
         </div>
       </div>
+
+      <AnimatedDivider accentColor={accent} className="mb-6" speed={4} />
 
       {/* SECTION 2: PHYSICAL RECRUITMENT MAPPING & TORQUE MATRIX */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">

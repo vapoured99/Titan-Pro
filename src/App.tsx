@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import ConsoleDView from "./components/ConsoleDView";
+import { AnimatedDivider } from "./components/AnimatedDivider";
 import {
   ChevronDown,
   X,
@@ -8483,7 +8484,7 @@ export default function App() {
             className="relative z-10 max-w-5xl mx-auto px-3.5 sm:px-6 py-4 sm:py-12 pb-36 sm:pb-44"
           >
         {/* Header - Typography & Brand */}
-        <header className="flex items-center justify-between w-full mb-6 sm:mb-16 gap-4 border-b border-white/10 pb-4 sm:pb-10">
+        <header className="flex items-center justify-between w-full mb-3 sm:mb-6 gap-4 pb-2">
           <div className="flex flex-col items-start">
             <button
               onClick={() => {
@@ -8735,6 +8736,9 @@ export default function App() {
                 </AnimatePresence>
               </div>
         </header>
+
+        {/* Animated Header Divider Line */}
+        <AnimatedDivider className="mb-6 sm:mb-12" glowIntensity="high" speed={3.5} />
 
         {/* Main Content */}
         <main className="space-y-3">
@@ -19938,7 +19942,7 @@ export default function App() {
         </AnimatePresence>
 
         {/* Universal Bottom Dock Navigation & Drawer */}
-        <nav className="fixed bottom-0 inset-x-0 z-50 bg-gradient-to-b from-neutral-900/95 via-neutral-950/98 to-black backdrop-blur-2xl border-t border-white/20 px-2 sm:px-8 pt-2.5 sm:pt-3.5 flex items-center justify-around sm:justify-center gap-2 min-[380px]:gap-2.5 sm:gap-6 shadow-[0_-12px_30px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.15)] safe-area-bottom w-full max-w-full">
+        <nav className="fixed bottom-0 inset-x-0 z-50 bg-gradient-to-b from-neutral-900/95 via-neutral-950/98 to-black backdrop-blur-2xl border-t border-white/20 px-2 sm:px-8 pt-2.5 sm:pt-3.5 flex items-center justify-around sm:justify-center gap-2 min-[380px]:gap-2.5 sm:gap-6 shadow-[0_-12px_30px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.15)] safe-area-bottom w-full max-w-full no-animated-divider">
           {/* Button 1: Console */}
           {(() => {
             const isActive = activeView === "console_d" && !activeDrawer;
