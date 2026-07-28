@@ -9134,6 +9134,8 @@ export default function App() {
                     chronologicalDaysConsole={chronologicalDaysConsole}
                     activeTheme={activeTheme}
                     setActiveView={setActiveView}
+                    weightHistory={weightHistory}
+                    bodyFatHistory={bodyFatHistory}
                   />
                 );
               })()

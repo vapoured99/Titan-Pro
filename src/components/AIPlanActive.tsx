@@ -974,10 +974,14 @@ export default function AIPlanActive({
                         {Array.from({ length: exItem.targetSets }).map((_, sIdx) => {
                           const key = `${exName}-${sIdx}`;
                           const isBodyweight = isBodyweightExercise(exName);
+                          const isCardio = exItem.exercise?.pool === "cardio" ||
+                            ["treadmill", "run", "cardio", "hike", "stair", "bike", "row", "elliptical", "walk"]
+                              .some((term) => exName.toLowerCase().includes(term));
                           
                           const pbKey = Object.keys(personalBests || {}).find(
                             (k) => normalizeExerciseName(k) === normalizeExerciseName(exName)
                           );
+                          const pb = pbKey ? personalBests[pbKey] : null;
                           const hasPB = !!pbKey;
 
                           let lastSets: any[] = [];
@@ -1008,8 +1012,8 @@ export default function AIPlanActive({
                           const hasHistory = hasPB || lastSets.length > 0;
 
                           const rowState = setInputs[key] || {
-                            weight: hasHistory ? (isBodyweight ? "0" : "60") : "",
-                            reps: hasHistory ? "10" : "",
+                            weight: hasHistory ? (isCardio ? "15" : isBodyweight ? "0" : "60") : "",
+                            reps: hasHistory ? (isCardio ? "1" : "10") : "",
                             logged: false,
                             difficulty: "moderate"
                           };
@@ -1032,7 +1036,7 @@ export default function AIPlanActive({
                                   </span>
                                   {pb ? (
                                     <span className="text-[10.5px] font-mono text-white/35">
-                                      Target: {pb.bestWeight}kg × {pb.bestReps}
+                                      Target: {isCardio ? `${pb.bestWeight} min @ Lvl ${pb.bestReps}` : `${pb.bestWeight}kg × ${pb.bestReps}`}
                                     </span>
                                   ) : (
                                     <span className="text-[10px] font-mono text-white/20">
@@ -1043,10 +1047,10 @@ export default function AIPlanActive({
 
                               {/* Interactive Increment Controllers */}
                               <div className="grid grid-cols-2 md:flex md:items-center gap-4 flex-1 md:justify-end">
-                                {/* Weight control block */}
+                                {/* Slot 1 control block (Weight / Duration) */}
                                 <div className="space-y-1 md:space-y-0 md:flex md:items-center md:gap-2">
-                                  <span className="text-[8px] font-mono text-white/20 uppercase tracking-wider block md:hidden">
-                                    Weight (kg)
+                                  <span className="text-[9px] font-mono font-bold text-white/50 uppercase tracking-wider block">
+                                    {isCardio ? "Duration (min)" : "Weight (kg)"}
                                   </span>
                                   <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-lg p-0.5 max-w-[130px] md:w-[110px]">
                                     <button
@@ -1077,10 +1081,10 @@ export default function AIPlanActive({
                                   </div>
                                 </div>
 
-                                {/* Reps control block */}
+                                {/* Slot 2 control block (Reps / Incline / Level) */}
                                 <div className="space-y-1 md:space-y-0 md:flex md:items-center md:gap-2">
-                                  <span className="text-[8px] font-mono text-white/20 uppercase tracking-wider block md:hidden">
-                                    Reps
+                                  <span className="text-[9px] font-mono font-bold text-white/50 uppercase tracking-wider block">
+                                    {isCardio ? "Level / Incline" : "Reps"}
                                   </span>
                                   <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-lg p-0.5 max-w-[110px] md:w-[90px]">
                                     <button

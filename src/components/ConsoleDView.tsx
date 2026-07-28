@@ -234,6 +234,8 @@ interface ConsoleDViewProps {
   chronologicalDaysConsole: any[];
   activeTheme: any;
   setActiveView: (view: any) => void;
+  weightHistory?: any[];
+  bodyFatHistory?: any[];
 }
 
 export default function ConsoleDView({
@@ -245,6 +247,8 @@ export default function ConsoleDView({
   chronologicalDaysConsole,
   activeTheme,
   setActiveView,
+  weightHistory: weightHistoryProps = [],
+  bodyFatHistory: bodyFatHistoryProps = [],
 }: ConsoleDViewProps) {
   // Theme color adaptation variables
   const accent = activeTheme?.accent || "#f97316";
@@ -538,59 +542,17 @@ export default function ConsoleDView({
   const currentProfileWeight = profile?.weight ?? 80;
   const currentProfileBodyFat = profile?.bodyFat ?? 14.5;
 
-  const [weightHistory, setWeightHistory] = useState<{ date: string; value: number }[]>(() => {
+  // Helper function to format date ticks (e.g., "YYYY-MM-DD" -> "27 Jul")
+  const formatDateTick = (str: string) => {
+    if (!str) return "";
     try {
-      const stored = localStorage.getItem("somatic_weight_history");
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return [
-      { date: "06/05", value: currentProfileWeight + 1.5 },
-      { date: "06/10", value: currentProfileWeight + 1.1 },
-      { date: "06/15", value: currentProfileWeight + 0.6 },
-      { date: "06/20", value: currentProfileWeight + 0.2 },
-      { date: "06/25", value: currentProfileWeight - 0.1 },
-      { date: "07/01", value: currentProfileWeight }
-    ];
-  });
-
-  const [fatHistory, setFatHistory] = useState<{ date: string; value: number }[]>(() => {
-    try {
-      const stored = localStorage.getItem("somatic_fat_history");
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return [
-      { date: "06/05", value: currentProfileBodyFat + 0.6 },
-      { date: "06/10", value: currentProfileBodyFat + 0.4 },
-      { date: "06/15", value: currentProfileBodyFat + 0.3 },
-      { date: "06/20", value: currentProfileBodyFat + 0.1 },
-      { date: "06/25", value: currentProfileBodyFat },
-      { date: "07/01", value: currentProfileBodyFat }
-    ];
-  });
-
-  const [inputWeight, setInputWeight] = useState<string>("");
-  const [inputFat, setInputFat] = useState<string>("");
-
-  const handleAddWeight = (e: React.FormEvent) => {
-    e.preventDefault();
-    const val = parseFloat(inputWeight);
-    if (isNaN(val) || val <= 0) return;
-    const dateStr = new Date().toLocaleDateString("default", { month: "2-digit", day: "2-digit" });
-    const updated = [...weightHistory, { date: dateStr, value: val }].slice(-10);
-    setWeightHistory(updated);
-    localStorage.setItem("somatic_weight_history", JSON.stringify(updated));
-    setInputWeight("");
-  };
-
-  const handleAddFat = (e: React.FormEvent) => {
-    e.preventDefault();
-    const val = parseFloat(inputFat);
-    if (isNaN(val) || val <= 0 || val >= 100) return;
-    const dateStr = new Date().toLocaleDateString("default", { month: "2-digit", day: "2-digit" });
-    const updated = [...fatHistory, { date: dateStr, value: val }].slice(-10);
-    setFatHistory(updated);
-    localStorage.setItem("somatic_fat_history", JSON.stringify(updated));
-    setInputFat("");
+      const parts = str.split("-").map(Number);
+      if (parts.length === 3 && !parts.some(isNaN)) {
+        const date = new Date(parts[0], parts[1] - 1, parts[2]);
+        return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+      }
+    } catch (e) {}
+    return str;
   };
 
   // 6. Neural Recruitment loading level computations
@@ -790,14 +752,93 @@ export default function ConsoleDView({
     }
   };
 
-  // 8. Recharts data preparation for the chart slides
-  const loadProgressionData = useMemo(() => {
-    return chronologicalDaysConsole.map(day => ({
-      date: day.date.slice(5), // Keep MM-DD format
-      volume: day.calories * 8, // Estimate volume based on calories or standard mapping
-      calories: day.calories
+  // 8. Recharts data preparation for the performance metrics chart slides
+  // Volume Data (Exact total volume from archived workouts)
+  const volumeProgressionData = useMemo(() => {
+    if (!archivedWorkouts || archivedWorkouts.length === 0) return [];
+    const grouped: Record<string, number> = {};
+    archivedWorkouts.forEach((w) => {
+      const d = w.date || new Date().toISOString().split("T")[0];
+      let vol = 0;
+      if (typeof w.totalVolume === "number" && w.totalVolume > 0) {
+        vol = w.totalVolume;
+      } else if (w.sets && Array.isArray(w.sets)) {
+        vol = w.sets.reduce((acc: number, s: any) => acc + ((Number(s.weight) || 0) * (Number(s.reps) || 0)), 0);
+      }
+      grouped[d] = (grouped[d] || 0) + vol;
+    });
+    return Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, volume]) => ({
+        date,
+        formattedDate: formatDateTick(date),
+        volume
+      }));
+  }, [archivedWorkouts]);
+
+  // Calories Data (Exact active workout calories grouped by date)
+  const caloriesProgressionData = useMemo(() => {
+    if (!chronologicalDaysConsole || chronologicalDaysConsole.length === 0) return [];
+    return chronologicalDaysConsole.map((day) => ({
+      date: day.date,
+      formattedDate: formatDateTick(day.date),
+      calories: Math.round(day.calories)
     }));
   }, [chronologicalDaysConsole]);
+
+  // Weight Data (Exact body weight history entries from progress metrics)
+  const formattedWeightHistory = useMemo(() => {
+    const history = weightHistoryProps && weightHistoryProps.length > 0 ? weightHistoryProps : [];
+    if (history.length === 0) {
+      const curW = profile?.bodyweight || profile?.weight;
+      if (curW) {
+        const today = new Date().toISOString().split("T")[0];
+        return [{ date: today, formattedDate: formatDateTick(today), value: Number(curW), weight: Number(curW) }];
+      }
+      return [];
+    }
+    const grouped: Record<string, number> = {};
+    history.forEach((entry) => {
+      if (entry.date && (typeof entry.weight === "number" || typeof entry.value === "number")) {
+        grouped[entry.date] = Number(entry.weight ?? entry.value);
+      }
+    });
+    return Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, value]) => ({
+        date,
+        formattedDate: formatDateTick(date),
+        value,
+        weight: value
+      }));
+  }, [weightHistoryProps, profile]);
+
+  // Body Fat Data (Exact body fat % history entries from progress metrics)
+  const formattedFatHistory = useMemo(() => {
+    const history = bodyFatHistoryProps && bodyFatHistoryProps.length > 0 ? bodyFatHistoryProps : [];
+    if (history.length === 0) {
+      const curBF = profile?.bodyFatPercent || profile?.bodyFat;
+      if (curBF) {
+        const today = new Date().toISOString().split("T")[0];
+        return [{ date: today, formattedDate: formatDateTick(today), value: Number(curBF), bodyFatPercent: Number(curBF) }];
+      }
+      return [];
+    }
+    const grouped: Record<string, number> = {};
+    history.forEach((entry) => {
+      if (entry.date && (typeof entry.bodyFatPercent === "number" || typeof entry.value === "number")) {
+        grouped[entry.date] = Number(entry.bodyFatPercent ?? entry.value);
+      }
+    });
+    return Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, value]) => ({
+        date,
+        formattedDate: formatDateTick(date),
+        value,
+        bodyFatPercent: value
+      }));
+  }, [bodyFatHistoryProps, profile]);
 
   const activeSlideChartComponent = () => {
     switch (chartTypes[activeChartSlide]) {
@@ -806,36 +847,37 @@ export default function ConsoleDView({
           <div className="h-full w-full flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-mono px-1">
               <span className="text-white/40">CALCULATED WORKLOAD PROGRESSION</span>
-              <span className="text-emerald-400 font-bold">Lifting Volume (kg)</span>
+              <span style={{ color: accent }} className="font-bold">Lifting Volume (kg)</span>
             </div>
             <div className="h-[180px] w-full mt-2">
-              {loadProgressionData.length === 0 ? (
+              {volumeProgressionData.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-xl border border-dashed border-white/[0.05]">
                   <TrendingUp className="w-5 h-5 text-white/10 mb-2" />
                   <span className="text-[10px] text-white/30 font-mono">No workload progression logged.</span>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={loadProgressionData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                  <AreaChart data={volumeProgressionData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                     <defs>
                       <linearGradient id="colorVolumeD" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                        <stop offset="5%" stopColor={accent} stopOpacity={0.25} />
+                        <stop offset="95%" stopColor={accent} stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                    <XAxis dataKey="formattedDate" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
                     <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
                     <Tooltip
                       contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
                       labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
-                      itemStyle={{ fontSize: "11px", color: "#22c55e" }}
+                      itemStyle={{ fontSize: "11px", color: accent }}
+                      formatter={(val: any) => [`${Number(val).toLocaleString()} kg`, "Volume"]}
                     />
                     <Area
                       type="monotone"
                       name="Volume (kg)"
                       dataKey="volume"
-                      stroke="#22c55e"
+                      stroke={accent}
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#colorVolumeD)"
@@ -851,36 +893,37 @@ export default function ConsoleDView({
           <div className="h-full w-full flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-mono px-1">
               <span className="text-white/40">THERMODYNAMIC KINETIC SPLIT</span>
-              <span className="text-emerald-400 font-bold">Energy Output (kcal)</span>
+              <span style={{ color: accent }} className="font-bold">Energy Output (kcal)</span>
             </div>
             <div className="h-[180px] w-full mt-2">
-              {loadProgressionData.length === 0 ? (
+              {caloriesProgressionData.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-xl border border-dashed border-white/[0.05]">
                   <Flame className="w-5 h-5 text-white/10 mb-2 animate-pulse" />
                   <span className="text-[10px] text-white/30 font-mono">No kinetic energy outputs mapped.</span>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={loadProgressionData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                  <AreaChart data={caloriesProgressionData} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
                     <defs>
                       <linearGradient id="colorCaloriesD" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                        <stop offset="5%" stopColor={accent} stopOpacity={0.25} />
+                        <stop offset="95%" stopColor={accent} stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                    <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                    <XAxis dataKey="formattedDate" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
                     <YAxis stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
                     <Tooltip
                       contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
                       labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
-                      itemStyle={{ fontSize: "11px", color: "#22c55e" }}
+                      itemStyle={{ fontSize: "11px", color: accent }}
+                      formatter={(val: any) => [`${Number(val).toLocaleString()} kcal`, "Calories"]}
                     />
                     <Area
                       type="monotone"
                       name="Calories (kcal)"
                       dataKey="calories"
-                      stroke="#22c55e"
+                      stroke={accent}
                       strokeWidth={2}
                       fillOpacity={1}
                       fill="url(#colorCaloriesD)"
@@ -895,31 +938,39 @@ export default function ConsoleDView({
         return (
           <div className="h-full w-full flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-mono px-1">
-              <span className="text-white/40">PHYSICAL WEIGHT TIMELINE (PAST 10)</span>
-              <span className="text-emerald-400 font-bold">Body Weight (kg)</span>
+              <span className="text-white/40">PHYSICAL WEIGHT TIMELINE</span>
+              <span style={{ color: accent }} className="font-bold">Body Weight (kg)</span>
             </div>
             <div className="h-[180px] w-full mt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weightHistory} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
-                  <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
-                    labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
-                    itemStyle={{ fontSize: "11px", color: "#22c55e" }}
-                  />
-                  <Line
-                    type="monotone"
-                    name="Weight"
-                    dataKey="value"
-                    stroke="#22c55e"
-                    strokeWidth={2.5}
-                    dot={{ r: 4, stroke: '#1c1917', strokeWidth: 1.5, fill: '#22c55e' }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {formattedWeightHistory.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-xl border border-dashed border-white/[0.05]">
+                  <TrendingUp className="w-5 h-5 text-white/10 mb-2" />
+                  <span className="text-[10px] text-white/30 font-mono">No body weight entries logged.</span>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={formattedWeightHistory} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                    <XAxis dataKey="formattedDate" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                    <YAxis domain={['dataMin - 1', 'dataMax + 1']} stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
+                      labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
+                      itemStyle={{ fontSize: "11px", color: accent }}
+                      formatter={(val: any) => [`${Number(val).toFixed(1)} kg`, "Weight"]}
+                    />
+                    <Line
+                      type="monotone"
+                      name="Weight"
+                      dataKey="value"
+                      stroke={accent}
+                      strokeWidth={2.5}
+                      dot={{ r: 4, stroke: '#1c1917', strokeWidth: 1.5, fill: accent }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
         );
@@ -928,30 +979,38 @@ export default function ConsoleDView({
           <div className="h-full w-full flex flex-col justify-between">
             <div className="flex items-center justify-between text-xs font-mono px-1">
               <span className="text-white/40">ADIPOSE TRACKING TIMELINE</span>
-              <span className="text-emerald-400 font-bold">Body Fat (%)</span>
+              <span style={{ color: accent }} className="font-bold">Body Fat (%)</span>
             </div>
             <div className="h-[180px] w-full mt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={fatHistory} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
-                  <XAxis dataKey="date" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
-                  <YAxis domain={['dataMin - 0.5', 'dataMax + 0.5']} stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
-                    labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
-                    itemStyle={{ fontSize: "11px", color: "#22c55e" }}
-                  />
-                  <Line
-                    type="monotone"
-                    name="Body Fat %"
-                    dataKey="value"
-                    stroke="#22c55e"
-                    strokeWidth={2.5}
-                    dot={{ r: 4, stroke: '#1c1917', strokeWidth: 1.5, fill: '#22c55e' }}
-                    activeDot={{ r: 6 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              {formattedFatHistory.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center bg-white/[0.01] rounded-xl border border-dashed border-white/[0.05]">
+                  <TrendingUp className="w-5 h-5 text-white/10 mb-2" />
+                  <span className="text-[10px] text-white/30 font-mono">No body fat entries logged.</span>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={formattedFatHistory} margin={{ top: 5, right: 5, left: -25, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
+                    <XAxis dataKey="formattedDate" stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                    <YAxis domain={['dataMin - 0.5', 'dataMax + 0.5']} stroke="#ffffff10" tick={{ fontSize: 8, fill: "rgba(255,255,255,0.3)" }} />
+                    <Tooltip
+                      contentStyle={{ backgroundColor: "#0b0a0a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "12px" }}
+                      labelStyle={{ color: "rgba(255,255,255,0.4)", fontSize: "10px", fontFamily: "monospace" }}
+                      itemStyle={{ fontSize: "11px", color: accent }}
+                      formatter={(val: any) => [`${Number(val).toFixed(1)}%`, "Body Fat %"]}
+                    />
+                    <Line
+                      type="monotone"
+                      name="Body Fat %"
+                      dataKey="value"
+                      stroke={accent}
+                      strokeWidth={2.5}
+                      dot={{ r: 4, stroke: '#1c1917', strokeWidth: 1.5, fill: accent }}
+                      activeDot={{ r: 6 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
             </div>
           </div>
         );
