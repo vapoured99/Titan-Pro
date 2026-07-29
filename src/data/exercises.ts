@@ -554,6 +554,19 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Pull the handle toward your hip/waist by driving your elbow back, keeping it close to your side.",
         "Squeeze your lat at the peak of the contraction, then slowly return to the starting position."
       ]
+    },
+    {
+      name: "Diverging Seated Row",
+      icon: "ArrowLeftRight",
+      pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
+      instructions: [
+        "Seat & Chest Support Setup: Sit at the diverging row machine and adjust the seat height so that the handles align with your mid-to-upper chest. Secure your chest firmly against the front support pad and plant your feet flat on the floor to stabilize your lower body.",
+        "Grip & Initial Setup: Reach forward and grasp the handles with a comfortable neutral or overhand grip. Maintain a tall torso, proud chest, and neutral spine with arms extended, feeling a mild stretch in your lats and upper back.",
+        "Diverging Pull Execution: Inhale, brace your core, and drive your elbows back and outwards along the natural diverging arc of the machine, pulling the handles toward your sides while retracting your shoulder blades.",
+        "Peak Contraction: Pause for 1-2 seconds at full contraction, squeezing your upper back, rhomboids, and rear deltoids forcefully while keeping your chest pinned against the support pad.",
+        "Controlled Eccentric Extension: Exhale and slowly extend your arms back to the starting position over 2-3 seconds, controlling the resistance throughout the full range of motion without letting the weight stack crash."
+      ]
     }
   ],
   lower_back: [
@@ -2421,6 +2434,7 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Crossbody Hammer Curls": "qmQkt1Y-FX8",
   "Deadbug": "ZSYRZKYOf28",
   "Decline Dumbbell Bench Press": "4R_GwRhG0rY",
+  "Diverging Seated Row": "cdurJOr2jwQ",
   "Decline Dumbbell Fly": "IMALXhhHRKM",
   "Decline Push Ups": "dcV-ATSeryA",
   "Dumbbell Bench Press": "AduT4Eq-iP0",

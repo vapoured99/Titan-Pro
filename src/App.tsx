@@ -1494,6 +1494,36 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
     }
   }
 
+  // Diverging Seated Row
+  if (nameLower.includes("diverging seated row") || nameLower.includes("diverging row") || nameLower === "diverging seated row") {
+    const targetSteps = [
+      "Seat & Chest Support Setup: Sit at the diverging row machine and adjust the seat height so that the handles align with your mid-to-upper chest. Secure your chest firmly against the front support pad and plant your feet flat on the floor to stabilize your lower body.",
+      "Grip & Initial Setup: Reach forward and grasp the handles with a comfortable neutral or overhand grip. Maintain a tall torso, proud chest, and neutral spine with arms extended, feeling a mild stretch in your lats and upper back.",
+      "Diverging Pull Execution: Inhale, brace your core, and drive your elbows back and outwards along the natural diverging arc of the machine, pulling the handles toward your sides while retracting your shoulder blades.",
+      "Peak Contraction: Pause for 1-2 seconds at full contraction, squeezing your upper back, rhomboids, and rear deltoids forcefully while keeping your chest pinned against the support pad.",
+      "Controlled Eccentric Extension: Exhale and slowly extend your arms back to the starting position over 2-3 seconds, controlling the resistance throughout the full range of motion without letting the weight stack crash."
+    ];
+    const targetYoutubeId = "cdurJOr2jwQ";
+    const targetYoutubeUrl = "https://www.youtube.com/watch?v=cdurJOr2jwQ";
+
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch) {
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl,
+        pool: currentEx.pool || "upper_back",
+        muscleGroup: currentEx.muscleGroup || "rhomboids_traps"
+      };
+      changed = true;
+    }
+  }
+
   // Generic static library fallback lookup for any custom exercise
   // that lacks professional guidance/instructions.
   const hasNoInstructions = !currentEx.instructions || 
