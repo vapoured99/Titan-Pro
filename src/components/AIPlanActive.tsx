@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Exercise } from "../data/exercises";
+import { Exercise, isCardioExercise } from "../data/exercises";
 import { getExerciseProgressionState } from "../lib/progression";
 
 export interface AIPlanExercise {
@@ -974,9 +974,7 @@ export default function AIPlanActive({
                         {Array.from({ length: exItem.targetSets }).map((_, sIdx) => {
                           const key = `${exName}-${sIdx}`;
                           const isBodyweight = isBodyweightExercise(exName);
-                          const isCardio = exItem.exercise?.pool === "cardio" ||
-                            ["treadmill", "run", "cardio", "hike", "stair", "bike", "row", "elliptical", "walk"]
-                              .some((term) => exName.toLowerCase().includes(term));
+                          const isCardio = isCardioExercise(exName, exItem.exercise?.pool);
                           
                           const pbKey = Object.keys(personalBests || {}).find(
                             (k) => normalizeExerciseName(k) === normalizeExerciseName(exName)

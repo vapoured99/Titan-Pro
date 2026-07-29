@@ -2579,6 +2579,47 @@ export const POOLS: Record<string, Exercise[]> = Object.keys(RAW_POOLS).reduce((
   return acc;
 }, {} as Record<string, Exercise[]>);
 
+export const CARDIO_EXERCISES_NAMES = new Set([
+  "treadmill hike",
+  "hiit rowing",
+  "elliptical interval sprint",
+  "stairmaster climb",
+  "jump rope sessions",
+  "stationary cycling",
+  "assault bike sprint",
+  "burpee cardio intervals",
+  "high-knee sprints",
+  "mountain climbers"
+]);
+
+export const isCardioExercise = (exerciseName: string, pool?: string): boolean => {
+  if (pool === "cardio") return true;
+  if (!exerciseName) return false;
+  const norm = exerciseName.toLowerCase().trim();
+  
+  if (CARDIO_EXERCISES_NAMES.has(norm)) return true;
+  
+  // Explicitly protect strength row & pull exercises (Cable Row, Seated Row, Barbell Row, etc.)
+  if (norm.includes("row") && !norm.includes("hiit rowing")) {
+    return false;
+  }
+  
+  if (
+    norm.includes("treadmill") ||
+    norm.includes("stairmaster") ||
+    norm.includes("elliptical") ||
+    norm.includes("assault bike") ||
+    norm.includes("burpee cardio") ||
+    norm.includes("high-knee") ||
+    norm.includes("jump rope") ||
+    norm.includes("stationary cycling")
+  ) {
+    return true;
+  }
+  
+  return false;
+};
+
 export const getSecondaryMusclesForExercise = (ex: Exercise): string[] => {
   if (ex.secondaryMuscles && ex.secondaryMuscles.length > 0) {
     return ex.secondaryMuscles;

@@ -124,6 +124,8 @@ import {
   collection,
   User,
   deleteDoc,
+  updateDoc,
+  Timestamp,
   writeBatch,
   onSnapshot,
 } from "./lib/firebase";
@@ -1718,6 +1720,8 @@ export default function App() {
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
     null,
   );
+  const [editingWorkoutDateId, setEditingWorkoutDateId] = useState<string | null>(null);
+  const [editingDateValue, setEditingDateValue] = useState<string>("");
   const [showHistoryMenu, setShowHistoryMenu] = useState(false);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [activeView, setActiveView] = useState<
@@ -6731,6 +6735,57 @@ export default function App() {
       console.log("Evolution Record permanently excluded from the archive.");
     } catch (error) {
       console.error("Delete error:", error);
+    } finally {
+      setDataLoading(false);
+    }
+  };
+
+  const handleUpdateWorkoutDate = async (id: string | undefined, newDateString: string) => {
+    if (!currentUser || !id || !newDateString) return;
+
+    try {
+      setDataLoading(true);
+      const docRef = doc(db, `users/${currentUser.uid}/workouts/${id}`);
+      const targetWorkout = archivedWorkouts.find((w) => w.id === id);
+      const updatedSets = targetWorkout?.sets
+        ? targetWorkout.sets.map((s: any) => ({ ...s, date: newDateString }))
+        : [];
+
+      const newDateObj = new Date(newDateString + "T12:00:00");
+      const newTimestamp = Timestamp.fromDate(newDateObj);
+
+      await updateDoc(docRef, {
+        date: newDateString,
+        timestamp: newTimestamp,
+        sets: updatedSets,
+      });
+
+      setArchivedWorkouts((prev) =>
+        prev.map((w) =>
+          w.id === id
+            ? {
+                ...w,
+                date: newDateString,
+                timestamp: { seconds: Math.floor(newDateObj.getTime() / 1000) },
+                sets: updatedSets,
+              }
+            : w
+        )
+      );
+
+      setEditingWorkoutDateId(null);
+      setToast({
+        message: `📅 Session date successfully moved to ${newDateString}!`,
+        type: "success",
+      });
+      setTimeout(() => setToast(null), 3500);
+    } catch (error) {
+      console.error("Error updating workout date:", error);
+      handleFirestoreError(
+        error,
+        OperationType.UPDATE,
+        `users/${currentUser.uid}/workouts/${id}`
+      );
     } finally {
       setDataLoading(false);
     }
@@ -13747,12 +13802,26 @@ export default function App() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+                                <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full lg:w-auto">
+                                  <button
+                                    onClick={() => {
+                                      setEditingWorkoutDateId(
+                                        editingWorkoutDateId === workout.id ? null : workout.id
+                                      );
+                                      setEditingDateValue(
+                                        workout.date || new Date().toISOString().split("T")[0]
+                                      );
+                                    }}
+                                    className="absolute top-4 right-4 sm:static p-2.5 sm:px-4 border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500 hover:text-black hover:border-amber-500 text-amber-400 transition-all cursor-pointer group shadow-lg shadow-amber-500/5 rounded-md flex items-center justify-center shrink-0 self-stretch sm:self-stretch z-10"
+                                    title="Change date of this workout session"
+                                  >
+                                    <Calendar className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                  </button>
                                   <button
                                     onClick={() =>
                                       setSavingRoutineWorkout(workout)
                                     }
-                                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.3em] transition-all cursor-pointer group shadow-lg shadow-gym-accent/5 rounded-md w-full sm:w-auto"
+                                    className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border border-gym-accent/30 bg-gym-accent/5 hover:bg-gym-accent hover:text-black hover:border-gym-accent text-gym-accent text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.3em] transition-all cursor-pointer group shadow-lg shadow-gym-accent/5 rounded-md w-full sm:w-auto self-stretch"
                                   >
                                     <Save className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                                     Save Routine
@@ -13762,7 +13831,7 @@ export default function App() {
                                       handleDeleteWorkout(workout.id)
                                     }
                                     disabled={dataLoading}
-                                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.3em] transition-all cursor-pointer group shadow-lg w-full sm:w-auto ${dataLoading ? "bg-white/5 border-white/10 text-white/20" : "bg-red-500/5 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-red-500/5"}`}
+                                    className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 border rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.3em] transition-all cursor-pointer group shadow-lg w-full sm:w-auto self-stretch ${dataLoading ? "bg-white/5 border-white/10 text-white/20" : "bg-red-500/5 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white hover:border-red-500 shadow-red-500/5"}`}
                                   >
                                     {dataLoading ? (
                                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -13775,6 +13844,71 @@ export default function App() {
                                   </button>
                                 </div>
                               </div>
+
+                              <AnimatePresence>
+                                {editingWorkoutDateId === workout.id && (
+                                  <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="p-4 sm:p-6 bg-gradient-to-r from-amber-950/40 via-black/80 to-amber-950/40 border-b border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-inner"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="p-2.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400">
+                                        <Calendar className="w-5 h-5 shrink-0" />
+                                      </div>
+                                      <div>
+                                        <h5 className="text-xs font-bold uppercase tracking-widest text-amber-300">
+                                          Change Session Date
+                                        </h5>
+                                        <p className="text-[10px] text-white/60 font-mono">
+                                          Currently logged: <span className="text-white font-bold">{workout.date}</span>
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto justify-end">
+                                      <button
+                                        onClick={() => {
+                                          const yesterday = new Date();
+                                          yesterday.setDate(yesterday.getDate() - 1);
+                                          const dateStr = yesterday.toISOString().split("T")[0];
+                                          setEditingDateValue(dateStr);
+                                          handleUpdateWorkoutDate(workout.id, dateStr);
+                                        }}
+                                        disabled={dataLoading}
+                                        className="px-3 py-2 bg-amber-500/20 hover:bg-amber-500 hover:text-black border border-amber-500/40 text-amber-300 text-[10px] font-mono font-bold rounded-md cursor-pointer transition-all uppercase tracking-wider flex items-center gap-1.5"
+                                        title="Move session date to yesterday (28 JUL 2026)"
+                                      >
+                                        ⚡ Yesterday (28 JUL)
+                                      </button>
+
+                                      <input
+                                        type="date"
+                                        value={editingDateValue}
+                                        onChange={(e) => setEditingDateValue(e.target.value)}
+                                        className="bg-black/90 border border-amber-500/50 text-white font-mono text-xs px-3 py-1.5 rounded-md focus:outline-none focus:border-amber-400 shadow-sm"
+                                      />
+
+                                      <button
+                                        onClick={() => handleUpdateWorkoutDate(workout.id, editingDateValue)}
+                                        disabled={dataLoading || !editingDateValue}
+                                        className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold text-[10px] uppercase tracking-wider rounded-md cursor-pointer transition-all flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+                                      >
+                                        {dataLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                        Save Date
+                                      </button>
+
+                                      <button
+                                        onClick={() => setEditingWorkoutDateId(null)}
+                                        className="px-3 py-2 bg-white/5 hover:bg-white/15 border border-white/10 text-white/70 text-[10px] uppercase font-bold rounded-md cursor-pointer"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
 
                               <div className="p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8">
                                 {Object.entries(
