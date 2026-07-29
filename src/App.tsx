@@ -146,15 +146,11 @@ export function migrateExerciseName(name: string): string {
 }
 
 // --- Background Images ---
-import ironTempleBg from "./assets/images/iron_temple_bg_1779282140548.png";
 import neonPumpBg from "./assets/images/neon_pump_bg_1779282162002.png";
 import beastModeBg from "./assets/images/beast_mode_bg_1779282188045.png";
 import zenLifterBg from "./assets/images/zen_lifter_bg_1779282209692.png";
 import midnightCityBg from "./assets/images/midnight_city_bg_1779282230526.png";
 import voidEclipseBg from "./assets/images/void_eclipse_bg_1779447103424.png";
-import celestialLightBg from "./assets/images/celestial_light_bg_1779447123837.png";
-import solarAscentBg from "./assets/images/solar_ascent_bg_1779457047851.png";
-import cosmicVortexBg from "./assets/images/cosmic_vortex_bg_new_1779719240506.png";
 import overgrownCyberCityBg from "./assets/images/cyber_city_bg_new_1779719262117.png";
 import cloudsBg from "./assets/images/clouds.png";
 import sparBg from "./assets/images/spar.png";
@@ -175,6 +171,7 @@ interface GymTheme {
   accentDark: string;
   bg: string;
   bgImage?: string;
+  bgVideo?: string;
   opacity: string;
   textVibe: string;
   testPrimary: string;
@@ -200,22 +197,6 @@ const GYM_THEMES: Record<string, GymTheme> = {
     testPrimary: "#ffffff",
     testMuted: "rgba(255, 255, 255, 0.45)",
     testSubtle: "rgba(255, 255, 255, 0.2)",
-  },
-  iron: {
-    id: "iron",
-    name: "Iron Temple",
-    description: "Ancient stone & classical discipline.",
-    accent: "#cdaa5c",
-    accentRgb: "205, 170, 92",
-    accentLight: "#f3e8cb",
-    accentDark: "#8a6e30",
-    bg: "#0b0a08",
-    bgImage: ironTempleBg,
-    opacity: "opacity-85",
-    textVibe: "Ancient stone. Raw discipline. Unbreakable focus.",
-    testPrimary: "#f3e8cb",
-    testMuted: "rgba(243, 232, 203, 0.45)",
-    testSubtle: "rgba(243, 232, 203, 0.2)",
   },
   neon: {
     id: "neon",
@@ -296,57 +277,6 @@ const GYM_THEMES: Record<string, GymTheme> = {
     testPrimary: "#faf5ff",
     testMuted: "rgba(216, 180, 254, 0.45)",
     testSubtle: "rgba(168, 85, 247, 0.2)",
-  },
-  celestial_light: {
-    id: "celestial_light",
-    name: "Celestial Light",
-    description: "Pristine mountain peaks & orbital stardust halos.",
-    accent: "#0ea5e9",
-    accentRgb: "14, 165, 233",
-    accentLight: "#bae6fd",
-    accentDark: "#0369a1",
-    bg: "#050c18",
-    bgImage: celestialLightBg,
-    opacity: "opacity-45",
-    textVibe: "Celestial Spires. Mount the peak of ultimate execution.",
-    testPrimary: "#f0f9ff",
-    testMuted: "rgba(186, 230, 253, 0.45)",
-    testSubtle: "rgba(14, 165, 233, 0.2)",
-  },
-
-  solar_ascent: {
-    id: "solar_ascent",
-    name: "Solar Ascent",
-    description: "Crystalline orbit rings & epic solar flares.",
-    accent: "#f59e0b",
-    accentRgb: "245, 158, 11",
-    accentLight: "#fef08a",
-    accentDark: "#b45309",
-    bg: "#0a0601",
-    bgImage: solarAscentBg,
-    opacity: "opacity-45",
-    textVibe: "Solar Ascent. Harness the power of cosmic fusion.",
-    testPrimary: "#fffbeb",
-    testMuted: "rgba(253, 224, 71, 0.45)",
-    testSubtle: "rgba(245, 158, 11, 0.2)",
-  },
-  cosmic_vortex: {
-    id: "cosmic_vortex",
-    name: "Cosmic Vortex",
-    description:
-      "Swirling fiery paths & intense red-hot super-nebula landscapes.",
-    accent: "#f97316",
-    accentRgb: "249, 115, 22",
-    accentLight: "#fed7aa",
-    accentDark: "#c2410c",
-    bg: "#050100",
-    bgImage: cosmicVortexBg,
-    opacity: "opacity-85",
-    textVibe:
-      "Cosmic Vortex. Unleash your inner furnace and burn through any limits.",
-    testPrimary: "#fff5f5",
-    testMuted: "rgba(254, 202, 202, 0.45)",
-    testSubtle: "rgba(249, 115, 22, 0.2)",
   },
   overgrown_cyber_city: {
     id: "overgrown_cyber_city",
@@ -8432,6 +8362,24 @@ export default function App() {
               backgroundImage: `radial-gradient(circle at 50% 40%, ${activeTheme.accent}20 0%, #000000 100%)`,
             }}
           />
+        ) : activeTheme.bgVideo ? (
+          <>
+            <video
+              key={activeTheme.id}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className={`w-full h-full object-cover transition-all duration-700 ${getThemeBrightnessClass(activeTheme.id)} ${activeTheme.opacity}`}
+              src={activeTheme.bgVideo}
+            />
+            <div
+              className="absolute inset-0 transition-colors duration-500"
+              style={{
+                background: `linear-gradient(to bottom, ${activeTheme.bg || "#05020a"}a0, ${activeTheme.bg || "#05020a"}40, ${activeTheme.bg || "#05020a"}ff)`,
+              }}
+            />
+          </>
         ) : (
           <>
             <img
@@ -8451,6 +8399,17 @@ export default function App() {
         )}
         {!isCarbonBlack && (
           <>
+            {atmosphereEffect === "kaleidoscope_video" && (
+              <video
+                key="kaleidoscope_video"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-[0.35] z-[1]"
+                src="/mixkit.mp4"
+              />
+            )}
             {atmosphereEffect === "custom_video" && (
               <video
                 key="custom_video"
@@ -15682,14 +15641,26 @@ export default function App() {
                                   }`}
                                 >
                                   {/* Mini Background Preview */}
-                                  <div className="absolute inset-0 z-0 opacity-10 group-hover:opacity-15 transition-opacity">
-                                    <img
-                                      key={theme.id}
-                                      src={theme.bgImage}
-                                      alt=""
-                                      className="w-full h-full object-cover"
-                                      referrerPolicy="no-referrer"
-                                    />
+                                  <div className="absolute inset-0 z-0 opacity-10 group-hover:opacity-15 transition-opacity overflow-hidden">
+                                    {theme.bgVideo ? (
+                                      <video
+                                        key={theme.id}
+                                        autoPlay
+                                        loop
+                                        muted
+                                        playsInline
+                                        src={theme.bgVideo}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <img
+                                        key={theme.id}
+                                        src={theme.bgImage}
+                                        alt=""
+                                        className="w-full h-full object-cover"
+                                        referrerPolicy="no-referrer"
+                                      />
+                                    )}
                                   </div>
 
                                   <div className="relative z-10 w-full flex flex-col justify-between h-full">
@@ -15823,6 +15794,7 @@ export default function App() {
                           </p>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {[
+                              { id: "kaleidoscope_video", name: "Kaleidoscope", desc: "🌀 Dynamic mixkit.mp4 loop" },
                               { id: "custom_video", name: "Illusion", desc: "📹 Interactive custom_atmosphere.mp4 loop" },
                               { id: "car_video", name: "Car", desc: "🚗 Cinematic car.mp4 loop theme" },
                               { id: "video_theme3", name: "FIRE", desc: "📹 Video Loop (theme3)" },
