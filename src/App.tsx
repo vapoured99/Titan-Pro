@@ -16000,7 +16000,7 @@ export default function App() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-3"
               >
-                <div className="mb-6 pb-6 border-b border-white/5 flex items-center justify-between">
+                <div className="mb-6 pb-6 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
                     <h3 className="text-xl font-light italic font-serif">
                       Training Programming
@@ -16009,7 +16009,7 @@ export default function App() {
                       Curate your physical evolution
                     </p>
                   </div>
-                  <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
+                  <div className="flex flex-col gap-2 w-full sm:w-auto shrink-0 sm:ml-auto">
                     <button
                       type="button"
                       onClick={() => {
@@ -16022,28 +16022,32 @@ export default function App() {
                         setCreatingCustomForDay(null);
                         setShowAddCustomModal(true);
                       }}
-                      className="flex items-center justify-center gap-1.5 px-3 py-2 border border-gym-accent/30 bg-gym-accent/10 hover:bg-gym-accent hover:text-black text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm font-semibold"
+                      className="w-full flex items-center justify-center gap-1.5 px-3 py-2 border border-gym-accent/30 bg-gym-accent/10 hover:bg-gym-accent hover:text-black text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm font-semibold"
                       title="Create a new custom exercise movement in your library"
                     >
                       <Plus className="w-3.5 h-3.5 shrink-0" />
                       CREATE EXERCISE
                     </button>
-                    <button
-                      onClick={handleFormatProgram}
-                      className="flex items-center justify-center gap-1.5 px-3 py-2 min-w-[84px] bg-gym-accent hover:bg-gym-accent/90 text-black rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-md shadow-gym-accent/20"
-                      title="Format and capture all selected exercises into a clean list view"
-                    >
-                      <ClipboardList className="w-3.5 h-3.5 shrink-0" />
-                      BUILD
-                    </button>
-                    <button
-                      onClick={handleClearAllExercises}
-                      className="flex items-center justify-center gap-1.5 px-3 py-2 min-w-[84px] bg-red-500/20 border border-red-500/50 hover:border-red-500/75 hover:bg-red-500/35 text-red-400 rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-red-500/5"
-                      title="Clear and de-select all exercises from weekly programming"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                      CLEAR
-                    </button>
+                    <div className="flex items-center gap-2 w-full">
+                      <button
+                        type="button"
+                        onClick={handleFormatProgram}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 min-w-[84px] bg-gym-accent hover:bg-gym-accent/90 text-black rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-md shadow-gym-accent/20"
+                        title="Format and capture all selected exercises into a clean list view"
+                      >
+                        <ClipboardList className="w-3.5 h-3.5 shrink-0" />
+                        BUILD
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleClearAllExercises}
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 min-w-[84px] bg-red-500/20 border border-red-500/50 hover:border-red-500/75 hover:bg-red-500/35 text-red-400 rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm shadow-red-500/5"
+                        title="Clear and de-select all exercises from weekly programming"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                        CLEAR
+                      </button>
+                    </div>
                   </div>
                 </div>
 
