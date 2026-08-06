@@ -1009,6 +1009,20 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Glute Lockout & Rib Position: Lock out your hips at the top by contracting your glutes aggressively for 1-2 seconds. Keep your chin slightly tucked and your ribs pulled down to prevent lower back arching.",
         "Controlled Descent: Lower your hips back down in a smooth, controlled motion until you feel a deep stretch in your glutes, then repeat without letting the weight stack or lever crash."
       ]
+    },
+    {
+      name: "Seated Leg Curl",
+      icon: "ArrowDown",
+      pool: "hamstrings",
+      muscleGroup: "hamstrings",
+      legRegion: "upper",
+      instructions: [
+        "Machine & Seat Adjustment: Sit on the seated leg curl machine and adjust the backrest so your knee joints align precisely with the machine's pivot axis. Position the thigh pad firmly against your lower quads to keep your upper body locked down.",
+        "Lower Pad Placement: Adjust the lower leg roller pad so it rests comfortably against the back of your lower calves/Achilles, just above your ankles. Pull the thigh lock lever down securely.",
+        "The Curl Execution: Inhale, brace your core, and drive through your hamstrings to curl the lower pad down and backward toward your glutes in a smooth, sweeping motion.",
+        "Peak Contraction: Hold the fully contracted bottom position for 1-2 seconds, squeezing your hamstrings intensely while keeping your back flat against the seat.",
+        "Controlled Eccentric Return: Exhale and slowly guide the pad back up to the starting position over 2-3 seconds under complete control, feeling a deep stretch across your hamstrings before initiating the next rep."
+      ]
     }
   ],
   calves: [
@@ -1272,6 +1286,32 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "The Extension (Execution): Inhale, brace your core, and extend your arm upwards by contracting your triceps until your elbow is fully extended overhead. Keep your upper arm stationary and close to your head throughout.",
         "Peak Contraction: Squeeze the long head of your tricep intensely at the top lockout position for a brief second, feeling complete muscular engagement.",
         "Controlled Eccentric Stretch: Slowly lower the handle back behind your head in a controlled 2-3 second movement, taking your tricep into a deep stretch before initiating the next repetition."
+      ]
+    },
+    {
+      name: "Bayesian Tricep Extension",
+      icon: "ArrowUpCircle",
+      pool: "long_triceps",
+      muscleGroup: "triceps",
+      instructions: [
+        "Cable & Pulley Setup: Set a cable pulley at high height (shoulder height or above) and attach a single handle or D-grip attachment. Stand facing away from the cable machine with feet staggered for maximum stability.",
+        "Initial Positioning: Hold the attachment behind your body, letting your upper arm angle backward so your tricep long head is under continuous stretch.",
+        "Extension Execution: Inhale, brace your core, and extend your arm forward and upward by contracting your triceps until your elbow locks out.",
+        "Peak Contraction: Squeeze your triceps intensely at the top of the movement while keeping your shoulder stabilized.",
+        "Controlled Stretch: Slowly lower the weight back into the deep stretched position behind you over 2-3 seconds before starting the next rep."
+      ]
+    },
+    {
+      name: "Bayesian Tricep",
+      icon: "ArrowUpCircle",
+      pool: "long_triceps",
+      muscleGroup: "triceps",
+      instructions: [
+        "Cable & Pulley Setup: Set a cable pulley at high height (shoulder height or above) and attach a single handle or D-grip attachment. Stand facing away from the cable machine with feet staggered for maximum stability.",
+        "Initial Positioning: Hold the attachment behind your body, letting your upper arm angle backward so your tricep long head is under continuous stretch.",
+        "Extension Execution: Inhale, brace your core, and extend your arm forward and upward by contracting your triceps until your elbow locks out.",
+        "Peak Contraction: Squeeze your triceps intensely at the top of the movement while keeping your shoulder stabilized.",
+        "Controlled Stretch: Slowly lower the weight back into the deep stretched position behind you over 2-3 seconds before starting the next rep."
       ]
     }
   ],
@@ -2409,6 +2449,11 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Battle Rope Outside Circles": "LcvzYXQZniY",
   "Battle Rope Slams": "FInbOExDeU0",
   "Bayesian Curls": "_Z8Afknw_Fc",
+  "Bayesian Tricep Extension": "https://www.tiktok.com/@bio_fit_anatomy/video/7515485715401133342",
+  "Bayesian Tricep": "https://www.tiktok.com/@bio_fit_anatomy/video/7515485715401133342",
+  "Bayesian Triceps": "https://www.tiktok.com/@bio_fit_anatomy/video/7515485715401133342",
+  "Seated Leg Curl": "https://www.tiktok.com/@thewhitestchocolat/video/7615672180642188574",
+  "Seated Leg Curls": "https://www.tiktok.com/@thewhitestchocolat/video/7615672180642188574",
   "Behind-the-Back Wrist Curls": "Cj9RNAYD7iY",
   "Cable Wrist Curls": "Avvmae4hIMA",
   "Reverse Cable Wrist Curls": "https://www.tiktok.com/@ibrku/video/7488062439058115848",

@@ -1524,6 +1524,66 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
     }
   }
 
+  // Bayesian Tricep / Bayesian Tricep Extension
+  if (nameLower.includes("bayesian tricep") || nameLower.includes("bayesian triceps")) {
+    const targetSteps = [
+      "Cable Pulley & Attachment Setup: Set a cable pulley at high height (shoulder height or above). Attach a single handle or D-grip, and stand facing away from the cable stack in a strong staggered split stance for balance.",
+      "Arm Positioning & Stretch Phase: Hold the handle behind your torso with your upper arm angled slightly backward, allowing the cable to pull your elbow back into a deep stretch on the tricep long head.",
+      "The Extension Phase: Inhale, brace your core, and extend your arm forward and upward by aggressively contracting your tricep head until your elbow reaches complete lockout in front of your body.",
+      "Peak Squeeze & Lockout: Hold the peak lockout position for 1-2 seconds, squeezing your triceps maximally while keeping your shoulder socket pinned stationary.",
+      "Controlled Eccentric Negative: Slowly allow the cable resistance to pull your forearm back into the deep stretched position behind your body over 2-3 seconds, maintaining continuous muscular tension throughout."
+    ];
+    const targetYoutubeId = "";
+    const targetYoutubeUrl = "https://www.tiktok.com/@bio_fit_anatomy/video/7515485715401133342";
+
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch || currentEx.pool !== "long_triceps" || currentEx.muscleGroup !== "triceps") {
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl,
+        pool: "long_triceps",
+        muscleGroup: "triceps"
+      };
+      changed = true;
+    }
+  }
+
+  // Seated Leg Curl
+  if (nameLower.includes("seated leg curl") || nameLower.includes("seated leg curls")) {
+    const targetSteps = [
+      "Machine & Seat Adjustment: Sit on the seated leg curl machine and adjust the backrest so your knee joints align precisely with the machine's pivot axis. Position the thigh pad firmly against your lower quads to keep your upper body locked down.",
+      "Lower Pad Placement: Adjust the lower leg roller pad so it rests comfortably against the back of your lower calves/Achilles, just above your ankles. Pull the thigh lock lever down securely.",
+      "The Curl Execution: Inhale, brace your core, and drive through your hamstrings to curl the lower pad down and backward toward your glutes in a smooth, sweeping motion.",
+      "Peak Contraction: Hold the fully contracted bottom position for 1-2 seconds, squeezing your hamstrings intensely while keeping your back flat against the seat.",
+      "Controlled Eccentric Return: Exhale and slowly guide the pad back up to the starting position over 2-3 seconds under complete control, feeling a deep stretch across your hamstrings before initiating the next rep."
+    ];
+    const targetYoutubeId = "";
+    const targetYoutubeUrl = "https://www.tiktok.com/@thewhitestchocolat/video/7615672180642188574";
+
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch || currentEx.pool !== "hamstrings" || currentEx.muscleGroup !== "hamstrings") {
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl,
+        pool: "hamstrings",
+        muscleGroup: "hamstrings"
+      };
+      changed = true;
+    }
+  }
+
   // Generic static library fallback lookup for any custom exercise
   // that lacks professional guidance/instructions.
   const hasNoInstructions = !currentEx.instructions || 
@@ -5286,6 +5346,12 @@ export default function App() {
     if (creatingCustomForDay !== null) {
       handleAddExerciseToPlan(creatingCustomForDay, newEx);
       setCreatingCustomForDay(null);
+    } else if (isCreatingRoutine) {
+      handleAddExercise(newEx.name);
+      setToast({
+        message: `"${name}" created & added to Routine`,
+        type: "success",
+      });
     } else {
       setToast({
         message: `"${name}" added to Exercise Library`,
@@ -14191,13 +14257,32 @@ export default function App() {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                       {/* Selector/Finder on the left */}
                       <div className="space-y-4 bg-white/[0.01] border border-white/5 p-6 rounded-md">
-                        <div>
-                          <h4 className="text-sm font-semibold italic font-serif text-white/90">
-                            Add Exercises
-                          </h4>
-                          <p className="text-[10px] text-white/30 uppercase tracking-wider font-bold mt-0.5">
-                            Search or select exercises from standard lists
-                          </p>
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div>
+                            <h4 className="text-sm font-semibold italic font-serif text-white/90">
+                              Add Exercises
+                            </h4>
+                            <p className="text-[10px] text-white/30 uppercase tracking-wider font-bold mt-0.5">
+                              Search or select exercises from standard lists
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCustomExName("");
+                              setCustomExVideoUrl("");
+                              setCustomGuidanceSteps([]);
+                              setGuidanceStepInput("");
+                              setCustomExPool("upper_chest");
+                              setCustomExCategory("compound");
+                              setCreatingCustomForDay(null);
+                              setShowAddCustomModal(true);
+                            }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 border border-gym-accent/30 bg-gym-accent/10 hover:bg-gym-accent hover:text-black text-gym-accent rounded-md text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer shadow-sm font-semibold"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            Create Exercise
+                          </button>
                         </div>
 
                         <div className="relative">
@@ -14626,6 +14711,23 @@ export default function App() {
                         >
                           <Share2 className="w-3.5 h-3.5" />
                           {showCompactList ? "Standard List" : "One-Page Share View"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCustomExName("");
+                            setCustomExVideoUrl("");
+                            setCustomGuidanceSteps([]);
+                            setGuidanceStepInput("");
+                            setCustomExPool("upper_chest");
+                            setCustomExCategory("compound");
+                            setCreatingCustomForDay(null);
+                            setShowAddCustomModal(true);
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 border border-gym-accent/30 bg-gym-accent/10 hover:bg-gym-accent hover:text-black text-gym-accent text-[10px] font-bold uppercase tracking-widest transition-all rounded-md cursor-pointer font-semibold"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Create Exercise
                         </button>
                         <button
                           onClick={() => {
@@ -15909,6 +16011,24 @@ export default function App() {
                   </div>
                   <div className="flex flex-wrap items-center justify-end gap-2 ml-auto">
                     <button
+                      type="button"
+                      onClick={() => {
+                        setCustomExName("");
+                        setCustomExVideoUrl("");
+                        setCustomGuidanceSteps([]);
+                        setGuidanceStepInput("");
+                        setCustomExPool("upper_chest");
+                        setCustomExCategory("compound");
+                        setCreatingCustomForDay(null);
+                        setShowAddCustomModal(true);
+                      }}
+                      className="flex items-center justify-center gap-1.5 px-3 py-2 border border-gym-accent/30 bg-gym-accent/10 hover:bg-gym-accent hover:text-black text-gym-accent rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-sm font-semibold"
+                      title="Create a new custom exercise movement in your library"
+                    >
+                      <Plus className="w-3.5 h-3.5 shrink-0" />
+                      CREATE EXERCISE
+                    </button>
+                    <button
                       onClick={handleFormatProgram}
                       className="flex items-center justify-center gap-1.5 px-3 py-2 min-w-[84px] bg-gym-accent hover:bg-gym-accent/90 text-black rounded-md text-[10px] font-black uppercase tracking-[0.15em] transition-all cursor-pointer shadow-md shadow-gym-accent/20"
                       title="Format and capture all selected exercises into a clean list view"
@@ -16527,9 +16647,14 @@ export default function App() {
                             <span className="font-semibold text-[11px] text-white/90 truncate max-w-[150px] sm:max-w-[200px]">
                               {item.exercise.name}
                             </span>
-                            <span className="text-[8px] font-mono font-bold text-white/35 border border-white/5 bg-white/[0.01] px-1 py-0.5 rounded shrink-0 uppercase tracking-wide">
-                              {item.categoryName.split(" & ")[0]}
-                            </span>
+                            {(() => {
+                              const muscleGroupTag = getExerciseMuscleGroup(item.exercise.name) || item.categoryName.split(" & ")[0];
+                              return (
+                                <span className="text-[8px] font-mono font-bold text-gym-accent/80 border border-gym-accent/20 bg-gym-accent/10 px-1.5 py-0.5 rounded shrink-0 uppercase tracking-wide">
+                                  {muscleGroupTag}
+                                </span>
+                              );
+                            })()}
                             <button
                               type="button"
                               onClick={() => handleRemoveExerciseFromPlan(item.dayIdx, item.exIdx)}
