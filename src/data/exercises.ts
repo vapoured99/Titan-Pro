@@ -1289,19 +1289,6 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     {
-      name: "Bayesian Tricep Extension",
-      icon: "ArrowUpCircle",
-      pool: "long_triceps",
-      muscleGroup: "triceps",
-      instructions: [
-        "Cable & Pulley Setup: Set a cable pulley at high height (shoulder height or above) and attach a single handle or D-grip attachment. Stand facing away from the cable machine with feet staggered for maximum stability.",
-        "Initial Positioning: Hold the attachment behind your body, letting your upper arm angle backward so your tricep long head is under continuous stretch.",
-        "Extension Execution: Inhale, brace your core, and extend your arm forward and upward by contracting your triceps until your elbow locks out.",
-        "Peak Contraction: Squeeze your triceps intensely at the top of the movement while keeping your shoulder stabilized.",
-        "Controlled Stretch: Slowly lower the weight back into the deep stretched position behind you over 2-3 seconds before starting the next rep."
-      ]
-    },
-    {
       name: "Bayesian Tricep",
       icon: "ArrowUpCircle",
       pool: "long_triceps",
