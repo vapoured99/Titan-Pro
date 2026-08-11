@@ -231,6 +231,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Stabilize your body to prevent swinging or rotating.",
         "Slowly return to the starting position."
       ]
+    },
+    { 
+      name: "Dumbbell Floor Fly", 
+      icon: "ArrowLeftRight", 
+      pool: "middle_chest",
+      instructions: [
+        "Lie on the floor with your knees bent and feet flat.",
+        "Hold dumbbells above your chest with a slight bend in the elbows.",
+        "Lower the weights out to the sides until your upper arms touch the floor.",
+        "Squeeze your chest to bring the weights back together.",
+        "The floor limits the range of motion, protecting the shoulders."
+      ]
     }
   ],
   lower_chest: [
@@ -1103,6 +1115,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Squeeze your biceps and latissimus dorsi muscles intensely to hold your physical positioning for the target duration.",
         "Under deliberate control, slowly lower your body back to a full dead hang position once the target time is reached or failure occurs."
       ]
+    },
+    {
+      name: "Bayesian Curls",
+      icon: "ArrowUpCircle",
+      pool: "long_biceps",
+      instructions: [
+        "Attach a single D-handle to a cable pulley positioned at the lowest setting.",
+        "Grasp the handle, turn your back to the machine, and take a large step forward into a stable, staggered stance.",
+        "Allow the cable tension to pull your arm slightly behind your torso, placing the long head of the biceps under a deep passive stretch.",
+        "Brace your core, keep your elbow completely locked relative to your body, and curl the handle forward and upward toward your shoulder.",
+        "Contract your biceps powerfully at the peak contraction, then slowly lower the handle back down under deliberate control."
+      ]
     }
   ],
   short_biceps: [
@@ -1216,18 +1240,6 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
       ]
     },
     {
-      name: "Bayesian Curls",
-      icon: "ArrowUpCircle",
-      pool: "brachialis",
-      instructions: [
-        "Attach a single D-handle to a cable pulley positioned at the lowest setting.",
-        "Grasp the handle, turn your back to the machine, and take a large step forward into a stable, staggered stance.",
-        "Allow the cable tension to pull your arm slightly behind your torso, placing the brachialis and the long head of the biceps under a deep passive stretch.",
-        "Brace your core, keep your elbow completely locked relative to your body, and curl the handle forward and upward toward your shoulder.",
-        "Contract your biceps and brachialis powerfully at the peak contraction, then slowly lower the handle back down under deliberate control."
-      ]
-    },
-    {
       name: "Hammer Preacher Curls",
       icon: "ArrowUpCircle",
       pool: "brachialis",
@@ -1300,6 +1312,19 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Peak Contraction: Squeeze your triceps intensely at the top of the movement while keeping your shoulder stabilized.",
         "Controlled Stretch: Slowly lower the weight back into the deep stretched position behind you over 2-3 seconds before starting the next rep."
       ]
+    },
+    {
+      name: "Tricep Kickback",
+      icon: "Dumbbell",
+      pool: "long_triceps",
+      muscleGroup: "triceps",
+      instructions: [
+        "Set Up & Bench Positioning: Place your non-working knee and hand flat on a flat bench to support your spine. Keep your torso parallel to the floor, with your core braced and lower back flat. Hold a dumbbell in your working hand with a neutral grip (palm facing inward).",
+        "Arm Alignment & Lockout: Pull your upper arm up alongside your torso until it is parallel to the ground, locking your elbow securely in place at a 90-degree angle. Keep your upper arm completely stationary throughout the set.",
+        "Execution (The Kickback): Exhale, brace your core, and extend your arm backward by contracting your tricep until your elbow reaches full lockout and your forearm is parallel to the floor.",
+        "Peak Squeeze: Hold the peak lockout position for 1-2 seconds, squeezing the lateral and long heads of your tricep aggressively at full contraction without rotating your torso.",
+        "Controlled Eccentric Return: Inhale and slowly lower the dumbbell back down to the 90-degree elbow position under strict 2-3 second control, maintaining continuous tension on the tricep. Complete all reps before switching sides."
+      ]
     }
   ],
   lateral_triceps: [
@@ -1325,6 +1350,18 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Execution (Pushdown): Exhale and drive the handle straight down by contracting your triceps until your arm is completely straight alongside your hip.",
         "Peak Squeeze: Flex and squeeze your tricep aggressively at the bottom lockout position without allowing your shoulder to roll forward or lift.",
         "Controlled Negative: Slowly guide the handle back up to approximately 90 degrees at elbow height, maintaining continuous cable tension on the tricep throughout the full range of motion."
+      ]
+    },
+    {
+      name: "Tricep Dip Machine",
+      icon: "ArrowDown",
+      pool: "lateral_triceps",
+      instructions: [
+        "Sit in the dip machine with your back flat against the pad and feet firm on the floor.",
+        "Grip the handles at your sides and press down until your arms are fully extended.",
+        "Squeeze your triceps at the bottom of the movement.",
+        "Slowly allow the handles to return to shoulder height with control.",
+        "Keep your shoulders depressed and core braced throughout the press."
       ]
     }
   ],
@@ -1363,18 +1400,6 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
         "Press the bar back up explosively using your triceps.",
         "Keep your feet flat on the floor and core engaged.",
         "This version shifts the emphasis from the chest to the triceps."
-      ]
-    },
-    { 
-      name: "Dumbbell Floor Fly", 
-      icon: "ArrowLeftRight", 
-      pool: "medial_triceps",
-      instructions: [
-        "Lie on the floor with your knees bent and feet flat.",
-        "Hold dumbbells above your chest with a slight bend in the elbows.",
-        "Lower the weights out to the sides until your upper arms touch the floor.",
-        "Squeeze your chest and triceps to bring the weights back together.",
-        "The floor limits the range of motion, protecting the shoulders."
       ]
     },
     { 
@@ -2423,6 +2448,12 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Band Bicep Curls": "20xtfGZ37nw",
   "Band Chest Press": "T0UJ0W-_yIE",
   "Band Glute Kickbacks": "CZvQm1vNzD0",
+  "Tricep Kickback": "ZvF4Oi_6Vtg",
+  "Tricep Kickbacks": "ZvF4Oi_6Vtg",
+  "Triceps Kickback": "ZvF4Oi_6Vtg",
+  "Triceps Kickbacks": "ZvF4Oi_6Vtg",
+  "Dumbbell Tricep Kickback": "ZvF4Oi_6Vtg",
+  "Dumbbell Tricep Kickbacks": "ZvF4Oi_6Vtg",
   "Band Pull-Aparts": "SuvO4TBwSu4",
   "Barbell Back Squat": "rrJIyZGlK8c",
   "Barbell Bench Press": "CjHIKDQ4RQo",

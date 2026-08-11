@@ -604,6 +604,15 @@ export const DAY_CONFIG = [
     border: "border-gym-accent/10",
     text: "text-white",
   },
+  {
+    label: "7",
+    name: "Custom Movements",
+    pools: ["custom"],
+    icon: <Sparkles className="w-5 h-5 text-gym-accent" />,
+    bg: "bg-white/[0.03]",
+    border: "border-gym-accent/10",
+    text: "text-white",
+  },
 ];
 
 export function getStopwatchDurationMs(profile: UserProfile | null): number {
@@ -1584,6 +1593,36 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
     }
   }
 
+  // Tricep Kickback
+  if (nameLower.includes("kickback") && !nameLower.includes("glute")) {
+    const targetSteps = [
+      "Set Up & Bench Positioning: Place your non-working knee and hand flat on a flat bench to support your spine. Keep your torso parallel to the floor, with your core braced and lower back flat. Hold a dumbbell in your working hand with a neutral grip (palm facing inward).",
+      "Arm Alignment & Lockout: Pull your upper arm up alongside your torso until it is parallel to the ground, locking your elbow securely in place at a 90-degree angle. Keep your upper arm completely stationary throughout the set.",
+      "Execution (The Kickback): Exhale, brace your core, and extend your arm backward by contracting your tricep until your elbow reaches full lockout and your forearm is parallel to the floor.",
+      "Peak Squeeze: Hold the peak lockout position for 1-2 seconds, squeezing the lateral and long heads of your tricep aggressively at full contraction without rotating your torso.",
+      "Controlled Eccentric Return: Inhale and slowly lower the dumbbell back down to the 90-degree elbow position under strict 2-3 second control, maintaining continuous tension on the tricep. Complete all reps before switching sides."
+    ];
+    const targetYoutubeId = "ZvF4Oi_6Vtg";
+    const targetYoutubeUrl = "https://www.youtube.com/watch?v=ZvF4Oi_6Vtg";
+
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch || currentEx.pool !== "long_triceps" || currentEx.muscleGroup !== "triceps") {
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl,
+        pool: "long_triceps",
+        muscleGroup: "triceps"
+      };
+      changed = true;
+    }
+  }
+
   // Generic static library fallback lookup for any custom exercise
   // that lacks professional guidance/instructions.
   const hasNoInstructions = !currentEx.instructions || 
@@ -1827,7 +1866,11 @@ export default function App() {
               e.name.trim() !== "Hammer Preacher" &&
               e.name.trim() !== "Dumbbell Preacher" &&
               e.name.trim() !== "Pull-up Hold" &&
-              e.name.trim().toLowerCase() !== "incline seated row"
+              e.name.trim().toLowerCase() !== "incline seated row" &&
+              e.name.trim().toLowerCase() !== "testtest" &&
+              e.name.trim().toLowerCase() !== "test" &&
+              e.name.trim().toLowerCase() !== "testing123" &&
+              !e.name.trim().toLowerCase().startsWith("test")
           );
           let hasAnyChanges = false;
           const migratedList = filtered.map((ex) => {
@@ -2127,9 +2170,12 @@ export default function App() {
 
   const combinedPools: Record<string, Exercise[]> = useMemo(() => {
     const merged: Record<string, Exercise[]> = { ...POOLS };
+    if (!merged["custom"]) {
+      merged["custom"] = [];
+    }
     customExercises.forEach((ex) => {
+      const poolKey = ex.pool || "custom";
       if (ex.integrated) {
-        const poolKey = ex.pool;
         if (merged[poolKey]) {
           if (
             !merged[poolKey].some(
@@ -2140,6 +2186,14 @@ export default function App() {
           }
         } else {
           merged[poolKey] = [ex];
+        }
+      } else {
+        if (
+          !merged["custom"].some(
+            (e) => e.name.trim().toLowerCase() === ex.name.trim().toLowerCase(),
+          )
+        ) {
+          merged["custom"] = [...merged["custom"], ex];
         }
       }
     });
@@ -2696,6 +2750,9 @@ export default function App() {
   const [addingToDay, setAddingToDay] = useState<number | null>(null);
   const [modalSearch, setModalSearch] = useState("");
   const [selectedModalExercises, setSelectedModalExercises] = useState<Exercise[]>([]);
+  const [modalCategoryFilter, setModalCategoryFilter] = useState<string>("all");
+  const [addToPlanOnCreate, setAddToPlanOnCreate] = useState(true);
+  const [expandedCustomSection, setExpandedCustomSection] = useState(false);
   const [expandedProgressSections, setExpandedProgressSections] = useState<
     Record<string, boolean>
   >({
@@ -3738,8 +3795,11 @@ export default function App() {
           }
         });
 
-        // 3. Delete custom exercise "Incline Seated Row" from cloud in all possible casings
-        const casingVariants = ["Incline Seated Row", "INCLINE SEATED ROW", "Incline seated row", "incline seated row"];
+        // 3. Delete custom exercise "Incline Seated Row" and test exercises from cloud
+        const casingVariants = [
+          "Incline Seated Row", "INCLINE SEATED ROW", "Incline seated row", "incline seated row",
+          "test", "TEST", "Test", "testing123", "TESTING123", "Testing123", "testtest", "TESTTEST"
+        ];
         casingVariants.forEach((variant) => {
           const customExRef = doc(db, `users/${currentUser.uid}/custom_exercises`, variant);
           batch.delete(customExRef);
@@ -3765,7 +3825,7 @@ export default function App() {
 
   // Reset user-specific states when user accounts shift or log out
   useEffect(() => {
-    setCurrentDays([[], [], [], [], [], []]);
+    setCurrentDays([[], [], [], [], [], [], []]);
     setPersonalBests({});
     setWorkoutsLoaded(false);
     setPbsLoaded(false);
@@ -3789,7 +3849,11 @@ export default function App() {
                 e.name.trim() !== "Hammer Preacher" &&
                 e.name.trim() !== "Dumbbell Preacher" &&
                 e.name.trim() !== "Pull-up Hold" &&
-                e.name.trim().toLowerCase() !== "incline seated row"
+                e.name.trim().toLowerCase() !== "incline seated row" &&
+                e.name.trim().toLowerCase() !== "testtest" &&
+                e.name.trim().toLowerCase() !== "test" &&
+                e.name.trim().toLowerCase() !== "testing123" &&
+                !e.name.trim().toLowerCase().startsWith("test")
             );
             let hasAnyChanges = false;
             const migratedList = filtered.map((ex) => {
@@ -3894,7 +3958,7 @@ export default function App() {
           if (data.days) {
             let daysArr: Exercise[][] = [];
             if (!Array.isArray(data.days)) {
-              for (let i = 0; i < 6; i++) {
+              for (let i = 0; i < DAY_CONFIG.length; i++) {
                 const exList = (data.days[`d${i}`] || []).map((ex: any) => {
                   ex.name = migrateExerciseName(ex.name);
                   const { migrated } = migrateCustomExercise(ex);
@@ -4260,7 +4324,16 @@ export default function App() {
         snapshot.forEach((d) => {
           const ex = d.data() as Exercise;
           const trimmedLower = (ex.name || "").trim().toLowerCase();
-          if (trimmedLower === "hammer preacher" || trimmedLower === "dumbbell preacher" || trimmedLower === "pull-up hold" || trimmedLower === "incline seated row") {
+          if (
+            trimmedLower === "hammer preacher" ||
+            trimmedLower === "dumbbell preacher" ||
+            trimmedLower === "pull-up hold" ||
+            trimmedLower === "incline seated row" ||
+            trimmedLower === "testtest" ||
+            trimmedLower === "test" ||
+            trimmedLower === "testing123" ||
+            trimmedLower.startsWith("test")
+          ) {
             const idSafe = ex.name.replace(/\//g, "-");
             deleteDoc(doc(db, `users/${currentUser.uid}/custom_exercises`, idSafe))
               .catch((err) => console.error("Auto delete custom exercise failed:", err));
@@ -5343,13 +5416,28 @@ export default function App() {
       }
     }
 
+    const poolTargetDay = DAY_CONFIG.findIndex(day => day.pools.includes(newEx.pool));
+    const targetDay = creatingCustomForDay !== null
+      ? creatingCustomForDay
+      : (poolTargetDay !== -1 ? poolTargetDay : (lastLoadedDayIndex !== null ? lastLoadedDayIndex : 0));
+
     if (creatingCustomForDay !== null) {
       handleAddExerciseToPlan(creatingCustomForDay, newEx);
       setCreatingCustomForDay(null);
+      setToast({
+        message: `"${name}" added to Custom Library & ${DAY_CONFIG[targetDay]?.name || "Plan"}!`,
+        type: "success",
+      });
     } else if (isCreatingRoutine) {
       handleAddExercise(newEx.name);
       setToast({
         message: `"${name}" created & added to Routine`,
+        type: "success",
+      });
+    } else if (addToPlanOnCreate) {
+      handleAddExerciseToPlan(targetDay, newEx);
+      setToast({
+        message: `"${name}" added to Custom Library & ${DAY_CONFIG[targetDay]?.name || "Plan"}!`,
         type: "success",
       });
     } else {
@@ -5394,18 +5482,23 @@ export default function App() {
       });
       sorted.push(...groupExs);
     });
-
     return sorted;
   };
 
   const handleAddMultipleExercisesToPlan = (dayIndex: number, exercises: Exercise[]) => {
     if (exercises.length === 0) return;
     const nextDays = [...currentDays];
+    if (!nextDays[dayIndex]) {
+      nextDays[dayIndex] = [];
+    }
     const existingNames = new Set(nextDays[dayIndex].map((e) => e.name.toLowerCase()));
     const toAdd = exercises.filter((ex) => !existingNames.has(ex.name.toLowerCase()));
 
     if (toAdd.length === 0) {
-      alert("All selected exercises are already in the plan for this day.");
+      setToast({
+        message: "All selected exercises are already in the plan for this day.",
+        type: "info",
+      });
       return;
     }
 
@@ -5416,13 +5509,61 @@ export default function App() {
     setAddingToDay(null);
     setModalSearch("");
     setSelectedModalExercises([]);
+
+    // Update formattedProgram for instant display on Plan page
+    setFormattedProgram((prevProgram) => {
+      const existingDayIdx = prevProgram.findIndex((item) => item.dayIndex === dayIndex);
+      if (existingDayIdx !== -1) {
+        return prevProgram.map((item) => {
+          if (item.dayIndex === dayIndex) {
+            const currentExNames = new Set(item.exercises.map((e) => e.name.toLowerCase()));
+            const newExs = toAdd.filter((ex) => !currentExNames.has(ex.name.toLowerCase()));
+            return {
+              ...item,
+              exercises: sortExercisesMuscleGroupWise([...item.exercises, ...newExs]),
+            };
+          }
+          return item;
+        });
+      } else {
+        const newDayItem = {
+          dayIndex,
+          dayName: DAY_CONFIG[dayIndex]?.name || `Day ${dayIndex + 1}`,
+          exercises: sortExercisesMuscleGroupWise(toAdd),
+        };
+        const next = [...prevProgram, newDayItem];
+        return next.sort((a, b) => a.dayIndex - b.dayIndex);
+      }
+    });
+
+    // Update aiPlanExercises for instant display on AI Plan page
+    setAiPlanExercises((prev) => {
+      const existingAiNames = new Set(prev.map((a) => a.exercise.name.toLowerCase()));
+      const newAiItems: AIPlanExercise[] = toAdd
+        .filter((ex) => !existingAiNames.has(ex.name.toLowerCase()))
+        .map((ex) => ({
+          exercise: ex,
+          targetSets: 3,
+          targetReps: "10",
+        }));
+      if (newAiItems.length === 0) return prev;
+      const updated = [...prev, ...newAiItems];
+      localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const handleAddExerciseToPlan = (dayIndex: number, ex: Exercise) => {
     const nextDays = [...currentDays];
-    // Prevent duplicates
-    if (nextDays[dayIndex].some((e) => e.name === ex.name)) {
-      alert("Exercise already in plan for this day.");
+    if (!nextDays[dayIndex]) {
+      nextDays[dayIndex] = [];
+    }
+    // Prevent duplicates in builder
+    if (nextDays[dayIndex].some((e) => e.name.toLowerCase() === ex.name.toLowerCase())) {
+      setToast({
+        message: `"${ex.name}" is already in your Plan for ${DAY_CONFIG[dayIndex]?.name || "this day"}.`,
+        type: "info",
+      });
       return;
     }
     const merged = [...nextDays[dayIndex], ex];
@@ -5431,6 +5572,48 @@ export default function App() {
     saveWorkout(nextDays);
     setAddingToDay(null);
     setModalSearch("");
+
+    // Update formattedProgram for instant display on Plan page
+    setFormattedProgram((prevProgram) => {
+      const existingDayIdx = prevProgram.findIndex((item) => item.dayIndex === dayIndex);
+      if (existingDayIdx !== -1) {
+        return prevProgram.map((item) => {
+          if (item.dayIndex === dayIndex) {
+            if (item.exercises.some((e) => e.name.toLowerCase() === ex.name.toLowerCase())) {
+              return item;
+            }
+            return {
+              ...item,
+              exercises: sortExercisesMuscleGroupWise([...item.exercises, ex]),
+            };
+          }
+          return item;
+        });
+      } else {
+        const newDayItem = {
+          dayIndex,
+          dayName: DAY_CONFIG[dayIndex]?.name || `Day ${dayIndex + 1}`,
+          exercises: [ex],
+        };
+        const next = [...prevProgram, newDayItem];
+        return next.sort((a, b) => a.dayIndex - b.dayIndex);
+      }
+    });
+
+    // Update aiPlanExercises for instant display on AI Plan page
+    setAiPlanExercises((prev) => {
+      if (prev.some((a) => a.exercise.name.toLowerCase() === ex.name.toLowerCase())) {
+        return prev;
+      }
+      const newAiItem: AIPlanExercise = {
+        exercise: ex,
+        targetSets: 3,
+        targetReps: "10",
+      };
+      const updated = [...prev, newAiItem];
+      localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const handlePermanentlyDeleteCustomExercise = async (exName: string) => {
@@ -6707,7 +6890,7 @@ export default function App() {
         `users/${currentUser.uid}/workout/current`,
       );
       const emptyDaysObj: Record<string, Exercise[]> = {};
-      for (let i = 0; i < 6; i++) {
+      for (let i = 0; i < DAY_CONFIG.length; i++) {
         emptyDaysObj[`d${i}`] = [];
       }
       batch.set(currentWorkoutRef, {
@@ -6719,7 +6902,7 @@ export default function App() {
       await batch.commit();
 
       // Update local state for instant feedback
-      setCurrentDays([[], [], [], [], [], []]);
+      setCurrentDays([[], [], [], [], [], [], []]);
       setFormattedProgram([]);
       setAiPlanExercises([]);
       setAiWorkoutActive(false);
@@ -9932,42 +10115,14 @@ export default function App() {
                                               </button>
                                               <button
                                                 onClick={() => {
-                                                  const alreadyInAI = aiPlanExercises.some(
-                                                    (a) => a.exercise.name.toLowerCase() === activeExercise.name.toLowerCase()
-                                                  );
-                                                  if (!alreadyInAI) {
-                                                    const nextAIPlan = [...aiPlanExercises, {
-                                                      exercise: activeExercise,
-                                                      targetSets: 3,
-                                                      targetReps: "10"
-                                                    }];
-                                                    setAiPlanExercises(nextAIPlan);
-                                                    localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlan));
-
-                                                    // Keep Plan Builder selection queue in sync
-                                                    const pool = activeExercise.pool || "";
-                                                    const targetDayIdx = DAY_CONFIG.findIndex(day => day.pools.includes(pool));
-                                                    const dayIdx = targetDayIdx !== -1 ? targetDayIdx : 4;
-                                                    const nextCurrentDays = [...currentDays];
-                                                    if (!nextCurrentDays[dayIdx]) {
-                                                      nextCurrentDays[dayIdx] = [];
-                                                    }
-                                                    if (!nextCurrentDays[dayIdx].some(e => e.name.toLowerCase() === activeExercise.name.toLowerCase())) {
-                                                      nextCurrentDays[dayIdx] = [...nextCurrentDays[dayIdx], activeExercise];
-                                                      setCurrentDays(nextCurrentDays);
-                                                      saveWorkout(nextCurrentDays);
-                                                    }
-
-                                                    setToast({
-                                                      message: `"${activeExercise.name}" has been added straight to your Plan!`,
-                                                      type: "success"
-                                                    });
-                                                  } else {
-                                                    setToast({
-                                                      message: `"${activeExercise.name}" is already in your Plan.`,
-                                                      type: "info"
-                                                    });
-                                                  }
+                                                  const pool = activeExercise.pool || "";
+                                                  const targetDayIdx = DAY_CONFIG.findIndex(day => day.pools.includes(pool));
+                                                  const dayIdx = targetDayIdx !== -1 ? targetDayIdx : 4;
+                                                  handleAddExerciseToPlan(dayIdx, activeExercise);
+                                                  setToast({
+                                                    message: `"${activeExercise.name}" added straight to your Plan!`,
+                                                    type: "success"
+                                                  });
                                                 }}
                                                 className="py-1.5 px-2 text-[9px] uppercase font-black tracking-widest transition-all rounded-md flex items-center justify-center gap-1 font-mono cursor-pointer"
                                                 style={{
@@ -10281,42 +10436,14 @@ export default function App() {
                                       
                                       <button
                                         onClick={() => {
-                                          const alreadyInAI = aiPlanExercises.some(
-                                            (a) => a.exercise.name.toLowerCase() === ex.name.toLowerCase()
-                                          );
-                                          if (!alreadyInAI) {
-                                            const nextAIPlan = [...aiPlanExercises, {
-                                              exercise: ex,
-                                              targetSets: 3,
-                                              targetReps: "10"
-                                            }];
-                                            setAiPlanExercises(nextAIPlan);
-                                            localStorage.setItem("gym_ai_plan_exercises", JSON.stringify(nextAIPlan));
-
-                                            // Keep Plan Builder selection queue in sync
-                                            const pool = ex.pool || "";
-                                            const targetDayIdx = DAY_CONFIG.findIndex(day => day.pools.includes(pool));
-                                            const dayIdx = targetDayIdx !== -1 ? targetDayIdx : 4;
-                                            const nextCurrentDays = [...currentDays];
-                                            if (!nextCurrentDays[dayIdx]) {
-                                              nextCurrentDays[dayIdx] = [];
-                                            }
-                                            if (!nextCurrentDays[dayIdx].some(e => e.name.toLowerCase() === ex.name.toLowerCase())) {
-                                              nextCurrentDays[dayIdx] = [...nextCurrentDays[dayIdx], ex];
-                                              setCurrentDays(nextCurrentDays);
-                                              saveWorkout(nextCurrentDays);
-                                            }
-
-                                            setToast({
-                                              message: `"${ex.name}" has been added straight to your Plan!`,
-                                              type: "success"
-                                            });
-                                          } else {
-                                            setToast({
-                                              message: `"${ex.name}" is already in your Plan.`,
-                                              type: "info"
-                                            });
-                                          }
+                                          const pool = ex.pool || "";
+                                          const targetDayIdx = DAY_CONFIG.findIndex(day => day.pools.includes(pool));
+                                          const dayIdx = targetDayIdx !== -1 ? targetDayIdx : 4;
+                                          handleAddExerciseToPlan(dayIdx, ex);
+                                          setToast({
+                                            message: `"${ex.name}" added straight to your Plan!`,
+                                            type: "success"
+                                          });
                                         }}
                                         className="p-2.5 bg-gym-accent hover:bg-gym-accent/95 text-black text-[9.5px] uppercase font-black tracking-widest transition-all rounded-md flex-1 flex items-center justify-center gap-1.5 font-mono cursor-pointer shadow-md shadow-gym-accent/10 active:scale-[0.98]"
                                         title="Add to Plan"
@@ -14150,29 +14277,32 @@ export default function App() {
                         </span>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
-                        {DAY_CONFIG.map((day, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => {
-                              setNewRoutineCategory(idx);
-                              // Auto name default based on theme
-                              if (!newRoutineName || DAY_CONFIG.some(d => newRoutineName.startsWith(d.name) || newRoutineName.includes("Routine"))) {
-                                setNewRoutineName(`${day.name} Routine`);
-                              }
-                            }}
-                            className={`p-3 rounded border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
-                              newRoutineCategory === idx
-                                ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_15px_rgba(255,231,101,0.12)] scale-[1.01]"
-                                : "bg-black/45 border-white/5 text-white/50 hover:bg-white/[0.02] hover:text-white"
-                            }`}
-                          >
-                            <div className="opacity-85 scale-110">{day.icon}</div>
-                            <span className="text-[9px] font-black uppercase tracking-widest leading-none text-center">
-                              {day.name}
-                            </span>
-                          </button>
-                        ))}
+                        {DAY_CONFIG.map((day, idx) => {
+                          if (day.pools.includes("custom")) return null;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setNewRoutineCategory(idx);
+                                // Auto name default based on theme
+                                if (!newRoutineName || DAY_CONFIG.some(d => newRoutineName.startsWith(d.name) || newRoutineName.includes("Routine"))) {
+                                  setNewRoutineName(`${day.name} Routine`);
+                                }
+                              }}
+                              className={`p-3 rounded border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-2 ${
+                                newRoutineCategory === idx
+                                  ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_15px_rgba(255,231,101,0.12)] scale-[1.01]"
+                                  : "bg-black/45 border-white/5 text-white/50 hover:bg-white/[0.02] hover:text-white"
+                              }`}
+                            >
+                              <div className="opacity-85 scale-110">{day.icon}</div>
+                              <span className="text-[9px] font-black uppercase tracking-widest leading-none text-center">
+                                {day.name}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
@@ -15029,6 +15159,7 @@ export default function App() {
                     )}
 
                     {DAY_CONFIG.map((day, di) => {
+                      if (day.pools.includes("custom")) return null;
                       const categoryRoutines = routines.filter(
                         (r) => getRoutineCategoryIndex(r) === di,
                       );
@@ -16197,7 +16328,7 @@ export default function App() {
                                 `users/${currentUser.uid}/workout/current`
                               );
                               const emptyDaysObj: Record<string, Exercise[]> = {};
-                              for (let i = 0; i < 6; i++) {
+                              for (let i = 0; i < DAY_CONFIG.length; i++) {
                                 emptyDaysObj[`d${i}`] = [];
                               }
                               batch.set(currentWorkoutRef, {
@@ -16211,7 +16342,7 @@ export default function App() {
                             }
                           }
 
-                          setCurrentDays([[], [], [], [], [], []]);
+                          setCurrentDays([[], [], [], [], [], [], []]);
                           setFormattedProgram([]);
                           setAiPlanExercises([]);
                           localStorage.removeItem("gym_ai_plan_exercises");
@@ -17261,7 +17392,7 @@ export default function App() {
                       </button>
                     </div>
                   </div>
-                  <div className="relative">
+                  <div className="relative w-full">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <input
                       type="text"
@@ -17269,32 +17400,103 @@ export default function App() {
                       autoFocus
                       value={modalSearch}
                       onChange={(e) => setModalSearch(e.target.value)}
-                      className="w-full bg-black/60 border border-white/20 rounded-md pl-12 pr-4 py-4 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
+                      className="w-full bg-black/60 border border-white/20 rounded-md pl-12 pr-4 py-3.5 text-sm font-light focus:outline-none focus:border-gym-accent transition-all text-white"
                     />
                   </div>
 
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
-                  {DAY_CONFIG[addingToDay].pools.map((poolKey) => {
-                    const pool = combinedPools[poolKey] || [];
-                    const filtered = pool.filter(
-                      (ex) =>
-                        ex.name
-                          .toLowerCase()
-                          .includes(modalSearch.toLowerCase()) &&
-                        !currentDays[addingToDay].some(
-                          (p) => p.name === ex.name,
-                        ),
-                    ).sort((a, b) => {
-                      const catA = a.category || "isolation";
-                      const catB = b.category || "isolation";
-                      if (catA === "compound" && catB !== "compound") return -1;
-                      if (catA !== "compound" && catB === "compound") return 1;
-                      return a.name.localeCompare(b.name);
-                    });
+                  {(() => {
+                    const poolsToRender = DAY_CONFIG[addingToDay].pools;
 
-                    if (filtered.length === 0) return null;
+                    const renderExercise = (ex: Exercise) => {
+                      const isSelected = selectedModalExercises.some(e => e.name === ex.name);
+                      return (
+                        <div key={ex.name} className="relative group">
+                          <button
+                            onClick={() => {
+                              if (isSelected) {
+                                setSelectedModalExercises(prev => prev.filter(e => e.name !== ex.name));
+                              } else {
+                                setSelectedModalExercises(prev => [...prev, ex]);
+                              }
+                            }}
+                            className={`w-full flex items-center justify-between p-4 bg-black/65 border rounded-md hover:bg-black/85 transition-all text-left cursor-pointer group/inner ${
+                              isSelected
+                                ? "border-gym-accent bg-gym-accent/5"
+                                : "border-white/10 text-white/70 hover:border-gym-accent/30"
+                            }`}
+                          >
+                            <div className="flex flex-col gap-1.5 min-w-0 pr-12">
+                              <span className={`text-xs font-semibold truncate transition-colors ${isSelected ? 'text-gym-accent' : 'text-white/70 group-hover/inner:text-gym-accent'}`}>
+                                {ex.name}
+                              </span>
+                              {ex.category && (
+                                <span
+                                  className={`text-[8px] font-bold tracking-wider uppercase ${
+                                    isSelected
+                                      ? "text-gym-accent"
+                                      : ex.category === "compound"
+                                        ? "text-amber-500/80"
+                                        : "text-purple-400/80"
+                                  }`}
+                                >
+                                  {ex.category === "compound" ? "C" : "I"} —{" "}
+                                  {ex.category}
+                                </span>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center shrink-0">
+                              {isSelected ? (
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-gym-accent/15 border border-gym-accent/20 px-2.5 py-1 rounded-md text-gym-accent flex items-center gap-1">
+                                  <Check className="w-2.5 h-2.5" /> Selected
+                                </span>
+                              ) : (
+                                <div className="p-1 rounded bg-white/5 border border-white/10 group-hover/inner:border-gym-accent/40 group-hover/inner:bg-gym-accent/10 text-white/30 group-hover/inner:text-gym-accent transition-all">
+                                  <Plus className="w-3.5 h-3.5 animate-none" />
+                                </div>
+                              )}
+                            </div>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setGuidanceEx(ex);
+                            }}
+                            className={`absolute right-12 top-1/2 -translate-y-1/2 p-2 transition-all cursor-pointer z-10 ${
+                              isSelected ? "text-gym-accent/40 hover:text-gym-accent" : "text-white/10 hover:text-gym-accent"
+                            }`}
+                            title="View Guidance"
+                          >
+                            <BookOpen className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    };
+
+                    return (
+                      <>
+                        {poolsToRender.map((poolKey) => {
+                          const pool = combinedPools[poolKey] || [];
+                          const filtered = pool.filter(
+                            (ex) =>
+                              ex.name
+                                .toLowerCase()
+                                .includes(modalSearch.toLowerCase()) &&
+                              !currentDays[addingToDay].some(
+                                (p) => p.name === ex.name,
+                              ),
+                          ).sort((a, b) => {
+                            const catA = a.category || "isolation";
+                            const catB = b.category || "isolation";
+                            if (catA === "compound" && catB !== "compound") return -1;
+                            if (catA !== "compound" && catB === "compound") return 1;
+                            return a.name.localeCompare(b.name);
+                          });
+
+                          if (filtered.length === 0) return null;
 
                     const renderExercise = (ex: Exercise) => {
                       const isSelected = selectedModalExercises.some(e => e.name === ex.name);
@@ -17545,9 +17747,12 @@ export default function App() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {filtered.map(renderExercise)}
                         </div>
-                      </div>
-                    );
-                  })}
+                        </div>
+                      );
+                    })}
+                  </>
+                );
+              })()}
                 </div>
 
                 {selectedModalExercises.length > 0 && (
@@ -18171,25 +18376,28 @@ export default function App() {
                           Store in Section
                         </label>
                         <div className="grid grid-cols-2 gap-2">
-                          {DAY_CONFIG.map((day, idx) => (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => setNewRoutineCategory(idx)}
-                              className={`p-3 rounded-md border text-left transition-all cursor-pointer flex items-center gap-2 ${
-                                newRoutineCategory === idx
-                                  ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_10px_rgba(255,231,101,0.15)]"
-                                  : "bg-black/40 border-white/10 text-white/60 hover:bg-white/[0.02] hover:text-white"
-                              }`}
-                            >
-                              <div className="opacity-85 shrink-0 text-xs">
-                                {day.icon}
-                              </div>
-                              <span className="text-[10px] font-bold uppercase tracking-wider truncate">
-                                {day.name}
-                              </span>
-                            </button>
-                          ))}
+                          {DAY_CONFIG.map((day, idx) => {
+                            if (day.pools.includes("custom")) return null;
+                            return (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => setNewRoutineCategory(idx)}
+                                className={`p-3 rounded-md border text-left transition-all cursor-pointer flex items-center gap-2 ${
+                                  newRoutineCategory === idx
+                                    ? "bg-gym-accent/10 border-gym-accent text-gym-accent shadow-[0_0_10px_rgba(255,231,101,0.15)]"
+                                    : "bg-black/40 border-white/10 text-white/60 hover:bg-white/[0.02] hover:text-white"
+                                }`}
+                              >
+                                <div className="opacity-85 shrink-0 text-xs">
+                                  {day.icon}
+                                </div>
+                                <span className="text-[10px] font-bold uppercase tracking-wider truncate">
+                                  {day.name}
+                                </span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
 
@@ -18790,7 +18998,21 @@ export default function App() {
                     )}
                   </div>
 
-                  <div className="pt-4">
+                  <div className="pt-2 space-y-4">
+                    <div className="px-1 py-1">
+                      <label className="flex items-center gap-2.5 cursor-pointer text-white/80 hover:text-white transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={addToPlanOnCreate}
+                          onChange={(e) => setAddToPlanOnCreate(e.target.checked)}
+                          className="w-4 h-4 accent-gym-accent rounded cursor-pointer shrink-0"
+                        />
+                        <span className="text-xs font-bold uppercase tracking-wider select-none">
+                          Add to current plan
+                        </span>
+                      </label>
+                    </div>
+
                     <button
                       type="submit"
                       className="w-full bg-gym-accent text-black hover:bg-white hover:text-black font-black uppercase tracking-widest py-4 rounded-md text-sm transition-all focus:outline-none shadow-md shadow-gym-accent/5 cursor-pointer"
