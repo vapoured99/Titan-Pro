@@ -109,18 +109,20 @@ const MUSCLE_GROUPS = [
   "Shoulders",
   "Arms",
   "Legs",
-  "Core & Cardio",
+  "Core",
+  "Cardio",
   "Other"
 ];
 
 const getMuscleGroup = (ex: Exercise): string => {
   const pool = (ex.pool || "").toLowerCase();
+  if (pool === "cardio" || pool.includes("cardio") || isCardioExercise(ex.name, ex.pool)) return "Cardio";
   if (pool.includes("chest")) return "Chest";
   if (pool.includes("back")) return "Back";
   if (pool.includes("delt") || pool.includes("shoulder")) return "Shoulders";
   if (pool.includes("bicep") || pool.includes("tricep") || pool.includes("arm") || pool.includes("brachialis")) return "Arms";
   if (pool.includes("quad") || pool.includes("hamstring") || pool.includes("calf") || pool.includes("calves") || pool.includes("leg")) return "Legs";
-  if (pool.includes("abs") || pool.includes("oblique") || pool.includes("core") || pool.includes("cardio")) return "Core & Cardio";
+  if (pool.includes("abs") || pool.includes("oblique") || pool.includes("core")) return "Core";
   return "Other";
 };
 
@@ -180,12 +182,21 @@ export default function AIPlanActive({
   onSwapExercise
 }: AIPlanActiveProps) {
   // Copy activeExercises to state for interactive adjustments
-  const [activeExercises, setActiveExercises] = useState<AIPlanExercise[]>(initialActiveExercises);
+  const [activeExercises, setActiveExercises] = useState<AIPlanExercise[]>(() => {
+    return initialActiveExercises.map((item) => {
+      const isCardio = isCardioExercise(item.exercise.name, item.exercise.pool);
+      return {
+        ...item,
+        targetSets: isCardio && (!item.targetSets || item.targetSets === 3) ? 1 : (item.targetSets || (isCardio ? 1 : 3))
+      };
+    });
+  });
 
   // Synchronize local activeExercises when initialActiveExercises prop changes (e.g. on swap)
   useEffect(() => {
     setActiveExercises((prev) => {
       return initialActiveExercises.map((item, idx) => {
+        const isCardio = isCardioExercise(item.exercise.name, item.exercise.pool);
         const existing = prev.find(
           (p) => p.exercise.name.toLowerCase() === item.exercise.name.toLowerCase()
         );
@@ -196,10 +207,13 @@ export default function AIPlanActive({
         if (atIndex && atIndex.exercise.name !== item.exercise.name) {
           return {
             ...item,
-            targetSets: atIndex.targetSets
+            targetSets: isCardio ? 1 : atIndex.targetSets
           };
         }
-        return item;
+        return {
+          ...item,
+          targetSets: isCardio && (!item.targetSets || item.targetSets === 3) ? 1 : (item.targetSets || (isCardio ? 1 : 3))
+        };
       });
     });
   }, [initialActiveExercises]);

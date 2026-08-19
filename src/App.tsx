@@ -129,7 +129,7 @@ import {
   writeBatch,
   onSnapshot,
 } from "./lib/firebase";
-import { Exercise, POOLS, getSecondaryMusclesForExercise } from "./data/exercises";
+import { Exercise, POOLS, getSecondaryMusclesForExercise, isCardioExercise } from "./data/exercises";
 import AIPlanActive, { AIPlanExercise } from "./components/AIPlanActive";
 import { getExerciseProgressionState } from "./lib/progression";
 import { AtmosphereCanvas } from "./components/AtmosphereCanvas";
@@ -1623,6 +1623,36 @@ const migrateCustomExercise = (ex: Exercise): { migrated: Exercise; changed: boo
     }
   }
 
+  // Reverse Pec Deck
+  if (nameLower.includes("reverse pec deck") || nameLower.includes("reverse pec fly") || nameLower === "reverse pec deck") {
+    const targetSteps = [
+      "Machine & Seat Setup: Sit facing into the machine with your chest firmly pressed against the front support pad. Adjust the seat height so the handles align horizontally at shoulder height and your feet are planted flat on the floor.",
+      "Grip & Arm Placement: Reach forward and grasp the handles with a neutral or overhand grip. Maintain a slight, soft bend in your elbows and keep your wrists aligned and firm throughout.",
+      "The Reverse Fly (Execution): Inhale, brace your core, and drive your arms out and backward in a wide, controlled horizontal arc by contracting your upper back and rear shoulders.",
+      "Peak Squeeze: Hold and squeeze your rhomboids, rear deltoids, and upper back firmly at peak contraction for 1-2 seconds without excessively arching your spine or shrugging your traps.",
+      "Controlled Eccentric Return: Exhale and slowly return the handles to the starting position over 2-3 seconds, maintaining continuous muscular tension on the upper back before initiating the next repetition."
+    ];
+    const targetYoutubeId = "O2J8Qs7Wl3U";
+    const targetYoutubeUrl = "https://www.youtube.com/shorts/O2J8Qs7Wl3U";
+
+    const stepsMatch = currentEx.instructions && 
+      currentEx.instructions.length === targetSteps.length && 
+      currentEx.instructions.every((step, i) => step === targetSteps[i]);
+    const videoMatch = currentEx.youtubeId === targetYoutubeId && currentEx.youtubeUrl === targetYoutubeUrl;
+
+    if (!stepsMatch || !videoMatch || currentEx.pool !== "upper_back") {
+      currentEx = {
+        ...currentEx,
+        instructions: targetSteps,
+        youtubeId: targetYoutubeId,
+        youtubeUrl: targetYoutubeUrl,
+        pool: currentEx.pool || "upper_back",
+        muscleGroup: currentEx.muscleGroup || "rhomboids_traps"
+      };
+      changed = true;
+    }
+  }
+
   // Generic static library fallback lookup for any custom exercise
   // that lacks professional guidance/instructions.
   const hasNoInstructions = !currentEx.instructions || 
@@ -1705,6 +1735,11 @@ export default function App() {
               item.exercise.name = migrateExerciseName(item.exercise.name);
               const { migrated } = migrateCustomExercise(item.exercise);
               item.exercise = migrated;
+              if (isCardioExercise(item.exercise.name, item.exercise.pool)) {
+                if (!item.targetSets || item.targetSets === 3) {
+                  item.targetSets = 1;
+                }
+              }
             }
             return item as AIPlanExercise;
           });
@@ -5543,7 +5578,7 @@ export default function App() {
         .filter((ex) => !existingAiNames.has(ex.name.toLowerCase()))
         .map((ex) => ({
           exercise: ex,
-          targetSets: 3,
+          targetSets: isCardioExercise(ex.name, ex.pool) ? 1 : 3,
           targetReps: "10",
         }));
       if (newAiItems.length === 0) return prev;
@@ -5607,7 +5642,7 @@ export default function App() {
       }
       const newAiItem: AIPlanExercise = {
         exercise: ex,
-        targetSets: 3,
+        targetSets: isCardioExercise(ex.name, ex.pool) ? 1 : 3,
         targetReps: "10",
       };
       const updated = [...prev, newAiItem];
@@ -5992,7 +6027,7 @@ export default function App() {
       }
       return existing || {
         exercise: ex,
-        targetSets: 3,
+        targetSets: isCardioExercise(ex.name, ex.pool) ? 1 : 3,
         targetReps: "10",
       };
     });
@@ -7492,7 +7527,7 @@ export default function App() {
         );
         return existing || {
           exercise: ex,
-          targetSets: 3,
+          targetSets: isCardioExercise(ex.name, ex.pool) ? 1 : 3,
           targetReps: "10",
         };
       });
@@ -16706,9 +16741,10 @@ export default function App() {
                     else if (pool.includes("delt") || pool.includes("shoulder")) group = "Shoulders";
                     else if (pool.includes("bicep") || pool.includes("tricep") || pool.includes("arm") || pool.includes("brachialis")) group = "Arms";
                     else if (pool.includes("quad") || pool.includes("hamstring") || pool.includes("calf") || pool.includes("calves") || pool.includes("leg")) group = "Legs";
-                    else if (pool.includes("abs") || pool.includes("oblique") || pool.includes("core") || pool.includes("cardio")) group = "Core & Cardio";
+                    else if (pool.includes("abs") || pool.includes("oblique") || pool.includes("core")) group = "Core";
+                    else if (pool.includes("cardio") || pool === "cardio" || isCardioExercise(resolved.name, pool)) group = "Cardio";
 
-                    const order = ["Chest", "Back", "Shoulders", "Arms", "Legs", "Core & Cardio", "Other"];
+                    const order = ["Chest", "Back", "Shoulders", "Arms", "Legs", "Core", "Cardio", "Other"];
                     const idx = order.indexOf(group);
                     return idx === -1 ? 999 : idx;
                   };

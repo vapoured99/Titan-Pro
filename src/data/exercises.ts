@@ -321,6 +321,20 @@ const RAW_POOLS: Record<string, Omit<Exercise, 'category'>[]> = {
   ],
   upper_back: [
     { 
+      name: "Reverse Pec Deck", 
+      icon: "ArrowLeftRight", 
+      pool: "upper_back",
+      muscleGroup: "rhomboids_traps",
+      secondaryMuscles: ["Biceps", "Forearms", "Rear Delts"],
+      instructions: [
+        "Machine & Seat Setup: Sit facing the machine with your chest firmly pressed against the front support pad. Adjust the seat height so the handles align horizontally at shoulder height and your feet are planted flat on the floor.",
+        "Grip & Arm Placement: Reach forward and grasp the handles with a neutral or overhand grip. Maintain a slight, soft bend in your elbows and keep your wrists aligned and firm throughout.",
+        "The Reverse Fly (Execution): Inhale, brace your core, and drive your arms out and backward in a wide, controlled horizontal arc by contracting your upper back and rear shoulders.",
+        "Peak Squeeze: Hold and squeeze your rhomboids, rear deltoids, and upper back firmly at peak contraction for 1-2 seconds without excessively arching your spine or shrugging your traps.",
+        "Controlled Eccentric Return: Exhale and slowly return the handles to the starting position over 2-3 seconds, maintaining continuous muscular tension on the upper back before initiating the next repetition."
+      ]
+    },
+    { 
       name: "Barbell Bent Over Row", 
       icon: "ArrowLeftRight", 
       pool: "upper_back",
@@ -2626,7 +2640,8 @@ export const EXERCISE_YOUTUBE_MAP: Record<string, string> = {
   "Preacher Curl Machine": "https://www.youtube.com/shorts/S4dDLfp3e8w",
   "Machine Preacher Curl": "https://www.youtube.com/shorts/S4dDLfp3e8w",
   "Hip Thrust Machine": "https://www.youtube.com/watch?v=xzR8Pq_iaz4",
-  "Machine Hip Thrust": "https://www.youtube.com/watch?v=xzR8Pq_iaz4"
+  "Machine Hip Thrust": "https://www.youtube.com/watch?v=xzR8Pq_iaz4",
+  "Reverse Pec Deck": "https://www.youtube.com/shorts/O2J8Qs7Wl3U"
 };
 
 const extractYoutubeIdFromUrlOrVal = (val: string): string => {
