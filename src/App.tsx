@@ -16422,14 +16422,27 @@ export default function App() {
                         <Sparkles className="w-12 h-12 text-gym-accent/30 mx-auto mb-4 animate-pulse" />
                         <h4 className="text-base font-bold text-white mb-2">No Exercises in Plan</h4>
                         <p className="text-xs text-white/40 leading-relaxed mb-6">
-                          Go to the Plan Builder, select exercises, and press "BUILD" to automatically populate your Plan.
+                          Go to the Plan Builder to select exercises and press "BUILD", or load a saved routine to populate your Plan.
                         </p>
-                        <button
-                          onClick={() => setWorkoutInnerTab("builder")}
-                          className="px-5 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black border border-gym-accent font-mono font-black text-[10px] uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-md"
-                        >
-                          Go to Plan Builder
-                        </button>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                          <button
+                            onClick={() => setWorkoutInnerTab("builder")}
+                            className="w-full sm:w-auto px-5 py-2.5 bg-gym-accent hover:bg-gym-accent/90 text-black border border-gym-accent font-mono font-black text-[10px] uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                          >
+                            <Dumbbell className="w-3.5 h-3.5" />
+                            Go to Plan Builder
+                          </button>
+                          <button
+                            onClick={() => {
+                              setActiveView("routines");
+                              saveSettings({ activeView: "routines" });
+                            }}
+                            className="w-full sm:w-auto px-5 py-2.5 bg-white/10 hover:bg-white/15 text-white border border-white/20 hover:border-gym-accent/50 font-mono font-black text-[10px] uppercase tracking-widest rounded-lg transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                          >
+                            <ClipboardList className="w-3.5 h-3.5 text-gym-accent" />
+                            Go to Routines
+                          </button>
+                        </div>
                       </div>
                     )}
                   </motion.div>
